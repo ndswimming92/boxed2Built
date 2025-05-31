@@ -64,7 +64,7 @@ const Hero: React.FC = () => {
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
               <p className="text-green-800 font-medium text-sm">
-                "We assemble so you don't have to!"
+                "Built for you, stress-free!"
               </p>
             </div>
           </div>
