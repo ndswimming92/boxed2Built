@@ -38,10 +38,13 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             <a 
               href="#" 
-              className="text-2xl font-bold text-blue-600 flex items-center"
+              className="flex items-center"
             >
-              <span className="bg-blue-600 text-white p-1 rounded mr-2">B2B</span>
-              Boxed<span className="text-green-600">2</span>Built
+              <img 
+                src="/Modern Minimalist Logo for Boxed2Built.png" 
+                alt="Boxed2Built Logo" 
+                className="h-12 w-auto"
+              />
             </a>
           </div>
 
