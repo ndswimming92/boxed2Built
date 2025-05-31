@@ -10,7 +10,7 @@ const About: React.FC = () => {
             Why Choose <span className="text-blue-600">Boxed2Built</span>?
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Boxed2Built is your local furniture assembly pro. We save you hours of frustration by turning those confusing instructions into finished furniture—fast.
+            We’re a local, family-run business serving Spring Hill and the surrounding area with honest, affordable furniture assembly. At Boxed2Built, we turn confusing instructions and scattered parts into solid, ready-to-use furniture—quickly and carefully. No stress, no mess, just reliable service you can count on.
           </p>
         </div>
 
