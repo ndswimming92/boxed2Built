@@ -17,8 +17,7 @@ const Footer: React.FC = () => {
               />
             </div>
             <p className="text-gray-400 max-w-md mb-6">
-              Professional furniture assembly service in Spring Hill, TN and surrounding areas. 
-              From boxed to built – we make home setup stress-free.
+              Professional furniture assembly in Spring Hill, TN and surrounding areas. From box to built, we make home setup quick, easy, and stress-free.
             </p>
             <div className="flex space-x-4">
               <a 
