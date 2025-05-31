@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
           <div className="md:w-1/2 md:pr-12 mb-10 md:mb-0">
             <div className="animate-fadeIn">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
-                Furniture Assembly 
+                Hassle-Free Furniture Assembly
                 <span className="block text-blue-600">Done For You</span>
               </h1>
               
