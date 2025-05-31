@@ -11,8 +11,7 @@ const Services: React.FC = () => {
             Our Services & Pricing
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            We handle all types of furniture assembly, from simple chairs to complex wardrobes. 
-            Here's what we offer and what you can expect to pay.
+            From basic chairs to full-size wardrobes, we assemble it all—quickly and professionally. Explore our services below to see what we offer and how much it typically costs.
           </p>
         </div>
 
