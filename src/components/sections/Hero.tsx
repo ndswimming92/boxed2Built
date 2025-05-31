@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-8">
-                From Boxed to Built – We make home setup stress-free.
+                From Boxed to Built – We handle the build, so you don’t have to.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
