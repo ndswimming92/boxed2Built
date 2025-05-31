@@ -10,10 +10,11 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between mb-8">
           <div className="mb-8 md:mb-0">
             <div className="flex items-center mb-4">
-              <div className="text-2xl font-bold">
-                <span className="bg-blue-600 text-white p-1 rounded mr-2">B2B</span>
-                Boxed<span className="text-green-500">2</span>Built
-              </div>
+              <img 
+                src="/Modern Minimalist Logo for Boxed2Built.png" 
+                alt="Boxed2Built Logo" 
+                className="h-12 w-auto"
+              />
             </div>
             <p className="text-gray-400 max-w-md mb-6">
               Professional furniture assembly service in Spring Hill, TN and surrounding areas. 
@@ -21,7 +22,7 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <a 
-                href="https://facebook.com" 
+                href="https://www.facebook.com/profile.php?viewas=100000686899395&id=61576975580738" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-blue-700 hover:bg-blue-800 transition-colors p-2 rounded-full"
