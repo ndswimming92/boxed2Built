@@ -19,9 +19,9 @@ const About: React.FC = () => {
             <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-4">
               <Tool className="text-white" size={24} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Professional Expertise</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Skilled & Efficient</h3>
             <p className="text-gray-600">
-              We've assembled thousands of furniture items and know all the tricks to make the process quick and efficient.
+              With hands-on experience assembling hundreds of furniture items, we know the shortcuts and best practices to get the job done right—fast and hassle-free.
             </p>
           </div>
 
