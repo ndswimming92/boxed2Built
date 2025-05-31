@@ -166,7 +166,7 @@ const Contact: React.FC = () => {
                     className="w-full"
                     disabled={formStatus === 'submitting'}
                   >
-                    {formStatus === 'submitting' ? 'Sending...' : 'Send Request'}
+                    {formStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               )}
@@ -187,7 +187,7 @@ const Contact: React.FC = () => {
                     <a href="tel:6154034538" className="opacity-90 hover:opacity-100 transition-opacity">
                       (615) 403-4538
                     </a>
-                    <p className="text-sm opacity-75 mt-1">Available 7 days a week, 8AM-7PM</p>
+                    <p className="text-sm opacity-75 mt-1">Available 7 days a week, 7AM-4PM</p>
                   </div>
                 </div>
                 
