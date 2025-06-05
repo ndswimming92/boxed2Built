@@ -101,8 +101,8 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4">
-            <nav className="flex flex-col space-y-4">
+          <div className={`md:hidden mt-4 pb-4 ${!isScrolled ? 'bg-white shadow-lg rounded-lg' : ''}`}>
+            <nav className="flex flex-col space-y-4 p-4">
               <a 
                 href="#about" 
                 onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
