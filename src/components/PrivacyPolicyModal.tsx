@@ -1,5 +1,4 @@
 import React from 'react';
-import PrivacyPolicy from './PrivacyPolicy';
 import Modal from './Modal';
 
 const PrivacyPolicyModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
