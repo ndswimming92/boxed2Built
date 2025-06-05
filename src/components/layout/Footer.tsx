@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Facebook, Mail, Phone } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -25,27 +26,39 @@ const Footer: React.FC = () => {
                 Professional furniture assembly in Spring Hill, TN and surrounding areas. From box to built, we make home setup quick, easy, and stress-free.
               </p>
               <div className="flex space-x-4">
-                <a href="https://www.facebook.com/profile.php?id=6154034538" className="text-gray-400 hover:text-white">
+                <a href="https://www.facebook.com/profile.php?id=6154034538" className="text-gray-400 hover:text-white" aria-label="Facebook">
                   <Facebook />
                 </a>
-                <a href="mailto:boxed2builtco@gmail.com" className="text-gray-400 hover:text-white">
+                <a href="mailto:boxed2builtco@gmail.com" className="text-gray-400 hover:text-white" aria-label="Email">
                   <Mail />
                 </a>
-                <a href="tel:+16154034538" className="text-gray-400 hover:text-white">
+                <a href="tel:+16154034538" className="text-gray-400 hover:text-white" aria-label="Phone">
                   <Phone />
                 </a>
               </div>
             </div>
           </div>
-          <div className="text-sm text-gray-400 text-center">
-            &copy; {currentYear} Boxed2Built. All rights reserved. &nbsp;|&nbsp;
-            <button onClick={() => setShowPrivacy(true)} className="underline hover:text-white">Privacy Policy</button>
-            &nbsp;|&nbsp;
-            <button onClick={() => setShowTerms(true)} className="underline hover:text-white">Terms of Service</button>
+
+          <div className="text-sm text-gray-400 text-center space-y-2">
+            <div>
+              &copy; {currentYear} Boxed2Built. All rights reserved.
+            </div>
+            <div>
+              <button onClick={() => setShowPrivacy(true)} className="underline hover:text-white">
+                Privacy Policy
+              </button>
+              &nbsp;(<Link to="/privacy-policy" className="hover:text-white underline">View Page</Link>)
+              &nbsp;|&nbsp;
+              <button onClick={() => setShowTerms(true)} className="underline hover:text-white">
+                Terms of Service
+              </button>
+              &nbsp;(<Link to="/terms-of-service" className="hover:text-white underline">View Page</Link>)
+            </div>
           </div>
         </div>
       </footer>
 
+      {/* Modals */}
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
       <TermsOfServiceModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
     </>
