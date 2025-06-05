@@ -3,13 +3,6 @@ import { ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
 
 const Hero: React.FC = () => {
-  const scrollToContact = () => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
@@ -27,14 +20,14 @@ const Hero: React.FC = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-8">
-                From Boxed to Built – We handle the build, so you don’t have to.
+                From Boxed to Built – We handle the build, so you don't have to.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   variant="primary" 
                   size="lg"
-                  onClick={scrollToContact}
+                  onClick={() => window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.'}
                   className="group"
                 >
                   Get a Free Quote

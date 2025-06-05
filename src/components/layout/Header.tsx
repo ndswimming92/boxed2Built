@@ -82,7 +82,7 @@ const Header: React.FC = () => {
               <span>(615) 403-4538</span>
             </a>
             <Button 
-              onClick={() => window.location.href = 'tel:6154034538'}
+              onClick={() => window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.'}
               variant="primary"
             >
               Get a Free Quote
@@ -132,7 +132,7 @@ const Header: React.FC = () => {
                 <span>(615) 403-4538</span>
               </a>
               <Button 
-                onClick={() => window.location.href = 'tel:6154034538'}
+                onClick={() => window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.'}
                 variant="primary"
                 className="w-full justify-center"
               >
