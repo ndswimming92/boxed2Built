@@ -15,7 +15,7 @@ const Services: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {SERVICES.map((service) => (
             <div key={service.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               <div className="p-6">
@@ -50,7 +50,7 @@ const Services: React.FC = () => {
           ))}
         </div>
 
-        <div className="bg-blue-600 text-white p-8 rounded-lg shadow-md">
+        <div className="mt-12 bg-blue-600 text-white p-8 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-6 md:mb-0 md:mr-8">
               <h3 className="text-2xl font-bold mb-2">Need a Custom Quote?</h3>

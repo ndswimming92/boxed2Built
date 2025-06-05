@@ -71,13 +71,6 @@ const Header: React.FC = () => {
             >
               Testimonials
             </a>
-            <a 
-              href="#contact" 
-              onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-            >
-              Contact
-            </a>
           </nav>
 
           <div className="hidden md:flex items-center">
@@ -89,7 +82,7 @@ const Header: React.FC = () => {
               <span>(615) 403-4538</span>
             </a>
             <Button 
-              onClick={() => scrollToSection('contact')}
+              onClick={() => window.location.href = 'tel:6154034538'}
               variant="primary"
             >
               Get a Free Quote
@@ -132,13 +125,6 @@ const Header: React.FC = () => {
                 Testimonials
               </a>
               <a 
-                href="#contact" 
-                onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                Contact
-              </a>
-              <a 
                 href="tel:6154034538" 
                 className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
               >
@@ -146,7 +132,7 @@ const Header: React.FC = () => {
                 <span>(615) 403-4538</span>
               </a>
               <Button 
-                onClick={() => scrollToSection('contact')}
+                onClick={() => window.location.href = 'tel:6154034538'}
                 variant="primary"
                 className="w-full justify-center"
               >
