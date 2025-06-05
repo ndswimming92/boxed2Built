@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
@@ -62,9 +62,6 @@ const Footer: React.FC = () => {
                 <li>
                   <a href="#testimonials" className="text-gray-400 hover:text-white transition-colors">Testimonials</a>
                 </li>
-                <li>
-                  <a href="#contact" className="text-gray-400 hover:text-white transition-colors">Contact</a>
-                </li>
               </ul>
             </div>
             
@@ -72,14 +69,14 @@ const Footer: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <ul className="space-y-2">
                 <li className="flex items-center">
-                  <Phone size={16} className="mr-2 text-gray-400" />
-                  <a href="tel:6154034538" className="text-gray-400 hover:text-white transition-colors">
+                  <Phone size={16} className="mr-2 text-gray-400 flex-shrink-0" />
+                  <a href="tel:6154034538" className="text-gray-400 hover:text-white transition-colors break-all">
                     (615) 403-4538
                   </a>
                 </li>
-                <li className="flex items-center">
-                  <Mail size={16} className="mr-2 text-gray-400" />
-                  <a href="mailto:boxed2builtco@gmail.com" className="text-gray-400 hover:text-white transition-colors">
+                <li className="flex items-start">
+                  <Mail size={16} className="mr-2 text-gray-400 flex-shrink-0 mt-1" />
+                  <a href="mailto:boxed2builtco@gmail.com" className="text-gray-400 hover:text-white transition-colors break-all">
                     boxed2builtco@gmail.com
                   </a>
                 </li>
@@ -102,10 +99,10 @@ const Footer: React.FC = () => {
         
         <div className="border-t border-gray-800 pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm text-center md:text-left">
               &copy; {currentYear} Boxed2Built. All rights reserved.
             </p>
-            <p className="text-gray-500 text-sm mt-2 md:mt-0">
+            <p className="text-gray-500 text-sm mt-2 md:mt-0 text-center md:text-left">
               Serving Spring Hill, TN and surrounding areas
             </p>
           </div>
