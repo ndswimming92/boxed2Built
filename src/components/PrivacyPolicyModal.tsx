@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from './Modal';
-import PrivacyPolicy from './PrivacyPolicy';
+import PrivacyPolicy from './sections/PrivacyPolicy';
 
 const PrivacyPolicyModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
   <Modal isOpen={isOpen} onClose={onClose}>
