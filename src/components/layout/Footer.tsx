@@ -14,17 +14,17 @@ const Footer: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between mb-8">
             <div className="mb-8 md:mb-0">
-              <div className="flex items-center mb-4">
+              <div className="flex items-center justify-center md:justify-start mb-4">
                 <img 
                   src="/Modern Minimalist Logo for Boxed2Built.png" 
                   alt="Boxed2Built Logo" 
                   className="h-12 w-auto"
                 />
               </div>
-              <p className="text-gray-400 max-w-md mb-6">
+              <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
                 Professional furniture assembly in Spring Hill, TN and surrounding areas. From box to built, we make home setup quick, easy, and stress-free.
               </p>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 justify-center md:justify-start">
                 <a href="https://www.facebook.com/profile.php?id=6154034538" className="text-gray-400 hover:text-white" aria-label="Facebook">
                   <Facebook />
                 </a>
