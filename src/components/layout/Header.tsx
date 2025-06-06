@@ -75,7 +75,7 @@ const Header: React.FC = () => {
 
           <div className="hidden md:flex items-center">
             <a 
-              href="tel:6154034538" 
+              href="tel:+16154034538" 
               className="flex items-center text-gray-800 hover:text-blue-600 mr-4 transition-colors"
             >
               <Phone size={18} className="mr-2" />
@@ -125,7 +125,7 @@ const Header: React.FC = () => {
                 Testimonials
               </a>
               <a 
-                href="tel:6154034538" 
+                href="tel:+16154034538" 
                 className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
               >
                 <Phone size={18} className="mr-2" />

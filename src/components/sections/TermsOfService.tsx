@@ -30,7 +30,7 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">4. Cancellations</h2>
         <p>
-          We request at least 24 hours’ notice for cancellations. Late cancellations may be subject to a fee.
+          We request at least 24 hours' notice for cancellations. Late cancellations may be subject to a fee.
         </p>
       </section>
 
@@ -52,8 +52,8 @@ const TermsOfService = () => {
         <h2 className="text-xl font-semibold mb-2">7. Contact Us</h2>
         <p>If you have questions about these Terms, contact us at:</p>
         <ul className="list-none pl-0 mt-2">
-          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-600">boxed2builtco@gmail.com</a></li>
-          <li>Phone: <a href="tel:+16154034538" className="text-blue-600">(615) 403-4538</a></li>
+          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-600 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
+          <li>Phone: <a href="tel:+16154034538" className="text-blue-600 hover:text-blue-800 underline">(615) 403-4538</a></li>
         </ul>
       </section>
     </div>

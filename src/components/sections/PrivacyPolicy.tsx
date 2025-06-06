@@ -57,7 +57,7 @@ const PrivacyPolicy = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">7. Children’s Privacy</h2>
+        <h2 className="text-xl font-semibold mb-2">7. Children's Privacy</h2>
         <p>Our services are not directed to children under 13, and we do not knowingly collect data from minors.</p>
       </section>
 
@@ -70,8 +70,8 @@ const PrivacyPolicy = () => {
         <h2 className="text-xl font-semibold mb-2">9. Contact Us</h2>
         <p>If you have questions about this policy, you can contact us at:</p>
         <ul className="list-none pl-0 mt-2">
-          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-600">boxed2builtco@gmail.com</a></li>
-          <li>Phone: <a href="tel:+16154034538" className="text-blue-600">(615) 403-4538</a></li>
+          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-600 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
+          <li>Phone: <a href="tel:+16154034538" className="text-blue-600 hover:text-blue-800 underline">(615) 403-4538</a></li>
         </ul>
       </section>
     </div>

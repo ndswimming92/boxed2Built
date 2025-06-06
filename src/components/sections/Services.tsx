@@ -61,7 +61,7 @@ const Services: React.FC = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <a 
-                href="tel:6154034538" 
+                href="tel:+16154034538" 
                 className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -70,7 +70,7 @@ const Services: React.FC = () => {
                 Call Us
               </a>
               <a 
-                href="mailto:boxed2builtco@gmail.com" 
+                href="mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly." 
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

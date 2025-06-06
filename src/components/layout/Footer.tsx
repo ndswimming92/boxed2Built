@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Facebook, Mail, Phone } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
-import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -47,12 +46,10 @@ const Footer: React.FC = () => {
               <button onClick={() => setShowPrivacy(true)} className="underline hover:text-white">
                 Privacy Policy
               </button>
-              &nbsp;(<Link to="/privacy-policy" className="hover:text-white underline">View Page</Link>)
               &nbsp;|&nbsp;
               <button onClick={() => setShowTerms(true)} className="underline hover:text-white">
                 Terms of Service
               </button>
-              &nbsp;(<Link to="/terms-of-service" className="hover:text-white underline">View Page</Link>)
             </div>
           </div>
         </div>
