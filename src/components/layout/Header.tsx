@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import Button from '../ui/Button';
+import { trackEvent } from '../../utils/analytics';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,6 +35,7 @@ const Header: React.FC = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+    trackEvent('mobile-menu-toggle');
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -41,7 +43,16 @@ const Header: React.FC = () => {
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
       setIsMenuOpen(false);
+      trackEvent(`nav-click-${sectionId}`);
     }
+  };
+
+  const handlePhoneClick = () => {
+    trackEvent('phone-click-header');
+  };
+
+  const handleEmailClick = () => {
+    trackEvent('email-click-header');
   };
 
   return (
@@ -57,6 +68,7 @@ const Header: React.FC = () => {
             <a 
               href="#" 
               className="flex items-center"
+              onClick={() => trackEvent('logo-click')}
             >
               <img 
                 src="/Modern Minimalist Logo for Boxed2Built.png" 
@@ -95,13 +107,18 @@ const Header: React.FC = () => {
             <a 
               href="tel:+16154034538" 
               className="flex items-center text-gray-800 hover:text-blue-600 mr-4 transition-colors"
+              onClick={handlePhoneClick}
             >
               <Phone size={18} className="mr-2" />
               <span>(615) 403-4538</span>
             </a>
             <Button 
-              onClick={() => window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.'}
+              onClick={() => {
+                handleEmailClick();
+                window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.';
+              }}
               variant="primary"
+              trackingLabel="get-quote-header"
             >
               Get a Free Quote
             </Button>
@@ -145,14 +162,19 @@ const Header: React.FC = () => {
               <a 
                 href="tel:+16154034538" 
                 className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
+                onClick={() => trackEvent('phone-click-mobile-menu')}
               >
                 <Phone size={18} className="mr-2" />
                 <span>(615) 403-4538</span>
               </a>
               <Button 
-                onClick={() => window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.'}
+                onClick={() => {
+                  trackEvent('email-click-mobile-menu');
+                  window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.';
+                }}
                 variant="primary"
                 className="w-full justify-center"
+                trackingLabel="get-quote-mobile"
               >
                 Get a Free Quote
               </Button>

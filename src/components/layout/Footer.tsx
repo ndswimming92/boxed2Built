@@ -2,11 +2,26 @@ import React, { useState } from 'react';
 import { Facebook, Mail, Phone } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
+import { trackEvent } from '../../utils/analytics';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+
+  const handleSocialClick = (platform: string) => {
+    trackEvent(`social-click-${platform}`);
+  };
+
+  const handlePrivacyClick = () => {
+    setShowPrivacy(true);
+    trackEvent('privacy-policy-click');
+  };
+
+  const handleTermsClick = () => {
+    setShowTerms(true);
+    trackEvent('terms-of-service-click');
+  };
 
   return (
     <>
@@ -25,13 +40,28 @@ const Footer: React.FC = () => {
                 Professional furniture assembly in Spring Hill, TN and surrounding areas. From box to built, we make home setup quick, easy, and stress-free.
               </p>
               <div className="flex space-x-4 justify-center md:justify-start">
-                <a href="https://www.facebook.com/profile.php?id=6154034538" className="text-gray-400 hover:text-white" aria-label="Facebook">
+                <a 
+                  href="https://www.facebook.com/profile.php?id=6154034538" 
+                  className="text-gray-400 hover:text-white" 
+                  aria-label="Facebook"
+                  onClick={() => handleSocialClick('facebook')}
+                >
                   <Facebook />
                 </a>
-                <a href="mailto:boxed2builtco@gmail.com" className="text-gray-400 hover:text-white" aria-label="Email">
+                <a 
+                  href="mailto:boxed2builtco@gmail.com" 
+                  className="text-gray-400 hover:text-white" 
+                  aria-label="Email"
+                  onClick={() => handleSocialClick('email')}
+                >
                   <Mail />
                 </a>
-                <a href="tel:+16154034538" className="text-gray-400 hover:text-white" aria-label="Phone">
+                <a 
+                  href="tel:+16154034538" 
+                  className="text-gray-400 hover:text-white" 
+                  aria-label="Phone"
+                  onClick={() => handleSocialClick('phone')}
+                >
                   <Phone />
                 </a>
               </div>
@@ -43,11 +73,11 @@ const Footer: React.FC = () => {
               &copy; {currentYear} Boxed2Built. All rights reserved.
             </div>
             <div>
-              <button onClick={() => setShowPrivacy(true)} className="underline hover:text-white">
+              <button onClick={handlePrivacyClick} className="underline hover:text-white">
                 Privacy Policy
               </button>
               &nbsp;|&nbsp;
-              <button onClick={() => setShowTerms(true)} className="underline hover:text-white">
+              <button onClick={handleTermsClick} className="underline hover:text-white">
                 Terms of Service
               </button>
             </div>

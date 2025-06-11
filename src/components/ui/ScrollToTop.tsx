@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { trackEvent } from '../../utils/analytics';
 
 const ScrollToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -22,6 +23,7 @@ const ScrollToTop: React.FC = () => {
       top: 0,
       behavior: 'smooth',
     });
+    trackEvent('scroll-to-top-click');
   };
 
   return (
