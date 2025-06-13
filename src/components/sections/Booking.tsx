@@ -90,7 +90,7 @@ const Booking: React.FC = () => {
             </Button>
 
             <p className="text-sm text-gray-500 mt-4">
-              Available 7 days a week • Serving Spring Hill and surrounding areas
+              Available during the weekends • Serving Spring Hill and surrounding areas
             </p>
           </div>
         </div>
