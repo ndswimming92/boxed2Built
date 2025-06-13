@@ -1,0 +1,3 @@
+# Exclude testimonials and star rating components to reduce context size
+src/components/sections/Testimonials.tsx
+src/components/ui/StarRating.tsx
