@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const TermsOfService = () => {
+  useEffect(() => {
+    document.title = 'Terms of Service - Boxed2Built';
+    
+    // Update meta description for this page
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Terms of Service for Boxed2Built furniture assembly services. Read our service terms and conditions.');
+    }
+  }, []);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>

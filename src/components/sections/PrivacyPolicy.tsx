@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const PrivacyPolicy = () => {
+  useEffect(() => {
+    document.title = 'Privacy Policy - Boxed2Built';
+    
+    // Update meta description for this page
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Privacy Policy for Boxed2Built furniture assembly services. Learn how we protect your personal information.');
+    }
+  }, []);
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
