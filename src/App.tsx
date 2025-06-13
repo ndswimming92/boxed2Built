@@ -6,7 +6,7 @@ import Header from './components/layout/Header';
 import Hero from './components/sections/Hero';
 import About from './components/sections/About';
 import Services from './components/sections/Services';
-import Testimonials from './components/sections/Testimonials';
+import Booking from './components/sections/Booking';
 import Footer from './components/layout/Footer';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView } from './utils/analytics';
@@ -30,7 +30,7 @@ function Home() {
         <Hero />
         <About />
         <Services />
-        <Testimonials />
+        <Booking />
       </main>
       <Footer />
     </>

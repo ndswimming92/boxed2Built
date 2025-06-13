@@ -51,8 +51,9 @@ const Header: React.FC = () => {
     trackEvent('phone-click-header');
   };
 
-  const handleEmailClick = () => {
-    trackEvent('email-click-header');
+  const handleBookingClick = () => {
+    trackEvent('calendly-booking-click-header');
+    window.open('https://calendly.com/boxed2built/30min', '_blank');
   };
 
   return (
@@ -95,11 +96,11 @@ const Header: React.FC = () => {
               Services
             </a>
             <a 
-              href="#testimonials" 
-              onClick={(e) => { e.preventDefault(); scrollToSection('testimonials'); }}
+              href="#booking" 
+              onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
-              Testimonials
+              Book Now
             </a>
           </nav>
 
@@ -113,14 +114,11 @@ const Header: React.FC = () => {
               <span>(615) 403-4538</span>
             </a>
             <Button 
-              onClick={() => {
-                handleEmailClick();
-                window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.';
-              }}
+              onClick={handleBookingClick}
               variant="primary"
-              trackingLabel="get-quote-header"
+              trackingLabel="book-consultation-header"
             >
-              Get a Free Quote
+              Book Consultation
             </Button>
           </div>
 
@@ -153,11 +151,11 @@ const Header: React.FC = () => {
                 Services
               </a>
               <a 
-                href="#testimonials" 
-                onClick={(e) => { e.preventDefault(); scrollToSection('testimonials'); }}
+                href="#booking" 
+                onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
-                Testimonials
+                Book Now
               </a>
               <a 
                 href="tel:+16154034538" 
@@ -169,14 +167,14 @@ const Header: React.FC = () => {
               </a>
               <Button 
                 onClick={() => {
-                  trackEvent('email-click-mobile-menu');
-                  window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.';
+                  trackEvent('calendly-booking-click-mobile');
+                  window.open('https://calendly.com/boxed2built/30min', '_blank');
                 }}
                 variant="primary"
                 className="w-full justify-center"
-                trackingLabel="get-quote-mobile"
+                trackingLabel="book-consultation-mobile"
               >
-                Get a Free Quote
+                Book Consultation
               </Button>
             </nav>
           </div>
