@@ -1,0 +1,5 @@
+# Netlify redirects file
+/*    /index.html   200
+
+# Ensure sitemap.xml is served with correct content type
+/sitemap.xml    /sitemap.xml    200
