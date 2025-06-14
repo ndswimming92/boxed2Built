@@ -77,6 +77,18 @@ const Footer: React.FC = () => {
                   <Phone size={24} />
                 </a>
               </div>
+              
+              <div className="text-center md:text-left mt-6">
+                <a 
+                  href="https://calendly.com/boxed2built/30min" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-gray-900 font-semibold py-2 px-4 rounded hover:bg-gray-200 transition"
+                  onClick={() => trackEvent('footer-book-now')}
+                >
+                  Book a Free Appointment →
+                </a>
+              </div>
             </div>
           </div>
 
