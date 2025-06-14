@@ -67,24 +67,27 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <a 
-              href="#" 
+              href="/" 
               className="flex items-center"
               onClick={() => trackEvent('logo-click')}
+              aria-label="Boxed2Built - Home"
             >
               <img 
                 src="/Modern Minimalist Logo for Boxed2Built.png" 
-                alt="Boxed2Built Logo" 
+                alt="Boxed2Built - Professional Furniture Assembly" 
+                title="Boxed2Built - Professional Furniture Assembly"
                 className="h-12 w-auto"
               />
             </a>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
             <a 
               href="#about" 
               onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              aria-label="Learn about Boxed2Built"
             >
               About
             </a>
@@ -92,6 +95,7 @@ const Header: React.FC = () => {
               href="#services" 
               onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              aria-label="View our services and pricing"
             >
               Services
             </a>
@@ -99,6 +103,7 @@ const Header: React.FC = () => {
               href="#booking" 
               onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
               className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              aria-label="Book furniture assembly service"
             >
               Book Now
             </a>
@@ -109,6 +114,7 @@ const Header: React.FC = () => {
               href="tel:+16154034538" 
               className="flex items-center text-gray-800 hover:text-blue-600 mr-4 transition-colors"
               onClick={handlePhoneClick}
+              aria-label="Call Boxed2Built at (615) 403-4538"
             >
               <Phone size={18} className="mr-2" />
               <span>(615) 403-4538</span>
@@ -126,7 +132,8 @@ const Header: React.FC = () => {
           <button
             onClick={toggleMenu}
             className="md:hidden text-gray-700 focus:outline-none"
-            aria-label="Toggle menu"
+            aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -135,11 +142,12 @@ const Header: React.FC = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className={`md:hidden mt-4 pb-4 ${!isScrolled ? 'bg-white shadow-lg rounded-lg' : ''}`}>
-            <nav className="flex flex-col space-y-4 p-4">
+            <nav className="flex flex-col space-y-4 p-4" role="navigation" aria-label="Mobile navigation">
               <a 
                 href="#about" 
                 onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                aria-label="Learn about Boxed2Built"
               >
                 About
               </a>
@@ -147,6 +155,7 @@ const Header: React.FC = () => {
                 href="#services" 
                 onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                aria-label="View our services and pricing"
               >
                 Services
               </a>
@@ -154,6 +163,7 @@ const Header: React.FC = () => {
                 href="#booking" 
                 onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                aria-label="Book furniture assembly service"
               >
                 Book Now
               </a>
@@ -161,6 +171,7 @@ const Header: React.FC = () => {
                 href="tel:+16154034538" 
                 className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
                 onClick={() => trackEvent('phone-click-mobile-menu')}
+                aria-label="Call Boxed2Built at (615) 403-4538"
               >
                 <Phone size={18} className="mr-2" />
                 <span>(615) 403-4538</span>
