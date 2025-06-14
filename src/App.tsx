@@ -22,6 +22,30 @@ function Analytics() {
   return null;
 }
 
+function HashHandler() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Handle hash navigation when page loads or hash changes
+    if (location.hash) {
+      const elementId = location.hash.substring(1); // Remove the # symbol
+      const element = document.getElementById(elementId);
+      
+      if (element) {
+        // Small delay to ensure the page is fully rendered
+        setTimeout(() => {
+          element.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
+
+  return null;
+}
+
 function Home() {
   return (
     <>
@@ -46,6 +70,7 @@ function App() {
     <Router>
       <div className="min-h-screen">
         <Analytics />
+        <HashHandler />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
