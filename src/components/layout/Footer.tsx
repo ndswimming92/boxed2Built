@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Facebook, Mail, Phone } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
@@ -41,28 +41,40 @@ const Footer: React.FC = () => {
               </p>
               <div className="flex space-x-4 justify-center md:justify-start">
                 <a 
-                  href="https://www.facebook.com/profile.php?id=6154034538" 
-                  className="text-gray-400 hover:text-white" 
+                  href="https://www.facebook.com/BoxedToBuiltUSA" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors" 
                   aria-label="Facebook"
                   onClick={() => handleSocialClick('facebook')}
                 >
-                  <Facebook />
+                  <Facebook size={24} />
+                </a>
+                <a 
+                  href="https://www.instagram.com/boxed2built/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors" 
+                  aria-label="Instagram"
+                  onClick={() => handleSocialClick('instagram')}
+                >
+                  <Instagram size={24} />
                 </a>
                 <a 
                   href="mailto:boxed2builtco@gmail.com" 
-                  className="text-gray-400 hover:text-white" 
+                  className="text-gray-400 hover:text-white transition-colors" 
                   aria-label="Email"
                   onClick={() => handleSocialClick('email')}
                 >
-                  <Mail />
+                  <Mail size={24} />
                 </a>
                 <a 
                   href="tel:+16154034538" 
-                  className="text-gray-400 hover:text-white" 
+                  className="text-gray-400 hover:text-white transition-colors" 
                   aria-label="Phone"
                   onClick={() => handleSocialClick('phone')}
                 >
-                  <Phone />
+                  <Phone size={24} />
                 </a>
               </div>
             </div>
