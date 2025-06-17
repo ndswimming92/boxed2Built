@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://boxed2built.netlify.app/</loc>
+    <loc>https://boxed2built.com/</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://boxed2built.netlify.app/privacy-policy</loc>
+    <loc>https://boxed2built.com/privacy-policy</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://boxed2built.netlify.app/terms-of-service</loc>
+    <loc>https://boxed2built.com/terms-of-service</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
