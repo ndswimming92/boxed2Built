@@ -1,16 +1,23 @@
 import React from 'react';
-import { PenTool as Tool, CheckCircle, Clock } from 'lucide-react';
+import { PenTool as Tool, CheckCircle, Clock, ChevronDown } from 'lucide-react';
 
 const About: React.FC = () => {
+  const scrollToServices = () => {
+    const servicesSection = document.getElementById('services');
+    if (servicesSection) {
+      servicesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section id="about" className="py-20 bg-white">
+    <section id="about" className="py-16 bg-white relative">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Why Choose <span className="text-blue-600">Boxed2Built</span>?
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            We’re a local, family-run business serving Spring Hill and the surrounding area with honest, affordable furniture assembly. At Boxed2Built, we turn confusing instructions and scattered parts into solid, ready-to-use furniture—quickly and carefully. No stress, no mess, just reliable service you can count on.
+            We're a local, family-run business serving Spring Hill and the surrounding area with honest, affordable furniture assembly. At Boxed2Built, we turn confusing instructions and scattered parts into solid, ready-to-use furniture—quickly and carefully. No stress, no mess, just reliable service you can count on.
           </p>
         </div>
 
@@ -46,7 +53,7 @@ const About: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-16 bg-gray-50 p-8 rounded-lg shadow-md">
+        <div className="mt-12 bg-gray-50 p-8 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
               <img 
@@ -73,6 +80,18 @@ const About: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <button
+          onClick={scrollToServices}
+          className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition-colors"
+          aria-label="View our services and pricing"
+        >
+          <span className="text-sm font-medium mb-1">View Pricing</span>
+          <ChevronDown size={24} />
+        </button>
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SERVICES } from '../../constants';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
 
 const Services: React.FC = () => {
@@ -12,10 +12,17 @@ const Services: React.FC = () => {
     trackEvent('email-click-services');
   };
 
+  const scrollToBooking = () => {
+    const bookingSection = document.getElementById('booking');
+    if (bookingSection) {
+      bookingSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section id="services" className="py-20 bg-gray-50">
+    <section id="services" className="py-16 bg-gray-50 relative">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Our Services & Pricing
           </h2>
@@ -92,6 +99,18 @@ const Services: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <button
+          onClick={scrollToBooking}
+          className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition-colors"
+          aria-label="Book your service"
+        >
+          <span className="text-sm font-medium mb-1">Book Now</span>
+          <ChevronDown size={24} />
+        </button>
       </div>
     </section>
   );

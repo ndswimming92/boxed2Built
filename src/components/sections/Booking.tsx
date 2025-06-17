@@ -10,7 +10,7 @@ const Booking: React.FC = () => {
   };
 
   return (
-    <section id="booking" className="py-20 bg-gradient-to-br from-blue-600 to-blue-800">
+    <section id="booking" className="py-16 bg-gradient-to-br from-blue-600 to-blue-800">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center text-white">
           <div className="mb-12">
