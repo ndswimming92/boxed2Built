@@ -1,46 +1,46 @@
 import { ServiceItem, TestimonialItem } from '../types';
 
-// Service items data
+// Service items data - Updated with new pricing model
 export const SERVICES: ServiceItem[] = [
   {
     id: 1,
-    type: 'Chairs & Stools',
-    description: 'Quick assembly of dining chairs, desk chairs, bar stools, and more.',
-    startingPrice: '$25',
-    priceRange: '$25-45 per item',
-    includedItems: ['Assembly', 'Stability testing', 'Debris cleanup']
+    type: 'Small Furniture',
+    description: 'Nightstands, side tables, and dining chairs with quick assembly.',
+    startingPrice: '$35',
+    priceRange: '$35-85 per item',
+    includedItems: ['Unboxing', 'Full assembly', 'Leveling and stability check', 'Placement in room', 'Debris cleanup']
   },
   {
     id: 2,
-    type: 'Tables & Desks',
-    description: 'Dining tables, coffee tables, office desks, and vanities.',
-    startingPrice: '$65',
-    priceRange: '$65-120 per item',
-    includedItems: ['Assembly', 'Leveling', 'Stability testing', 'Debris cleanup']
+    type: 'Storage & Shelving',
+    description: 'Bookshelves, storage shelves, and media consoles.',
+    startingPrice: '$90',
+    priceRange: '$90-135 per item',
+    includedItems: ['Full assembly', 'Wall securing if needed', 'Full drawer alignment', 'Cable management setup', 'Debris cleanup']
   },
   {
     id: 3,
-    type: 'Beds & Frames',
-    description: 'Bed frames, bunk beds, daybeds, and headboards.',
-    startingPrice: '$85',
-    priceRange: '$85-150 per item',
-    includedItems: ['Assembly', 'Placement', 'Stability testing', 'Debris cleanup']
+    type: 'Tables & Desks',
+    description: 'Coffee tables, console tables, and office desks.',
+    startingPrice: '$75',
+    priceRange: '$75-165 per item',
+    includedItems: ['Assembly', 'Leveling', 'Cord pass-through setup', 'Chair placement', 'Stability testing']
   },
   {
     id: 4,
-    type: 'Storage & Shelving',
-    description: 'Bookcases, shelving units, TV stands, and cabinets.',
-    startingPrice: '$75',
-    priceRange: '$75-150 per item',
-    includedItems: ['Assembly', 'Wall mounting (if needed)', 'Leveling', 'Debris cleanup']
+    type: 'Dressers & Storage',
+    description: 'Multi-drawer dressers and large storage furniture.',
+    startingPrice: '$130',
+    priceRange: '$130-160 per item',
+    includedItems: ['Full assembly', 'Complete drawer alignment', 'Hardware setup', 'Anti-tip installation', 'Final inspection']
   },
   {
     id: 5,
-    type: 'Wardrobes & Dressers',
-    description: 'Clothing storage, dressers, wardrobes, and chests.',
-    startingPrice: '$95',
-    priceRange: '$95-180 per item',
-    includedItems: ['Assembly', 'Drawer alignment', 'Door adjustment', 'Debris cleanup']
+    type: 'Beds & Frames',
+    description: 'Simple bed frames, beds with drawers, and specialty beds.',
+    startingPrice: '$120',
+    priceRange: '$120-250 per item',
+    includedItems: ['Full in-room setup', 'Bed stability check', 'Screw retightening', 'Drawer alignment (if applicable)', 'Safety checks']
   }
 ];
 
@@ -67,4 +67,20 @@ export const TESTIMONIALS: TestimonialItem[] = [
     content: 'I needed office furniture assembled quickly for my new business location. Boxed2Built delivered exceptional service, and everything was perfectly assembled and positioned.',
     rating: 5
   }
+];
+
+// Detailed pricing breakdown for reference
+export const DETAILED_PRICING = [
+  { type: 'Nightstand / Side Table', startingPrice: '$65', range: '$65-85', included: 'Unbox, full assembly, and placement in room' },
+  { type: 'Chair / Dining Chair (min.)', startingPrice: '$35', range: '$35-50', included: 'Leveling and stability check' },
+  { type: 'Bookshelf / Storage Shelf', startingPrice: '$90', range: '$90-115', included: 'Secured to wall if needed' },
+  { type: 'Coffee Table / Console Table', startingPrice: '$75', range: '$75-100', included: 'Cable hole alignment shelf setup' },
+  { type: 'TV Stand / Media Console', startingPrice: '$100', range: '$100-135', included: 'Full drawer alignment' },
+  { type: 'Dresser (3-6 drawers)', startingPrice: '$130', range: '$130-160', included: 'Full drawer alignment & hardware setup' },
+  { type: 'Office Desk', startingPrice: '$130', range: '$130-165', included: 'Leveling, cord pass throughs, chair placement' },
+  { type: 'Bed Frame (simple)', startingPrice: '$120', range: '$120-150', included: 'Full in-room setup, bed stability check, screw retightening' },
+  { type: 'Bed Frame (with drawers)', startingPrice: '$150', range: '$150-200', included: 'Drawer alignment, optional mattress placement' },
+  { type: 'Crib / Toddler Bed', startingPrice: '$120', range: '$200-250', included: 'Safety and fastener check' },
+  { type: 'Bunk Bed / Loft Bed (local only)', startingPrice: '$200', range: '$200-250', included: 'Ladder installation, bedframe secure, stability test' },
+  { type: 'Travel Fee (20+ miles)', startingPrice: '+$25', range: '$35 beyond 1-2 hrs', included: 'Applies only to complex, oversized, or damaged builds' }
 ];
