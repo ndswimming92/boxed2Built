@@ -66,7 +66,7 @@ const Services: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-12 bg-blue-600 text-white p-8 rounded-lg shadow-md">
+        <div className="mt-12 bg-blue-600 text-white p-8 rounded-lg shadow-md mb-16">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-6 md:mb-0 md:mr-8">
               <h3 className="text-2xl font-bold mb-2">Need a Custom Quote?</h3>
@@ -101,15 +101,15 @@ const Services: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* Scroll indicator - improved positioning and visibility */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToBooking}
-          className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition-colors"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce"
           aria-label="Book your service"
         >
-          <span className="text-sm font-medium mb-1">Book Now</span>
-          <ChevronDown size={24} />
+          <span className="text-sm font-semibold mb-1">Book Now</span>
+          <ChevronDown size={24} className="text-blue-600" />
         </button>
       </div>
     </section>

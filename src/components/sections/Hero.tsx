@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-20 md:pt-40 md:pb-24 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -81,15 +81,15 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* Scroll indicator - improved positioning and visibility */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToAbout}
-          className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition-colors"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce"
           aria-label="Scroll to learn more"
         >
-          <span className="text-sm font-medium mb-1">Learn More</span>
-          <ChevronDown size={24} />
+          <span className="text-sm font-semibold mb-1">Learn More</span>
+          <ChevronDown size={24} className="text-blue-600" />
         </button>
       </div>
     </section>

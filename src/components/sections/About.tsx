@@ -53,7 +53,7 @@ const About: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-12 bg-gray-50 p-8 rounded-lg shadow-md">
+        <div className="mt-12 bg-gray-50 p-8 rounded-lg shadow-md mb-16">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
               <img 
@@ -82,15 +82,15 @@ const About: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* Scroll indicator - improved positioning and visibility */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToServices}
-          className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition-colors"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce"
           aria-label="View our services and pricing"
         >
-          <span className="text-sm font-medium mb-1">View Pricing</span>
-          <ChevronDown size={24} />
+          <span className="text-sm font-semibold mb-1">View Pricing</span>
+          <ChevronDown size={24} className="text-blue-600" />
         </button>
       </div>
     </section>
