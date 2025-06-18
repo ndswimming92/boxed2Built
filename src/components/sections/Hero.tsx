@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-20 md:pt-40 md:pb-24 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-24 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -72,7 +72,7 @@ const Hero: React.FC = () => {
                 className="w-full h-auto rounded"
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+            <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300 mb-8">
               <p className="text-green-800 font-medium text-sm">
                 "Built for you, stress-free!"
               </p>
@@ -81,15 +81,15 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator - improved positioning and visibility */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
+      {/* Scroll indicator - smaller and positioned below the banner */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToAbout}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-2 py-2 shadow-md hover:shadow-lg animate-bounce"
           aria-label="Scroll to learn more"
         >
-          <span className="text-sm font-semibold mb-1">Learn More</span>
-          <ChevronDown size={24} className="text-blue-600" />
+          <span className="text-xs font-medium mb-0.5">Learn More</span>
+          <ChevronDown size={16} className="text-blue-600" />
         </button>
       </div>
     </section>

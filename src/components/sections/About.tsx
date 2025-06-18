@@ -82,15 +82,15 @@ const About: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator - improved positioning and visibility */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
+      {/* Scroll indicator - smaller size */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToServices}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-2 py-2 shadow-md hover:shadow-lg animate-bounce"
           aria-label="View our services and pricing"
         >
-          <span className="text-sm font-semibold mb-1">View Pricing</span>
-          <ChevronDown size={24} className="text-blue-600" />
+          <span className="text-xs font-medium mb-0.5">View Pricing</span>
+          <ChevronDown size={16} className="text-blue-600" />
         </button>
       </div>
     </section>
