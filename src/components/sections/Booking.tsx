@@ -38,7 +38,7 @@ const Booking: React.FC = () => {
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="text-white" size={28} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">30-Minute Consultation</h3>
+              <h3 className="text-xl font-semibold mb-2">5-Minute Consultation!</h3>
               <p className="text-blue-100">
                 We'll discuss your project, provide a quote, and answer any questions
               </p>
