@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Facebook, Mail, Phone, Instagram } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, Star } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
@@ -63,16 +63,17 @@ const Footer: React.FC = () => {
                 </a>
               </address>
 
-              {/* ⭐ Google Review Link */}
+              {/* ⭐ Google Review Link with Icon */}
               <div className="text-sm text-center md:text-left mt-2">
                 <a
                   href="https://g.page/r/CW-qaf93r1ZuEAI/review"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block underline text-gray-400 hover:text-white transition"
+                  className="inline-flex items-center underline text-gray-400 hover:text-white transition"
                   onClick={() => trackEvent('footer-google-review-click')}
                 >
-                  ★ Leave us a Google review
+                  <Star size={18} className="text-yellow-400 mr-1 drop-shadow-sm" />
+                  Leave us a Google review
                 </a>
               </div>
 
