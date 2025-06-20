@@ -115,7 +115,7 @@ const Footer: React.FC = () => {
           </div>
 
           <p className="text-xs text-gray-400 text-center mt-4">
-            Serving Spring Hill, Franklin, Columbia, and surrounding Tennessee areas with professional furniture assembly and home setup.
+            Proudly serving Spring Hill, Franklin, Columbia, and nearby Tennessee communities with expert furniture assembly.
           </p>
 
           <div className="text-sm text-gray-400 text-center space-y-2 mt-4">
