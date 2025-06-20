@@ -12,69 +12,6 @@ const About: React.FC = () => {
   return (
     <section id="about" className="py-16 bg-white relative">
       <div className="container mx-auto px-4">
-        {/* Meet the Owner Section */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Meet the Owner
-            </h2>
-          </div>
-
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="lg:w-1/3">
-              <div className="bg-blue-50 p-6 rounded-lg shadow-md">
-                <img 
-                  src="https://images.pexels.com/photos/5824901/pexels-photo-5824901.jpeg?auto=compress&cs=tinysrgb&w=800&h=800&dpr=2" 
-                  alt="Nicholas Davidson - Owner of Boxed2Built" 
-                  className="w-full h-64 object-cover rounded-lg mb-4"
-                />
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Nicholas Davidson</h3>
-                  <p className="text-blue-600 font-medium">Founder & Owner</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:w-2/3">
-              <div className="prose prose-lg max-w-none">
-                <p className="text-gray-700 mb-6 leading-relaxed">
-                  Hi, I'm Nicholas Davidson, the hands (and heart) behind Boxed2Built.
-                </p>
-                
-                <p className="text-gray-700 mb-6 leading-relaxed">
-                  Ever since I was a kid, I've loved opening a new box of furniture and figuring out how it all fits together. What started as a fun challenge in my childhood has grown into a passion for helping families feel settled and stress-free in their homes. I know what it's like to have a packed schedule and a pile of furniture waiting—and I'm here to make sure you don't have to choose between your time and your peace of mind.
-                </p>
-
-                <p className="text-gray-700 leading-relaxed">
-                  I take pride in delivering reliable, friendly service with a family-first mindset—because I believe your home should be a place of rest, not one more thing to assemble.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mission Statement */}
-        <div className="bg-blue-600 text-white p-8 rounded-lg shadow-md mb-16">
-          <div className="text-center">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Our Mission</h3>
-            <p className="text-xl md:text-2xl font-light italic">
-              We turn boxes into comfort so families can focus on what matters most.
-            </p>
-          </div>
-        </div>
-
-        {/* Our Story */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Our Story</h3>
-          </div>
-          
-          <div className="prose prose-lg max-w-none text-gray-700">
-            <p className="mb-6 leading-relaxed">
-              Boxed2Built was born from a simple love of building. As a kid, I was always the first to tear into a new box of furniture, lay out the parts, and figure out how to bring it all together. There was something deeply satisfying about turning a pile of pieces into something useful, sturdy, and ready to enjoy. That feeling never left—and now, it's the heart of what we do every day.
-            </p>
-          </div>
-        </div>
 
         {/* Why We Exist */}
         <div className="bg-gray-50 p-8 rounded-lg shadow-md mb-16">
