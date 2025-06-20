@@ -9,8 +9,12 @@ const Header: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsScrolled(window.scrollY > 10);
+      }, 100);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -53,7 +57,9 @@ const Header: React.FC = () => {
 
   const handleBookingClick = () => {
     trackEvent('calendly-booking-click-header');
-    window.open('https://calendly.com/boxed2built/30min', '_blank');
+    setTimeout(() => {
+      window.open('https://calendly.com/boxed2built/30min', '_blank', 'noopener,noreferrer');
+    }, 150);
   };
 
   return (
@@ -66,15 +72,16 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <a 
-              href="/" 
+            <a
+              href="/"
               className="flex items-center"
               onClick={() => trackEvent('logo-click')}
               aria-label="Boxed2Built - Home"
             >
-              <img 
-                src="/Modern Minimalist Logo for Boxed2Built.png" 
-                alt="Boxed2Built - Professional Furniture Assembly" 
+              <img
+                src="/Modern Minimalist Logo for Boxed2Built.png"
+                loading="lazy"
+                alt="Boxed2Built - Professional Furniture Assembly"
                 title="Boxed2Built - Professional Furniture Assembly"
                 className="h-12 w-auto"
               />
@@ -82,36 +89,44 @@ const Header: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
-            <a 
-              href="#about" 
-              onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              aria-label="Learn about Boxed2Built"
-            >
-              About
-            </a>
-            <a 
-              href="#services" 
-              onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              aria-label="View our services and pricing"
-            >
-              Services
-            </a>
-            <a 
-              href="#booking" 
-              onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
-              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              aria-label="Book furniture assembly service"
-            >
-              Book Now
-            </a>
+          <nav className="hidden md:flex items-center" role="navigation" aria-label="Main navigation">
+            <ul className="flex space-x-8">
+              <li>
+                <a
+                  href="#about"
+                  onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
+                  aria-label="Learn about Boxed2Built"
+                >
+                  About
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#services"
+                  onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
+                  aria-label="View our services and pricing"
+                >
+                  Services
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#booking"
+                  onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
+                  aria-label="Book furniture assembly service"
+                >
+                  Book Now
+                </a>
+              </li>
+            </ul>
           </nav>
 
           <div className="hidden md:flex items-center">
-            <a 
-              href="tel:+16154034538" 
+            <a
+              href="tel:+16154034538"
               className="flex items-center text-gray-800 hover:text-blue-600 mr-4 transition-colors"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (615) 403-4538"
@@ -119,7 +134,7 @@ const Header: React.FC = () => {
               <Phone size={18} className="mr-2" />
               <span>(615) 403-4538</span>
             </a>
-            <Button 
+            <Button
               onClick={handleBookingClick}
               variant="primary"
               trackingLabel="book-consultation-header"
@@ -143,32 +158,32 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className={`md:hidden mt-4 pb-4 ${!isScrolled ? 'bg-white shadow-lg rounded-lg' : ''}`}>
             <nav className="flex flex-col space-y-4 p-4" role="navigation" aria-label="Mobile navigation">
-              <a 
-                href="#about" 
+              <a
+                href="#about"
                 onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 aria-label="Learn about Boxed2Built"
               >
                 About
               </a>
-              <a 
-                href="#services" 
+              <a
+                href="#services"
                 onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 aria-label="View our services and pricing"
               >
                 Services
               </a>
-              <a 
-                href="#booking" 
+              <a
+                href="#booking"
                 onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 aria-label="Book furniture assembly service"
               >
                 Book Now
               </a>
-              <a 
-                href="tel:+16154034538" 
+              <a
+                href="tel:+16154034538"
                 className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
                 onClick={() => trackEvent('phone-click-mobile-menu')}
                 aria-label="Call Boxed2Built at (615) 403-4538"
@@ -176,17 +191,20 @@ const Header: React.FC = () => {
                 <Phone size={18} className="mr-2" />
                 <span>(615) 403-4538</span>
               </a>
-              <Button 
-                onClick={() => {
-                  trackEvent('calendly-booking-click-mobile');
-                  window.open('https://calendly.com/boxed2built/30min', '_blank');
-                }}
-                variant="primary"
-                className="w-full justify-center"
-                trackingLabel="book-consultation-mobile"
+              <a
+                href="https://calendly.com/boxed2built/30min"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackEvent('calendly-booking-click-mobile')}
               >
-                Book Consultation
-              </Button>
+                <Button
+                  variant="primary"
+                  className="w-full justify-center"
+                  trackingLabel="book-consultation-mobile"
+                >
+                  Book Consultation
+                </Button>
+              </a>
             </nav>
           </div>
         )}
