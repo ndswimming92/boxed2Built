@@ -4,7 +4,7 @@ import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
 
-const currentYear = new Date().getFullYear(); // Moved outside component for efficiency
+const currentYear = new Date().getFullYear();
 
 const Footer: React.FC = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -58,10 +58,25 @@ const Footer: React.FC = () => {
                 itemType="https://schema.org/PostalAddress"
               >
                 <span itemProp="addressLocality">Spring Hill</span>, <span itemProp="addressRegion">TN</span><br />
-                <a href="tel:+16154034538" className="hover:text-white" itemProp="telephone">+1 (615) 403-4538</a>
+                <a href="tel:+16154034538" className="hover:text-white" itemProp="telephone">
+                  +1 (615) 403-4538
+                </a>
               </address>
 
-              <div className="flex space-x-4 justify-center md:justify-start mb-4">
+              {/* ⭐ Google Review Link */}
+              <div className="text-sm text-center md:text-left mt-2">
+                <a
+                  href="https://g.page/r/CW-qaf93r1ZuEAI/review"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block underline text-gray-400 hover:text-white transition"
+                  onClick={() => trackEvent('footer-google-review-click')}
+                >
+                  ★ Leave us a Google review
+                </a>
+              </div>
+
+              <div className="flex space-x-4 justify-center md:justify-start mt-4">
                 <a
                   href="https://www.facebook.com/BoxedToBuiltUSA"
                   target="_blank"
