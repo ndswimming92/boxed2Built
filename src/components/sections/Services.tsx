@@ -11,6 +11,7 @@ const Services: React.FC = () => {
 
   const handleEmailClick = () => {
     trackEvent('email-click-services');
+    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.';
   };
 
   const handleBookingClick = () => {
@@ -81,7 +82,7 @@ const Services: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
             <Button
               onClick={handleBookingClick}
               variant="white"
@@ -102,15 +103,23 @@ const Services: React.FC = () => {
                 Call Now
               </a>
               <a 
-                href="mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly." 
+                href="#" 
+                onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
-                onClick={handleEmailClick}
               >
                 <Mail size={20} className="mr-2" />
                 Email Quote
               </a>
             </div>
           </div>
+
+          {/* Terms notice */}
+          <p className="text-xs text-blue-100 text-center">
+            By submitting any request, you agree to our{' '}
+            <a href="/terms-of-service" className="text-white hover:text-blue-200 underline">
+              Terms of Service
+            </a>
+          </p>
         </div>
 
         {/* Service Areas */}

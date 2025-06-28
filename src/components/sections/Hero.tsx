@@ -13,6 +13,11 @@ const Hero: React.FC = () => {
     window.open('https://calendly.com/boxed2built/30min', '_blank');
   };
 
+  const handleEmailClick = () => {
+    trackEvent('email-click-hero-cta');
+    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.';
+  };
+
   const scrollToServices = () => {
     const servicesSection = document.getElementById('services');
     if (servicesSection) {
@@ -56,7 +61,7 @@ const Hero: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Button 
                   variant="primary" 
                   size="lg"
@@ -68,9 +73,22 @@ const Hero: React.FC = () => {
                   <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleEmailClick}
+                  className="group"
+                  trackingLabel="get-quote-hero"
+                >
+                  Get Free Quote
+                  <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center sm:justify-start mb-8">
                 <a 
                   href="tel:6154034538" 
-                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg px-6 py-3"
+                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg"
                   onClick={handlePhoneClick}
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -79,6 +97,14 @@ const Hero: React.FC = () => {
                   (615) 403-4538
                 </a>
               </div>
+
+              {/* Terms notice */}
+              <p className="text-xs text-gray-500 mb-6">
+                By submitting any request, you agree to our{' '}
+                <a href="/terms-of-service" className="text-blue-600 hover:text-blue-800 underline">
+                  Terms of Service
+                </a>
+              </p>
 
               {/* Enhanced pricing preview */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">

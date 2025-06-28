@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 
 const Booking: React.FC = () => {
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
   const handleBookingClick = () => {
+    if (!acceptTerms) {
+      alert('Please accept the Terms of Service to continue.');
+      return;
+    }
     trackEvent('calendly-booking-click');
     window.open('https://calendly.com/boxed2built/30min', '_blank');
+  };
+
+  const handleTermsClick = () => {
+    trackEvent('terms-link-click-booking');
   };
 
   return (
@@ -78,19 +88,46 @@ const Booking: React.FC = () => {
               </div>
             </div>
 
+            {/* Terms acceptance checkbox */}
+            <div className="mb-6">
+              <label className="flex items-start text-left">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-600">
+                  I accept the{' '}
+                  <a
+                    href="/terms-of-service"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                    onClick={handleTermsClick}
+                  >
+                    Terms of Service
+                  </a>
+                </span>
+              </label>
+            </div>
+
             <Button
               onClick={handleBookingClick}
               variant="primary"
               size="lg"
-              className="w-full md:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              className={`w-full md:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 ${
+                !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={!acceptTerms}
               trackingLabel="book-consultation"
             >
               <Calendar size={24} className="mr-3" />
               Book Your Free Consultation
             </Button>
 
-            <p className="text-sm text-gray-500 mt-4">
-              Available during the weekends • Serving Spring Hill and surrounding areas
+            <p className="text-xs text-gray-500 mt-4">
+              By submitting, you agree to our Terms of Service • Available during weekends • Serving Spring Hill and surrounding areas
             </p>
           </div>
         </div>
