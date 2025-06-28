@@ -3,7 +3,7 @@ import { trackEvent } from '../../utils/analytics';
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'white';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   onClick?: () => void;
@@ -28,6 +28,7 @@ const Button: React.FC<ButtonProps> = ({
     primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed',
     secondary: 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed',
     outline: 'bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-50 disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed',
+    white: 'bg-white text-blue-600 hover:bg-gray-50 shadow-md hover:shadow-lg border border-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed',
   };
   
   const sizeClasses = {

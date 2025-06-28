@@ -84,9 +84,9 @@ const Services: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
             <Button
               onClick={handleBookingClick}
-              variant="secondary"
+              variant="white"
               size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-100 font-semibold px-8 py-4"
+              className="font-semibold px-8 py-4"
               trackingLabel="book-consultation-services"
             >
               Book Free Consultation
