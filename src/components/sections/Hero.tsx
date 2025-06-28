@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, CheckCircle, Star } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 
@@ -40,7 +40,7 @@ const Hero: React.FC = () => {
                 From Boxed to Built – We handle the build, so you don't have to.
               </p>
 
-              {/* Trust indicators */}
+              {/* Trust indicators - removed 5-star rating */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
                   <CheckCircle size={18} className="text-green-600 mr-2" />
@@ -51,8 +51,8 @@ const Hero: React.FC = () => {
                   <span className="font-medium">Same-Day Available</span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <Star size={18} className="text-yellow-500 mr-1" />
-                  <span className="font-medium">5-Star Rated</span>
+                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <span className="font-medium">Local Spring Hill Service</span>
                 </div>
               </div>
               
