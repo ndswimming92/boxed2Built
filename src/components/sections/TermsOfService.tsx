@@ -40,7 +40,7 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">4. Cancellations and Rescheduling</h2>
         <p>
-          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee. Same-day rescheduling is available when possible for Spring Hill area services.
+          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee. Rescheduling is available when possible for Spring Hill area services.
         </p>
       </section>
 

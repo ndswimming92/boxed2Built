@@ -1,6 +1,6 @@
 import React from 'react';
 import { SERVICES } from '../../constants';
-import { Check, ChevronDown, Phone, Mail, Star, Clock, Shield } from 'lucide-react';
+import { Check, ChevronDown, Phone, Mail, Clock } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -36,26 +36,22 @@ const Services: React.FC = () => {
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
             Expert assembly for IKEA, Target, Walmart, and all major furniture brands in Spring Hill, TN. 
-            Transparent pricing, professional service, same-day availability.
+            Transparent pricing, professional service, flexible scheduling.
           </p>
           
-          {/* Trust indicators */}
+          {/* Trust indicators without ratings/licensing */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-6 text-sm">
             <div className="flex items-center text-gray-700">
-              <div className="flex items-center mr-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} className="text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <span className="font-medium">5.0 Google Rating</span>
-            </div>
-            <div className="flex items-center text-gray-700">
               <Clock size={16} className="text-blue-600 mr-2" />
-              <span className="font-medium">Same-Day Service</span>
+              <span className="font-medium">Flexible Scheduling</span>
             </div>
             <div className="flex items-center text-gray-700">
-              <Shield size={16} className="text-green-600 mr-2" />
-              <span className="font-medium">Licensed & Insured</span>
+              <Check size={16} className="text-green-600 mr-2" />
+              <span className="font-medium">Professional Service</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <Check size={16} className="text-green-600 mr-2" />
+              <span className="font-medium">Free Quotes</span>
             </div>
           </div>
         </div>
@@ -156,7 +152,7 @@ const Services: React.FC = () => {
             <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood
           </p>
           <p className="text-sm text-gray-500">
-            Also serving: Nashville Metro Area • Williamson County • Maury County • Same-day service available
+            Also serving: Nashville Metro Area • Williamson County • Maury County • Flexible scheduling available
           </p>
         </div>
 
@@ -173,12 +169,12 @@ const Services: React.FC = () => {
               <p className="text-gray-600 text-sm">All services include unboxing, complete assembly, placement in your desired location, debris cleanup, and a final quality check.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Do you offer same-day service?</h4>
-              <p className="text-gray-600 text-sm">Yes, same-day furniture assembly is available in Spring Hill and surrounding areas when scheduled in advance.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
+              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (615) 403-4538 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Are you licensed and insured?</h4>
-              <p className="text-gray-600 text-sm">Yes, we are fully licensed and insured for your peace of mind and protection during all furniture assembly services.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>
+              <p className="text-gray-600 text-sm">Yes, we offer volume discounts for multiple furniture items. Contact us for a custom quote on larger projects.</p>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle, Phone, Star } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Phone } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -37,23 +37,19 @@ const Booking: React.FC = () => {
               Book a free consultation to discuss your project and get an accurate quote.
             </p>
             
-            {/* Trust indicators */}
+            {/* Trust indicators without ratings/licensing */}
             <div className="flex flex-wrap justify-center items-center gap-6 mt-6 text-sm">
               <div className="flex items-center text-blue-100">
-                <div className="flex items-center mr-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <span>5.0 Google Rating</span>
+                <CheckCircle size={16} className="mr-2" />
+                <span>Professional Service</span>
               </div>
               <div className="flex items-center text-blue-100">
                 <CheckCircle size={16} className="mr-2" />
-                <span>Same-Day Available</span>
+                <span>Free Quotes</span>
               </div>
               <div className="flex items-center text-blue-100">
                 <CheckCircle size={16} className="mr-2" />
-                <span>Licensed & Insured</span>
+                <span>Flexible Scheduling</span>
               </div>
             </div>
           </div>
@@ -114,7 +110,7 @@ const Booking: React.FC = () => {
               </div>
               <div className="flex items-center justify-center text-gray-700">
                 <CheckCircle size={20} className="text-green-600 mr-3" />
-                <span>Same-day service available in Spring Hill</span>
+                <span>Serving Spring Hill and surrounding areas</span>
               </div>
             </div>
 
@@ -170,7 +166,7 @@ const Booking: React.FC = () => {
             <p className="text-xs text-gray-500 mt-4">
               By submitting, you agree to our Terms of Service • Available weekends • 
               Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas • 
-              Licensed & Insured Furniture Assembly Service
+              Professional Furniture Assembly Service
             </p>
           </div>
         </div>

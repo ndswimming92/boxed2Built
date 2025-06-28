@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Users, Clock, CheckCircle, ChevronDown, Star, Award, Shield } from 'lucide-react';
+import { Heart, Users, Clock, CheckCircle, ChevronDown, Award } from 'lucide-react';
 
 const About: React.FC = () => {
   const scrollToBooking = () => {
@@ -30,30 +30,16 @@ const About: React.FC = () => {
             </p>
           </div>
 
-          {/* Enhanced trust indicators */}
+          {/* Enhanced trust indicators without ratings/licensing */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">5-Star Google Reviews</h4>
-              <p className="text-gray-600">Consistently rated 5 stars by satisfied customers across Spring Hill and surrounding areas</p>
-            </div>
-
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center justify-center mb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                   <Award className="text-blue-600" size={32} />
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Licensed & Insured</h4>
-              <p className="text-gray-600">Fully licensed and insured furniture assembly service for your complete protection</p>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Professional Service</h4>
+              <p className="text-gray-600">Expert furniture assembly with attention to detail and quality craftsmanship</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -62,8 +48,18 @@ const About: React.FC = () => {
                   <Clock className="text-green-600" size={32} />
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Same-Day Available</h4>
-              <p className="text-gray-600">Fast, reliable service with same-day assembly available throughout Tennessee</p>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Flexible Scheduling</h4>
+              <p className="text-gray-600">Convenient scheduling that works with your busy lifestyle and timeline</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Users className="text-purple-600" size={32} />
+                </div>
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Local Service</h4>
+              <p className="text-gray-600">Proudly serving Spring Hill and surrounding Tennessee communities</p>
             </div>
           </div>
 
@@ -84,7 +80,7 @@ const About: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-600">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                  <Shield className="text-green-600" size={24} />
+                  <CheckCircle className="text-green-600" size={24} />
                 </div>
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900">Professional & Clean</h4>

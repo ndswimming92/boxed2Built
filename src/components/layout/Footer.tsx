@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Facebook, Mail, Phone, Instagram, Star, MapPin } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, MapPin } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
+import { getCalendlyUrl, getSocialUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
 
@@ -28,10 +28,6 @@ const Footer: React.FC = () => {
   const handleBookingClick = () => {
     trackEvent('footer-book-now');
     window.open(getCalendlyUrl('footer'), '_blank');
-  };
-
-  const handleGoogleReviewClick = () => {
-    trackEvent('footer-google-review-click');
   };
 
   return (
@@ -63,7 +59,7 @@ const Footer: React.FC = () => {
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
                 Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
-                Expert IKEA, Target, Walmart furniture assembly. Licensed, insured, same-day service available.
+                Expert IKEA, Target, Walmart furniture assembly with flexible scheduling.
               </p>
 
               <address
@@ -83,20 +79,6 @@ const Footer: React.FC = () => {
                   (615) 403-4538
                 </a>
               </address>
-
-              {/* Google Review Link */}
-              <div className="text-sm text-center md:text-left mt-2">
-                <a
-                  href={getGoogleReviewUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center underline text-gray-400 hover:text-white transition"
-                  onClick={handleGoogleReviewClick}
-                >
-                  <Star size={18} className="text-yellow-400 mr-1 drop-shadow-sm" />
-                  Leave us a Google review
-                </a>
-              </div>
             </div>
 
             {/* Services */}
@@ -110,7 +92,7 @@ const Footer: React.FC = () => {
                 <li>Dresser Assembly</li>
                 <li>Desk & Table Assembly</li>
                 <li>Bookshelf Assembly</li>
-                <li>Same-Day Service</li>
+                <li>Professional Service</li>
               </ul>
             </div>
 
@@ -189,7 +171,7 @@ const Footer: React.FC = () => {
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-400 text-center mt-4">
             Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
-            Brentwood, and surrounding Tennessee communities. Licensed and insured IKEA, Target, Walmart furniture assembly experts.
+            Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly.
           </p>
 
           <div className="text-sm text-gray-400 text-center space-y-2 mt-4">
