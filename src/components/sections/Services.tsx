@@ -1,6 +1,6 @@
 import React from 'react';
 import { SERVICES } from '../../constants';
-import { Check, ChevronDown, Phone, Mail } from 'lucide-react';
+import { Check, ChevronDown, Phone, Mail, Star, Clock, Shield } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -32,18 +32,43 @@ const Services: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Our Services & Pricing
+            Professional Furniture Assembly Services & Pricing
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Transparent pricing, professional service. From basic chairs to full-size wardrobes, we assemble it all—quickly and professionally.
+          <p className="text-gray-600 max-w-3xl mx-auto text-lg">
+            Expert assembly for IKEA, Target, Walmart, and all major furniture brands in Spring Hill, TN. 
+            Transparent pricing, professional service, same-day availability.
           </p>
+          
+          {/* Trust indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-6 text-sm">
+            <div className="flex items-center text-gray-700">
+              <div className="flex items-center mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={14} className="text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <span className="font-medium">5.0 Google Rating</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <Clock size={16} className="text-blue-600 mr-2" />
+              <span className="font-medium">Same-Day Service</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <Shield size={16} className="text-green-600 mr-2" />
+              <span className="font-medium">Licensed & Insured</span>
+            </div>
+          </div>
         </div>
 
+        {/* Enhanced service cards with more keywords */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          {SERVICES.map((service) => (
+          {SERVICES.map((service, index) => (
             <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{service.type}</h3>
+                <div className="flex items-center mb-3">
+                  <h3 className="text-xl font-bold text-gray-900">{service.type} Assembly</h3>
+                  {index === 0 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
+                </div>
                 <p className="text-gray-600 mb-4">{service.description}</p>
                 
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 pb-4 border-b border-gray-200">
@@ -60,7 +85,7 @@ const Services: React.FC = () => {
                   )}
                 </div>
                 
-                <h4 className="font-medium text-gray-800 mb-2">What's Included:</h4>
+                <h4 className="font-medium text-gray-800 mb-2">Professional Service Includes:</h4>
                 <ul className="space-y-2">
                   {service.includedItems.map((item, index) => (
                     <li key={index} className="flex items-start">
@@ -74,12 +99,13 @@ const Services: React.FC = () => {
           ))}
         </div>
 
-        {/* Enhanced CTA Section */}
+        {/* Enhanced CTA Section with more local keywords */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Get Started?</h3>
-            <p className="text-blue-100 text-lg max-w-2xl mx-auto">
-              Book a free consultation or get a custom quote for multiple items. We offer discounts for large orders!
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready for Expert Furniture Assembly?</h3>
+            <p className="text-blue-100 text-lg max-w-3xl mx-auto">
+              Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas. 
+              Book a free consultation or get a custom quote for multiple items. Volume discounts available!
             </p>
           </div>
           
@@ -101,7 +127,7 @@ const Services: React.FC = () => {
                 onClick={handlePhoneClick}
               >
                 <Phone size={20} className="mr-2" />
-                Call Now
+                Call (615) 403-4538
               </a>
               <a 
                 href="#" 
@@ -123,19 +149,47 @@ const Services: React.FC = () => {
           </p>
         </div>
 
-        {/* Service Areas */}
+        {/* Enhanced Service Areas with more local keywords */}
         <div className="bg-gray-50 p-6 rounded-lg text-center">
-          <h4 className="font-semibold text-gray-900 mb-2">Serving Spring Hill & Surrounding Areas</h4>
-          <p className="text-gray-600">Columbia • Franklin • Thompson's Station • Brentwood</p>
+          <h4 className="font-semibold text-gray-900 mb-2">Professional Furniture Assembly Service Areas in Tennessee</h4>
+          <p className="text-gray-600 mb-2">
+            <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood
+          </p>
+          <p className="text-sm text-gray-500">
+            Also serving: Nashville Metro Area • Williamson County • Maury County • Same-day service available
+          </p>
+        </div>
+
+        {/* FAQ Section for SEO */}
+        <div className="mt-12 bg-white p-8 rounded-lg shadow-md">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Frequently Asked Questions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Do you assemble IKEA furniture?</h4>
+              <p className="text-gray-600 text-sm">Yes, we specialize in IKEA furniture assembly and are experienced with all IKEA product lines including beds, dressers, desks, and storage solutions.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">What's included in the assembly service?</h4>
+              <p className="text-gray-600 text-sm">All services include unboxing, complete assembly, placement in your desired location, debris cleanup, and a final quality check.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Do you offer same-day service?</h4>
+              <p className="text-gray-600 text-sm">Yes, same-day furniture assembly is available in Spring Hill and surrounding areas when scheduled in advance.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Are you licensed and insured?</h4>
+              <p className="text-gray-600 text-sm">Yes, we are fully licensed and insured for your peace of mind and protection during all furniture assembly services.</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Scroll indicator - positioned to avoid overlap */}
+      {/* Enhanced scroll indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToAbout}
           className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
-          aria-label="Learn more about us"
+          aria-label="Learn more about our professional furniture assembly company"
         >
           <span className="text-sm font-medium mb-1">About Us</span>
           <ChevronDown size={18} className="text-blue-600" />

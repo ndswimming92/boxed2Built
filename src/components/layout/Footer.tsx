@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Facebook, Mail, Phone, Instagram, Star } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, Star, MapPin } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
@@ -45,20 +45,25 @@ const Footer: React.FC = () => {
         <meta itemProp="telephone" content="+16154034538" />
         <meta itemProp="email" content="boxed2builtco@gmail.com" />
         <meta itemProp="url" content="https://www.boxed2built.com" />
+        <meta itemProp="priceRange" content="$37-$263" />
+        <meta itemProp="paymentAccepted" content="Cash, Credit Card, Debit Card" />
 
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between mb-8">
-            <div className="mb-8 md:mb-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            
+            {/* Company Info */}
+            <div className="md:col-span-1">
               <div className="flex items-center justify-center md:justify-start mb-4">
                 <img
                   src="/Modern Minimalist Logo for Boxed2Built.png"
-                  alt="Boxed2Built company logo"
+                  alt="Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN"
                   loading="lazy"
                   className="h-12 w-auto"
                 />
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
-                Professional furniture assembly in Spring Hill, TN and surrounding areas. From box to built, we make home setup quick, easy, and stress-free.
+                Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
+                Expert IKEA, Target, Walmart furniture assembly. Licensed, insured, same-day service available.
               </p>
 
               <address
@@ -67,13 +72,19 @@ const Footer: React.FC = () => {
                 itemScope
                 itemType="https://schema.org/PostalAddress"
               >
-                <span itemProp="addressLocality">Spring Hill</span>, <span itemProp="addressRegion">TN</span><br />
-                <a href="tel:+16154034538" className="hover:text-white" itemProp="telephone">
-                  +1 (615) 403-4538
+                <div className="flex items-center justify-center md:justify-start mb-2">
+                  <MapPin size={16} className="mr-2" />
+                  <span>
+                    <span itemProp="addressLocality">Spring Hill</span>, <span itemProp="addressRegion">TN</span>
+                  </span>
+                </div>
+                <a href="tel:+16154034538" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
+                  <Phone size={16} className="mr-2" />
+                  (615) 403-4538
                 </a>
               </address>
 
-              {/* ⭐ Google Review Link with Icon */}
+              {/* Google Review Link */}
               <div className="text-sm text-center md:text-left mt-2">
                 <a
                   href={getGoogleReviewUrl()}
@@ -86,8 +97,43 @@ const Footer: React.FC = () => {
                   Leave us a Google review
                 </a>
               </div>
+            </div>
 
-              <div className="flex space-x-4 justify-center md:justify-start mt-4">
+            {/* Services */}
+            <div className="md:col-span-1">
+              <h4 className="font-semibold text-white mb-4">Our Services</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>IKEA Furniture Assembly</li>
+                <li>Target Furniture Assembly</li>
+                <li>Walmart Furniture Assembly</li>
+                <li>Bed Frame Assembly</li>
+                <li>Dresser Assembly</li>
+                <li>Desk & Table Assembly</li>
+                <li>Bookshelf Assembly</li>
+                <li>Same-Day Service</li>
+              </ul>
+            </div>
+
+            {/* Service Areas */}
+            <div className="md:col-span-1">
+              <h4 className="font-semibold text-white mb-4">Service Areas</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>Spring Hill, TN</li>
+                <li>Columbia, TN</li>
+                <li>Franklin, TN</li>
+                <li>Thompson's Station, TN</li>
+                <li>Brentwood, TN</li>
+                <li>Nashville Metro Area</li>
+                <li>Williamson County</li>
+                <li>Maury County</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Social Links and CTA */}
+          <div className="border-t border-gray-800 pt-8 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="flex space-x-4 justify-center md:justify-start mb-6 md:mb-0">
                 <a
                   href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
                   target="_blank"
@@ -126,12 +172,12 @@ const Footer: React.FC = () => {
                 </a>
               </div>
 
-              <div className="text-center md:text-left mt-6">
+              <div className="text-center md:text-right">
                 <button
                   onClick={handleBookingClick}
-                  className="inline-block bg-white text-gray-900 font-semibold py-2 px-4 rounded hover:bg-gray-200 transition"
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg"
                 >
-                  Book a Free Appointment →
+                  Book Free Consultation →
                 </button>
                 <p className="text-xs text-gray-400 mt-2">
                   By booking, you agree to our Terms of Service
@@ -140,8 +186,10 @@ const Footer: React.FC = () => {
             </div>
           </div>
 
+          {/* Enhanced service area description */}
           <p className="text-xs text-gray-400 text-center mt-4">
-            Proudly serving Spring Hill, Franklin, Columbia, and nearby Tennessee communities with expert furniture assembly.
+            Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
+            Brentwood, and surrounding Tennessee communities. Licensed and insured IKEA, Target, Walmart furniture assembly experts.
           </p>
 
           <div className="text-sm text-gray-400 text-center space-y-2 mt-4">

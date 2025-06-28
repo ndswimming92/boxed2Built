@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle, DollarSign, Star } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -37,20 +37,26 @@ const Hero: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <div className="animate-fadeIn">
+              {/* Enhanced H1 with more keywords */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
-                Hassle-Free Furniture Assembly
-                <span className="block text-blue-600">Done For You</span>
+                Professional Furniture Assembly Service
+                <span className="block text-blue-600">Spring Hill, TN</span>
               </h1>
               
+              {/* Enhanced subtitle with local keywords */}
               <p className="text-xl md:text-2xl text-gray-600 mb-6">
-                From Boxed to Built – We handle the build, so you don't have to.
+                Expert IKEA, Target & Walmart furniture assembly. Same-day service available in Spring Hill, Columbia & Franklin.
               </p>
 
-              {/* Trust indicators */}
+              {/* Enhanced trust indicators with review stars */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
-                  <CheckCircle size={18} className="text-green-600 mr-2" />
-                  <span className="font-medium">Professional Service</span>
+                  <div className="flex items-center mr-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} className="text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <span className="font-medium">5.0 Rating</span>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <CheckCircle size={18} className="text-green-600 mr-2" />
@@ -58,7 +64,7 @@ const Hero: React.FC = () => {
                 </div>
                 <div className="flex items-center text-gray-700">
                   <CheckCircle size={18} className="text-green-600 mr-2" />
-                  <span className="font-medium">Local Spring Hill Service</span>
+                  <span className="font-medium">Licensed & Insured</span>
                 </div>
               </div>
               
@@ -95,7 +101,7 @@ const Hero: React.FC = () => {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  (615) 403-4538
+                  Call (615) 403-4538 for Immediate Service
                 </a>
               </div>
 
@@ -113,62 +119,65 @@ const Hero: React.FC = () => {
             <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300 mb-8">
               <img 
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                alt="Professional furniture assembly service" 
+                alt="Professional furniture assembly service in Spring Hill Tennessee" 
                 className="w-full h-auto rounded"
+                loading="eager"
+                width="630"
+                height="420"
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
               <p className="text-green-800 font-medium text-sm">
-                "Built for you, stress-free!"
+                "Expert assembly, stress-free experience!"
               </p>
             </div>
           </div>
         </div>
 
-        {/* Enhanced pricing preview - Centered on desktop */}
+        {/* Enhanced pricing preview with more keywords */}
         <div className="flex justify-center mt-16">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-lg w-full">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
               <div className="flex items-center justify-center">
                 <DollarSign size={20} className="mr-2" />
-                <h3 className="font-semibold">Transparent Pricing</h3>
+                <h3 className="font-semibold">Transparent Furniture Assembly Pricing</h3>
               </div>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Chairs</div>
+                  <div className="text-sm text-gray-600 mb-1">Dining Chairs</div>
                   <div className="text-xl font-bold text-blue-600">$37+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Desks</div>
+                  <div className="text-sm text-gray-600 mb-1">Office Desks</div>
                   <div className="text-xl font-bold text-green-600">$79+</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Dressers</div>
+                  <div className="text-sm text-gray-600 mb-1">IKEA Dressers</div>
                   <div className="text-xl font-bold text-purple-600">$137+</div>
                 </div>
                 <div className="text-center p-3 bg-amber-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Beds</div>
+                  <div className="text-sm text-gray-600 mb-1">Bed Frames</div>
                   <div className="text-xl font-bold text-amber-600">$126+</div>
                 </div>
               </div>
               <div className="text-center mt-4">
-                <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
+                <p className="text-sm text-gray-500">All prices include professional assembly, cleanup & placement in your home</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator - positioned to avoid overlap */}
+      {/* Enhanced scroll indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToServices}
           className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
-          aria-label="View pricing and services"
+          aria-label="View detailed furniture assembly pricing and services"
         >
-          <span className="text-sm font-medium mb-1">View Pricing</span>
+          <span className="text-sm font-medium mb-1">View All Services</span>
           <ChevronDown size={18} className="text-blue-600" />
         </button>
       </div>

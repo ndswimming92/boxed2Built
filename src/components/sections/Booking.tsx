@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Phone, Star } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -20,18 +20,42 @@ const Booking: React.FC = () => {
     trackEvent('terms-link-click-booking');
   };
 
+  const handlePhoneClick = () => {
+    trackEvent('phone-click-booking');
+  };
+
   return (
     <section id="booking" className="py-16 bg-gradient-to-br from-blue-600 to-blue-800">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center text-white">
           <div className="mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Get Started?
+              Book Your Professional Furniture Assembly Service
             </h2>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Book a free consultation to discuss your furniture assembly needs. 
-              We'll provide an accurate quote and schedule your service at your convenience.
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Ready for expert IKEA, Target, or Walmart furniture assembly in Spring Hill, TN? 
+              Book a free consultation to discuss your project and get an accurate quote.
             </p>
+            
+            {/* Trust indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-6 mt-6 text-sm">
+              <div className="flex items-center text-blue-100">
+                <div className="flex items-center mr-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={14} className="text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <span>5.0 Google Rating</span>
+              </div>
+              <div className="flex items-center text-blue-100">
+                <CheckCircle size={16} className="mr-2" />
+                <span>Same-Day Available</span>
+              </div>
+              <div className="flex items-center text-blue-100">
+                <CheckCircle size={16} className="mr-2" />
+                <span>Licensed & Insured</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -39,9 +63,9 @@ const Booking: React.FC = () => {
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="text-white" size={28} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Schedule Online</h3>
+              <h3 className="text-xl font-semibold mb-2">Easy Online Scheduling</h3>
               <p className="text-blue-100">
-                Pick a time that works for you using our easy online booking system
+                Pick a convenient time using our simple online booking system for furniture assembly
               </p>
             </div>
 
@@ -49,9 +73,9 @@ const Booking: React.FC = () => {
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="text-white" size={28} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">5-Minute Consultation!</h3>
+              <h3 className="text-xl font-semibold mb-2">Free 5-Minute Consultation</h3>
               <p className="text-blue-100">
-                We'll discuss your project, provide a quote, and answer any questions
+                We'll discuss your furniture assembly project, provide a transparent quote, and answer questions
               </p>
             </div>
 
@@ -59,33 +83,38 @@ const Booking: React.FC = () => {
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="text-white" size={28} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Get It Done</h3>
+              <h3 className="text-xl font-semibold mb-2">Professional Assembly</h3>
               <p className="text-blue-100">
-                We'll handle the assembly while you focus on what matters most
+                Expert assembly service while you focus on what matters most to your family
               </p>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
             <div className="text-gray-900 mb-6">
-              <h3 className="text-2xl font-bold mb-3">Book Your Free Consultation</h3>
+              <h3 className="text-2xl font-bold mb-3">Book Your Free Furniture Assembly Consultation</h3>
               <p className="text-gray-600">
-                No commitment required. We'll discuss your project and provide a transparent quote.
+                No commitment required. We'll discuss your IKEA, Target, or Walmart furniture assembly needs 
+                and provide a transparent, upfront quote for Spring Hill area service.
               </p>
             </div>
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center justify-center text-gray-700">
                 <CheckCircle size={20} className="text-green-600 mr-3" />
-                <span>Free consultation and quote</span>
+                <span>Free consultation and detailed quote</span>
               </div>
               <div className="flex items-center justify-center text-gray-700">
                 <CheckCircle size={20} className="text-green-600 mr-3" />
-                <span>Flexible scheduling options</span>
+                <span>Flexible scheduling including weekends</span>
               </div>
               <div className="flex items-center justify-center text-gray-700">
                 <CheckCircle size={20} className="text-green-600 mr-3" />
                 <span>Professional service guarantee</span>
+              </div>
+              <div className="flex items-center justify-center text-gray-700">
+                <CheckCircle size={20} className="text-green-600 mr-3" />
+                <span>Same-day service available in Spring Hill</span>
               </div>
             </div>
 
@@ -113,22 +142,35 @@ const Booking: React.FC = () => {
               </label>
             </div>
 
-            <Button
-              onClick={handleBookingClick}
-              variant="primary"
-              size="lg"
-              className={`w-full md:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 ${
-                !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              disabled={!acceptTerms}
-              trackingLabel="book-consultation"
-            >
-              <Calendar size={24} className="mr-3" />
-              Book Your Free Consultation
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+              <Button
+                onClick={handleBookingClick}
+                variant="primary"
+                size="lg"
+                className={`px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 ${
+                  !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={!acceptTerms}
+                trackingLabel="book-consultation"
+              >
+                <Calendar size={24} className="mr-3" />
+                Book Free Consultation
+              </Button>
+
+              <a
+                href="tel:+16154034538"
+                onClick={handlePhoneClick}
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              >
+                <Phone size={24} className="mr-3" />
+                Call (615) 403-4538
+              </a>
+            </div>
 
             <p className="text-xs text-gray-500 mt-4">
-              By submitting, you agree to our Terms of Service • Available during weekends • Serving Spring Hill and surrounding areas
+              By submitting, you agree to our Terms of Service • Available weekends • 
+              Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas • 
+              Licensed & Insured Furniture Assembly Service
             </p>
           </div>
         </div>
