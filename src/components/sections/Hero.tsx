@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, CheckCircle } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 
@@ -21,7 +21,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -40,7 +40,7 @@ const Hero: React.FC = () => {
                 From Boxed to Built – We handle the build, so you don't have to.
               </p>
 
-              {/* Trust indicators - removed 5-star rating */}
+              {/* Trust indicators */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
                   <CheckCircle size={18} className="text-green-600 mr-2" />
@@ -80,25 +80,35 @@ const Hero: React.FC = () => {
                 </a>
               </div>
 
-              {/* Quick pricing preview - Updated with new prices */}
-              <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-4 shadow-md">
-                <p className="text-sm text-gray-600 mb-2">Starting prices:</p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-900">Chairs:</span>
-                    <span className="text-blue-600 ml-2">$37+</span>
+              {/* Enhanced pricing preview */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
+                  <div className="flex items-center">
+                    <DollarSign size={20} className="mr-2" />
+                    <h3 className="font-semibold">Transparent Pricing</h3>
                   </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Dressers:</span>
-                    <span className="text-blue-600 ml-2">$137+</span>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-sm text-gray-600 mb-1">Chairs</div>
+                      <div className="text-xl font-bold text-blue-600">$37+</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-sm text-gray-600 mb-1">Desks</div>
+                      <div className="text-xl font-bold text-green-600">$79+</div>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <div className="text-sm text-gray-600 mb-1">Dressers</div>
+                      <div className="text-xl font-bold text-purple-600">$137+</div>
+                    </div>
+                    <div className="text-center p-3 bg-amber-50 rounded-lg">
+                      <div className="text-sm text-gray-600 mb-1">Beds</div>
+                      <div className="text-xl font-bold text-amber-600">$126+</div>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Desks:</span>
-                    <span className="text-blue-600 ml-2">$79+</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Beds:</span>
-                    <span className="text-blue-600 ml-2">$126+</span>
+                  <div className="text-center mt-4">
+                    <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
                   </div>
                 </div>
               </div>
@@ -122,15 +132,15 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+      {/* Scroll indicator - positioned to avoid overlap */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToServices}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-3 py-2 shadow-md hover:shadow-lg animate-bounce"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
           aria-label="View pricing and services"
         >
-          <span className="text-xs font-medium mb-0.5">View Pricing</span>
-          <ChevronDown size={16} className="text-blue-600" />
+          <span className="text-sm font-medium mb-1">View Pricing</span>
+          <ChevronDown size={18} className="text-blue-600" />
         </button>
       </div>
     </section>

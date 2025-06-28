@@ -10,7 +10,7 @@ const About: React.FC = () => {
   };
 
   return (
-    <section id="about" className="py-16 bg-gray-50 relative">
+    <section id="about" className="py-16 bg-gray-50 relative pb-24">
       <div className="container mx-auto px-4">
 
         {/* Streamlined Why We Exist */}
@@ -85,15 +85,15 @@ const About: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+      {/* Scroll indicator - positioned to avoid overlap */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToBooking}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-90 backdrop-blur-sm rounded-full px-2 py-2 shadow-md hover:shadow-lg animate-bounce"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
           aria-label="Book your service"
         >
-          <span className="text-xs font-medium mb-0.5">Book Now</span>
-          <ChevronDown size={16} className="text-blue-600" />
+          <span className="text-sm font-medium mb-1">Book Now</span>
+          <ChevronDown size={18} className="text-blue-600" />
         </button>
       </div>
     </section>
