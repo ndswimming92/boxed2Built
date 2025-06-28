@@ -80,25 +80,25 @@ const Hero: React.FC = () => {
                 </a>
               </div>
 
-              {/* Quick pricing preview */}
+              {/* Quick pricing preview - Updated with new prices */}
               <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-4 shadow-md">
                 <p className="text-sm text-gray-600 mb-2">Starting prices:</p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-gray-900">Chairs:</span>
-                    <span className="text-blue-600 ml-2">$35+</span>
+                    <span className="text-blue-600 ml-2">$37+</span>
                   </div>
                   <div>
                     <span className="font-medium text-gray-900">Dressers:</span>
-                    <span className="text-blue-600 ml-2">$130+</span>
+                    <span className="text-blue-600 ml-2">$137+</span>
                   </div>
                   <div>
                     <span className="font-medium text-gray-900">Desks:</span>
-                    <span className="text-blue-600 ml-2">$75+</span>
+                    <span className="text-blue-600 ml-2">$79+</span>
                   </div>
                   <div>
                     <span className="font-medium text-gray-900">Beds:</span>
-                    <span className="text-blue-600 ml-2">$120+</span>
+                    <span className="text-blue-600 ml-2">$126+</span>
                   </div>
                 </div>
               </div>
