@@ -88,8 +88,8 @@ const Booking: React.FC = () => {
               </div>
             </div>
 
-            {/* Terms acceptance checkbox */}
-            <div className="mb-6">
+            {/* Terms acceptance checkbox - Centered */}
+            <div className="mb-6 flex justify-center">
               <label className="flex items-start text-left">
                 <input
                   type="checkbox"

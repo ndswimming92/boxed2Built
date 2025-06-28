@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
-import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 
 const Header: React.FC = () => {
@@ -53,13 +52,6 @@ const Header: React.FC = () => {
 
   const handlePhoneClick = () => {
     trackEvent('phone-click-header');
-  };
-
-  const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-header');
-    setTimeout(() => {
-      window.open('https://calendly.com/boxed2built/30min', '_blank', 'noopener,noreferrer');
-    }, 150);
   };
 
   return (
@@ -127,20 +119,13 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center">
             <a
               href="tel:+16154034538"
-              className="flex items-center text-gray-800 hover:text-blue-600 mr-4 transition-colors"
+              className="flex items-center text-gray-800 hover:text-blue-600 transition-colors"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (615) 403-4538"
             >
               <Phone size={18} className="mr-2" />
               <span>(615) 403-4538</span>
             </a>
-            <Button
-              onClick={handleBookingClick}
-              variant="primary"
-              trackingLabel="book-consultation-header"
-            >
-              Book Consultation
-            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -190,20 +175,6 @@ const Header: React.FC = () => {
               >
                 <Phone size={18} className="mr-2" />
                 <span>(615) 403-4538</span>
-              </a>
-              <a
-                href="https://calendly.com/boxed2built/30min"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackEvent('calendly-booking-click-mobile')}
-              >
-                <Button
-                  variant="primary"
-                  className="w-full justify-center"
-                  trackingLabel="book-consultation-mobile"
-                >
-                  Book Consultation
-                </Button>
               </a>
             </nav>
           </div>

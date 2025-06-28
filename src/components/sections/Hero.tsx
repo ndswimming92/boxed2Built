@@ -33,8 +33,8 @@ const Hero: React.FC = () => {
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 md:pr-12 mb-10 md:mb-0">
+        <div className="flex flex-col lg:flex-row items-center">
+          <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <div className="animate-fadeIn">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
                 Hassle-Free Furniture Assembly
@@ -105,44 +105,11 @@ const Hero: React.FC = () => {
                   Terms of Service
                 </a>
               </p>
-
-              {/* Enhanced pricing preview */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
-                  <div className="flex items-center">
-                    <DollarSign size={20} className="mr-2" />
-                    <h3 className="font-semibold">Transparent Pricing</h3>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Chairs</div>
-                      <div className="text-xl font-bold text-blue-600">$37+</div>
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Desks</div>
-                      <div className="text-xl font-bold text-green-600">$79+</div>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Dressers</div>
-                      <div className="text-xl font-bold text-purple-600">$137+</div>
-                    </div>
-                    <div className="text-center p-3 bg-amber-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Beds</div>
-                      <div className="text-xl font-bold text-amber-600">$126+</div>
-                    </div>
-                  </div>
-                  <div className="text-center mt-4">
-                    <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           
-          <div className="md:w-1/2 relative">
-            <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
+          <div className="lg:w-1/2 relative">
+            <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300 mb-8">
               <img 
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                 alt="Professional furniture assembly service" 
@@ -153,6 +120,41 @@ const Hero: React.FC = () => {
               <p className="text-green-800 font-medium text-sm">
                 "Built for you, stress-free!"
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced pricing preview - Centered on desktop */}
+        <div className="flex justify-center mt-16">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-lg w-full">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
+              <div className="flex items-center justify-center">
+                <DollarSign size={20} className="mr-2" />
+                <h3 className="font-semibold">Transparent Pricing</h3>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Chairs</div>
+                  <div className="text-xl font-bold text-blue-600">$37+</div>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Desks</div>
+                  <div className="text-xl font-bold text-green-600">$79+</div>
+                </div>
+                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Dressers</div>
+                  <div className="text-xl font-bold text-purple-600">$137+</div>
+                </div>
+                <div className="text-center p-3 bg-amber-50 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-1">Beds</div>
+                  <div className="text-xl font-bold text-amber-600">$126+</div>
+                </div>
+              </div>
+              <div className="text-center mt-4">
+                <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
+              </div>
             </div>
           </div>
         </div>
