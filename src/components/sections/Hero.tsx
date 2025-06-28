@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, CheckCircle, Star } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 
@@ -8,15 +8,20 @@ const Hero: React.FC = () => {
     trackEvent('phone-click-hero');
   };
 
-  const scrollToAbout = () => {
-    const aboutSection = document.getElementById('about');
-    if (aboutSection) {
-      aboutSection.scrollIntoView({ behavior: 'smooth' });
+  const handleBookingClick = () => {
+    trackEvent('calendly-booking-click-hero');
+    window.open('https://calendly.com/boxed2built/30min', '_blank');
+  };
+
+  const scrollToServices = () => {
+    const servicesSection = document.getElementById('services');
+    if (servicesSection) {
+      servicesSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -31,28 +36,41 @@ const Hero: React.FC = () => {
                 <span className="block text-blue-600">Done For You</span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-600 mb-8">
+              <p className="text-xl md:text-2xl text-gray-600 mb-6">
                 From Boxed to Built – We handle the build, so you don't have to.
               </p>
+
+              {/* Trust indicators */}
+              <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
+                <div className="flex items-center text-gray-700">
+                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <span className="font-medium">Professional Service</span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <span className="font-medium">Same-Day Available</span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <Star size={18} className="text-yellow-500 mr-1" />
+                  <span className="font-medium">5-Star Rated</span>
+                </div>
+              </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Button 
                   variant="primary" 
                   size="lg"
-                  onClick={() => {
-                    trackEvent('email-click-hero-cta');
-                    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.';
-                  }}
+                  onClick={handleBookingClick}
                   className="group"
-                  trackingLabel="get-quote-hero"
+                  trackingLabel="book-consultation-hero"
                 >
-                  Get a Free Quote
+                  Book Free Consultation
                   <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 
                 <a 
                   href="tel:6154034538" 
-                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium"
+                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg px-6 py-3"
                   onClick={handlePhoneClick}
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -61,6 +79,29 @@ const Hero: React.FC = () => {
                   (615) 403-4538
                 </a>
               </div>
+
+              {/* Quick pricing preview */}
+              <div className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-4 shadow-md">
+                <p className="text-sm text-gray-600 mb-2">Starting prices:</p>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-900">Chairs:</span>
+                    <span className="text-blue-600 ml-2">$35+</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Dressers:</span>
+                    <span className="text-blue-600 ml-2">$130+</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Desks:</span>
+                    <span className="text-blue-600 ml-2">$75+</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900">Beds:</span>
+                    <span className="text-blue-600 ml-2">$120+</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -68,11 +109,11 @@ const Hero: React.FC = () => {
             <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
               <img 
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                alt="Furniture assembly professional" 
+                alt="Professional furniture assembly service" 
                 className="w-full h-auto rounded"
               />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300 mb-8">
+            <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
               <p className="text-green-800 font-medium text-sm">
                 "Built for you, stress-free!"
               </p>
@@ -81,14 +122,14 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll indicator - smaller and positioned below the banner */}
+      {/* Scroll indicator */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         <button
-          onClick={scrollToAbout}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-2 py-2 shadow-md hover:shadow-lg animate-bounce"
-          aria-label="Scroll to learn more"
+          onClick={scrollToServices}
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-colors bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-3 py-2 shadow-md hover:shadow-lg animate-bounce"
+          aria-label="View pricing and services"
         >
-          <span className="text-xs font-medium mb-0.5">Learn More</span>
+          <span className="text-xs font-medium mb-0.5">View Pricing</span>
           <ChevronDown size={16} className="text-blue-600" />
         </button>
       </div>

@@ -4,8 +4,8 @@ import PrivacyPolicy from './components/sections/PrivacyPolicy';
 import TermsOfService from './components/sections/TermsOfService';
 import Header from './components/layout/Header';
 import Hero from './components/sections/Hero';
-import About from './components/sections/About';
 import Services from './components/sections/Services';
+import About from './components/sections/About';
 import Booking from './components/sections/Booking';
 import Footer from './components/layout/Footer';
 import ScrollToTop from './components/ui/ScrollToTop';
@@ -52,8 +52,8 @@ function Home() {
       <Header />
       <main>
         <Hero />
-        <About />
         <Services />
+        <About />
         <Booking />
       </main>
       <Footer />
