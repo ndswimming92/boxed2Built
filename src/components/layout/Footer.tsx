@@ -3,6 +3,7 @@ import { Facebook, Mail, Phone, Instagram, Star } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
+import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
 
@@ -26,7 +27,11 @@ const Footer: React.FC = () => {
 
   const handleBookingClick = () => {
     trackEvent('footer-book-now');
-    window.open('https://calendly.com/boxed2built/30min', '_blank');
+    window.open(getCalendlyUrl('footer'), '_blank');
+  };
+
+  const handleGoogleReviewClick = () => {
+    trackEvent('footer-google-review-click');
   };
 
   return (
@@ -71,11 +76,11 @@ const Footer: React.FC = () => {
               {/* ⭐ Google Review Link with Icon */}
               <div className="text-sm text-center md:text-left mt-2">
                 <a
-                  href="https://g.page/r/CW-qaf93r1ZuEAI/review"
+                  href={getGoogleReviewUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center underline text-gray-400 hover:text-white transition"
-                  onClick={() => trackEvent('footer-google-review-click')}
+                  onClick={handleGoogleReviewClick}
                 >
                   <Star size={18} className="text-yellow-400 mr-1 drop-shadow-sm" />
                   Leave us a Google review
@@ -84,7 +89,7 @@ const Footer: React.FC = () => {
 
               <div className="flex space-x-4 justify-center md:justify-start mt-4">
                 <a
-                  href="https://www.facebook.com/BoxedToBuiltUSA"
+                  href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"
@@ -94,7 +99,7 @@ const Footer: React.FC = () => {
                   <Facebook size={24} title="Facebook" />
                 </a>
                 <a
-                  href="https://www.instagram.com/boxed2built/"
+                  href={getSocialUrl('instagram', 'https://www.instagram.com/boxed2built/')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"
@@ -104,7 +109,7 @@ const Footer: React.FC = () => {
                   <Instagram size={24} title="Instagram" />
                 </a>
                 <a
-                  href="mailto:boxed2builtco@gmail.com"
+                  href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Email"
                   onClick={() => handleSocialClick('email')}

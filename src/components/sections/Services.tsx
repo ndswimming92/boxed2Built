@@ -3,6 +3,7 @@ import { SERVICES } from '../../constants';
 import { Check, ChevronDown, Phone, Mail } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
+import { getCalendlyUrl } from '../../utils/utm';
 
 const Services: React.FC = () => {
   const handlePhoneClick = () => {
@@ -11,12 +12,12 @@ const Services: React.FC = () => {
 
   const handleEmailClick = () => {
     trackEvent('email-click-services');
-    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.';
+    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Section&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Services%20Section';
   };
 
   const handleBookingClick = () => {
     trackEvent('calendly-booking-click-services');
-    window.open('https://calendly.com/boxed2built/30min', '_blank');
+    window.open(getCalendlyUrl('services'), '_blank');
   };
 
   const scrollToAbout = () => {

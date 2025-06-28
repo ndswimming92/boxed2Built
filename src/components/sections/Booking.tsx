@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
+import { getCalendlyUrl } from '../../utils/utm';
 
 const Booking: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -12,7 +13,7 @@ const Booking: React.FC = () => {
       return;
     }
     trackEvent('calendly-booking-click');
-    window.open('https://calendly.com/boxed2built/30min', '_blank');
+    window.open(getCalendlyUrl('booking'), '_blank');
   };
 
   const handleTermsClick = () => {
