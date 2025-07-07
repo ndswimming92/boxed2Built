@@ -1,16 +1,9 @@
 import React from 'react';
-import { Heart, Users, Clock, CheckCircle, ChevronDown, Award } from 'lucide-react';
+import { Heart, Users, Clock, CheckCircle, Award } from 'lucide-react';
 
 const About: React.FC = () => {
-  const scrollToBooking = () => {
-    const bookingSection = document.getElementById('booking');
-    if (bookingSection) {
-      bookingSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <section id="about" className="py-16 bg-gray-50 relative pb-24">
+    <section id="about" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
 
         {/* Enhanced Why Choose Us with more keywords */}
@@ -139,18 +132,6 @@ const About: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Enhanced scroll indicator */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
-        <button
-          onClick={scrollToBooking}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
-          aria-label="Book professional furniture assembly service in Spring Hill TN"
-        >
-          <span className="text-sm font-medium mb-1">Book Service</span>
-          <ChevronDown size={18} className="text-blue-600" />
-        </button>
       </div>
     </section>
   );
