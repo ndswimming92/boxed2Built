@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import { Wrench, Clock, CheckCircle } from 'lucide-react';
 
 const HomeServices: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const HomeServices: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Wrench className="text-blue-600" size={32} />
@@ -48,16 +48,6 @@ const HomeServices: React.FC = () => {
               transparent pricing, and satisfaction guaranteed.
             </p>
           </div>
-        </div>
-
-        <div className="text-center">
-          <a 
-            href="/about" 
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Learn more about our company
-            <ArrowRight size={16} className="ml-2" />
-          </a>
         </div>
       </div>
     </section>
