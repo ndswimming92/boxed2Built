@@ -41,23 +41,19 @@ const Header: React.FC = () => {
     trackEvent('mobile-menu-toggle');
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-      setIsMenuOpen(false);
-      trackEvent(`nav-click-${sectionId}`);
-    }
-  };
-
   const handlePhoneClick = () => {
     trackEvent('phone-click-header');
+  };
+
+  const handleNavClick = (page: string) => {
+    setIsMenuOpen(false);
+    trackEvent(`nav-click-${page}`);
   };
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
+        isScrolled ? 'bg-white shadow-md py-2' : 'bg-white shadow-sm py-4'
       }`}
       ref={menuRef}
     >
@@ -85,8 +81,8 @@ const Header: React.FC = () => {
             <ul className="flex space-x-8">
               <li>
                 <a
-                  href="#about"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
+                  href="/about"
+                  onClick={() => handleNavClick('about')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
                   aria-label="Learn about Boxed2Built"
                 >
@@ -95,8 +91,8 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#services"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
+                  href="/services"
+                  onClick={() => handleNavClick('services')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
                   aria-label="View our services and pricing"
                 >
@@ -105,12 +101,12 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#booking"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
+                  href="/contact"
+                  onClick={() => handleNavClick('contact')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
-                  aria-label="Book furniture assembly service"
+                  aria-label="Contact us for furniture assembly service"
                 >
-                  Book Now
+                  Contact
                 </a>
               </li>
             </ul>
@@ -141,31 +137,31 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className={`md:hidden mt-4 pb-4 ${!isScrolled ? 'bg-white shadow-lg rounded-lg' : ''}`}>
+          <div className="md:hidden mt-4 pb-4 bg-white shadow-lg rounded-lg">
             <nav className="flex flex-col space-y-4 p-4" role="navigation" aria-label="Mobile navigation">
               <a
-                href="#about"
-                onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}
+                href="/about"
+                onClick={() => handleNavClick('about')}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 aria-label="Learn about Boxed2Built"
               >
                 About
               </a>
               <a
-                href="#services"
-                onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
+                href="/services"
+                onClick={() => handleNavClick('services')}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 aria-label="View our services and pricing"
               >
                 Services
               </a>
               <a
-                href="#booking"
-                onClick={(e) => { e.preventDefault(); scrollToSection('booking'); }}
+                href="/contact"
+                onClick={() => handleNavClick('contact')}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-                aria-label="Book furniture assembly service"
+                aria-label="Contact us for furniture assembly service"
               >
-                Book Now
+                Contact
               </a>
               <a
                 href="tel:+16154034538"
