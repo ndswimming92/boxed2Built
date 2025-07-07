@@ -130,7 +130,7 @@ const Hero: React.FC = () => {
           </div>
         </div>
 
-        {/* Enhanced pricing preview with more keywords */}
+        {/* Enhanced pricing preview with updated 10% increased prices */}
         <div className="flex justify-center mt-16">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-lg w-full">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
@@ -143,19 +143,19 @@ const Hero: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Dining Chairs</div>
-                  <div className="text-xl font-bold text-blue-600">$37+</div>
+                  <div className="text-xl font-bold text-blue-600">$41+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Office Desks</div>
-                  <div className="text-xl font-bold text-green-600">$79+</div>
+                  <div className="text-xl font-bold text-green-600">$87+</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">IKEA Dressers</div>
-                  <div className="text-xl font-bold text-purple-600">$137+</div>
+                  <div className="text-xl font-bold text-purple-600">$151+</div>
                 </div>
                 <div className="text-center p-3 bg-amber-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Bed Frames</div>
-                  <div className="text-xl font-bold text-amber-600">$126+</div>
+                  <div className="text-xl font-bold text-amber-600">$139+</div>
                 </div>
               </div>
               <div className="text-center mt-4">
