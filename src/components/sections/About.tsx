@@ -3,16 +3,16 @@ import { Heart, Users, Clock, CheckCircle, Award } from 'lucide-react';
 
 const About: React.FC = () => {
   return (
-    <section id="about" className="py-16 bg-gray-50">
+    <section id="about" className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
 
         {/* Enhanced Why Choose Us with more keywords */}
-        <div className="max-w-4xl mx-auto text-center mb-16">
+        <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Why Choose Boxed2Built for Furniture Assembly in Spring Hill, TN?
           </h2>
           
-          <div className="bg-white p-8 rounded-lg shadow-md mb-12">
+          <div className="bg-white p-8 rounded-lg shadow-md mb-10">
             <p className="text-xl text-gray-700 mb-6 leading-relaxed">
               As Spring Hill's trusted furniture assembly experts, we understand that busy families need reliable, professional service. 
               Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most.

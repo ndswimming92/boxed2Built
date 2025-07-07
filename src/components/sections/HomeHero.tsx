@@ -20,7 +20,7 @@ const HomeHero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -118,7 +118,7 @@ const HomeHero: React.FC = () => {
         </div>
 
         {/* Quick pricing preview */}
-        <div className="flex justify-center mt-16">
+        <div className="flex justify-center mt-12">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-lg w-full">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
               <div className="flex items-center justify-center">

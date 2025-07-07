@@ -45,7 +45,7 @@ const ContactPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-16">
+        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <nav className="flex items-center justify-center mb-6 text-sm">
@@ -66,7 +66,7 @@ const ContactPage: React.FC = () => {
         </section>
 
         {/* Contact Information */}
-        <section className="py-16 bg-white">
+        <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -228,7 +228,7 @@ const ContactPage: React.FC = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">

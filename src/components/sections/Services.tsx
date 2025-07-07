@@ -20,17 +20,10 @@ const Services: React.FC = () => {
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
-  const scrollToAbout = () => {
-    const aboutSection = document.getElementById('about');
-    if (aboutSection) {
-      aboutSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <section id="services" className="py-16 bg-white relative pb-24">
+    <section id="services" className="py-12 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Professional Furniture Assembly Services & Pricing
           </h2>
@@ -57,7 +50,7 @@ const Services: React.FC = () => {
         </div>
 
         {/* Enhanced service cards with more keywords */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           {SERVICES.map((service, index) => (
             <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
               <div className="p-6">
@@ -146,7 +139,7 @@ const Services: React.FC = () => {
         </div>
 
         {/* Enhanced Service Areas with more local keywords */}
-        <div className="bg-gray-50 p-6 rounded-lg text-center">
+        <div className="bg-gray-50 p-6 rounded-lg text-center mb-8">
           <h4 className="font-semibold text-gray-900 mb-2">Professional Furniture Assembly Service Areas in Tennessee</h4>
           <p className="text-gray-600 mb-2">
             <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood
@@ -157,7 +150,7 @@ const Services: React.FC = () => {
         </div>
 
         {/* FAQ Section for SEO */}
-        <div className="mt-12 bg-white p-8 rounded-lg shadow-md">
+        <div className="bg-white p-8 rounded-lg shadow-md">
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -178,18 +171,6 @@ const Services: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Enhanced scroll indicator */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
-        <button
-          onClick={scrollToAbout}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
-          aria-label="Learn more about our professional furniture assembly company"
-        >
-          <span className="text-sm font-medium mb-1">About Us</span>
-          <ChevronDown size={18} className="text-blue-600" />
-        </button>
       </div>
     </section>
   );

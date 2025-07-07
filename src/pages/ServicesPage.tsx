@@ -36,7 +36,7 @@ const ServicesPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-16">
+        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <nav className="flex items-center justify-center mb-6 text-sm">
@@ -82,14 +82,14 @@ const ServicesPage: React.FC = () => {
         <Services />
 
         {/* Additional Service Information */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                 Why Choose Boxed2Built for Furniture Assembly?
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
                   <p className="text-gray-600 mb-4">
