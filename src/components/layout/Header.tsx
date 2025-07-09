@@ -68,14 +68,14 @@ const Header: React.FC = () => {
   };
 
   const getMobileNavLinkClasses = (path: string) => {
-    const baseClasses = "relative font-medium transition-all duration-300 py-2 group";
+    const baseClasses = "block font-medium transition-all duration-200";
     const isActive = isActivePage(path);
     
     if (isActive) {
-      return `${baseClasses} text-blue-600 font-semibold`;
+      return `${baseClasses}`;
     }
     
-    return `${baseClasses} text-gray-700 hover:text-blue-600`;
+    return `${baseClasses} text-gray-700`;
   };
 
   return (
@@ -185,50 +185,62 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 bg-white shadow-lg rounded-lg border border-gray-100">
-            <nav className="flex flex-col space-y-2 p-4" role="navigation" aria-label="Mobile navigation">
+          <div className="md:hidden mt-4 pb-4 bg-white/98 backdrop-blur-sm shadow-xl rounded-xl border border-gray-200/50 overflow-hidden">
+            <nav className="flex flex-col p-2" role="navigation" aria-label="Mobile navigation">
               <a
                 href="/"
                 onClick={() => handleNavClick('home')}
-                className={getMobileNavLinkClasses('/')}
+                className={`${getMobileNavLinkClasses('/')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/') 
+                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
                 aria-label="Go to home page"
               >
                 Home
-                {isActivePage('/') && <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r"></span>}
               </a>
               <a
                 href="/about"
                 onClick={() => handleNavClick('about')}
-                className={getMobileNavLinkClasses('/about')}
+                className={`${getMobileNavLinkClasses('/about')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/about') 
+                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
                 aria-label="Learn about Boxed2Built"
               >
                 About
-                {isActivePage('/about') && <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r"></span>}
               </a>
               <a
                 href="/services"
                 onClick={() => handleNavClick('services')}
-                className={getMobileNavLinkClasses('/services')}
+                className={`${getMobileNavLinkClasses('/services')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/services') 
+                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
                 aria-label="View our services and pricing"
               >
                 Services
-                {isActivePage('/services') && <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r"></span>}
               </a>
               <a
                 href="/contact"
                 onClick={() => handleNavClick('contact')}
-                className={getMobileNavLinkClasses('/contact')}
+                className={`${getMobileNavLinkClasses('/contact')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/contact') 
+                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
                 aria-label="Contact us for furniture assembly service"
               >
                 Contact
-                {isActivePage('/contact') && <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r"></span>}
               </a>
               
               {/* Call Now Button - Mobile */}
-              <div className="pt-4 border-t border-gray-200 mt-4">
+              <div className="pt-3 border-t border-gray-100 mt-3 mx-2">
                 <a
                   href="tel:+19316741196"
-                  className="flex items-center justify-center w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 group"
+                  className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
                 >
