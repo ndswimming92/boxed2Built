@@ -185,7 +185,7 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 bg-white/98 backdrop-blur-sm shadow-xl rounded-xl border border-gray-200/50 overflow-hidden">
+          <div className="md:hidden mt-4 pb-4 bg-white shadow-xl rounded-xl border border-gray-200 overflow-hidden">
             <nav className="flex flex-col p-2" role="navigation" aria-label="Mobile navigation">
               <a
                 href="/"
@@ -237,14 +237,14 @@ const Header: React.FC = () => {
               </a>
               
               {/* Call Now Button - Mobile */}
-              <div className="pt-3 border-t border-gray-100 mt-3 mx-2">
+              <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
                 <a
                   href="tel:+19316741196"
-                  className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
+                  className="flex items-center justify-center w-full px-4 py-3.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
                 >
-                  <Phone size={18} className="mr-2 group-hover:animate-pulse" />
+                  <Phone size={20} className="mr-2 group-hover:animate-pulse" />
                   <span>Call Now</span>
                 </a>
               </div>
