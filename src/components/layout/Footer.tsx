@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
         itemType="https://schema.org/LocalBusiness"
       >
         <meta itemProp="name" content="Boxed2Built" />
-        <meta itemProp="telephone" content="+16154034538" />
+        <meta itemProp="telephone" content="+19316741196" />
         <meta itemProp="email" content="boxed2builtco@gmail.com" />
         <meta itemProp="url" content="https://www.boxed2built.com" />
         <meta itemProp="priceRange" content="$41-$289" />
@@ -75,8 +75,9 @@ const Footer: React.FC = () => {
                   </span>
                 </div>
                 <a href="tel:+16154034538" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
+                <a href="tel:+19316741196" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
                   <Phone size={16} className="mr-2" />
-                  (615) 403-4538
+                  (931) 674-1196
                 </a>
               </address>
             </div>
@@ -156,7 +157,7 @@ const Footer: React.FC = () => {
                   <Mail size={24} title="Email" />
                 </a>
                 <a
-                  href="tel:+16154034538"
+                  href="tel:+19316741196"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Phone"
                   onClick={() => handleSocialClick('phone')}

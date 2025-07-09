@@ -66,12 +66,12 @@ const ServicesPage: React.FC = () => {
                 </Button>
                 
                 <a
-                  href="tel:+16154034538"
+                  href="tel:+19316741196"
                   onClick={handlePhoneClick}
                   className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Phone size={20} className="mr-2" />
-                  Call (615) 403-4538
+                  Call (931) 674-1196
                 </a>
               </div>
             </div>
@@ -135,7 +135,7 @@ const ServicesPage: React.FC = () => {
                     Get Free Quote
                   </Button>
                   <a
-                    href="tel:+16154034538"
+                    href="tel:+19316741196"
                     onClick={handlePhoneClick}
                     className="inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                   >

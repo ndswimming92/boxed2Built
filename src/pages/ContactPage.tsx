@@ -83,11 +83,11 @@ const ContactPage: React.FC = () => {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
-                          href="tel:+16154034538" 
+                          href="tel:+19316741196" 
                           className="text-blue-600 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
-                          (615) 403-4538
+                          (931) 674-1196
                         </a>
                         <p className="text-gray-600 text-sm mt-1">Call for immediate assistance or quotes</p>
                       </div>
@@ -138,7 +138,7 @@ const ContactPage: React.FC = () => {
                   {/* Quick Contact Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4">
                     <a
-                      href="tel:+16154034538"
+                      href="tel:+19316741196"
                       onClick={handlePhoneClick}
                       className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     >
@@ -242,6 +242,7 @@ const ContactPage: React.FC = () => {
                   </h3>
                   <p className="text-gray-600">
                     You can schedule service by calling us at (615) 403-4538, sending an email, or booking 
+                    You can schedule service by calling us at (931) 674-1196, sending an email, or booking 
                     online through our website. We offer flexible scheduling to fit your needs.
                   </p>
                 </div>

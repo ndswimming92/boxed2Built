@@ -162,14 +162,13 @@ const Header: React.FC = () => {
           {/* Call Now Button - Desktop */}
           <div className="hidden md:flex items-center">
             <a
-              href="tel:+16154034538"
+              href="tel:+19316741196"
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 group"
               onClick={handlePhoneClick}
-              aria-label="Call Boxed2Built at (615) 403-4538"
+              aria-label="Call Boxed2Built at (931) 674-1196"
             >
               <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-              <span className="hidden lg:inline">Call Now: </span>
-              <span>(615) 403-4538</span>
+              <span>Call Now</span>
             </a>
           </div>
 
@@ -228,13 +227,13 @@ const Header: React.FC = () => {
               {/* Call Now Button - Mobile */}
               <div className="pt-4 border-t border-gray-200 mt-4">
                 <a
-                  href="tel:+16154034538"
+                  href="tel:+19316741196"
                   className="flex items-center justify-center w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
-                  aria-label="Call Boxed2Built at (615) 403-4538"
+                  aria-label="Call Boxed2Built at (931) 674-1196"
                 >
                   <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-                  <span>Call Now: (615) 403-4538</span>
+                  <span>Call Now</span>
                 </a>
               </div>
             </nav>

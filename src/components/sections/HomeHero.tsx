@@ -80,12 +80,12 @@ const HomeHero: React.FC = () => {
 
               <div className="flex items-center justify-center sm:justify-start mb-8">
                 <a 
-                  href="tel:6154034538" 
+                  href="tel:9316741196" 
                   className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg"
                   onClick={handlePhoneClick}
                 >
                   <Phone size={20} className="mr-2" />
-                  Call (615) 403-4538 for Service
+                  Call (931) 674-1196 for Service
                 </a>
               </div>
 
