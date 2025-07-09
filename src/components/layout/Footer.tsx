@@ -74,7 +74,6 @@ const Footer: React.FC = () => {
                     <span itemProp="addressLocality">Spring Hill</span>, <span itemProp="addressRegion">TN</span>
                   </span>
                 </div>
-                <a href="tel:+16154034538" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
                 <a href="tel:+19316741196" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
                   <Phone size={16} className="mr-2" />
                   (931) 674-1196
