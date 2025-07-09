@@ -91,8 +91,8 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center mr-6">
             <a
               href="/"
               className="flex items-center"
@@ -110,8 +110,8 @@ const Header: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center" role="navigation" aria-label="Main navigation">
-            <ul className="flex space-x-8">
+          <nav className="hidden md:flex items-center flex-1 justify-center" role="navigation" aria-label="Main navigation">
+            <ul className="flex space-x-10">
               <li>
                 <a
                   href="/"
@@ -160,7 +160,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Call Now Button - Desktop */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center ml-8">
             <a
               href="tel:+19316741196"
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 group"
