@@ -8,11 +8,3 @@ export interface ServiceItem {
   priceRange?: string;
   includedItems: string[];
 }
-
-export interface TestimonialItem {
-  id: number;
-  name: string;
-  role: string;
-  content: string;
-  rating: number;
-}

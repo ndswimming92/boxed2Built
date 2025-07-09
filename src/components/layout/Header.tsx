@@ -81,6 +81,16 @@ const Header: React.FC = () => {
             <ul className="flex space-x-8">
               <li>
                 <a
+                  href="/"
+                  onClick={() => handleNavClick('home')}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
+                  aria-label="Go to home page"
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
                   href="/about"
                   onClick={() => handleNavClick('about')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors min-h-[48px]"
@@ -139,6 +149,14 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 bg-white shadow-lg rounded-lg">
             <nav className="flex flex-col space-y-4 p-4" role="navigation" aria-label="Mobile navigation">
+              <a
+                href="/"
+                onClick={() => handleNavClick('home')}
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                aria-label="Go to home page"
+              >
+                Home
+              </a>
               <a
                 href="/about"
                 onClick={() => handleNavClick('about')}

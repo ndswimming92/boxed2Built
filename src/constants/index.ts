@@ -1,4 +1,4 @@
-import { ServiceItem, TestimonialItem } from '../types';
+import { ServiceItem } from '../types';
 
 // Service items data - Updated with 10% price increase
 export const SERVICES: ServiceItem[] = [
@@ -41,31 +41,6 @@ export const SERVICES: ServiceItem[] = [
     startingPrice: '$139',
     priceRange: '$139-289 per item',
     includedItems: ['Full in-room setup', 'Bed stability check', 'Screw retightening', 'Drawer alignment (if applicable)', 'Safety checks']
-  }
-];
-
-// Testimonial data
-export const TESTIMONIALS: TestimonialItem[] = [
-  {
-    id: 1,
-    name: 'Jessica T.',
-    role: 'Spring Hill Resident',
-    content: 'Boxed2Built saved my weekend! I ordered a complicated entertainment center, and they had it assembled in just 2 hours. Professional, on time, and worth every penny.',
-    rating: 5
-  },
-  {
-    id: 2,
-    name: 'Michael R.',
-    role: 'New Homeowner',
-    content: 'Moving into a new house with IKEA furniture was stressful until I called Boxed2Built. They assembled our entire bedroom set and made it look effortless. Highly recommend!',
-    rating: 5
-  },
-  {
-    id: 3,
-    name: 'Sarah K.',
-    role: 'Local Business Owner',
-    content: 'I needed office furniture assembled quickly for my new business location. Boxed2Built delivered exceptional service, and everything was perfectly assembled and positioned.',
-    rating: 5
   }
 ];
 
