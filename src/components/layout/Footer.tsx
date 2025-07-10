@@ -130,22 +130,7 @@ const Footer: React.FC = () => {
           {/* Social Links and CTA */}
           <div className="border-t border-gray-800 pt-8 mb-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start mb-6 md:mb-0">
-                {/* Google Review Star - Separate and highlighted */}
-                <div className="flex flex-col items-center">
-                  <a
-                    href={getGoogleReviewUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex flex-col items-center p-3 bg-yellow-500 hover:bg-yellow-400 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                    aria-label="Leave a Google Review"
-                    onClick={handleReviewClick}
-                  >
-                    <Star size={28} className="text-white fill-white mb-1" />
-                    <span className="text-white text-xs font-medium">Review Us</span>
-                  </a>
-                </div>
-
+              <div className="flex items-center gap-6 justify-center md:justify-start mb-6 md:mb-0">
                 {/* Social Media Icons */}
                 <div className="flex space-x-4">
                 <a
@@ -184,7 +169,20 @@ const Footer: React.FC = () => {
                 >
                   <Phone size={24} title="Phone" />
                 </a>
-              </div>
+                </div>
+
+                {/* Google Review Star - Subtle but distinct */}
+                <a
+                  href={getGoogleReviewUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                  aria-label="Leave a Google Review"
+                  onClick={handleReviewClick}
+                  title="Leave a Review"
+                >
+                  <Star size={24} className="fill-current" />
+                </a>
               </div>
 
               <div className="text-center md:text-right">
