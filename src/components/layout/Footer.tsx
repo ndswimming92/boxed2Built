@@ -130,7 +130,24 @@ const Footer: React.FC = () => {
           {/* Social Links and CTA */}
           <div className="border-t border-gray-800 pt-8 mb-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex space-x-4 justify-center md:justify-start mb-6 md:mb-0">
+              <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start mb-6 md:mb-0">
+                {/* Google Review Star - Separate and highlighted */}
+                <div className="flex flex-col items-center">
+                  <a
+                    href={getGoogleReviewUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col items-center p-3 bg-yellow-500 hover:bg-yellow-400 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    aria-label="Leave a Google Review"
+                    onClick={handleReviewClick}
+                  >
+                    <Star size={28} className="text-white fill-white mb-1" />
+                    <span className="text-white text-xs font-medium">Review Us</span>
+                  </a>
+                </div>
+
+                {/* Social Media Icons */}
+                <div className="flex space-x-4">
                 <a
                   href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
                   target="_blank"
@@ -152,16 +169,6 @@ const Footer: React.FC = () => {
                   <Instagram size={24} title="Instagram" />
                 </a>
                 <a
-                  href={getGoogleReviewUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
-                  aria-label="Leave a Google Review"
-                  onClick={handleReviewClick}
-                >
-                  <Star size={24} title="Google Reviews" />
-                </a>
-                <a
                   href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Email"
@@ -177,6 +184,7 @@ const Footer: React.FC = () => {
                 >
                   <Phone size={24} title="Phone" />
                 </a>
+              </div>
               </div>
 
               <div className="text-center md:text-right">
