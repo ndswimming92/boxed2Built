@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Facebook, Mail, Phone, Instagram, MapPin } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, MapPin, Star } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl, getSocialUrl } from '../../utils/utm';
+import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
 
@@ -13,6 +13,10 @@ const Footer: React.FC = () => {
 
   const handleSocialClick = (platform: string) => {
     trackEvent(`social-click-${platform}`);
+  };
+
+  const handleReviewClick = () => {
+    trackEvent('google-review-click');
   };
 
   const handlePrivacyClick = () => {
@@ -146,6 +150,16 @@ const Footer: React.FC = () => {
                   onClick={() => handleSocialClick('instagram')}
                 >
                   <Instagram size={24} title="Instagram" />
+                </a>
+                <a
+                  href={getGoogleReviewUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                  aria-label="Leave a Google Review"
+                  onClick={handleReviewClick}
+                >
+                  <Star size={24} title="Google Reviews" />
                 </a>
                 <a
                   href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
