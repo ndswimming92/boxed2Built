@@ -130,9 +130,9 @@ const Footer: React.FC = () => {
           {/* Social Links and CTA */}
           <div className="border-t border-gray-800 pt-8 mb-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center gap-6 justify-center md:justify-start mb-6 md:mb-0">
+              <div className="flex flex-col items-center md:items-start gap-4 mb-6 md:mb-0">
                 {/* Social Media Icons */}
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 justify-center md:justify-start">
                 <a
                   href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
                   target="_blank"
@@ -171,17 +171,17 @@ const Footer: React.FC = () => {
                 </a>
                 </div>
 
-                {/* Google Review Star - Subtle but distinct */}
+                {/* Google Review Button */}
                 <a
                   href={getGoogleReviewUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm"
                   aria-label="Leave a Google Review"
                   onClick={handleReviewClick}
-                  title="Leave a Review"
                 >
-                  <Star size={24} className="fill-current" />
+                  <Star size={16} className="fill-current mr-2" />
+                  Leave us a Review!
                 </a>
               </div>
 
