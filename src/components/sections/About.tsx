@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, Users, Clock, CheckCircle, Award } from 'lucide-react';
+import LazyImage from '../ui/LazyImage';
 
 const About: React.FC = () => {
   return (
@@ -89,11 +90,10 @@ const About: React.FC = () => {
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-6 md:mb-0 md:pr-8">
-                <img 
+                <LazyImage
                   src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                   alt="Professional furniture assembly service in Spring Hill Tennessee" 
                   className="rounded-lg shadow-md"
-                  loading="lazy"
                   width="630"
                   height="420"
                 />

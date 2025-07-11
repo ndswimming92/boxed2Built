@@ -1,5 +1,6 @@
 import React from 'react';
 import { trackEvent } from '../../utils/analytics';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ButtonProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
   trackingLabel?: string;
+  loading?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -21,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   disabled = false,
   trackingLabel,
+  loading = false,
 }) => {
   const baseClasses = 'rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center';
   
@@ -49,11 +52,20 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       type={type}
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className} ${
+        loading ? 'cursor-wait' : ''
+      }`}
       onClick={handleClick}
-      disabled={disabled}
+      disabled={disabled || loading}
     >
-      {children}
+      {loading ? (
+        <>
+          <LoadingSpinner size="sm" className="mr-2" />
+          Loading...
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 };

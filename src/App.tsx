@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Suspense } from 'react';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
@@ -8,6 +9,8 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView } from './utils/analytics';
+import PageLoader from './components/ui/PageLoader';
+import { usePageLoading } from './hooks/usePageLoading';
 
 function Analytics() {
   const location = useLocation();
@@ -18,6 +21,16 @@ function Analytics() {
   }, [location]);
 
   return null;
+}
+
+function PageLoadingWrapper({ children }: { children: React.ReactNode }) {
+  const isLoading = usePageLoading(500); // 500ms loading delay
+
+  if (isLoading) {
+    return <PageLoader message="Loading page..." />;
+  }
+
+  return <>{children}</>;
 }
 
 function HashHandler() {
@@ -57,14 +70,18 @@ function App() {
       <div className="min-h-screen">
         <Analytics />
         <HashHandler />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-        </Routes>
+        <Suspense fallback={<PageLoader message="Loading application..." />}>
+          <PageLoadingWrapper>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            </Routes>
+          </PageLoadingWrapper>
+        </Suspense>
         <ScrollToTop />
       </div>
     </Router>

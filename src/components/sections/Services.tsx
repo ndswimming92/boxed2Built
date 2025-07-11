@@ -2,10 +2,19 @@ import React from 'react';
 import { SERVICES } from '../../constants';
 import { Check, ChevronDown, Phone, Mail, Clock } from 'lucide-react';
 import Button from '../ui/Button';
+import SkeletonCard from '../ui/SkeletonCard';
+import { useAsyncData } from '../../hooks/useAsyncData';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
 const Services: React.FC = () => {
+  // Simulate loading state for services data
+  const { data: services, loading } = useAsyncData(
+    () => Promise.resolve(SERVICES),
+    [],
+    { delay: 300 }
+  );
+
   const handlePhoneClick = () => {
     trackEvent('phone-click-services');
   };
@@ -51,7 +60,18 @@ const Services: React.FC = () => {
 
         {/* Enhanced service cards with more keywords */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          {SERVICES.map((service, index) => (
+          {loading ? (
+            // Show skeleton cards while loading
+            Array.from({ length: 5 }).map((_, index) => (
+              <SkeletonCard 
+                key={index} 
+                showImage={false}
+                lines={4}
+                className="h-80"
+              />
+            ))
+          ) : (
+            services?.map((service, index) => (
             <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
               <div className="p-6">
                 <div className="flex items-center mb-3">
@@ -85,7 +105,8 @@ const Services: React.FC = () => {
                 </ul>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Enhanced CTA Section with more local keywords */}
