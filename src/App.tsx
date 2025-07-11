@@ -11,6 +11,7 @@ import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { usePageLoading } from './hooks/usePageLoading';
+import { initializeFontOptimization } from './utils/fontOptimization';
 
 function Analytics() {
   const location = useLocation();
@@ -63,6 +64,9 @@ function HashHandler() {
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
+    
+    // Initialize font optimization
+    initializeFontOptimization();
   }, []);
 
   return (
