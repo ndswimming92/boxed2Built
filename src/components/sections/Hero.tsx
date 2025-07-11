@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
 import Button from '../ui/Button';
-import LazyImage from '../ui/LazyImage';
+import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
@@ -114,13 +114,18 @@ const Hero: React.FC = () => {
           
           <div className="lg:w-1/2 relative">
             <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300 mb-8">
-              <LazyImage
+              <OptimizedImage
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                 alt="Professional furniture assembly service in Spring Hill Tennessee" 
                 className="w-full h-auto rounded"
                 width="630"
                 height="420"
-                loading="eager"
+                priority={true}
+                sizes={{
+                  '(max-width: 768px)': '100vw',
+                  '(max-width: 1024px)': '50vw',
+                  default: '40vw'
+                }}
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">

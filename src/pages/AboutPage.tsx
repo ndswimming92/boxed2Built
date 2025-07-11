@@ -4,7 +4,7 @@ import Footer from '../components/layout/Footer';
 import About from '../components/sections/About';
 import { ChevronRight, Phone, Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
 import Button from '../components/ui/Button';
-import LazyImage from '../components/ui/LazyImage';
+import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 
@@ -98,12 +98,17 @@ const AboutPage: React.FC = () => {
                 </div>
                 
                 <div className="relative">
-                  <LazyImage
+                  <OptimizedImage
                     src="https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                     alt="Professional furniture assembly tools and workspace" 
                     className="rounded-lg shadow-lg"
                     width="630"
                     height="420"
+                    sizes={{
+                      '(max-width: 768px)': '100vw',
+                      '(max-width: 1024px)': '50vw',
+                      default: '40vw'
+                    }}
                   />
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Professional Tools</p>
