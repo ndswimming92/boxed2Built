@@ -241,7 +241,6 @@ const ContactPage: React.FC = () => {
                     How do I schedule furniture assembly service?
                   </h3>
                   <p className="text-gray-600">
-                    You can schedule service by calling us at (615) 403-4538, sending an email, or booking 
                     You can schedule service by calling us at (931) 674-1196, sending an email, or booking 
                     online through our website. We offer flexible scheduling to fit your needs.
                   </p>
