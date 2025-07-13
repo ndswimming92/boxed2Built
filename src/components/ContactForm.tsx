@@ -263,7 +263,7 @@ const ContactForm: React.FC = () => {
           )}
 
           <p className="text-xs text-gray-500 mt-2 text-center">
-            By submitting, you agree to our <a href="/terms" className="underline">Terms of Service</a>.
+            By submitting, you agree to our <a href="/terms-of-service" className="underline">Terms of Service</a>.
           </p>
         </div>
       </form>
