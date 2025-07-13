@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import React, { useState, useEffect } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
 import { Send, CheckCircle, AlertCircle, User, Mail, Phone, Package, Calendar, MessageSquare } from 'lucide-react';
@@ -34,8 +33,7 @@ const ContactForm: React.FC = () => {
     furnitureType: '',
     pieces: '',
     preferredTime: '',
-    notes: '',
-    userCity: ''
+    notes: ''
   });
   const [errors, setErrors] = useState<FormErrors>({
     name: '',
@@ -55,39 +53,6 @@ const ContactForm: React.FC = () => {
     preferredTime: false,
     notes: false
   });
-
-  // Fetch user's city based on IP address
-  useEffect(() => {
-    const fetchUserLocation = async () => {
-      try {
-        // Using ipapi.co for geolocation - free tier allows 1000 requests/day
-        const response = await fetch('https://ipapi.co/json/');
-        if (response.ok) {
-          const data = await response.json();
-          const city = data.city || '';
-          const region = data.region || '';
-          const country = data.country_name || '';
-          
-          // Format location as "City, State, Country" or whatever is available
-          let location = '';
-          if (city) location += city;
-          if (region) location += (location ? ', ' : '') + region;
-          if (country && country !== 'United States') location += (location ? ', ' : '') + country;
-          
-          setFormData(prev => ({ ...prev, userCity: location || 'Unknown' }));
-        } else {
-          // Fallback if API fails
-          setFormData(prev => ({ ...prev, userCity: 'Location unavailable' }));
-        }
-      } catch (error) {
-        // Silent fail - don't disrupt user experience
-        console.log('Geolocation fetch failed:', error);
-        setFormData(prev => ({ ...prev, userCity: 'Location unavailable' }));
-      }
-    };
-
-    fetchUserLocation();
-  }, []);
 
   // Validation functions
   const validateEmail = (email: string): string => {
@@ -476,13 +441,6 @@ const ContactForm: React.FC = () => {
             </p>
           </div>
         </fieldset>
-
-        {/* Hidden field for user location */}
-        <input
-          type="hidden"
-          name="user_city"
-          value={formData.userCity}
-        />
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
