@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import ContactForm from '../components/ContactForm';
 import { ChevronRight, Phone, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
@@ -68,8 +69,8 @@ const ContactPage: React.FC = () => {
         {/* Contact Information */}
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 
                 {/* Contact Details */}
                 <div>
@@ -156,8 +157,8 @@ const ContactPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Booking Form */}
-                <div className="bg-gray-50 p-8 rounded-lg">
+                {/* Quick Booking */}
+                <div className="bg-gray-50 p-8 rounded-lg lg:col-span-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Book Free Consultation</h2>
                   
                   <div className="space-y-4 mb-6">
@@ -221,6 +222,11 @@ const ContactPage: React.FC = () => {
                     By submitting, you agree to our Terms of Service • Available weekends • 
                     Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
                   </p>
+                </div>
+
+                {/* Contact Form */}
+                <div className="lg:col-span-1">
+                  <ContactForm />
                 </div>
               </div>
             </div>
