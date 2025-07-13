@@ -85,7 +85,7 @@ const ContactForm: React.FC = () => {
     if (!pieces) return 'Number of pieces is required';
     const num = parseInt(pieces);
     if (isNaN(num) || num < 1) return 'Please enter a valid number (1 or more)';
-    if (num > 50) return 'For orders over 50 pieces, please call us directly';
+    if (num > 5) return 'For orders over 5 pieces, please call us directly';
     return '';
   };
 
