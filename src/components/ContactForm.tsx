@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
@@ -25,6 +25,16 @@ const ContactForm: React.FC = () => {
   const [fields, setFields] = useState(initialFields);
   const [userCity, setUserCity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submitTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Detect iOS
+  useEffect(() => {
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    setIsIOS(iOS);
+  }, []);
 
   // Fetch user's city on component mount
   useEffect(() => {
@@ -46,30 +56,118 @@ const ContactForm: React.FC = () => {
     fetchUserLocation();
   }, []);
 
-  // iOS Safari autofill fix - prevent page refresh
+  // iOS-specific fixes
   useEffect(() => {
+    if (!isIOS) return;
+
+    // Prevent iOS Safari from refreshing on autofill
+    const preventRefresh = (e: Event) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return false;
+    };
+
+    // Handle iOS autofill events
+    const handleAutofill = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Delay to allow autofill to complete
+      setTimeout(() => {
+        if (formRef.current) {
+          const formData = new FormData(formRef.current);
+          const updatedFields = { ...fields };
+          
+          // Update state with autofilled values
+          Object.keys(initialFields).forEach(key => {
+            const value = formData.get(key) as string || '';
+            if (value && value !== fields[key as keyof typeof fields].value) {
+              updatedFields[key as keyof typeof fields] = {
+                ...updatedFields[key as keyof typeof fields],
+                value: value
+              };
+            }
+          });
+          
+          setFields(updatedFields);
+        }
+      }, 100);
+    };
+
+    // Prevent page navigation on iOS
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isSubmitting) {
         e.preventDefault();
         e.returnValue = '';
+        return '';
       }
     };
 
+    // Handle page show (back/forward cache)
     const handlePageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
-        // Page was restored from cache, reset form state if needed
-        window.location.reload();
+        // Page restored from cache, ensure form is in correct state
+        setIsSubmitting(false);
+        if (submitTimeoutRef.current) {
+          clearTimeout(submitTimeoutRef.current);
+        }
       }
     };
 
+    // Handle visibility change (iOS Safari specific)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setIsSubmitting(false);
+      }
+    };
+
+    // Add event listeners
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Add form-specific listeners for iOS
+    if (formRef.current) {
+      const form = formRef.current;
+      
+      // Prevent default form submission on iOS
+      form.addEventListener('submit', preventRefresh, true);
+      
+      // Handle autofill events
+      form.addEventListener('input', handleAutofill, true);
+      form.addEventListener('change', handleAutofill, true);
+      
+      // Prevent iOS from navigating away
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.addEventListener('blur', handleAutofill);
+        input.addEventListener('input', handleAutofill);
+      });
+    }
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      if (formRef.current) {
+        const form = formRef.current;
+        form.removeEventListener('submit', preventRefresh, true);
+        form.removeEventListener('input', handleAutofill, true);
+        form.removeEventListener('change', handleAutofill, true);
+        
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+          input.removeEventListener('blur', handleAutofill);
+          input.removeEventListener('input', handleAutofill);
+        });
+      }
+      
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
     };
-  }, [isSubmitting]);
+  }, [isIOS, fields, isSubmitting]);
 
   if (state.succeeded) {
     return (
@@ -116,10 +214,13 @@ const ContactForm: React.FC = () => {
     }));
   };
 
-  // iOS-specific input handler to prevent autofill issues
+  // iOS-safe input handler
   const handleInputChange = (field: keyof typeof fields, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+    // Don't prevent default on iOS to allow autofill to work
+    if (!isIOS) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     const value = e.target.value;
     handleChange(field, value);
@@ -133,7 +234,20 @@ const ContactForm: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Prevent double submission
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
+
+    // Clear any existing timeout
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+    }
+
+    // Set a timeout to reset submission state (iOS safety)
+    submitTimeoutRef.current = setTimeout(() => {
+      setIsSubmitting(false);
+    }, 10000);
 
     const updated = { ...fields };
     let valid = true;
@@ -150,13 +264,48 @@ const ContactForm: React.FC = () => {
       trackEvent('contact-form-submit');
       
       try {
-        await handleSubmit(e);
+        // Create a new FormData object to ensure clean submission
+        const formData = new FormData();
+        formData.append('name', fields.name.value);
+        formData.append('email', fields.email.value);
+        formData.append('phone', fields.phone.value);
+        formData.append('furnitureType', fields.furnitureType.value);
+        formData.append('pieces', fields.pieces.value);
+        formData.append('preferredTime', fields.preferredTime.value);
+        formData.append('notes', fields.notes.value);
+        formData.append('user_city', userCity);
+
+        // Submit using fetch for better iOS compatibility
+        const response = await fetch('https://formspree.io/f/mwpqepva', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          // Manually trigger success state
+          setFields(initialFields);
+          // Use a small delay to ensure state updates
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        } else {
+          throw new Error('Form submission failed');
+        }
       } catch (error) {
         console.error('Form submission error:', error);
       } finally {
+        if (submitTimeoutRef.current) {
+          clearTimeout(submitTimeoutRef.current);
+        }
         setIsSubmitting(false);
       }
     } else {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
       setIsSubmitting(false);
     }
   };
@@ -173,7 +322,15 @@ const ContactForm: React.FC = () => {
   return (
     <div className="bg-white rounded shadow p-6">
       <h3 className="text-xl font-bold mb-4">Get Your Free Quote</h3>
-      <form onSubmit={onSubmit} noValidate autoComplete="on">
+      <form 
+        ref={formRef}
+        onSubmit={onSubmit} 
+        noValidate 
+        autoComplete="on"
+        // iOS-specific attributes
+        data-turbo="false"
+        data-remote="false"
+      >
         <div className="space-y-4">
           {/* Hidden field for user location */}
           <input
@@ -196,6 +353,10 @@ const ContactForm: React.FC = () => {
               className={inputClass('name')}
               aria-invalid={!!fields.name.error}
               data-lpignore="true"
+              // iOS-specific attributes
+              autoCapitalize="words"
+              autoCorrect="off"
+              spellCheck="false"
             />
             {fields.name.touched && fields.name.error && (
               <p className="text-red-600 text-sm mt-1">{fields.name.error}</p>
@@ -216,6 +377,10 @@ const ContactForm: React.FC = () => {
               className={inputClass('email')}
               aria-invalid={!!fields.email.error}
               data-lpignore="true"
+              // iOS-specific attributes
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
             />
             {fields.email.touched && fields.email.error && (
               <p className="text-red-600 text-sm mt-1">{fields.email.error}</p>
@@ -241,6 +406,10 @@ const ContactForm: React.FC = () => {
                   aria-invalid={!!fields.phone.error}
                   placeholder="(555) 123-4567"
                   data-lpignore="true"
+                  // iOS-specific attributes
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                 />
               )}
             </InputMask>
@@ -290,6 +459,9 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('pieces')}
               className={inputClass('pieces')}
               data-lpignore="true"
+              // iOS-specific attributes
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
             {fields.pieces.touched && fields.pieces.error && (
               <p className="text-red-600 text-sm mt-1">{fields.pieces.error}</p>
@@ -309,6 +481,9 @@ const ContactForm: React.FC = () => {
               className={inputClass('preferredTime')}
               placeholder="e.g., Saturday afternoon"
               data-lpignore="true"
+              // iOS-specific attributes
+              autoCapitalize="none"
+              autoCorrect="on"
             />
           </div>
 
@@ -325,6 +500,9 @@ const ContactForm: React.FC = () => {
               className={inputClass('notes')}
               placeholder="Any extra details"
               data-lpignore="true"
+              // iOS-specific attributes
+              autoCapitalize="sentences"
+              autoCorrect="on"
             />
           </div>
 
@@ -336,6 +514,8 @@ const ContactForm: React.FC = () => {
               state.submitting || isSubmitting || !isFormValid() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             aria-busy={state.submitting || isSubmitting}
+            // iOS-specific attributes
+            data-turbo="false"
           >
             {state.submitting || isSubmitting ? 'Submitting…' : (
               <span className="flex items-center justify-center gap-2">
