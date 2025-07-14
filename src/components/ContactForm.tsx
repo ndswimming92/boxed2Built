@@ -60,19 +60,9 @@ const ContactForm: React.FC = () => {
   useEffect(() => {
     if (!isIOS) return;
 
-    // Prevent iOS Safari from refreshing on autofill
-    const preventRefresh = (e: Event) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return false;
-    };
-
-    // Handle iOS autofill events
+    // Handle iOS autofill events without interfering with form submission
     const handleAutofill = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Delay to allow autofill to complete
+      // Don't prevent default - let iOS autofill work naturally
       setTimeout(() => {
         if (formRef.current) {
           const formData = new FormData(formRef.current);
@@ -94,19 +84,9 @@ const ContactForm: React.FC = () => {
       }, 100);
     };
 
-    // Prevent page navigation on iOS
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isSubmitting) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
-    };
-
     // Handle page show (back/forward cache)
     const handlePageShow = (e: PageTransitionEvent) => {
       if (e.persisted) {
-        // Page restored from cache, ensure form is in correct state
         setIsSubmitting(false);
         if (submitTimeoutRef.current) {
           clearTimeout(submitTimeoutRef.current);
@@ -114,53 +94,32 @@ const ContactForm: React.FC = () => {
       }
     };
 
-    // Handle visibility change (iOS Safari specific)
+    // Handle visibility change
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      if (document.hidden && isSubmitting) {
         setIsSubmitting(false);
       }
     };
 
     // Add event listeners
-    window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pageshow', handlePageShow);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Add form-specific listeners for iOS
+    // Add form-specific listeners for iOS autofill
     if (formRef.current) {
       const form = formRef.current;
-      
-      // Prevent default form submission on iOS
-      form.addEventListener('submit', preventRefresh, true);
-      
-      // Handle autofill events
-      form.addEventListener('input', handleAutofill, true);
-      form.addEventListener('change', handleAutofill, true);
-      
-      // Prevent iOS from navigating away
-      const inputs = form.querySelectorAll('input, select, textarea');
-      inputs.forEach(input => {
-        input.addEventListener('blur', handleAutofill);
-        input.addEventListener('input', handleAutofill);
-      });
+      form.addEventListener('input', handleAutofill, { passive: true });
+      form.addEventListener('change', handleAutofill, { passive: true });
     }
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pageshow', handlePageShow);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       
       if (formRef.current) {
         const form = formRef.current;
-        form.removeEventListener('submit', preventRefresh, true);
-        form.removeEventListener('input', handleAutofill, true);
-        form.removeEventListener('change', handleAutofill, true);
-        
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-          input.removeEventListener('blur', handleAutofill);
-          input.removeEventListener('input', handleAutofill);
-        });
+        form.removeEventListener('input', handleAutofill);
+        form.removeEventListener('change', handleAutofill);
       }
       
       if (submitTimeoutRef.current) {
@@ -168,6 +127,17 @@ const ContactForm: React.FC = () => {
       }
     };
   }, [isIOS, fields, isSubmitting]);
+
+  // Handle successful submission
+  useEffect(() => {
+    if (state.succeeded) {
+      setFields(initialFields);
+      setIsSubmitting(false);
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+    }
+  }, [state.succeeded]);
 
   if (state.succeeded) {
     return (
@@ -214,28 +184,26 @@ const ContactForm: React.FC = () => {
     }));
   };
 
-  // iOS-safe input handler
   const handleInputChange = (field: keyof typeof fields, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    // Don't prevent default on iOS to allow autofill to work
-    if (!isIOS) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
     const value = e.target.value;
     handleChange(field, value);
   };
 
-  const isFormValid = () => Object.entries(fields).every(
-    ([key, { value }]) => !validators[key as keyof typeof fields](value)
-  );
+  const isFormValid = () => {
+    const requiredFields = ['name', 'email', 'furnitureType', 'pieces'];
+    return requiredFields.every(field => {
+      const fieldKey = field as keyof typeof fields;
+      const value = fields[fieldKey].value;
+      const error = validators[fieldKey](value);
+      return !error && value.trim() !== '';
+    });
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-
+    
     // Prevent double submission
-    if (isSubmitting) return;
+    if (isSubmitting || state.submitting) return;
 
     setIsSubmitting(true);
 
@@ -244,11 +212,12 @@ const ContactForm: React.FC = () => {
       clearTimeout(submitTimeoutRef.current);
     }
 
-    // Set a timeout to reset submission state (iOS safety)
+    // Set a timeout to reset submission state
     submitTimeoutRef.current = setTimeout(() => {
       setIsSubmitting(false);
     }, 10000);
 
+    // Validate all fields
     const updated = { ...fields };
     let valid = true;
 
@@ -264,7 +233,7 @@ const ContactForm: React.FC = () => {
       trackEvent('contact-form-submit');
       
       try {
-        // Create a new FormData object to ensure clean submission
+        // Create form data for submission
         const formData = new FormData();
         formData.append('name', fields.name.value);
         formData.append('email', fields.email.value);
@@ -275,38 +244,20 @@ const ContactForm: React.FC = () => {
         formData.append('notes', fields.notes.value);
         formData.append('user_city', userCity);
 
-        // Submit using fetch for better iOS compatibility
-        const response = await fetch('https://formspree.io/f/mwpqepva', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          // Manually trigger success state
-          setFields(initialFields);
-          // Use a small delay to ensure state updates
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
-        } else {
-          throw new Error('Form submission failed');
-        }
+        // Use Formspree's handleSubmit function
+        await handleSubmit(formData);
+        
       } catch (error) {
         console.error('Form submission error:', error);
-      } finally {
-        if (submitTimeoutRef.current) {
-          clearTimeout(submitTimeoutRef.current);
-        }
         setIsSubmitting(false);
       }
     } else {
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-      }
       setIsSubmitting(false);
+    }
+
+    // Clear timeout
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
     }
   };
 
@@ -327,9 +278,6 @@ const ContactForm: React.FC = () => {
         onSubmit={onSubmit} 
         noValidate 
         autoComplete="on"
-        // iOS-specific attributes
-        data-turbo="false"
-        data-remote="false"
       >
         <div className="space-y-4">
           {/* Hidden field for user location */}
@@ -352,8 +300,6 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('name')}
               className={inputClass('name')}
               aria-invalid={!!fields.name.error}
-              data-lpignore="true"
-              // iOS-specific attributes
               autoCapitalize="words"
               autoCorrect="off"
               spellCheck="false"
@@ -376,8 +322,6 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('email')}
               className={inputClass('email')}
               aria-invalid={!!fields.email.error}
-              data-lpignore="true"
-              // iOS-specific attributes
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck="false"
@@ -405,8 +349,6 @@ const ContactForm: React.FC = () => {
                   className={inputClass('phone')}
                   aria-invalid={!!fields.phone.error}
                   placeholder="(555) 123-4567"
-                  data-lpignore="true"
-                  // iOS-specific attributes
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
@@ -428,7 +370,6 @@ const ContactForm: React.FC = () => {
               onChange={(e) => handleInputChange('furnitureType', e)}
               onBlur={() => handleBlur('furnitureType')}
               className={inputClass('furnitureType')}
-              data-lpignore="true"
             >
               <option value="">-- Please choose --</option>
               <option value="Bed">Bed</option>
@@ -458,8 +399,6 @@ const ContactForm: React.FC = () => {
               onChange={(e) => handleInputChange('pieces', e)}
               onBlur={() => handleBlur('pieces')}
               className={inputClass('pieces')}
-              data-lpignore="true"
-              // iOS-specific attributes
               inputMode="numeric"
               pattern="[0-9]*"
             />
@@ -480,8 +419,6 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('preferredTime')}
               className={inputClass('preferredTime')}
               placeholder="e.g., Saturday afternoon"
-              data-lpignore="true"
-              // iOS-specific attributes
               autoCapitalize="none"
               autoCorrect="on"
             />
@@ -499,8 +436,6 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('notes')}
               className={inputClass('notes')}
               placeholder="Any extra details"
-              data-lpignore="true"
-              // iOS-specific attributes
               autoCapitalize="sentences"
               autoCorrect="on"
             />
@@ -514,8 +449,6 @@ const ContactForm: React.FC = () => {
               state.submitting || isSubmitting || !isFormValid() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             aria-busy={state.submitting || isSubmitting}
-            // iOS-specific attributes
-            data-turbo="false"
           >
             {state.submitting || isSubmitting ? 'Submitting…' : (
               <span className="flex items-center justify-center gap-2">
