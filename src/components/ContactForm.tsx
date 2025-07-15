@@ -16,7 +16,6 @@ const initialFields = {
   phone: { value: '', error: '', touched: false },
   furnitureType: { value: '', error: '', touched: false },
   pieces: { value: '', error: '', touched: false },
-  preferredTime: { value: '', error: '', touched: false },
   preferredDate: { value: '', error: '', touched: false },
   preferredTimeSlot: { value: '', error: '', touched: false },
   notes: { value: '', error: '', touched: false },
