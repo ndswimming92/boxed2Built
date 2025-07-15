@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
+import ScrollProgressBar from '../ui/ScrollProgressBar';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -252,6 +253,9 @@ const Header: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar />
     </header>
   );
 };
