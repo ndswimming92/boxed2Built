@@ -17,6 +17,8 @@ const initialFields = {
   furnitureType: { value: '', error: '', touched: false },
   pieces: { value: '', error: '', touched: false },
   preferredTime: { value: '', error: '', touched: false },
+  preferredDate: { value: '', error: '', touched: false },
+  preferredTimeSlot: { value: '', error: '', touched: false },
   notes: { value: '', error: '', touched: false },
 };
 
@@ -160,11 +162,11 @@ const ContactForm: React.FC = () => {
     pieces: (v: string) => {
       const n = parseInt(v, 10);
       if (!v) return 'Number of pieces is required';
-      if (isNaN(n) || n < 1) return 'At least 1 piece';
-      if (n > 5) return 'For more than 5, please call';
+      if (isNaN(n) || n < 1) return 'Must be at least 1 piece';
       return '';
     },
-    preferredTime: () => '',
+    preferredDate: () => '',
+    preferredTimeSlot: () => '',
     notes: () => '',
   };
 
@@ -240,7 +242,8 @@ const ContactForm: React.FC = () => {
         formData.append('phone', fields.phone.value);
         formData.append('furnitureType', fields.furnitureType.value);
         formData.append('pieces', fields.pieces.value);
-        formData.append('preferredTime', fields.preferredTime.value);
+        formData.append('preferredDate', fields.preferredDate.value);
+        formData.append('preferredTimeSlot', fields.preferredTimeSlot.value);
         formData.append('notes', fields.notes.value);
         formData.append('user_city', userCity);
 
@@ -394,34 +397,56 @@ const ContactForm: React.FC = () => {
               type="number"
               name="pieces"
               min="1"
-              max="5"
               value={fields.pieces.value}
               onChange={(e) => handleInputChange('pieces', e)}
               onBlur={() => handleBlur('pieces')}
               className={inputClass('pieces')}
               inputMode="numeric"
               pattern="[0-9]*"
+              placeholder="e.g., 3"
             />
             {fields.pieces.touched && fields.pieces.error && (
               <p className="text-red-600 text-sm mt-1">{fields.pieces.error}</p>
             )}
           </div>
 
-          {/* Preferred Time */}
+          {/* Preferred Date */}
           <div>
-            <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700 mb-1">Preferred Date & Time</label>
+            <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700 mb-1">Preferred Date (optional)</label>
             <input
-              id="preferredTime"
-              name="preferredTime"
-              type="text"
-              value={fields.preferredTime.value}
-              onChange={(e) => handleInputChange('preferredTime', e)}
-              onBlur={() => handleBlur('preferredTime')}
-              className={inputClass('preferredTime')}
-              placeholder="e.g., Saturday afternoon"
+              id="preferredDate"
+              name="preferredDate"
+              type="date"
+              value={fields.preferredDate.value}
+              onChange={(e) => handleInputChange('preferredDate', e)}
+              onBlur={() => handleBlur('preferredDate')}
+              className={inputClass('preferredDate')}
+              min={new Date().toISOString().split('T')[0]}
               autoCapitalize="none"
-              autoCorrect="on"
+              autoCorrect="off"
             />
+            {fields.preferredDate.touched && fields.preferredDate.error && (
+              <p className="text-red-600 text-sm mt-1">{fields.preferredDate.error}</p>
+            )}
+          </div>
+
+          {/* Preferred Time Slot */}
+          <div>
+            <label htmlFor="preferredTimeSlot" className="block text-sm font-medium text-gray-700 mb-1">Preferred Time (optional)</label>
+            <input
+              id="preferredTimeSlot"
+              name="preferredTimeSlot"
+              type="time"
+              value={fields.preferredTimeSlot.value}
+              onChange={(e) => handleInputChange('preferredTimeSlot', e)}
+              onBlur={() => handleBlur('preferredTimeSlot')}
+              className={inputClass('preferredTimeSlot')}
+              autoCapitalize="none"
+              autoCorrect="off"
+            />
+            {fields.preferredTimeSlot.touched && fields.preferredTimeSlot.error && (
+              <p className="text-red-600 text-sm mt-1">{fields.preferredTimeSlot.error}</p>
+            )}
           </div>
 
           {/* Notes */}
