@@ -1,44 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  
+  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://boxed2built.com/</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png</image:loc>
-      <image:title>Boxed2Built Logo - Professional Furniture Assembly Service</image:title>
-      <image:caption>Boxed2Built provides professional furniture assembly services in Spring Hill, TN</image:caption>
+      <image:loc>https://boxed2built.com/Modern%20Minimalist%20Logo%20for%20Boxed2Built.png</image:loc>
+      <image:title>Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN</image:title>
+      <image:caption>Expert IKEA, Target, Walmart furniture assembly in Spring Hill, Columbia, Franklin Tennessee</image:caption>
     </image:image>
   </url>
+
+  <!-- Services Page - High Priority for SEO -->
   <url>
     <loc>https://boxed2built.com/services</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
-    <loc>https://boxed2built.com/about</loc>
-    <lastmod>2025-01-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- Contact Page - High Priority for Local Business -->
   <url>
     <loc>https://boxed2built.com/contact</loc>
     <lastmod>2025-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- About Page - Important for Trust Signals -->
+  <url>
+    <loc>https://boxed2built.com/about</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Legal Pages - Lower Priority but Important for Compliance -->
   <url>
     <loc>https://boxed2built.com/privacy-policy</loc>
     <lastmod>2025-01-27</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
   <url>
     <loc>https://boxed2built.com/terms-of-service</loc>
     <lastmod>2025-01-27</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
 </urlset>

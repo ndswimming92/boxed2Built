@@ -1,14 +1,30 @@
+# Robots.txt for Boxed2Built - Professional Furniture Assembly Service
+# Spring Hill, TN - IKEA, Target, Walmart Assembly
+
 User-agent: *
 Allow: /
+
+# Block admin and private areas
 Disallow: /admin/
 Disallow: /private/
 Disallow: /*.pdf$
+Disallow: /api/
+
+# Allow important pages for SEO
+Allow: /services
+Allow: /contact
+Allow: /about
+Allow: /privacy-policy
+Allow: /terms-of-service
 
 # Crawl-delay for better server performance
 Crawl-delay: 1
 
-# Sitemap location
+# Primary sitemap location
 Sitemap: https://boxed2built.com/sitemap.xml
 
-# Additional sitemaps
+# Additional sitemaps for comprehensive indexing
 Sitemap: https://boxed2built.com/sitemap-images.xml
+
+# Host directive for preferred domain
+Host: https://boxed2built.com
