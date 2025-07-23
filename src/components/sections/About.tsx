@@ -77,7 +77,7 @@ const About: React.FC = () => {
                   <CheckCircle className="text-green-600" size={24} />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900">Professional & Clean</h4>
+                  <h3 className="text-lg font-semibold text-gray-900">Professional & Clean</h3>
                   <p className="text-gray-600">Punctual service that leaves your space cleaner than we found it</p>
                 </div>
               </div>
