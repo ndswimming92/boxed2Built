@@ -142,7 +142,7 @@ const Hero: React.FC = () => {
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
               <div className="flex items-center justify-center">
                 <DollarSign size={20} className="mr-2" />
-                <h3 className="font-semibold">Transparent Furniture Assembly Pricing</h3>
+                <h2 className="font-semibold">Transparent Furniture Assembly Pricing</h2>
               </div>
             </div>
             <div className="p-6">
