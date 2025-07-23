@@ -32,7 +32,7 @@ const About: React.FC = () => {
                   <Award className="text-blue-600" size={32} />
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Professional Service</h4>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Professional Service</h3>
               <p className="text-gray-600">Expert furniture assembly with attention to detail and quality craftsmanship</p>
             </div>
 
@@ -52,7 +52,7 @@ const About: React.FC = () => {
                   <Users className="text-purple-600" size={32} />
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Local Service</h4>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Local Service</h3>
               <p className="text-gray-600">Proudly serving Spring Hill and surrounding Tennessee communities</p>
             </div>
           </div>
@@ -65,7 +65,7 @@ const About: React.FC = () => {
                   <Heart className="text-blue-600" size={24} />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900">Expert IKEA Assembly</h4>
+                  <h3 className="text-lg font-semibold text-gray-900">Expert IKEA Assembly</h3>
                   <p className="text-gray-600">Specialized in IKEA furniture with years of experience in complex assembly projects</p>
                 </div>
               </div>
@@ -104,9 +104,9 @@ const About: React.FC = () => {
                 />
               </div>
               <div className="md:w-1/2">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                <h4 className="text-2xl font-bold text-gray-900 mb-4">
                   Proudly Serving Spring Hill, TN & Middle Tennessee
-                </h3>
+                </h4>
                 <p className="text-gray-700 mb-6 leading-relaxed">
                   As a local Spring Hill furniture assembly company, we understand the needs of Tennessee families. 
                   From single chairs to complete bedroom sets, we provide honest work with a helpful attitude throughout 
