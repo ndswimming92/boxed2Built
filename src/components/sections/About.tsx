@@ -42,7 +42,7 @@ const About: React.FC = () => {
                   <Clock className="text-green-600" size={32} />
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Flexible Scheduling</h4>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Flexible Scheduling</h3>
               <p className="text-gray-600">Convenient scheduling that works with your busy lifestyle and timeline</p>
             </div>
 
