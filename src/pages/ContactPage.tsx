@@ -15,7 +15,7 @@ const ContactPage: React.FC = () => {
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Contact Boxed2Built for professional furniture assembly in Spring Hill, TN. Call (615) 403-4538 or book online. Serving IKEA, Target, Walmart assembly needs.');
+      metaDescription.setAttribute('content', 'Contact Boxed2Built for professional furniture assembly in Spring Hill, TN. Call (931) 674-1196 or book online. Serving IKEA, Target, Walmart assembly needs.');
     }
   }, []);
 
