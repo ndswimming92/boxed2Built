@@ -9,11 +9,11 @@ import { getCalendlyUrl } from '../utils/utm';
 
 const ServicesPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Affordable Furniture Assembly Spring Hill TN | IKEA Target Walmart Pricing | Boxed2Built';
+    document.title = 'Furniture Assembly Services & Pricing - Spring Hill, TN | Boxed2Built';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Affordable flat pack furniture assembly Spring Hill TN. IKEA, Target, Walmart, Lowe\'s, Home Depot assembly pricing. Same day service. Starting at $41. Free quotes.');
+      metaDescription.setAttribute('content', 'Professional furniture assembly services in Spring Hill, TN. IKEA, Target, Walmart assembly with transparent pricing. Starting at $41. Free quotes available.');
     }
   }, []);
 

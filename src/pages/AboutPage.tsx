@@ -10,11 +10,11 @@ import { getCalendlyUrl } from '../utils/utm';
 
 const AboutPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'About Boxed2Built - Best Furniture Assembly Spring Hill TN | Local Flat Pack Expert';
+    document.title = 'About Boxed2Built - Professional Furniture Assembly in Spring Hill, TN';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Meet Nicholas Davidson, Spring Hill\'s trusted flat pack furniture assembly expert. Professional IKEA, Target, Walmart, Lowe\'s assembly service in Maury County TN.');
+      metaDescription.setAttribute('content', 'Learn about Boxed2Built, Spring Hill\'s trusted furniture assembly service. Professional IKEA, Target, Walmart assembly with local expertise and reliable service.');
     }
   }, []);
 

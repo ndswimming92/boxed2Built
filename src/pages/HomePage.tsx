@@ -7,15 +7,6 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 
 const HomePage: React.FC = () => {
-  useEffect(() => {
-    document.title = 'Best Furniture Assembly Spring Hill TN | IKEA Target Walmart | Boxed2Built';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Professional flat pack furniture assembly Spring Hill TN. Expert IKEA, Target, Walmart, Lowe\'s assembly service. Same day service available. Call (931) 674-1196.');
-    }
-  }, []);
-
   return (
     <>
       <Header />

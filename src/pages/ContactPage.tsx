@@ -11,11 +11,11 @@ const ContactPage: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
-    document.title = 'Contact Boxed2Built - Same Day Furniture Assembly Spring Hill TN | Free Quotes';
+    document.title = 'Contact Boxed2Built - Furniture Assembly Service in Spring Hill, TN';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Contact Boxed2Built for same day flat pack furniture assembly Spring Hill TN. Call (931) 674-1196 or book online. IKEA, Target, Walmart, Lowe\'s assembly service.');
+      metaDescription.setAttribute('content', 'Contact Boxed2Built for professional furniture assembly in Spring Hill, TN. Call (931) 674-1196 or book online. Serving IKEA, Target, Walmart assembly needs.');
     }
   }, []);
 

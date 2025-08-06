@@ -62,8 +62,8 @@ const Footer: React.FC = () => {
                 />
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
-                Professional flat pack furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
-                Expert IKEA, Target, Walmart, Lowe's, Home Depot flat pack assembly with same day service available.
+                Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
+                Expert IKEA, Target, Walmart furniture assembly with flexible scheduling.
               </p>
 
               <address
@@ -102,16 +102,14 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h4 className="font-semibold text-white mb-4">Our Services</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>IKEA Furniture Assembly Spring Hill TN</li>
-                <li>Target Furniture Assembly Spring Hill TN</li>
-                <li>Walmart Furniture Assembly Spring Hill TN</li>
-                <li>Lowe's Furniture Assembly Spring Hill TN</li>
-                <li>Home Depot Furniture Assembly Spring Hill TN</li>
-                <li>Bed Frame Assembly Spring Hill TN</li>
-                <li>Dresser Assembly Spring Hill TN</li>
-                <li>Table Assembly Spring Hill TN</li>
-                <li>Bookshelf Assembly Spring Hill TN</li>
-                <li>Same Day Flat Pack Assembly</li>
+                <li>IKEA Furniture Assembly</li>
+                <li>Target Furniture Assembly</li>
+                <li>Walmart Furniture Assembly</li>
+                <li>Bed Frame Assembly</li>
+                <li>Dresser Assembly</li>
+                <li>Desk & Table Assembly</li>
+                <li>Bookshelf Assembly</li>
+                <li>Professional Service</li>
               </ul>
             </div>
 
@@ -124,9 +122,9 @@ const Footer: React.FC = () => {
                 <li>Franklin, TN</li>
                 <li>Thompson's Station, TN</li>
                 <li>Brentwood, TN</li>
-                <li>Maury County, TN</li>
                 <li>Nashville Metro Area</li>
                 <li>Williamson County</li>
+                <li>Maury County</li>
               </ul>
             </div>
           </div>
@@ -205,8 +203,8 @@ const Footer: React.FC = () => {
 
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-400 text-center mt-4">
-            Professional flat pack furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
-            Brentwood, Maury County and surrounding Tennessee communities. Expert IKEA, Target, Walmart, Lowe's, Home Depot flat pack assembly with same day service available.
+            Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
+            Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly.
           </p>
 
           <div className="text-sm text-gray-400 text-center space-y-2 mt-4">
