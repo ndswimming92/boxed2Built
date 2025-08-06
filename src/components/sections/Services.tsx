@@ -34,11 +34,11 @@ const Services: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Professional Furniture Assembly Services & Pricing
+            Affordable Flat Pack Furniture Assembly Services & Pricing
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-            Expert assembly for IKEA, Target, Walmart, and all major furniture brands in Spring Hill, TN. 
-            Transparent pricing, professional service, flexible scheduling.
+            Expert flat pack assembly for IKEA, Target, Walmart, Lowe's, Home Depot and all major furniture brands in Spring Hill, TN. 
+            Affordable pricing, same day service available, professional flat pack assembly near you.
           </p>
           
           {/* Trust indicators without ratings/licensing */}
@@ -75,7 +75,7 @@ const Services: React.FC = () => {
             <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
               <div className="p-6">
                 <div className="flex items-center mb-3">
-                  <h3 className="text-xl font-bold text-gray-900">{service.type} Assembly</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{service.type} Assembly Spring Hill TN</h3>
                   {index === 0 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
                 </div>
                 <p className="text-gray-600 mb-4">{service.description}</p>
@@ -112,10 +112,10 @@ const Services: React.FC = () => {
         {/* Enhanced CTA Section with more local keywords */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready for Expert Furniture Assembly?</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready for Same Day Flat Pack Assembly?</h3>
             <p className="text-blue-100 text-lg max-w-3xl mx-auto">
-              Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas. 
-              Book a free consultation or get a custom quote for multiple items. Volume discounts available!
+              Serving Spring Hill, Columbia, Franklin & Maury County TN. Professional flat pack furniture assembly near you.
+              Book same day service or get a custom quote for multiple items. Affordable pricing available!
             </p>
           </div>
           
@@ -161,12 +161,12 @@ const Services: React.FC = () => {
 
         {/* Enhanced Service Areas with more local keywords */}
         <div className="bg-gray-50 p-6 rounded-lg text-center mb-8">
-          <h4 className="font-semibold text-gray-900 mb-2">Professional Furniture Assembly Service Areas in Tennessee</h4>
+          <h4 className="font-semibold text-gray-900 mb-2">Professional Flat Pack Furniture Assembly Service Areas in Tennessee</h4>
           <p className="text-gray-600 mb-2">
-            <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood
+            <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood • Maury County TN
           </p>
           <p className="text-sm text-gray-500">
-            Also serving: Nashville Metro Area • Williamson County • Maury County • Flexible scheduling available
+            Also serving: Nashville Metro Area • Williamson County • Same day furniture assembly Spring Hill TN available
           </p>
         </div>
 
@@ -175,20 +175,20 @@ const Services: React.FC = () => {
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Do you assemble IKEA furniture?</h4>
-              <p className="text-gray-600 text-sm">Yes, we specialize in IKEA furniture assembly and are experienced with all IKEA product lines including beds, dressers, desks, and storage solutions.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">How much to assemble IKEA furniture Spring Hill TN?</h4>
+              <p className="text-gray-600 text-sm">Our IKEA furniture assembly Spring Hill TN starts at $41 for chairs, $87 for desks, $151 for dressers. We specialize in all IKEA flat pack furniture assembly with same day service available.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">What's included in the assembly service?</h4>
-              <p className="text-gray-600 text-sm">All services include unboxing, complete assembly, placement in your desired location, debris cleanup, and a final quality check.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Do you offer same day furniture assembly Spring Hill TN?</h4>
+              <p className="text-gray-600 text-sm">Yes! We offer same day furniture assembly Spring Hill TN for IKEA, Target, Walmart, Lowe's and Home Depot flat pack furniture when scheduling permits.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
-              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (931) 674-1196 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">What stores do you assemble furniture from?</h4>
+              <p className="text-gray-600 text-sm">We provide furniture assembly service for Target buys, flat pack furniture setup Walmart Spring Hill, IKEA, Lowe's, Home Depot and all major retailers in Maury County TN.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>
-              <p className="text-gray-600 text-sm">Yes, we offer volume discounts for multiple furniture items. Contact us for a custom quote on larger projects.</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Are you the best furniture assembly Spring Hill TN?</h4>
+              <p className="text-gray-600 text-sm">We're the top-rated local furniture assembly service Spring Hill TN, specializing in professional flat pack assembly with affordable pricing and same day service availability.</p>
             </div>
           </div>
         </div>
