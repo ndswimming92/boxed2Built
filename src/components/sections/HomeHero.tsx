@@ -37,8 +37,8 @@ const HomeHero: React.FC = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-6">
-              <p className="text-xl md:text-2xl text-gray-600 mb-6">
                 Professional IKEA, Target, Walmart, Lowe's & Home Depot flat pack assembly. Same day service available in Maury County.
+              </p>
 
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
