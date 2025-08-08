@@ -106,6 +106,8 @@ const Header: React.FC = () => {
                 alt="Boxed2Built - Professional Furniture Assembly"
                 title="Boxed2Built - Professional Furniture Assembly"
                 className="h-12 w-auto"
+                width="120"
+                height="48"
               />
             </a>
           </div>
