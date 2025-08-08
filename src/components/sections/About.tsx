@@ -94,13 +94,16 @@ const About: React.FC = () => {
                   src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                   alt="Professional furniture assembly service in Spring Hill Tennessee" 
                   className="rounded-lg shadow-md"
-                  width="630"
-                  height="420"
+                  width="500"
+                  height="333"
                   sizes={{
-                    '(max-width: 768px)': '100vw',
-                    '(max-width: 1024px)': '50vw',
-                    default: '40vw'
+                    '(max-width: 320px)': '280px',
+                    '(max-width: 480px)': '440px',
+                    '(max-width: 768px)': '728px',
+                    '(max-width: 1024px)': '480px',
+                    default: '500px'
                   }}
+                  responsiveSizes={[320, 480, 500, 768]}
                 />
               </div>
               <div className="md:w-1/2">

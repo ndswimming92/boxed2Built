@@ -84,13 +84,16 @@ const AboutPage: React.FC = () => {
                     src="https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                     alt="Nicholas Davidson - Professional furniture assembly expert in Spring Hill Tennessee" 
                     className="rounded-lg shadow-lg"
-                    width="630"
-                    height="420"
+                    width="500"
+                    height="333"
                     sizes={{
-                      '(max-width: 768px)': '100vw',
-                      '(max-width: 1024px)': '50vw',
-                      default: '40vw'
+                      '(max-width: 320px)': '280px',
+                      '(max-width: 480px)': '440px',
+                      '(max-width: 768px)': '728px',
+                      '(max-width: 1024px)': '480px',
+                      default: '500px'
                     }}
+                    responsiveSizes={[320, 480, 500, 768]}
                   />
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Nicholas Davidson</p>

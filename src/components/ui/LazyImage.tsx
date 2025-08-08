@@ -42,23 +42,29 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const generateSrcSet = (baseUrl: string, isWebP: boolean = false) => {
     if (srcSet || webpSrcSet) return isWebP ? webpSrcSet : srcSet;
     
+    // Check if it's a Pexels URL for proper optimization
+    if (!baseUrl.includes('pexels.com')) {
+      return baseUrl;
+    }
+    
     // Extract base URL without query parameters for Pexels images
     const urlParts = baseUrl.split('?');
     const baseImageUrl = urlParts[0];
-    const queryParams = urlParts[1] || '';
     
     // Generate different sizes for responsive images
     const sizes = [
-      { width: 400, descriptor: '400w' },
-      { width: 800, descriptor: '800w' },
-      { width: 1200, descriptor: '1200w' },
-      { width: 1600, descriptor: '1600w' }
+      { width: 320, height: 213, descriptor: '320w' },
+      { width: 480, height: 320, descriptor: '480w' },
+      { width: 768, height: 512, descriptor: '768w' },
+      { width: 1024, height: 683, descriptor: '1024w' },
+      { width: 1280, height: 853, descriptor: '1280w' }
     ];
 
     return sizes
       .map(size => {
         const format = isWebP ? 'webp' : 'jpeg';
-        const url = `${baseImageUrl}?auto=compress&cs=tinysrgb&w=${size.width}&h=${Math.round(size.width * 0.67)}&dpr=1&fm=${format}`;
+        const quality = size.width <= 480 ? 85 : 80; // Higher quality for smaller images
+        const url = `${baseImageUrl}?auto=compress&cs=tinysrgb&w=${size.width}&h=${size.height}&dpr=1&fm=${format}&q=${quality}`;
         return `${url} ${size.descriptor}`;
       })
       .join(', ');
@@ -74,6 +80,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
       const baseUrl = urlParts[0];
       const params = new URLSearchParams(urlParts[1] || '');
       params.set('fm', 'webp');
+      params.set('q', '80');
       return `${baseUrl}?${params.toString()}`;
     }
     
@@ -84,8 +91,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const responsiveSrcSet = generateSrcSet(src);
   const responsiveWebPSrcSet = webpSource ? generateSrcSet(webpSource, true) : null;
 
-  // Default sizes if not provided
-  const defaultSizes = sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw';
+  // Improved default sizes for better performance
+  const defaultSizes = sizes || '(max-width: 320px) 280px, (max-width: 480px) 440px, (max-width: 768px) 728px, (max-width: 1024px) 50vw, 33vw';
 
   return (
     <div className={`relative ${className}`}>

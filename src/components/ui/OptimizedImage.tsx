@@ -31,7 +31,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false,
   sizes,
   quality = 80,
-  responsiveSizes = [400, 800, 1200, 1600]
+  responsiveSizes = [320, 480, 768, 1024, 1280]
 }) => {
   // Generate responsive image sources
   const imageSources = generateResponsiveImageSources(src, {

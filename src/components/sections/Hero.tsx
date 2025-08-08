@@ -118,14 +118,17 @@ const Hero: React.FC = () => {
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                 alt="Professional furniture assembly service in Spring Hill Tennessee" 
                 className="w-full h-auto rounded"
-                width="630"
-                height="420"
+                width="600"
+                height="400"
                 priority={true}
                 sizes={{
-                  '(max-width: 768px)': '100vw',
-                  '(max-width: 1024px)': '50vw',
-                  default: '40vw'
+                  '(max-width: 320px)': '280px',
+                  '(max-width: 480px)': '440px',
+                  '(max-width: 768px)': '728px',
+                  '(max-width: 1024px)': '480px',
+                  default: '600px'
                 }}
+                responsiveSizes={[320, 480, 600, 768, 1024]}
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
