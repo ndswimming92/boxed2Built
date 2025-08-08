@@ -59,6 +59,8 @@ const Footer: React.FC = () => {
                   alt="Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN"
                   loading="lazy"
                   className="h-12 w-auto"
+                  width="120"
+                  height="48"
                 />
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">

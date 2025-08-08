@@ -127,7 +127,11 @@ const LazyImage: React.FC<LazyImageProps> = ({
             onLoad={handleLoad}
             onError={handleError}
             className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 w-full h-auto`}
-            style={{ aspectRatio: width && height ? `${width}/${height}` : undefined }}
+            style={{ 
+              aspectRatio: width && height ? `${width}/${height}` : undefined,
+              width: width ? `${width}px` : undefined,
+              height: height ? `${height}px` : undefined
+            }}
           />
         </picture>
       )}
