@@ -1,25 +1,27 @@
 /*
-  # Content Security Policy - Effective against XSS attacks
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://gc.zgo.at https://www.clarity.ms https://calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://www.googletagmanager.com https://gc.zgo.at https://www.clarity.ms https://calendly.com https://ipapi.co https://formspree.io; frame-src https://calendly.com; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; upgrade-insecure-requests
-  
+  # Content Security Policy (start enforced; switch to Report-Only if you need to tune)
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests; 
+    script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://gc.zgo.at https://www.clarity.ms https://assets.calendly.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com;
+    font-src 'self' https://fonts.gstatic.com data:;
+    img-src 'self' data: blob: https:;
+    connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://gc.zgo.at https://www.clarity.ms https://calendly.com https://assets.calendly.com https://ipapi.co https://formspree.io https://api.formspree.io;
+    frame-src https://calendly.com;
+    form-action 'self' https://formspree.io https://api.formspree.io;
+    frame-ancestors 'none'
+
   # HTTP Strict Transport Security - Force HTTPS
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  
-  # Cross-Origin Opener Policy - Proper origin isolation
+
+  # Cross-Origin Opener Policy
   Cross-Origin-Opener-Policy: same-origin
-  
+
   # Additional security headers
-  X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 
-# Specific headers for HTML files
-/*.html
-  # Content Security Policy with nonce support for inline scripts
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://gc.zgo.at https://www.clarity.ms https://calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://www.googletagmanager.com https://gc.zgo.at https://www.clarity.ms https://calendly.com https://ipapi.co https://formspree.io; frame-src https://calendly.com; object-src 'none'; base-uri 'self'; form-action 'self' https://formspree.io; upgrade-insecure-requests
-
-# Font files
+# Cache headers for fonts
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
@@ -33,19 +35,15 @@
 *.png
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-
 *.jpg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-
 *.jpeg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-
 *.webp
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-
 *.svg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
