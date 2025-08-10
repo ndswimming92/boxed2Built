@@ -12,8 +12,16 @@
     worker-src 'self' blob:;
     manifest-src 'self';
 
+  # Clickjacking legacy fallback (kept alongside CSP for coverage and Lighthouse)
+  X-Frame-Options: DENY
+
+  # HTTP Strict Transport Security - Force HTTPS
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Cross-Origin Opener Policy
   Cross-Origin-Opener-Policy: same-origin
+
+  # Additional security headers
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
