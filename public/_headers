@@ -4,7 +4,9 @@
     script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://gc.zgo.at https://www.clarity.ms https://assets.calendly.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com;
     font-src 'self' https://fonts.gstatic.com data:;
-    img-src 'self' data: blob: https:;
+    img-src 'self' https: data: blob:;
+    media-src 'self' https:;
+    prefetch-src 'self' https:;
     connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://gc.zgo.at https://www.clarity.ms https://calendly.com https://assets.calendly.com https://ipapi.co https://formspree.io https://api.formspree.io;
     frame-src https://calendly.com;
     form-action 'self' https://formspree.io https://api.formspree.io;
@@ -12,7 +14,7 @@
     worker-src 'self' blob:;
     manifest-src 'self';
 
-  # Clickjacking legacy fallback (kept alongside CSP for coverage and Lighthouse)
+  # Clickjacking legacy fallback
   X-Frame-Options: DENY
 
   # HTTP Strict Transport Security - Force HTTPS
@@ -37,18 +39,18 @@
   Cross-Origin-Resource-Policy: cross-origin
 
 # Images
-*.png
+/*.png
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-*.jpg
+/*.jpg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-*.jpeg
+/*.jpeg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-*.webp
+/*.webp
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
-*.svg
+/*.svg
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
