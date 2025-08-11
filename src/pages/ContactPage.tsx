@@ -94,7 +94,7 @@ const ContactPage: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
                           href="tel:+19316741196" 
-                          className="text-blue-600 hover:text-blue-800 text-lg"
+                          className="text-blue-700 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
                           (931) 674-1196
@@ -112,7 +112,7 @@ const ContactPage: React.FC = () => {
                         <a 
                           href="#" 
                           onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-700 hover:text-blue-800"
                         >
                           boxed2builtco@gmail.com
                         </a>
@@ -150,7 +150,7 @@ const ContactPage: React.FC = () => {
                     <a
                       href="tel:+19316741196"
                       onClick={handlePhoneClick}
-                      className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                     className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Phone size={20} className="mr-2" />
                       Call Now
@@ -158,7 +158,7 @@ const ContactPage: React.FC = () => {
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                      className="inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                     className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Mail size={20} className="mr-2" />
                       Send Email
@@ -204,7 +204,7 @@ const ContactPage: React.FC = () => {
                           href="/terms-of-service"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
+                         className="text-blue-700 hover:text-blue-800 underline"
                           onClick={handleTermsClick}
                         >
                           Terms of Service
@@ -221,7 +221,7 @@ const ContactPage: React.FC = () => {
                       !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     disabled={!acceptTerms}
-                    trackingLabel="book-consultation-contact"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                   >
                     <Calendar size={24} className="mr-3" />
                     Book Free Consultation

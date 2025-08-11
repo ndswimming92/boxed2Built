@@ -79,7 +79,7 @@ const HomeCTA: React.FC = () => {
                     href="/terms-of-service"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-blue-700 hover:text-blue-800 underline"
                     onClick={handleTermsClick}
                   >
                     Terms of Service
@@ -104,7 +104,7 @@ const HomeCTA: React.FC = () => {
               <a
                 href="tel:+19316741196"
                 onClick={handlePhoneClick}
-                className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
               >
                 <Phone size={20} className="mr-2" />
                 Call (931) 674-1196

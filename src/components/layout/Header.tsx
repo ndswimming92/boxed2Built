@@ -62,10 +62,10 @@ const Header: React.FC = () => {
     const isActive = isActivePage(path);
     
     if (isActive) {
-      return `${baseClasses} text-blue-600 font-semibold`;
+      return `${baseClasses} text-blue-700 font-semibold`;
     }
     
-    return `${baseClasses} text-gray-700 hover:text-blue-600`;
+    return `${baseClasses} text-gray-800 hover:text-blue-700`;
   };
 
   const getMobileNavLinkClasses = (path: string) => {
@@ -76,7 +76,7 @@ const Header: React.FC = () => {
       return `${baseClasses}`;
     }
     
-    return `${baseClasses} text-gray-700`;
+    return `${baseClasses} text-gray-800`;
   };
 
   return (
@@ -123,7 +123,7 @@ const Header: React.FC = () => {
                   aria-label="Go to home page"
                 >
                   Home
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
               <li>
@@ -134,7 +134,7 @@ const Header: React.FC = () => {
                   aria-label="Learn about Boxed2Built"
                 >
                   About
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
               <li>
@@ -145,7 +145,7 @@ const Header: React.FC = () => {
                   aria-label="View our services and pricing"
                 >
                   Services
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
               <li>
@@ -156,7 +156,7 @@ const Header: React.FC = () => {
                   aria-label="Contact us for furniture assembly service"
                 >
                   Contact
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </li>
             </ul>
@@ -166,7 +166,7 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center ml-8">
             <a
               href="tel:+19316741196"
-              className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 group"
+              className="inline-flex items-center px-4 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 group"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (931) 674-1196"
             >
@@ -178,7 +178,7 @@ const Header: React.FC = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none transition-colors duration-200"
+            className="md:hidden text-gray-800 hover:text-blue-700 focus:outline-none transition-colors duration-200"
             aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={isMenuOpen}
           >
@@ -195,7 +195,7 @@ const Header: React.FC = () => {
                 onClick={() => handleNavClick('home')}
                 className={`${getMobileNavLinkClasses('/')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/') 
-                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="Go to home page"
@@ -207,7 +207,7 @@ const Header: React.FC = () => {
                 onClick={() => handleNavClick('about')}
                 className={`${getMobileNavLinkClasses('/about')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/about') 
-                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="Learn about Boxed2Built"
@@ -219,7 +219,7 @@ const Header: React.FC = () => {
                 onClick={() => handleNavClick('services')}
                 className={`${getMobileNavLinkClasses('/services')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/services') 
-                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="View our services and pricing"
@@ -231,7 +231,7 @@ const Header: React.FC = () => {
                 onClick={() => handleNavClick('contact')}
                 className={`${getMobileNavLinkClasses('/contact')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/contact') 
-                    ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm' 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="Contact us for furniture assembly service"
@@ -243,7 +243,7 @@ const Header: React.FC = () => {
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
                 <a
                   href="tel:+19316741196"
-                  className="flex items-center justify-center w-full px-4 py-3.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
+                  className="flex items-center justify-center w-full px-4 py-3.5 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
                 >

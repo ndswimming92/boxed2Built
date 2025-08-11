@@ -129,7 +129,7 @@ const Booking: React.FC = () => {
                     href="/terms-of-service"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                   className="text-blue-700 hover:text-blue-800 underline"
                     onClick={handleTermsClick}
                   >
                     Terms of Service
@@ -156,7 +156,7 @@ const Booking: React.FC = () => {
               <a
                 href="tel:+19316741196"
                 onClick={handlePhoneClick}
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
                 <Phone size={24} className="mr-3" />
                 Call (931) 674-1196

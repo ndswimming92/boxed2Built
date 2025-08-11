@@ -82,7 +82,7 @@ const HomeHero: React.FC = () => {
               <div className="flex items-center justify-center sm:justify-start mb-8">
                 <a 
                   href="tel:9316741196" 
-                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg"
+                  className="inline-flex items-center justify-center text-blue-700 hover:text-blue-800 font-medium text-lg"
                   onClick={handlePhoneClick}
                 >
                   <Phone size={20} className="mr-2" />
@@ -92,7 +92,7 @@ const HomeHero: React.FC = () => {
 
               <p className="text-xs text-gray-500 mb-6">
                 By submitting any request, you agree to our{' '}
-                <a href="/terms-of-service" className="text-blue-600 hover:text-blue-800 underline">
+                <a href="/terms-of-service" className="text-blue-700 hover:text-blue-800 underline">
                   Terms of Service
                 </a>
               </p>
@@ -139,24 +139,24 @@ const HomeHero: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Chairs</div>
-                  <div className="text-xl font-bold text-blue-600">$41+</div>
+                  <div className="text-xl font-bold text-blue-700">$41+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Desks</div>
-                  <div className="text-xl font-bold text-green-600">$87+</div>
+                  <div className="text-xl font-bold text-green-700">$87+</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Dressers</div>
-                  <div className="text-xl font-bold text-purple-600">$151+</div>
+                  <div className="text-xl font-bold text-purple-700">$151+</div>
                 </div>
                 <div className="text-center p-3 bg-amber-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Beds</div>
-                  <div className="text-xl font-bold text-amber-600">$139+</div>
+                  <div className="text-xl font-bold text-amber-700">$139+</div>
                 </div>
               </div>
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
-                <a href="/services" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <a href="/services" className="text-blue-700 hover:text-blue-800 text-sm font-medium">
                   View all services →
                 </a>
               </div>

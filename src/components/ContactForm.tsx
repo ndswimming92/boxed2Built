@@ -266,10 +266,10 @@ const ContactForm: React.FC = () => {
   const inputClass = (field: keyof typeof fields) =>
     `w-full px-3 py-2 border rounded focus:outline-none transition-colors ${
       !fields[field].touched
-        ? 'border-gray-300 focus:border-blue-500'
+        ? 'border-gray-300 focus:border-blue-700'
         : fields[field].error
-        ? 'border-red-400 bg-red-50 focus:border-red-500'
-        : 'border-green-400 bg-green-50 focus:border-green-500'
+        ? 'border-red-500 bg-red-50 focus:border-red-600'
+        : 'border-green-500 bg-green-50 focus:border-green-600'
     }`;
 
   return (
@@ -469,7 +469,7 @@ const ContactForm: React.FC = () => {
           <button
             type="submit"
             disabled={state.submitting || isSubmitting || !isFormValid()}
-            className={`w-full py-3 px-4 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition ${
+            className={`w-full py-3 px-4 bg-blue-700 text-white font-bold rounded hover:bg-blue-800 transition ${
               state.submitting || isSubmitting || !isFormValid() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             aria-busy={state.submitting || isSubmitting}

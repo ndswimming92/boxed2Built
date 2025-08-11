@@ -91,12 +91,12 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h4 className="font-semibold text-white mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-                <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="/services" className="hover:text-white transition-colors">Services & Pricing</a></li>
-                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
+                <li><a href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/services" className="text-gray-300 hover:text-white transition-colors">Services & Pricing</a></li>
+                <li><a href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</a></li>
               </ul>
             </div>
 
@@ -104,14 +104,14 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h4 className="font-semibold text-white mb-4">Our Services</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>IKEA Furniture Assembly</li>
-                <li>Target Furniture Assembly</li>
-                <li>Walmart Furniture Assembly</li>
-                <li>Bed Frame Assembly</li>
-                <li>Dresser Assembly</li>
-                <li>Desk & Table Assembly</li>
-                <li>Bookshelf Assembly</li>
-                <li>Professional Service</li>
+                <li className="text-gray-300">IKEA Furniture Assembly</li>
+                <li className="text-gray-300">Target Furniture Assembly</li>
+                <li className="text-gray-300">Walmart Furniture Assembly</li>
+                <li className="text-gray-300">Bed Frame Assembly</li>
+                <li className="text-gray-300">Dresser Assembly</li>
+                <li className="text-gray-300">Desk & Table Assembly</li>
+                <li className="text-gray-300">Bookshelf Assembly</li>
+                <li className="text-gray-300">Professional Service</li>
               </ul>
             </div>
 
@@ -119,14 +119,14 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h4 className="font-semibold text-white mb-4">Service Areas</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Spring Hill, TN</li>
-                <li>Columbia, TN</li>
-                <li>Franklin, TN</li>
-                <li>Thompson's Station, TN</li>
-                <li>Brentwood, TN</li>
-                <li>Nashville Metro Area</li>
-                <li>Williamson County</li>
-                <li>Maury County</li>
+                <li className="text-gray-300">Spring Hill, TN</li>
+                <li className="text-gray-300">Columbia, TN</li>
+                <li className="text-gray-300">Franklin, TN</li>
+                <li className="text-gray-300">Thompson's Station, TN</li>
+                <li className="text-gray-300">Brentwood, TN</li>
+                <li className="text-gray-300">Nashville Metro Area</li>
+                <li className="text-gray-300">Williamson County</li>
+                <li className="text-gray-300">Maury County</li>
               </ul>
             </div>
           </div>
@@ -141,7 +141,7 @@ const Footer: React.FC = () => {
                   href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Facebook"
                   onClick={() => handleSocialClick('facebook')}
                 >
@@ -151,7 +151,7 @@ const Footer: React.FC = () => {
                   href={getSocialUrl('instagram', 'https://www.instagram.com/boxed2built/')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Instagram"
                   onClick={() => handleSocialClick('instagram')}
                 >
@@ -159,15 +159,15 @@ const Footer: React.FC = () => {
                 </a>
                 <a
                   href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Email"
                   onClick={() => handleSocialClick('email')}
                 >
                   <Mail size={24} title="Email" />
                 </a>
                 <a
-                  href="tel:+19316741196"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  href="tel:+19316741196" 
+                  className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Phone"
                   onClick={() => handleSocialClick('phone')}
                 >
@@ -192,11 +192,11 @@ const Footer: React.FC = () => {
               <div className="text-center md:text-right">
                 <button
                   onClick={handleBookingClick}
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg"
+                  className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg"
                 >
                   Book Free Consultation →
                 </button>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-300 mt-2">
                   By booking, you agree to our Terms of Service
                 </p>
               </div>
@@ -204,12 +204,12 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Enhanced service area description */}
-          <p className="text-xs text-gray-400 text-center mt-4">
+          <p className="text-xs text-gray-300 text-center mt-4">
             Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
             Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly.
           </p>
 
-          <div className="text-sm text-gray-400 text-center space-y-2 mt-4">
+          <div className="text-sm text-gray-300 text-center space-y-2 mt-4">
             <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
             <div>
               <button onClick={handlePrivacyClick} className="underline hover:text-white">

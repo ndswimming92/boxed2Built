@@ -83,7 +83,7 @@ const Services: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 pb-4 border-b border-gray-200">
                   <div>
                     <span className="block text-sm text-gray-500">Starting at</span>
-                    <span className="text-2xl font-bold text-blue-600">{service.startingPrice}</span>
+                    <span className="text-2xl font-bold text-blue-700">{service.startingPrice}</span>
                   </div>
                   
                   {service.priceRange && (
@@ -133,7 +133,7 @@ const Services: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <a 
                 href="tel:+19316741196" 
-                className="bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
+                className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
                 onClick={handlePhoneClick}
               >
                 <Phone size={20} className="mr-2" />
@@ -142,7 +142,7 @@ const Services: React.FC = () => {
               <a 
                 href="#" 
                 onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
+                className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
               >
                 <Mail size={20} className="mr-2" />
                 Email Quote
@@ -153,7 +153,7 @@ const Services: React.FC = () => {
           {/* Terms notice */}
           <p className="text-xs text-blue-100 text-center">
             By submitting any request, you agree to our{' '}
-            <a href="/terms-of-service" className="text-white hover:text-blue-200 underline">
+            <a href="/terms-of-service" className="text-blue-100 hover:text-white underline">
               Terms of Service
             </a>
           </p>

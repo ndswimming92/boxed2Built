@@ -41,7 +41,7 @@ const Hero: React.FC = () => {
               {/* Enhanced H1 with more keywords */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
                 Professional Furniture Assembly Service
-                <span className="block text-blue-600">Spring Hill, TN</span>
+                <span className="block text-blue-700">Spring Hill, TN</span>
               </h1>
               
               {/* Enhanced subtitle with local keywords */}
@@ -92,7 +92,7 @@ const Hero: React.FC = () => {
               <div className="flex items-center justify-center sm:justify-start mb-8">
                 <a 
                   href="tel:9316741196" 
-                  className="inline-flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-lg"
+                  className="inline-flex items-center justify-center text-blue-700 hover:text-blue-800 font-medium text-lg"
                   onClick={handlePhoneClick}
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -105,7 +105,7 @@ const Hero: React.FC = () => {
               {/* Terms notice */}
               <p className="text-xs text-gray-500 mb-6">
                 By submitting any request, you agree to our{' '}
-                <a href="/terms-of-service" className="text-blue-600 hover:text-blue-800 underline">
+                <a href="/terms-of-service" className="text-blue-700 hover:text-blue-800 underline">
                   Terms of Service
                 </a>
               </p>
@@ -152,19 +152,19 @@ const Hero: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Dining Chairs</div>
-                  <div className="text-xl font-bold text-blue-600">$41+</div>
+                  <div className="text-xl font-bold text-blue-700">$41+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Office Desks</div>
-                  <div className="text-xl font-bold text-green-600">$87+</div>
+                  <div className="text-xl font-bold text-green-700">$87+</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">IKEA Dressers</div>
-                  <div className="text-xl font-bold text-purple-600">$151+</div>
+                  <div className="text-xl font-bold text-purple-700">$151+</div>
                 </div>
                 <div className="text-center p-3 bg-amber-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Bed Frames</div>
-                  <div className="text-xl font-bold text-amber-600">$139+</div>
+                  <div className="text-xl font-bold text-amber-700">$139+</div>
                 </div>
               </div>
               <div className="text-center mt-4">
@@ -183,7 +183,7 @@ const Hero: React.FC = () => {
           aria-label="View detailed furniture assembly pricing and services"
         >
           <span className="text-sm font-medium mb-1">View All Services</span>
-          <ChevronDown size={18} className="text-blue-600" />
+          <ChevronDown size={18} className="text-blue-700" />
         </button>
       </div>
     </section>
