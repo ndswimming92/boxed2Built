@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
@@ -7,6 +8,17 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 
 const HomePage: React.FC = () => {
+  useEffect(() => {
+    // Set canonical URL for home page (should remain as root)
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/');
+  }, []);
+
   return (
     <>
       <Header />

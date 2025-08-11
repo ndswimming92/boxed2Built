@@ -16,6 +16,15 @@ const AboutPage: React.FC = () => {
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Boxed2Built provides affordable IKEA, Walmart, Target, Lowe\'s furniture assembly in Spring Hill, TN. Fast service, guaranteed satisfaction.');
     }
+
+    // Set canonical URL for this page
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/about');
   }, []);
 
   const handleBookingClick = () => {

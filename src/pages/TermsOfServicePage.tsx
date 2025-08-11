@@ -1,10 +1,22 @@
 import React from 'react';
+import { useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import TermsOfService from '../components/sections/TermsOfService';
 import { ChevronRight } from 'lucide-react';
 
 const TermsOfServicePage: React.FC = () => {
+  useEffect(() => {
+    // Set canonical URL for this page
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/terms-of-service');
+  }, []);
+
   return (
     <>
       <Header />

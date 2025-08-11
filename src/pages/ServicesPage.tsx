@@ -15,6 +15,15 @@ const ServicesPage: React.FC = () => {
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Professional furniture assembly services in Spring Hill, TN. IKEA, Target, Walmart assembly with transparent pricing. Starting at $41. Free quotes available.');
     }
+
+    // Set canonical URL for this page
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/services');
   }, []);
 
   const handleBookingClick = () => {

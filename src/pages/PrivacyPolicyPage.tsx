@@ -1,10 +1,22 @@
 import React from 'react';
+import { useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PrivacyPolicy from '../components/sections/PrivacyPolicy';
 import { ChevronRight } from 'lucide-react';
 
 const PrivacyPolicyPage: React.FC = () => {
+  useEffect(() => {
+    // Set canonical URL for this page
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/privacy-policy');
+  }, []);
+
   return (
     <>
       <Header />
