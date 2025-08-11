@@ -24,7 +24,7 @@ const TermsOfServicePage: React.FC = () => {
         <section className="py-8 bg-gray-50">
           <div className="container mx-auto px-4">
             <nav className="flex items-center mb-6 text-sm max-w-4xl mx-auto">
-              <a href="/" className="text-blue-600 hover:text-blue-800">Home</a>
+              <a href="/" className="text-blue-700 hover:text-blue-800">Home</a>
               <ChevronRight size={16} className="mx-2 text-gray-400" />
               <span className="text-gray-600">Terms of Service</span>
             </nav>

@@ -83,8 +83,8 @@ const PrivacyPolicy = () => {
         <h2 className="text-xl font-semibold mb-2">9. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about this privacy policy or our furniture assembly services in Spring Hill, TN, you can contact us at:</p>
         <ul className="list-none pl-0 mt-2">
-          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-600 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
-          <li>Phone: <a href="tel:+19316741196" className="text-blue-600 hover:text-blue-800 underline">(931) 674-1196</a></li>
+          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
+          <li>Phone: <a href="tel:+19316741196" className="text-blue-700 hover:text-blue-800 underline">(931) 674-1196</a></li>
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
         </ul>
       </section>

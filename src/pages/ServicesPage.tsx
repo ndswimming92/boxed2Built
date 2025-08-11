@@ -49,7 +49,7 @@ const ServicesPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <nav className="flex items-center justify-center mb-6 text-sm">
-                <a href="/" className="text-blue-600 hover:text-blue-800">Home</a>
+                <a href="/" className="text-blue-700 hover:text-blue-800">Home</a>
                 <ChevronRight size={16} className="mx-2 text-gray-400" />
                 <span className="text-gray-600">Services</span>
               </nav>
@@ -77,7 +77,7 @@ const ServicesPage: React.FC = () => {
                 <a
                   href="tel:+19316741196"
                   onClick={handlePhoneClick}
-                  className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                 >
                   <Phone size={20} className="mr-2" />
                   Call (931) 674-1196
@@ -146,7 +146,7 @@ const ServicesPage: React.FC = () => {
                   <a
                     href="tel:+19316741196"
                     onClick={handlePhoneClick}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                   className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                   >
                     <Phone size={20} className="mr-2" />
                     Call Now
