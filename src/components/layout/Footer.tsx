@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
 
             {/* Quick Links */}
             <div className="md:col-span-1">
-              <h4 className="font-semibold text-white mb-4">Quick Links</h4>
+              <h3 className="font-semibold text-white mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
                 <li><a href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</a></li>
@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
 
             {/* Services */}
             <div className="md:col-span-1">
-              <h4 className="font-semibold text-white mb-4">Our Services</h4>
+              <h3 className="font-semibold text-white mb-4">Our Services</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="text-gray-300">IKEA Furniture Assembly</li>
                 <li className="text-gray-300">Target Furniture Assembly</li>
@@ -117,7 +117,7 @@ const Footer: React.FC = () => {
 
             {/* Service Areas */}
             <div className="md:col-span-1">
-              <h4 className="font-semibold text-white mb-4">Service Areas</h4>
+              <h3 className="font-semibold text-white mb-4">Service Areas</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="text-gray-300">Spring Hill, TN</li>
                 <li className="text-gray-300">Columbia, TN</li>
