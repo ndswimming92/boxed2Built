@@ -152,7 +152,7 @@ const ServicesPage: React.FC = () => {
                   <a
                     href="tel:+19316741196"
                     onClick={handlePhoneClick}
-                   className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                   >
                     <Phone size={20} className="mr-2" />
                     Call Now
@@ -169,7 +169,3 @@ const ServicesPage: React.FC = () => {
 };
 
 export default ServicesPage;
-  )
-}
-  )
-}
