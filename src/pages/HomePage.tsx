@@ -6,6 +6,7 @@ import HomeServices from '../components/sections/HomeServices';
 import HomeCTA from '../components/sections/HomeCTA';
 import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
+import Testimonials from '../components/sections/Testimonials';
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -25,6 +26,9 @@ const HomePage: React.FC = () => {
       <main>
         <HomeHero />
         <HomeServices />
+        
+        {/* Testimonials Section */}
+        <Testimonials />
         
         {/* Contact Form Section */}
         <section className="py-12 bg-gray-50">
