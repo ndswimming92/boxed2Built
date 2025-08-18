@@ -59,7 +59,7 @@ const ServicesPage: React.FC = () => {
                 Professional Furniture Assembly Services
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Expert IKEA, Target, and Walmart furniture assembly in Spring Hill, TN and surrounding areas. 
+              <p className="text-blue-200 mb-6 font-medium">
                 Transparent pricing, professional service, satisfaction guaranteed.
               </p>
               

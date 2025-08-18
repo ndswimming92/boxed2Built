@@ -242,7 +242,7 @@ const AboutPage: React.FC = () => {
                 </a>
               </div>
               
-              <p className="text-xs text-blue-100">
+              <p className="text-xs text-blue-200 font-medium">
                 By submitting any request, you agree to our Terms of Service
               </p>
             </div>
