@@ -114,7 +114,7 @@ const Testimonials: React.FC = () => {
                 >
                   Get Free Quote
                 </a>
-              </div>
+          <p className="text-blue-200 mb-6 font-medium">
             </div>
           </div>
         </div>

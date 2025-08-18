@@ -180,7 +180,7 @@ const Footer: React.FC = () => {
                   href={getGoogleReviewUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm"
+                  className="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm"
                   aria-label="Leave a Google Review"
                   onClick={handleReviewClick}
                 >

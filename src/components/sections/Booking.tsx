@@ -43,11 +43,11 @@ const Booking: React.FC = () => {
                 <CheckCircle size={16} className="mr-2" />
                 <span>Professional Service</span>
               </div>
-              <div className="flex items-center text-blue-100">
+              <div className="flex items-center text-blue-200">
                 <CheckCircle size={16} className="mr-2" />
                 <span>Free Quotes</span>
               </div>
-              <div className="flex items-center text-blue-100">
+              <div className="flex items-center text-blue-200">
                 <CheckCircle size={16} className="mr-2" />
                 <span>Flexible Scheduling</span>
               </div>

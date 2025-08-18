@@ -40,19 +40,19 @@ const HomeCTA: React.FC = () => {
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <Calendar className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Easy Scheduling</h3>
-              <p className="text-blue-100 text-sm">Book online or call</p>
+              <p className="text-blue-200 text-sm font-medium">Book online or call</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Free Consultation</h3>
-              <p className="text-blue-100 text-sm">No commitment required</p>
+              <p className="text-blue-200 text-sm font-medium">No commitment required</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Professional Service</h3>
-              <p className="text-blue-100 text-sm">Quality guaranteed</p>
+              <p className="text-blue-200 text-sm font-medium">Quality guaranteed</p>
             </div>
           </div>
 
