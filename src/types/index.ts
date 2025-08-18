@@ -8,3 +8,13 @@ export interface ServiceItem {
   priceRange?: string;
   includedItems: string[];
 }
+
+export interface Review {
+  id: number;
+  author: string;
+  text: string;
+  rating: number;
+  datePublished: string;
+  source: string;
+  googleReviewUrl?: string;
+}

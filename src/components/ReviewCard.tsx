@@ -1,7 +1,8 @@
 import React from 'react';
 import { Quote } from 'lucide-react';
 import StarRating from './ui/StarRating';
-import { Review } from '../constants/reviews';
+import { Review } from '../types';
+import { trackEvent } from '../utils/analytics';
 
 interface ReviewCardProps {
   review: Review;
@@ -9,6 +10,10 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }) => {
+  const handleGoogleLinkClick = () => {
+    trackEvent('google-review-card-click');
+  };
+
   return (
     <div className={`bg-white p-6 rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300 ${className}`}>
       <div className="flex items-start mb-4">
@@ -20,7 +25,20 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }) => {
             <h3 className="font-semibold text-gray-900">{review.author}</h3>
             <div className="flex items-center">
               <StarRating rating={review.rating} size={16} />
-              <span className="ml-2 text-sm text-gray-500">{review.source}</span>
+              {review.googleReviewUrl ? (
+                <a
+                  href={review.googleReviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer ugc"
+                  onClick={handleGoogleLinkClick}
+                  className="ml-2 text-sm text-blue-600 hover:text-blue-800 underline transition-colors"
+                  aria-label={`View ${review.author}'s review on Google`}
+                >
+                  {review.source}
+                </a>
+              ) : (
+                <span className="ml-2 text-sm text-gray-500">{review.source}</span>
+              )}
             </div>
           </div>
         </div>
