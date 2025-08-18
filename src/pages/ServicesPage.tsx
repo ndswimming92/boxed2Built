@@ -59,8 +59,10 @@ const ServicesPage: React.FC = () => {
                 Professional Furniture Assembly Services
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-              <p className="text-blue-200 mb-6 font-medium">
                 Transparent pricing, professional service, satisfaction guaranteed.
+              </p>
+              <p className="text-blue-200 mb-6 font-medium">
+                Professional furniture assembly you can trust.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
