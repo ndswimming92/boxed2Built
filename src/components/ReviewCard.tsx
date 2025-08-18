@@ -29,19 +29,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }) => {
       <blockquote className="text-gray-700 leading-relaxed italic">
         "{review.text}"
       </blockquote>
-      
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <time 
-          dateTime={review.datePublished}
-          className="text-sm text-gray-500"
-        >
-          {new Date(review.datePublished).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </time>
-      </div>
     </div>
   );
 };
