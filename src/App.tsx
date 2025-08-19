@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense } from 'react';
 import HomePage from './pages/HomePage';
@@ -26,9 +27,25 @@ function Analytics() {
 
 function PageLoadingWrapper({ children }: { children: React.ReactNode }) {
   const isLoading = usePageLoading(500); // 500ms loading delay
+  const [isDoneLoading, setIsDoneLoading] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
 
-  if (isLoading) {
-    return <PageLoader message="Loading page..." />;
+  useEffect(() => {
+    if (!isLoading && showLoader) {
+      // Trigger the flap opening animation
+      setIsDoneLoading(true);
+      
+      // Hide the loader completely after animation finishes
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 1500); // Total time for flap animation + content display
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, showLoader]);
+
+  if (showLoader) {
+    return <PageLoader message="Loading page..." isDoneLoading={isDoneLoading} />;
   }
 
   return <>{children}</>;

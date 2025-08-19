@@ -1,23 +1,17 @@
 import React from 'react';
-import LoadingSpinner from './LoadingSpinner';
+import FlapLoader from './FlapLoader';
 
 interface PageLoaderProps {
   message?: string;
+  isDoneLoading?: boolean;
 }
 
 const PageLoader: React.FC<PageLoaderProps> = ({ 
-  message = 'Loading...' 
+  message = 'Loading...',
+  isDoneLoading = false
 }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="mb-4">
-          <LoadingSpinner size="lg" className="text-blue-600 mx-auto" />
-        </div>
-        <p className="text-gray-600 text-lg font-medium">{message}</p>
-        <p className="text-gray-400 text-sm mt-2">Please wait while we load your content</p>
-      </div>
-    </div>
+    <FlapLoader isDoneLoading={isDoneLoading} message={message} />
   );
 };
 
