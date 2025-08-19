@@ -26,17 +26,18 @@ const FlapLoader: React.FC<FlapLoaderProps> = ({
   return (
     <div className="flap-loader-container">
       <div className={`flap-loader-box ${isDoneLoading ? 'open' : ''}`}>
-        {/* Top Flap */}
-        <div className="flap flap-top"></div>
+        {/* Box Base and Walls */}
+        <div className="box-bottom"></div>
+        <div className="box-wall box-wall-front"></div>
+        <div className="box-wall box-wall-back"></div>
+        <div className="box-wall box-wall-left"></div>
+        <div className="box-wall box-wall-right"></div>
         
-        {/* Bottom Flap */}
-        <div className="flap flap-bottom"></div>
-        
-        {/* Left Flap */}
-        <div className="flap flap-left"></div>
-        
-        {/* Right Flap */}
-        <div className="flap flap-right"></div>
+        {/* Top Flaps */}
+        <div className="flap flap-top-front"></div>
+        <div className="flap flap-top-back"></div>
+        <div className="flap flap-top-left"></div>
+        <div className="flap flap-top-right"></div>
         
         {/* Center Content */}
         <div className={`flap-center ${showContent ? 'show' : ''}`}>
