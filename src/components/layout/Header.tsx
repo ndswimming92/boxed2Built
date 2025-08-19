@@ -150,6 +150,17 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <a
+                  href="/gallery"
+                  onClick={() => handleNavClick('gallery')}
+                  className={getNavLinkClasses('/gallery')}
+                  aria-label="View our work gallery"
+                >
+                  Gallery
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="/contact"
                   onClick={() => handleNavClick('contact')}
                   className={getNavLinkClasses('/contact')}
@@ -225,6 +236,18 @@ const Header: React.FC = () => {
                 aria-label="View our services and pricing"
               >
                 Services
+              </a>
+              <a
+                href="/gallery"
+                onClick={() => handleNavClick('gallery')}
+                className={`${getMobileNavLinkClasses('/gallery')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/gallery') 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
+                aria-label="View our work gallery"
+              >
+                Gallery
               </a>
               <a
                 href="/contact"

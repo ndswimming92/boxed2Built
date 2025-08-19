@@ -31,4 +31,21 @@
     </image:image>
   </url>
 
+  <url>
+    <loc>https://boxed2built.com/gallery</loc>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg</image:loc>
+      <image:title>Professional Furniture Assembly Gallery - Spring Hill TN</image:title>
+      <image:caption>Gallery of professional furniture assembly work by Boxed2Built in Spring Hill, Columbia, Franklin Tennessee</image:caption>
+      <image:geo_location>Spring Hill, TN</image:geo_location>
+    </image:image>
+    
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg</image:loc>
+      <image:title>Before and After Furniture Assembly Photos</image:title>
+      <image:caption>Before and after photos showing professional furniture assembly transformation in Tennessee homes</image:caption>
+      <image:geo_location>Spring Hill, TN</image:geo_location>
+    </image:image>
+  </url>
+
 </urlset>

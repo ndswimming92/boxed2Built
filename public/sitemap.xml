@@ -40,6 +40,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Gallery Page - High Priority for Visual Content -->
+  <url>
+    <loc>https://boxed2built.com/gallery</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Legal Pages - Lower Priority but Important for Compliance -->
   <url>
     <loc>https://boxed2built.com/privacy-policy</loc>
