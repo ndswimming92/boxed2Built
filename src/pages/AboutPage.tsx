@@ -95,14 +95,6 @@ const AboutPage: React.FC = () => {
                     className="rounded-lg shadow-lg"
                     width="500"
                     height="333"
-                    sizes={{
-                      '(max-width: 320px)': '280px',
-                      '(max-width: 480px)': '440px',
-                      '(max-width: 768px)': '728px',
-                      '(max-width: 1024px)': '480px',
-                      default: '500px'
-                    }}
-                    responsiveSizes={[320, 480, 500, 768]}
                   />
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Nicholas Davidson</p>
