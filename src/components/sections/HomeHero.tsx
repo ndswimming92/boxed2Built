@@ -108,14 +108,6 @@ const HomeHero: React.FC = () => {
                 width="600"
                 height="400"
                 priority={true}
-                sizes={{
-                  '(max-width: 320px)': '280px',
-                  '(max-width: 480px)': '440px',
-                  '(max-width: 768px)': '728px',
-                  '(max-width: 1024px)': '480px',
-                  default: '600px'
-                }}
-                responsiveSizes={[320, 480, 600, 768, 1024]}
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
