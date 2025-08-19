@@ -17,8 +17,17 @@ function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
-    // Track page views
+    // Track page views with both analytics services
     trackPageView(location.pathname, document.title);
+    
+    // Additional GA4 specific tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'page_view', {
+        page_path: location.pathname,
+        page_title: document.title,
+        page_location: window.location.href
+      });
+    }
   }, [location]);
 
   return null;
