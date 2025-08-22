@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
                     alt="Boxed2Built Phone Number (931) 674-1196" 
                     width="120" 
                     height="16"
-                    className="inline-block"
+                    className="inline-block footer-phone"
                   />
                 </a>
               </address>
