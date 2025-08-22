@@ -133,9 +133,11 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     src={item.src}
                     alt={item.alt || item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    width={400}
-                    height={300}
+                    width={item.width || 400}
+                    height={item.height || 300}
                     loading="lazy"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                    quality={85}
                   />
                 </div>
               ) : (
@@ -147,6 +149,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   platform={item.platform || 'youtube'}
                   className="aspect-video"
                   lazy={true}
+                  width={item.width}
+                  height={item.height}
                 />
               )}
             </div>

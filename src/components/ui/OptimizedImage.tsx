@@ -22,14 +22,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   priority = false,
   sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
-  quality = 80,
+  quality = 85,
 }) => {
   // Use eager loading for priority images
   const imageLoading = priority ? 'eager' : loading;
   
   // Generate responsive image sources
   const sources = generateResponsiveImageSources(src, {
-    sizes: [400, 800, 1200, 1600],
+    sizes: [320, 640, 960, 1280, 1600],
     formats: ['webp', 'jpeg'],
     quality
   });

@@ -17,7 +17,9 @@ const SAMPLE_MEDIA: MediaItem[] = [
     description: 'Professional furniture assembly in action.',
     thumbnail: '/images/IMG_0217.jpeg',
     category: 'time-lapse',
-    platform: 'youtube'
+    platform: 'youtube',
+    width: 1260,
+    height: 750
   },
   {
     id: '11',
@@ -27,7 +29,9 @@ const SAMPLE_MEDIA: MediaItem[] = [
     description: 'Another professional furniture assembly project in action.',
     thumbnail: '/images/IMG_0199.jpeg',
     category: 'time-lapse',
-    platform: 'youtube'
+    platform: 'youtube',
+    width: 1260,
+    height: 750
   },
   {
     id: '2',

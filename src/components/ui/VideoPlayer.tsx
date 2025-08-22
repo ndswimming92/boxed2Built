@@ -11,6 +11,8 @@ interface VideoPlayerProps {
   aspectRatio?: '16:9' | '4:3' | '1:1';
   className?: string;
   lazy?: boolean;
+  width?: number;
+  height?: number;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -21,7 +23,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   platform,
   aspectRatio = '16:9',
   className = '',
-  lazy = true
+  lazy = true,
+  width,
+  height
 }) => {
   const [isLoaded, setIsLoaded] = useState(!lazy);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -81,12 +85,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ) : !isPlaying ? (
         <div className="relative w-full h-full group cursor-pointer" onClick={handlePlay}>
           {thumbnail ? (
-            <img
-              src={thumbnail}
-              alt={`${title} video thumbnail`}
-              className="w-full h-full object-cover rounded-lg"
-              loading="lazy"
-            />
+            <picture>
+              <source
+                srcSet={`${thumbnail}?fm=webp&q=85&w=${width || 400}&h=${height || 300}`}
+                type="image/webp"
+              />
+              <img
+                src={`${thumbnail}?fm=jpg&q=85&w=${width || 400}&h=${height || 300}`}
+                alt={`${title} video thumbnail`}
+                className="w-full h-full object-cover rounded-lg"
+                loading="lazy"
+                width={width || 400}
+                height={height || 300}
+              />
+            </picture>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-100 to-gray-200 rounded-lg flex items-center justify-center">
               <Play size={48} className="text-blue-600" />

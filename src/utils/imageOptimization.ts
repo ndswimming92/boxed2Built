@@ -83,11 +83,36 @@ export const generateResponsiveImageSources = (
       srcSet: jpegSrcSet
     };
   } else {
-    // For non-Pexels URLs, use the original URL as fallback
-    sources.fallback = {
-      src: baseUrl,
-      srcSet: baseUrl
-    };
+    // For local images, generate optimized versions
+    if (baseUrl.startsWith('/images/')) {
+      // Generate WebP sources for local images
+      if (formats.includes('webp')) {
+        const webpSrcSet = sizes
+          .map(width => `${baseUrl}?fm=webp&q=${quality}&w=${width} ${width}w`)
+          .join(', ');
+        
+        sources.webp = {
+          src: `${baseUrl}?fm=webp&q=${quality}&w=800`,
+          srcSet: webpSrcSet
+        };
+      }
+      
+      // Generate JPEG sources for local images
+      const jpegSrcSet = sizes
+        .map(width => `${baseUrl}?fm=jpg&q=${quality}&w=${width} ${width}w`)
+        .join(', ');
+      
+      sources.fallback = {
+        src: `${baseUrl}?fm=jpg&q=${quality}&w=800`,
+        srcSet: jpegSrcSet
+      };
+    } else {
+      // For other URLs, use the original URL as fallback
+      sources.fallback = {
+        src: baseUrl,
+        srcSet: baseUrl
+      };
+    }
   }
 
   return sources;
