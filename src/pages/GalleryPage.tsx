@@ -102,7 +102,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
   {
     id: '8',
     type: 'image',
-    src: '/images/IMG_0217 copy.jpeg',
+    src: '/images/IMG_0217.jpeg',
     title: 'Furniture Assembly Setup',
     description: 'Professional setup for furniture assembly project.',
     category: 'photos',
