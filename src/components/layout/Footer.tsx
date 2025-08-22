@@ -70,6 +70,7 @@ const Footer: React.FC = () => {
                   width="120"
                   height="48"
                   style={{ aspectRatio: '120/48' }}
+                  decoding="async"
                 />
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">

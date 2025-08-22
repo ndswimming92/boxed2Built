@@ -117,6 +117,8 @@ const Header: React.FC = () => {
                 width="120"
                 height="48"
                 style={{ aspectRatio: '120/48' }}
+                decoding="async"
+                fetchpriority="high"
               />
             </a>
           </div>

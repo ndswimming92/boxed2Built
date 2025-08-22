@@ -95,6 +95,9 @@ const AboutPage: React.FC = () => {
                     className="rounded-lg shadow-lg object-cover"
                     width="500"
                     height="333"
+                    imageType="gallery"
+                    quality={85}
+                    enableAvif={true}
                   />
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Nicholas Davidson</p>

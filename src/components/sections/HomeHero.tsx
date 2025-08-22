@@ -131,6 +131,9 @@ const HomeHero: React.FC = () => {
                 width="600"
                 height="400"
                 priority={true}
+                imageType="hero"
+                quality={90}
+                enableAvif={true}
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">

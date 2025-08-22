@@ -137,7 +137,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     height={item.height || 300}
                     loading="lazy"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                    quality={85}
+                    imageType="thumbnail"
+                    quality={75}
+                    enableAvif={true}
                   />
                   
                   {/* Click indicator overlay */}
@@ -217,6 +219,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                       alt={lightboxItem.alt || lightboxItem.title}
                       className="w-full max-h-[70vh] object-contain"
                       priority={true}
+                      imageType="gallery"
+                      quality={90}
+                      enableAvif={true}
                     />
                   </div>
                 ) : (

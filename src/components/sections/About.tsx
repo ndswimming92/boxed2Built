@@ -96,6 +96,9 @@ const About: React.FC = () => {
                   className="rounded-lg shadow-md object-cover"
                   width="500"
                   height="333"
+                  imageType="gallery"
+                  quality={80}
+                  enableAvif={true}
                 />
               </div>
               <div className="md:w-1/2">
