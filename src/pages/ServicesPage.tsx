@@ -61,7 +61,7 @@ const ServicesPage: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Transparent pricing, professional service, satisfaction guaranteed.
               </p>
-              <p className="text-blue-200 mb-6 font-medium">
+              <p className="text-gray-700 mb-6 font-medium text-lg">
                 Professional furniture assembly you can trust.
               </p>
               
