@@ -67,7 +67,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const handleExternalLink = () => {
     trackEvent(`video-external-link-${platform}`, title);
-    window.open(src, '_blank', 'noopener,noreferrer');
+    window.open(src, '_blank', 'noopener noreferrer');
   };
 
   const aspectRatioClass = {
@@ -122,15 +122,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </button>
         </div>
       ) : (
-        <iframe
-          src={getEmbedUrl(src, platform)}
-          title={title}
-          className="w-full h-full rounded-lg"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-        />
+        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Play size={32} className="text-white ml-1" />
+            </div>
+            <p className="text-gray-600 mb-4">Video will open in YouTube</p>
+            <button
+              onClick={handleExternalLink}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+            >
+              Watch on YouTube
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
