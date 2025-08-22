@@ -102,17 +102,6 @@ const SAMPLE_MEDIA: MediaItem[] = [
   {
     id: '8',
     type: 'image',
-    src: '/images/IMG_0217.jpeg',
-    title: 'Furniture Assembly Setup',
-    description: 'Professional setup for furniture assembly project.',
-    category: 'photos',
-    alt: 'Professional furniture assembly setup and preparation',
-    width: 1260,
-    height: 750
-  },
-  {
-    id: '9',
-    type: 'image',
     src: '/images/IMG_0220.jpeg',
     title: 'Assembly Tools and Workspace',
     description: 'Professional tools and workspace for furniture assembly.',
@@ -122,7 +111,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '10',
+    id: '9',
     type: 'image',
     src: '/images/IMG_0224.jpeg',
     title: 'Quality Assembly Work',
