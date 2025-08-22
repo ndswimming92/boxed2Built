@@ -182,7 +182,13 @@ const Header: React.FC = () => {
               aria-label="Call Boxed2Built at (931) 674-1196"
             >
               <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-              <span>Call Now</span>
+              <img 
+                src="/images/contact/phone-number.svg" 
+                alt="Call (931) 674-1196" 
+                width="120" 
+                height="18"
+                className="inline-block"
+              />
             </a>
           </div>
 
@@ -271,7 +277,13 @@ const Header: React.FC = () => {
                   aria-label="Call Boxed2Built at (931) 674-1196"
                 >
                   <Phone size={20} className="mr-2 group-hover:animate-pulse" />
-                  <span>Call Now</span>
+                  <img 
+                    src="/images/contact/phone-number.svg" 
+                    alt="Call (931) 674-1196" 
+                    width="120" 
+                    height="18"
+                    className="inline-block"
+                  />
                 </a>
               </div>
             </nav>

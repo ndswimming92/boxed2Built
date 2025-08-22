@@ -82,7 +82,13 @@ const Footer: React.FC = () => {
                 </div>
                 <a href="tel:+19316741196" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
                   <Phone size={16} className="mr-2" />
-                  (931) 674-1196
+                  <img 
+                    src="/images/contact/phone-number.svg" 
+                    alt="Boxed2Built Phone Number (931) 674-1196" 
+                    width="120" 
+                    height="16"
+                    className="inline-block"
+                  />
                 </a>
               </address>
             </div>

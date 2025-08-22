@@ -86,7 +86,15 @@ const HomeHero: React.FC = () => {
                   onClick={handlePhoneClick}
                 >
                   <Phone size={20} className="mr-2" />
-                  Call (931) 674-1196 for Service
+                  <span className="mr-2">Call</span>
+                  <img 
+                    src="/images/contact/phone-number.svg" 
+                    alt="(931) 674-1196" 
+                    width="120" 
+                    height="18"
+                    className="inline-block"
+                  />
+                  <span className="ml-2">for Service</span>
                 </a>
               </div>
 

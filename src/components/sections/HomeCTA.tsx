@@ -107,7 +107,14 @@ const HomeCTA: React.FC = () => {
                 className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
               >
                 <Phone size={20} className="mr-2" />
-                Call (931) 674-1196
+                <span className="mr-2">Call</span>
+                <img 
+                  src="/images/contact/phone-number.svg" 
+                  alt="(931) 674-1196" 
+                  width="120" 
+                  height="18"
+                  className="inline-block"
+                />
               </a>
             </div>
 
