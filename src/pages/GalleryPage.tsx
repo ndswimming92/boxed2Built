@@ -20,6 +20,16 @@ const SAMPLE_MEDIA: MediaItem[] = [
     platform: 'youtube'
   },
   {
+    id: '11',
+    type: 'video',
+    src: 'https://youtu.be/gu-T72iyrwI',
+    title: 'Furniture Assembly Time-lapse #2',
+    description: 'Another professional furniture assembly project in action.',
+    thumbnail: '/images/IMG_0199.jpeg',
+    category: 'time-lapse',
+    platform: 'youtube'
+  },
+  {
     id: '2',
     type: 'image',
     src: '/images/IMG_0217.jpeg',
