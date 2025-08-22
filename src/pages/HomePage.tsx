@@ -7,7 +7,6 @@ import HomeCTA from '../components/sections/HomeCTA';
 import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
-import Testimonials from '../components/sections/Testimonials';
 
 const HomePage: React.FC = () => {
   useEffect(() => {
