@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Facebook, Mail, Phone, Instagram, MapPin, Star } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
@@ -12,11 +12,19 @@ const Footer: React.FC = () => {
   const [showTerms, setShowTerms] = useState(false);
 
   const handleSocialClick = (platform: string) => {
-    trackEvent(`social-click-${platform}`);
+    trackEvent(`social-click-${platform}`, platform, {
+      event_category: 'social_media',
+      user_engagement: 'social_click'
+    });
   };
 
   const handleReviewClick = () => {
-    trackEvent('google-review-click');
+    trackEvent('google-review-click', 'footer', {
+      event_category: 'review',
+      value: 1,
+      user_engagement: 'review_click'
+    });
+    trackExternalLink(getGoogleReviewUrl(), 'Google Review');
   };
 
   const handlePrivacyClick = () => {

@@ -2,21 +2,36 @@ import React from 'react';
 import { ArrowRight, CheckCircle, DollarSign, Phone, Calendar } from 'lucide-react';
 import Button from '../ui/Button';
 import OptimizedImage from '../ui/OptimizedImage';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, trackConversion } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
 const HomeHero: React.FC = () => {
   const handlePhoneClick = () => {
-    trackEvent('phone-click-home-hero');
+    trackEvent('phone-click-home-hero', 'home_hero', {
+      event_category: 'contact',
+      value: 1,
+      user_engagement: 'phone_click'
+    });
+    trackConversion('phone_click_hero', 1);
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-home-hero');
+    trackEvent('calendly-booking-click-home-hero', 'home_hero', {
+      event_category: 'conversion',
+      value: 1,
+      user_engagement: 'booking_click'
+    });
+    trackConversion('booking_click_hero', 1);
     window.open(getCalendlyUrl('hero'), '_blank');
   };
 
   const handleEmailClick = () => {
-    trackEvent('email-click-home-hero-cta');
+    trackEvent('email-click-home-hero-cta', 'home_hero', {
+      event_category: 'contact',
+      value: 1,
+      user_engagement: 'email_click'
+    });
+    trackConversion('email_click_hero', 1);
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Website%20Home&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Home%20Page';
   };
 

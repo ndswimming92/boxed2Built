@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
 
@@ -45,12 +45,20 @@ const Header: React.FC = () => {
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-header');
+    trackEvent('phone-click-header', 'header', {
+      event_category: 'contact',
+      value: 1,
+      user_engagement: 'phone_click'
+    });
+    trackExternalLink('tel:+19316741196', 'Header Phone');
   };
 
   const handleNavClick = (page: string) => {
     setIsMenuOpen(false);
-    trackEvent(`nav-click-${page}`);
+    trackEvent(`nav-click-${page}`, page, {
+      event_category: 'navigation',
+      user_engagement: 'navigation_click'
+    });
   };
 
   const isActivePage = (path: string) => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { trackEvent } from '../utils/analytics';
+import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 
 interface FieldState {
   value: string;
@@ -175,6 +175,11 @@ const ContactForm: React.FC = () => {
       ...prev,
       [field]: { ...prev[field], value, error }
     }));
+    
+    // Track form field interactions
+    if (!fields[field].touched && value.length > 0) {
+      trackFormInteraction('contact_form', 'start', field);
+    }
   };
 
   const handleBlur = (field: keyof typeof fields) => {
@@ -231,7 +236,13 @@ const ContactForm: React.FC = () => {
     setFields(updated);
 
     if (valid) {
-      trackEvent('contact-form-submit');
+      trackFormInteraction('contact_form', 'complete');
+      trackConversion('form_submission', 1);
+      trackEvent('contact-form-submit', 'contact_form', {
+        event_category: 'conversion',
+        value: 1,
+        user_engagement: 'form_submission'
+      });
       
       try {
         // Create form data for submission

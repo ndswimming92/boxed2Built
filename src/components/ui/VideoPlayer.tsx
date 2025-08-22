@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play } from 'lucide-react';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, trackVideoInteraction } from '../../utils/analytics';
 
 interface VideoPlayerProps {
   src: string;
@@ -67,6 +67,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handlePlay = () => {
     setIsPlaying(true);
     trackEvent(`video-play-${platform}`, title);
+    trackVideoInteraction('play', title);
   };
 
 
