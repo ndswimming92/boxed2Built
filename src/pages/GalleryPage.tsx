@@ -10,16 +10,6 @@ import { getCalendlyUrl } from '../utils/utm';
 // Sample media data - replace with your actual content
 const SAMPLE_MEDIA: MediaItem[] = [
   {
-    id: '1',
-    type: 'video',
-    src: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Replace with your actual video
-    title: 'IKEA Dresser Assembly Time-lapse',
-    description: 'Watch our expert assemble a 6-drawer IKEA dresser in under 2 minutes of time-lapse footage.',
-    thumbnail: '/images/IMG_0196.jpeg',
-    category: 'time-lapse',
-    platform: 'youtube'
-  },
-  {
     id: '2',
     type: 'image',
     src: '/images/IMG_0196.jpeg',
@@ -31,17 +21,17 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '3',
+    id: '1',
     type: 'video',
-    src: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Replace with your actual video
-    title: 'Office Desk Assembly Process',
-    description: 'Step-by-step time-lapse of assembling a complex office desk with cable management.',
+    src: 'https://youtu.be/KBzfqI5YzSM',
+    title: 'Furniture Assembly Time-lapse',
+    description: 'Professional furniture assembly in action.',
     thumbnail: '/images/IMG_0217.jpeg',
     category: 'time-lapse',
     platform: 'youtube'
   },
   {
-    id: '4',
+    id: '3',
     type: 'image',
     src: '/images/IMG_0217.jpeg',
     title: 'Before: Unassembled Furniture',
@@ -52,7 +42,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '5',
+    id: '4',
     type: 'image',
     src: '/images/IMG_0199.jpeg',
     title: 'After: Completed Assembly Project',
@@ -63,7 +53,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '6',
+    id: '5',
     type: 'image',
     src: '/images/IMG_0214.jpeg',
     title: 'Professional Assembly Work',
