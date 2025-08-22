@@ -146,8 +146,8 @@ const GalleryPage: React.FC = () => {
         {/* Media Gallery */}
         <MediaGallery
           items={SAMPLE_MEDIA}
-          title="Professional Furniture Assembly Gallery"
-          description="Explore our work through time-lapse videos, detailed photos, and completed projects in Spring Hill, Columbia, Franklin, and surrounding Tennessee areas."
+          title="Our Work"
+          description=""
           className="bg-white"
         />
 

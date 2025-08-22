@@ -120,24 +120,23 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
           {filteredItems.map((item, index) => (
             <div
               key={item.id}
-              className="group relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
+              className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300"
               onClick={() => openLightbox(item, index)}
             >
               {item.type === 'image' ? (
-                <div className="aspect-[4/3] relative overflow-hidden">
+                <div className="aspect-square relative overflow-hidden">
                   <OptimizedImage
                     src={item.src}
                     alt={item.alt || item.title}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     width={400}
                     height={300}
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
                 </div>
               ) : (
                 <VideoPlayer
@@ -150,36 +149,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   lazy={true}
                 />
               )}
-              
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm">{getCategoryIcon(item.category)}</span>
-                  <span className="text-xs text-blue-600 font-medium capitalize">
-                    {item.category.replace('-', ' ')}
-                  </span>
-                </div>
-                
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{item.title}</h3>
-                
-                {item.description && (
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
-                )}
-                
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  {item.date && (
-                    <div className="flex items-center gap-1">
-                      <Calendar size={12} />
-                      <span>{item.date}</span>
-                    </div>
-                  )}
-                  {item.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin size={12} />
-                      <span>{item.location}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           ))}
         </div>
