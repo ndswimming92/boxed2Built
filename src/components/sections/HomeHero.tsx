@@ -110,8 +110,8 @@ const HomeHero: React.FC = () => {
           <div className="lg:w-1/2 relative">
             <div className="bg-white p-3 rounded-lg shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300 mb-8">
               <OptimizedImage
-                src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                alt="Professional furniture assembly service in Spring Hill Tennessee" 
+                src="/images/IMG_0217.jpeg" 
+                alt="Professional furniture assembly service in Spring Hill Tennessee - Boxed2Built" 
                 className="w-full h-auto rounded"
                 width="600"
                 height="400"
