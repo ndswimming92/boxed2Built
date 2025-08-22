@@ -1,14 +1,7 @@
-<svg width="160" height="24" viewBox="0 0 160 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <text x="0" y="18" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500" fill="currentColor">
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="18" viewBox="0 0 120 18">
-  <text x="0" y="14" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="currentColor" class="phone-number">(931) 674-1196</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 18">
   <style>
-    .phone-number {
-      fill: currentColor;
-    }
-    /* Override for dark backgrounds */
-    .footer-phone .phone-number {
-      fill: white;
-    }
+    .phone-text { fill: currentColor; font-family: Inter, system-ui, sans-serif; font-size: 16px; font-weight: 400; }
+    .footer-phone .phone-text { fill: #d1d5db; }
   </style>
+  <text x="0" y="14" class="phone-text">(931) 674-1196</text>
 </svg>
