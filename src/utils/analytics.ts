@@ -157,3 +157,4 @@ export const trackEvent = (eventName: string, path?: string, additionalParams?: 
 export const trackPageView = (path: string, title?: string) => {
   // Track with Google Analytics
   trackGAPageView(path, title);
+}
