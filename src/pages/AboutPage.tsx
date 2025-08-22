@@ -92,7 +92,7 @@ const AboutPage: React.FC = () => {
                   <OptimizedImage
                     src="https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                     alt="Nicholas Davidson - Professional furniture assembly expert in Spring Hill Tennessee" 
-                    className="rounded-lg shadow-lg"
+                    className="rounded-lg shadow-lg object-cover"
                     width="500"
                     height="333"
                   />

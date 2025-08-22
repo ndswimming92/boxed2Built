@@ -54,7 +54,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         width={width}
         height={height}
         loading={imageLoading}
-        className="w-full h-auto"
+        className="w-full h-auto object-cover"
         style={{ 
           aspectRatio: width && height ? `${width}/${height}` : undefined
         }}

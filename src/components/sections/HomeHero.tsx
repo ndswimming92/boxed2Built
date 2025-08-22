@@ -127,7 +127,7 @@ const HomeHero: React.FC = () => {
               <OptimizedImage
                 src="/images/IMG_0217.jpeg" 
                 alt="Professional furniture assembly service in Spring Hill Tennessee - Boxed2Built" 
-                className="w-full h-auto rounded"
+                className="w-full h-auto rounded object-cover"
                 width="600"
                 height="400"
                 priority={true}

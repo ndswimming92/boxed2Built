@@ -125,7 +125,7 @@ const Hero: React.FC = () => {
               <OptimizedImage
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                 alt="Professional furniture assembly service in Spring Hill Tennessee" 
-                className="w-full h-auto rounded"
+                className="w-full h-auto rounded object-cover"
                 width="600"
                 height="400"
                 priority={true}

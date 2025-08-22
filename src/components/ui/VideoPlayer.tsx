@@ -98,6 +98,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 loading="lazy"
                 width={width || 400}
                 height={height || 300}
+                style={{ 
+                  aspectRatio: width && height ? `${width}/${height}` : '16/9'
+                }}
               />
             </picture>
           ) : (

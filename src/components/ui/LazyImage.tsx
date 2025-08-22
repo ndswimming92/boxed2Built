@@ -55,7 +55,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
           loading={imageLoading}
           onLoad={handleLoad}
           onError={handleError}
-          className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 w-full h-auto`}
+          className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 w-full h-auto object-cover`}
           style={{ 
             aspectRatio: width && height ? `${width}/${height}` : undefined
           }}

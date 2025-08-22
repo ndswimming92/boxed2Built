@@ -66,9 +66,10 @@ const Footer: React.FC = () => {
                   src="/Modern Minimalist Logo for Boxed2Built.png"
                   alt="Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN"
                   loading="lazy"
-                  className="h-12 w-auto"
+                  className="h-12 w-auto object-contain"
                   width="120"
                   height="48"
+                  style={{ aspectRatio: '120/48' }}
                 />
               </div>
               <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
