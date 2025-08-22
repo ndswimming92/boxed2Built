@@ -96,7 +96,7 @@ const Testimonials: React.FC = () => {
                 }`}
               >
                 {/* Quote Icon */}
-                <div className="absolute top-6 left-6 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="absolute -top-6 -left-6 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow-lg">
                   <Quote className="text-blue-600" size={24} />
                 </div>
 
@@ -116,7 +116,7 @@ const Testimonials: React.FC = () => {
                 </div>
 
                 {/* Review Text */}
-                <blockquote className="text-xl text-gray-700 leading-relaxed mb-6 italic">
+                <blockquote className="text-xl text-gray-700 leading-relaxed mb-6 italic pl-2">
                   "{currentReview.text}"
                 </blockquote>
 
