@@ -2,9 +2,6 @@
 declare global {
   interface Window {
     gtag: (command: string, targetId: string, config?: any) => void;
-    goatcounter: {
-      count: (options: { path?: string; title?: string; event?: boolean }) => void;
-    };
   }
 }
 
@@ -30,34 +27,17 @@ export const trackGAPageView = (path: string, title?: string) => {
   }
 };
 
-// Combined event tracking (both GA4 and GoatCounter)
+// Event tracking with Google Analytics
 export const trackEvent = (eventName: string, path?: string) => {
   // Track with Google Analytics
   trackGAEvent(eventName, {
     event_category: 'user_interaction',
     custom_parameter_1: path || eventName
   });
-
-  // Track with GoatCounter
-  if (typeof window !== 'undefined' && window.goatcounter) {
-    window.goatcounter.count({
-      path: path || eventName,
-      title: eventName,
-      event: true,
-    });
-  }
 };
 
-// Combined page view tracking (both GA4 and GoatCounter)
+// Page view tracking with Google Analytics
 export const trackPageView = (path: string, title?: string) => {
   // Track with Google Analytics
   trackGAPageView(path, title);
-
-  // Track with GoatCounter
-  if (typeof window !== 'undefined' && window.goatcounter) {
-    window.goatcounter.count({
-      path,
-      title,
-    });
-  }
 };

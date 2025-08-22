@@ -18,7 +18,7 @@ function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
-    // Track page views with both analytics services
+    // Track page views with Google Analytics
     trackPageView(location.pathname, document.title);
     
     // Additional GA4 specific tracking

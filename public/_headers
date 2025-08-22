@@ -8,6 +8,7 @@
     media-src 'self' https:;
     prefetch-src 'self' https:;
     connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://googletagmanager.com https://analytics.google.com https://ssl.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://gc.zgo.at https://www.clarity.ms https://calendly.com https://assets.calendly.com https://ipapi.co https://formspree.io https://api.formspree.io;
+    connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://googletagmanager.com https://analytics.google.com https://ssl.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.clarity.ms https://calendly.com https://assets.calendly.com https://ipapi.co https://formspree.io https://api.formspree.io;
     frame-src https://calendly.com;
     form-action 'self' https://formspree.io https://api.formspree.io;
     frame-ancestors 'none';
