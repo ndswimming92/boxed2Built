@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, ExternalLink } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
 
 interface VideoPlayerProps {
@@ -51,10 +51,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     switch (platform) {
       case 'youtube':
         const youtubeId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-        return `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`;
+        return `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&autoplay=1`;
       case 'vimeo':
         const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
-        return `https://player.vimeo.com/video/${vimeoId}`;
+        return `https://player.vimeo.com/video/${vimeoId}?autoplay=1`;
       default:
         return url;
     }
@@ -65,10 +65,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     trackEvent(`video-play-${platform}`, title);
   };
 
-  const handleExternalLink = () => {
-    trackEvent(`video-external-link-${platform}`, title);
-    window.open(src, '_blank', 'noopener noreferrer');
-  };
 
   const aspectRatioClass = {
     '16:9': 'aspect-video',
@@ -109,33 +105,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <p className="text-white text-sm opacity-90 drop-shadow-lg line-clamp-2">{description}</p>
             )}
           </div>
-          
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleExternalLink();
-            }}
-            className="absolute top-4 right-4 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition-all duration-200"
-            aria-label={`Open ${title} in new tab`}
-          >
-            <ExternalLink size={16} />
-          </button>
         </div>
       ) : (
-        <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Play size={32} className="text-white ml-1" />
-            </div>
-            <p className="text-gray-600 mb-4">Video will open in YouTube</p>
-            <button
-              onClick={handleExternalLink}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Watch on YouTube
-            </button>
-          </div>
-        </div>
+        <iframe
+          src={getEmbedUrl(src, platform)}
+          title={title}
+          className="w-full h-full rounded-lg"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          loading="lazy"
+        />
       )}
     </div>
   );
