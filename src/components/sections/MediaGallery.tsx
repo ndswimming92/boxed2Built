@@ -128,13 +128,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
               onClick={() => openLightbox(item, index)}
             >
               {item.type === 'image' ? (
-                <div className="aspect-video relative overflow-hidden">
+                <div className="aspect-[4/3] relative overflow-hidden">
                   <OptimizedImage
                     src={item.src}
                     alt={item.alt || item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     width={400}
-                    height={225}
+                    height={300}
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
@@ -238,13 +238,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video">
+                  <div className="aspect-[4/3]">
                     <VideoPlayer
                       src={lightboxItem.src}
                       title={lightboxItem.title}
                       description={lightboxItem.description}
                       thumbnail={lightboxItem.thumbnail}
-                      platform={lightboxItem.platform || 'youtube'}
+                   className="aspect-[4/3]"
                       lazy={false}
                     />
                   </div>
