@@ -20,7 +20,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     platform: 'youtube'
   },
   {
-    id: '3',
+    id: '2',
     type: 'image',
     src: '/images/IMG_0217.jpeg',
     title: 'Before: Unassembled Furniture',
@@ -31,7 +31,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '4',
+    id: '3',
     type: 'image',
     src: '/images/IMG_0199.jpeg',
     title: 'After: Completed Assembly Project',
@@ -42,13 +42,79 @@ const SAMPLE_MEDIA: MediaItem[] = [
     height: 750
   },
   {
-    id: '5',
+    id: '4',
     type: 'image',
     src: '/images/IMG_0214.jpeg',
     title: 'Professional Assembly Work',
     description: 'Quality craftsmanship and attention to detail in every furniture assembly project.',
     category: 'photos',
     alt: 'Professional furniture assembly work showing quality craftsmanship',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '5',
+    type: 'image',
+    src: '/images/IMG_0196.jpeg',
+    title: 'Furniture Assembly Project',
+    description: 'Professional furniture assembly service in Spring Hill TN.',
+    category: 'photos',
+    alt: 'Professional furniture assembly project in Spring Hill Tennessee',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '6',
+    type: 'image',
+    src: '/images/IMG_0225.jpeg',
+    title: 'Completed Furniture Assembly',
+    description: 'Finished furniture assembly project ready for use.',
+    category: 'photos',
+    alt: 'Completed furniture assembly project in Tennessee',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '7',
+    type: 'image',
+    src: '/images/IMG_0223.jpeg',
+    title: 'Assembly Work in Progress',
+    description: 'Professional furniture assembly service in action.',
+    category: 'photos',
+    alt: 'Furniture assembly work in progress by professional service',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '8',
+    type: 'image',
+    src: '/images/IMG_0217 copy.jpeg',
+    title: 'Furniture Assembly Setup',
+    description: 'Professional setup for furniture assembly project.',
+    category: 'photos',
+    alt: 'Professional furniture assembly setup and preparation',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '9',
+    type: 'image',
+    src: '/images/IMG_0220.jpeg',
+    title: 'Assembly Tools and Workspace',
+    description: 'Professional tools and workspace for furniture assembly.',
+    category: 'photos',
+    alt: 'Professional furniture assembly tools and organized workspace',
+    width: 1260,
+    height: 750
+  },
+  {
+    id: '10',
+    type: 'image',
+    src: '/images/IMG_0224.jpeg',
+    title: 'Quality Assembly Work',
+    description: 'High-quality furniture assembly with attention to detail.',
+    category: 'photos',
+    alt: 'High-quality furniture assembly work with professional attention to detail',
     width: 1260,
     height: 750
   }
