@@ -1,4 +1,4 @@
-// Google Analytics and GoatCounter analytics utility functions
+// Google Analytics utility function
 declare global {
   interface Window {
     gtag: (command: string, targetId: string, config?: any) => void;
