@@ -77,13 +77,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }[aspectRatio];
 
   return (
-    <div ref={videoRef} className={`relative ${aspectRatioClass} ${className}`}>
+    <div ref={videoRef} className={`relative ${aspectRatioClass} overflow-hidden ${className}`}>
       {!isLoaded ? (
         <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
           <Play size={48} className="text-gray-400" />
         </div>
       ) : !isPlaying ? (
-        <div className="relative w-full h-full group cursor-pointer" onClick={handlePlay}>
+        <div className="relative w-full h-full group cursor-pointer rounded-lg overflow-hidden" onClick={handlePlay}>
           {thumbnail ? (
             <picture>
               <source
@@ -93,19 +93,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               <img
                 src={`${thumbnail}?fm=jpg&q=85&w=${width || 400}&h=${height || 300}`}
                 alt={`${title} video thumbnail`}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover"
                 loading="lazy"
                 width={width || 400}
                 height={height || 300}
               />
             </picture>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-gray-200 rounded-lg flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-gray-200 flex items-center justify-center">
               <Play size={48} className="text-blue-600" />
             </div>
           )}
           
-          <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
             <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Play size={24} className="text-gray-800 ml-1" />
             </div>
