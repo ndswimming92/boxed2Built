@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
+import Testimonials from '../components/sections/Testimonials';
 
 const ServicesPage: React.FC = () => {
   useEffect(() => {
@@ -93,7 +94,6 @@ const ServicesPage: React.FC = () => {
         {/* Services Section */}
         <Services />
 
-        {/* Testimonials Section */}
         <Testimonials />
 
         {/* Additional Service Information */}
