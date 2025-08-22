@@ -188,18 +188,12 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center ml-8">
             <a
               href="tel:+19316741196"
-              className="inline-flex items-center px-4 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 group"
+              className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (931) 674-1196"
             >
               <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-              <img 
-                src="/images/contact/phone-number.svg" 
-                alt="Call (931) 674-1196" 
-                width="120" 
-                height="18"
-                className="inline-block"
-              />
+              <span className="font-bold text-white">(931) 674-1196</span>
             </a>
           </div>
 
@@ -283,18 +277,12 @@ const Header: React.FC = () => {
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
                 <a
                   href="tel:+19316741196"
-                  className="flex items-center justify-center w-full px-4 py-3.5 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 group"
+                  className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
                 >
                   <Phone size={20} className="mr-2 group-hover:animate-pulse" />
-                  <img 
-                    src="/images/contact/phone-number.svg" 
-                    alt="Call (931) 674-1196" 
-                    width="120" 
-                    height="18"
-                    className="inline-block"
-                  />
+                  <span className="font-bold text-white">(931) 674-1196</span>
                 </a>
               </div>
             </nav>
