@@ -25,7 +25,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     src: '/images/IMG_0196.jpeg',
     title: 'Professional Furniture Assembly - After',
     description: 'Completed furniture assembly project showing professional results in Spring Hill home.',
-    category: 'before-after',
+    category: 'photos',
     alt: 'After - Professionally assembled furniture in Spring Hill Tennessee home',
     width: 1260,
     height: 750
@@ -46,7 +46,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     src: '/images/IMG_0217.jpeg',
     title: 'Before: Unassembled Furniture',
     description: 'Furniture pieces before our professional assembly service begins.',
-    category: 'before-after',
+    category: 'photos',
     alt: 'Before - Unassembled furniture pieces before professional assembly service',
     width: 1260,
     height: 750
@@ -57,7 +57,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     src: '/images/IMG_0199.jpeg',
     title: 'After: Completed Assembly Project',
     description: 'Professional furniture assembly completed and ready for use.',
-    category: 'before-after',
+    category: 'photos',
     alt: 'After - Completed furniture assembly project in Columbia Tennessee',
     width: 1260,
     height: 750
@@ -68,7 +68,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     src: '/images/IMG_0214.jpeg',
     title: 'Professional Assembly Work',
     description: 'Quality craftsmanship and attention to detail in every furniture assembly project.',
-    category: 'completed-work',
+    category: 'photos',
     alt: 'Professional furniture assembly work showing quality craftsmanship',
     width: 1260,
     height: 750

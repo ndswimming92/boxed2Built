@@ -39,10 +39,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   const categories = [
     { key: 'all', label: 'All Work', count: items.length },
-    { key: 'time-lapse', label: 'Time-lapse Videos', count: items.filter(item => item.category === 'time-lapse').length },
-    { key: 'before-after', label: 'Before & After', count: items.filter(item => item.category === 'before-after').length },
-    { key: 'completed-work', label: 'Completed Projects', count: items.filter(item => item.category === 'completed-work').length },
-    { key: 'process', label: 'Assembly Process', count: items.filter(item => item.category === 'process').length }
+    { key: 'photos', label: 'Photos', count: items.filter(item => item.category === 'photos').length },
+    { key: 'time-lapse', label: 'Time-lapse Videos', count: items.filter(item => item.category === 'time-lapse').length }
   ].filter(cat => cat.count > 0);
 
   const filteredItems = selectedCategory === 'all' 
@@ -81,12 +79,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
     switch (category) {
       case 'time-lapse':
         return '🎬';
-      case 'before-after':
-        return '🔄';
-      case 'completed-work':
-        return '✅';
-      case 'process':
-        return '🔧';
+      case 'photos':
+        return '📸';
       default:
         return '📸';
     }
