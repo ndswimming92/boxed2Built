@@ -10,17 +10,6 @@ import { getCalendlyUrl } from '../utils/utm';
 // Sample media data - replace with your actual content
 const SAMPLE_MEDIA: MediaItem[] = [
   {
-    id: '2',
-    type: 'image',
-    src: '/images/IMG_0196.jpeg',
-    title: 'Professional Furniture Assembly - After',
-    description: 'Completed furniture assembly project showing professional results in Spring Hill home.',
-    category: 'photos',
-    alt: 'After - Professionally assembled furniture in Spring Hill Tennessee home',
-    width: 1260,
-    height: 750
-  },
-  {
     id: '1',
     type: 'video',
     src: 'https://youtu.be/KBzfqI5YzSM',
