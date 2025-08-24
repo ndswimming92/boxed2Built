@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { trackEvent, trackVideoInteraction } from '../../utils/analytics';
+import OptimizedImage from './OptimizedImage';
 
 interface VideoPlayerProps {
   src: string;
@@ -86,23 +87,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ) : !isPlaying ? (
         <div className="relative w-full h-full group cursor-pointer rounded-lg overflow-hidden" onClick={handlePlay}>
           {thumbnail ? (
-            <picture>
-              <source
-                srcSet={`${thumbnail}?fm=webp&q=85&w=${width || 400}&h=${height || 300}`}
-                type="image/webp"
-              />
-              <img
-                src={`${thumbnail}?fm=jpg&q=85&w=${width || 400}&h=${height || 300}`}
-                alt={`${title} video thumbnail`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                width={width || 400}
-                height={height || 300}
-                style={{ 
-                  aspectRatio: width && height ? `${width}/${height}` : '16/9'
-                }}
-              />
-            </picture>
+            <OptimizedImage
+              src={thumbnail}
+              alt={`${title} video thumbnail`}
+              className="w-full h-full object-cover"
+              width={width || 400}
+              height={height || 300}
+              loading="lazy"
+              imageType="thumbnail"
+              quality={75}
+              enableAvif={true}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-100 to-gray-200 flex items-center justify-center">
               <Play size={48} className="text-blue-600" />
