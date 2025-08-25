@@ -147,22 +147,26 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white bg-opacity-90 rounded-full p-2">
                       <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-            className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300 rounded-lg bg-white shadow-sm hover:shadow-md"
+                      </svg>
                     </div>
                   </div>
                 </div>
-              <div className="aspect-square relative overflow-hidden transition-all duration-300">
-                <VideoPlayer
-                  src={item.src}
-                  title={item.title}
-                  description={item.description}
-                  thumbnail={item.thumbnail}
-                  platform={item.platform || 'youtube'}
-                  className="aspect-video transition-all duration-300"
-                  lazy={true}
-                  width={item.width}
-                  height={item.height}
-                />
+              ) : (
+                <div className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300 rounded-lg bg-white shadow-sm hover:shadow-md">
+                  <div className="aspect-square relative overflow-hidden transition-all duration-300">
+                    <VideoPlayer
+                      src={item.src}
+                      title={item.title}
+                      description={item.description}
+                      thumbnail={item.thumbnail}
+                      platform={item.platform || 'youtube'}
+                      className="aspect-video transition-all duration-300"
+                      lazy={true}
+                      width={item.width}
+                      height={item.height}
+                    />
+                  </div>
+                </div>
               )}
             </div>
           ))}
@@ -231,7 +235,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                       title={lightboxItem.title}
                       description={lightboxItem.description}
                       thumbnail={lightboxItem.thumbnail}
-                   className="aspect-[4/3]"
+                      platform={lightboxItem.platform || 'youtube'}
+                      className="aspect-[4/3]"
                       lazy={false}
                     />
                   </div>
