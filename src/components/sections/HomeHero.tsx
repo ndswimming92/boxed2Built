@@ -157,19 +157,19 @@ const HomeHero: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Chairs</div>
-                  <div className="text-xl font-bold text-blue-700">$41+</div>
+                  <div className="text-xl font-bold text-blue-700">$45+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Desks</div>
-                  <div className="text-xl font-bold text-green-700">$87+</div>
+                  <div className="text-xl font-bold text-green-700">$96+</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Dressers</div>
-                  <div className="text-xl font-bold text-purple-700">$151+</div>
+                  <div className="text-xl font-bold text-purple-700">$166+</div>
                 </div>
                 <div className="text-center p-3 bg-amber-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Beds</div>
-                  <div className="text-xl font-bold text-amber-700">$139+</div>
+                  <div className="text-xl font-bold text-amber-700">$153+</div>
                 </div>
               </div>
               <div className="text-center mt-4">
