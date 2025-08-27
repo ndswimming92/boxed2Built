@@ -217,7 +217,10 @@ const Footer: React.FC = () => {
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-300 text-center mt-4">
             Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
-            Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly.
+            Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
+            <a href="/services" className="text-blue-200 hover:text-white underline">
+              our services and areas
+            </a>.
           </p>
 
           <div className="text-sm text-gray-300 text-center space-y-2 mt-4">

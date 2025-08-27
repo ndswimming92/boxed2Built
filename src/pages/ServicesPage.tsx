@@ -115,7 +115,11 @@ const ServicesPage: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
                   <p className="text-gray-600 mb-4">
                     Our experienced team specializes in furniture assembly for all major brands including IKEA, Target, 
-                    Walmart, and more. We handle everything from simple chairs to complex bedroom sets.
+                    Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Read more{' '}
+                    <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      about our expertise
+                    </a>{' '}
+                    and commitment to quality.
                   </p>
                   <ul className="text-sm text-gray-600 space-y-1">
                     <li>• Professional tools and equipment</li>
@@ -129,7 +133,11 @@ const ServicesPage: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Local Spring Hill Service</h3>
                   <p className="text-gray-600 mb-4">
                     Based in Spring Hill, TN, we proudly serve the local community and surrounding areas. 
-                    We understand the needs of Tennessee families and provide reliable, professional service.
+                    We understand the needs of Tennessee families and provide reliable, professional service. Learn more{' '}
+                    <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      about our local commitment
+                    </a>{' '}
+                    and family-focused approach.
                   </p>
                   <ul className="text-sm text-gray-600 space-y-1">
                     <li>• Spring Hill, Columbia, Franklin</li>

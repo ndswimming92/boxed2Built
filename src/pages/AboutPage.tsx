@@ -76,7 +76,11 @@ const AboutPage: React.FC = () => {
                   <p className="text-gray-600 mb-6 leading-relaxed">
                     Ever since I was a kid, I've loved opening a new box of furniture and figuring out how it all fits together. 
                     What started as a fun challenge in my childhood has grown into a passion for helping families feel settled 
-                    and stress-free in their homes.
+                    and stress-free in their homes. Explore our{' '}
+                    <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      full range of services
+                    </a>{' '}
+                    to see how we can help your family.
                   </p>
                   <p className="text-gray-600 mb-6 leading-relaxed">
                     I know what it's like to have a packed schedule and a pile of furniture waiting—and I'm here to make sure 
