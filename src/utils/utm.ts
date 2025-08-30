@@ -65,6 +65,12 @@ export const UTM_CONFIGS = {
       medium: 'social',
       campaign: 'social_media',
       content: 'instagram_link'
+    },
+    youtube: {
+      source: 'website',
+      medium: 'social',
+      campaign: 'social_media',
+      content: 'youtube_link'
     }
   },
   reviews: {

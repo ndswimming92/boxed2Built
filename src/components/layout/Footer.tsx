@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Facebook, Mail, Phone, Instagram, MapPin, Star } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
@@ -169,6 +169,16 @@ const Footer: React.FC = () => {
                   onClick={() => handleSocialClick('instagram')}
                 >
                   <Instagram size={24} title="Instagram" />
+                </a>
+                <a
+                  href={getSocialUrl('youtube', 'https://www.youtube.com/@Boxed2BuiltUSA')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  aria-label="YouTube"
+                  onClick={() => handleSocialClick('youtube')}
+                >
+                  <Youtube size={24} title="YouTube" />
                 </a>
                 <a
                   href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
