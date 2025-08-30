@@ -132,7 +132,6 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Payment Methods</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li className="flex items-center text-gray-300">
                 <li className="text-gray-300">Credit & Debit Cards</li>
                 <li className="text-gray-300">Apple Pay</li>
                 <li className="text-gray-300">Venmo</li>
