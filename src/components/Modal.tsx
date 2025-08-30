@@ -1,7 +1,89 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  triggerRef?: React.RefObject<HTMLElement>;
+  title?: string;
+  description?: string;
+}
+
+const Modal: React.FC<ModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  children, 
+  triggerRef,
+  title,
+  description 
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
   if (!isOpen) return null;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Store the currently focused element
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    // Focus the modal content when it opens
+    if (modalRef.current) {
+      modalRef.current.focus();
+    }
+
+    // Handle escape key
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Handle focus trap
+    const handleTabKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (event.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleTabKey);
+
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleTabKey);
+      document.body.style.overflow = 'unset';
+
+      // Restore focus to the trigger element or previously focused element
+      const elementToFocus = triggerRef?.current || previousActiveElement.current;
+      if (elementToFocus) {
+        elementToFocus.focus();
+      }
+    };
+  }, [isOpen, onClose, triggerRef]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -13,9 +95,32 @@ const Modal = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => 
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={handleBackdropClick}
+      role="presentation"
     >
-      <div className="bg-white rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-[90vh] mx-4">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl">&times;</button>
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-[90vh] mx-4 focus:outline-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? "modal-title" : undefined}
+        aria-describedby={description ? "modal-description" : undefined}
+        tabIndex={-1}
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+        
+        {title && (
+          <h2 id="modal-title" className="sr-only">{title}</h2>
+        )}
+        {description && (
+          <p id="modal-description" className="sr-only">{description}</p>
+        )}
+        
         {children}
       </div>
     </div>

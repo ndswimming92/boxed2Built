@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Facebook, Mail, Phone, Instagram, MapPin, Star } from 'lucide-react';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
@@ -10,6 +10,8 @@ const currentYear = new Date().getFullYear();
 const Footer: React.FC = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const privacyButtonRef = useRef<HTMLButtonElement>(null);
+  const termsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleSocialClick = (platform: string) => {
     trackEvent(`social-click-${platform}`, platform, {
@@ -226,11 +228,19 @@ const Footer: React.FC = () => {
           <div className="text-sm text-gray-300 text-center space-y-2 mt-4">
             <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
             <div>
-              <button onClick={handlePrivacyClick} className="underline hover:text-white">
+              <button 
+                ref={privacyButtonRef}
+                onClick={handlePrivacyClick} 
+                className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+              >
                 Privacy Policy
               </button>
               &nbsp;|&nbsp;
-              <button onClick={handleTermsClick} className="underline hover:text-white">
+              <button 
+                ref={termsButtonRef}
+                onClick={handleTermsClick} 
+                className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+              >
                 Terms of Service
               </button>
             </div>
@@ -239,8 +249,16 @@ const Footer: React.FC = () => {
       </footer>
 
       {/* Modals */}
-      <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
-      <TermsOfServiceModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+      <PrivacyPolicyModal 
+        isOpen={showPrivacy} 
+        onClose={() => setShowPrivacy(false)} 
+        triggerRef={privacyButtonRef}
+      />
+      <TermsOfServiceModal 
+        isOpen={showTerms} 
+        onClose={() => setShowTerms(false)} 
+        triggerRef={termsButtonRef}
+      />
     </>
   );
 };
