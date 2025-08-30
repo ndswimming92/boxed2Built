@@ -128,6 +128,23 @@ const Footer: React.FC = () => {
               </ul>
             </div>
 
+            {/* Payment Methods */}
+            <div className="md:col-span-1">
+              <h3 className="font-semibold text-white mb-4">Payment Methods</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li className="text-gray-300">💳 Credit & Debit Cards</li>
+                <li className="text-gray-300">📱 Apple Pay</li>
+                <li className="text-gray-300">💸 Venmo</li>
+                <li className="text-gray-300">🏦 Zelle</li>
+                <li className="text-gray-300">📲 Contactless Payments</li>
+                <li className="text-gray-300">⬜ Square</li>
+                <li className="text-gray-300">💵 Cash</li>
+              </ul>
+              <p className="text-xs text-gray-400 mt-3 italic">
+                Payment due upon completion
+              </p>
+            </div>
+
             {/* Service Areas */}
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Service Areas</h3>
