@@ -132,13 +132,51 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Payment Methods</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li className="text-gray-300">💳 Credit & Debit Cards</li>
-                <li className="text-gray-300">📱 Apple Pay</li>
-                <li className="text-gray-300">💸 Venmo</li>
-                <li className="text-gray-300">🏦 Zelle</li>
-                <li className="text-gray-300">📲 Contactless Payments</li>
-                <li className="text-gray-300">⬜ Square</li>
-                <li className="text-gray-300">💵 Cash</li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    <line x1="2" y1="10" x2="22" y2="10" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                  Credit & Debit Cards
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  Apple Pay
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                  </svg>
+                  Venmo
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  Zelle
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    <path d="M8 12l2 2 4-4" stroke="white" strokeWidth="2" fill="none"/>
+                  </svg>
+                  Contactless Payments
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    <rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor"/>
+                  </svg>
+                  Square
+                </li>
+                <li className="flex items-center text-gray-300">
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 15h2c0 1.08 1.37 2 3 2s3-.92 3-2c0-1.1-1.04-1.5-3.24-2.03C9.64 12.44 7 11.78 7 9c0-1.79 1.47-3.31 3.5-3.82V3h3v2.18C15.53 5.69 17 7.21 17 9h-2c0-1.08-1.37-2-3-2s-3 .92-3 2c0 1.1 1.04 1.5 3.24 2.03C14.36 11.56 17 12.22 17 15c0 1.79-1.47 3.31-3.5 3.82V21h-3v-2.18C8.47 18.31 7 16.79 7 15z"/>
+                  </svg>
+                  Cash
+                </li>
               </ul>
               <p className="text-xs text-gray-400 mt-3 italic">
                 Payment due upon completion
