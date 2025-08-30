@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateOptimizedImageUrl, getOptimalQuality } from '../../utils/imageOptimization';
+import LoadingSpinner from './LoadingSpinner';
 
 interface LazyImageProps {
   src: string;
@@ -53,7 +54,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
     <div className={`relative ${className}`}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded z-10">
-          <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
+          <LoadingSpinner size="md" className="text-blue-600" />
         </div>
       )}
       
@@ -84,7 +85,9 @@ const LazyImage: React.FC<LazyImageProps> = ({
             onError={handleError}
             decoding={priority ? 'sync' : 'async'}
             fetchPriority={priority ? 'high' : 'auto'}
-            className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 w-full h-auto object-cover`}
+            className={`w-full h-auto object-cover transition-opacity duration-300 ${
+              isLoading ? 'opacity-0' : 'opacity-100'
+            }`}
             style={{ 
               aspectRatio: width && height ? `${width}/${height}` : undefined
             }}

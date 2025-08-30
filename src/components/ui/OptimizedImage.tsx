@@ -1,5 +1,7 @@
 import React from 'react';
+import { useState } from 'react';
 import { generateResponsiveImageSources, getOptimalQuality } from '../../utils/imageOptimization';
+import LoadingSpinner from './LoadingSpinner';
 
 interface OptimizedImageProps {
   src: string;
@@ -28,6 +30,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   imageType = 'gallery',
   enableAvif = true,
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
   // Use eager loading for priority images
   const imageLoading = priority ? 'eager' : loading;
   
@@ -42,8 +47,29 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     enableAvif
   });
 
+  const handleLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
+
   return (
-    <picture className={className}>
+    <div className={`relative ${className}`}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded z-10">
+          <LoadingSpinner size="md" className="text-blue-600" />
+        </div>
+      )}
+      
+      {hasError ? (
+        <div className="flex items-center justify-center bg-gray-100 rounded h-full min-h-[200px]">
+          <p className="text-gray-400 text-sm">Failed to load image</p>
+        </div>
+      ) : (
+        <picture>
       {/* AVIF format - most efficient */}
       {enableAvif && (sources as any).avif && (
         <source
@@ -76,14 +102,20 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         width={width}
         height={height}
         loading={imageLoading}
-        className="w-full h-auto object-cover"
+        className={`w-full h-auto object-cover transition-opacity duration-300 ${
+          isLoading ? 'opacity-0' : 'opacity-100'
+        }`}
         decoding={priority ? 'sync' : 'async'}
         fetchPriority={priority ? 'high' : 'auto'}
+        onLoad={handleLoad}
+        onError={handleError}
         style={{ 
           aspectRatio: width && height ? `${width}/${height}` : undefined
         }}
       />
-    </picture>
+        </picture>
+      )}
+    </div>
   );
 };
 
