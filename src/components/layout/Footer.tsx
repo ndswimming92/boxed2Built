@@ -147,8 +147,7 @@ const Footer: React.FC = () => {
                 </li>
                 <li className="flex items-center text-gray-300">
                   <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 3h18l-2 18H5L3 3zm4 4l1.5 10h7L17 7H7z"/>
-                    <text x="12" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="white">V</text>
+                    <path d="M19.5 3h-4.9c-1.8 0-3.2.5-4.3 1.5-1.2 1.1-1.8 2.6-1.8 4.5 0 1.6.4 3.4 1.1 5.4l.9 2.6L7.2 21h-4L1 3h4.5l1.2 11.2c.2-1.1.6-2.2 1.1-3.2L12.5 3h7z"/>
                   </svg>
                   Venmo
                 </li>
