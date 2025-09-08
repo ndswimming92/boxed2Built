@@ -277,10 +277,10 @@ const ContactForm: React.FC = () => {
   const inputClass = (field: keyof typeof fields) =>
     `w-full px-3 py-2 border rounded focus:outline-none transition-colors ${
       !fields[field].touched
-        ? 'border-gray-300 focus:border-blue-700'
+        ? 'border-gray-400 focus:border-blue-700'
         : fields[field].error
-        ? 'border-red-500 bg-red-50 focus:border-red-600'
-        : 'border-green-500 bg-green-50 focus:border-green-600'
+        ? 'border-red-600 bg-red-50 focus:border-red-700'
+        : 'border-green-600 bg-green-50 focus:border-green-700'
     }`;
 
   return (
@@ -318,7 +318,7 @@ const ContactForm: React.FC = () => {
               spellCheck="false"
             />
             {fields.name.touched && fields.name.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.name.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.name.error}</p>
             )}
           </div>
 
@@ -340,7 +340,7 @@ const ContactForm: React.FC = () => {
               spellCheck="false"
             />
             {fields.email.touched && fields.email.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.email.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.email.error}</p>
             )}
           </div>
 
@@ -369,7 +369,7 @@ const ContactForm: React.FC = () => {
               )}
             </InputMask>
             {fields.phone.touched && fields.phone.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.phone.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.phone.error}</p>
             )}
           </div>
 
@@ -395,7 +395,7 @@ const ContactForm: React.FC = () => {
               <option value="Other">Other</option>
             </select>
             {fields.furnitureType.touched && fields.furnitureType.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.furnitureType.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.furnitureType.error}</p>
             )}
           </div>
 
@@ -416,7 +416,7 @@ const ContactForm: React.FC = () => {
               placeholder="e.g., 3"
             />
             {fields.pieces.touched && fields.pieces.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.pieces.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.pieces.error}</p>
             )}
           </div>
 
@@ -436,7 +436,7 @@ const ContactForm: React.FC = () => {
               autoCorrect="off"
             />
             {fields.preferredDate.touched && fields.preferredDate.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.preferredDate.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.preferredDate.error}</p>
             )}
           </div>
 
@@ -455,7 +455,7 @@ const ContactForm: React.FC = () => {
               autoCorrect="off"
             />
             {fields.preferredTimeSlot.touched && fields.preferredTimeSlot.error && (
-              <p className="text-red-600 text-sm mt-1">{fields.preferredTimeSlot.error}</p>
+              <p className="text-red-700 text-sm mt-1">{fields.preferredTimeSlot.error}</p>
             )}
           </div>
 
@@ -493,12 +493,12 @@ const ContactForm: React.FC = () => {
           </button>
 
           {state.errors && state.errors.length > 0 && (
-            <div className="mt-4 bg-red-100 text-red-700 p-2 rounded flex items-center">
+            <div className="mt-4 bg-red-100 text-red-800 p-2 rounded flex items-center">
               <AlertCircle size={16} className="mr-1" /> Please fix the errors above.
             </div>
           )}
 
-          <p className="text-xs text-gray-500 mt-2 text-center">
+          <p className="text-xs text-gray-600 mt-2 text-center">
             By submitting, you agree to our <a href="/terms-of-service" className="underline">Terms of Service</a>.
             {userCity && <span className="block mt-1">Detected location: {userCity}</span>}
           </p>

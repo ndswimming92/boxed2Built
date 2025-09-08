@@ -73,7 +73,7 @@ const AboutPage: React.FC = () => {
                   <p className="text-xl text-gray-700 mb-6 font-medium">
                     Hi, I'm Nicholas Davidson, the hands (and heart) behind Boxed2Built.
                   </p>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
+                  <p className="text-gray-700 mb-6 leading-relaxed">
                     Ever since I was a kid, I've loved opening a new box of furniture and figuring out how it all fits together. 
                     What started as a fun challenge in my childhood has grown into a passion for helping families feel settled 
                     and stress-free in their homes. Explore our{' '}
@@ -82,11 +82,11 @@ const AboutPage: React.FC = () => {
                     </a>{' '}
                     to see how we can help your family.
                   </p>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
+                  <p className="text-gray-700 mb-6 leading-relaxed">
                     I know what it's like to have a packed schedule and a pile of furniture waiting—and I'm here to make sure 
                     you don't have to choose between your time and your peace of mind.
                   </p>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed">
                     I take pride in delivering reliable, friendly service with a family-first mindset—because I believe your 
                     home should be a place of rest, not one more thing to assemble.
                   </p>
@@ -148,7 +148,7 @@ const AboutPage: React.FC = () => {
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Professional Service</h4>
                     </div>
-                    <p className="text-gray-600">From someone who actually enjoys the process and takes pride in quality work</p>
+                    <p className="text-gray-700">From someone who actually enjoys the process and takes pride in quality work</p>
                   </div>
                   
                   <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-600">
@@ -158,7 +158,7 @@ const AboutPage: React.FC = () => {
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Punctual & Reliable</h4>
                     </div>
-                    <p className="text-gray-600">Scheduling that respects your time and commitments</p>
+                    <p className="text-gray-700">Scheduling that respects your time and commitments</p>
                   </div>
                   
                   <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-600">
@@ -168,7 +168,7 @@ const AboutPage: React.FC = () => {
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Clean & Tidy</h4>
                     </div>
-                    <p className="text-gray-600">Your space will look better than we found it</p>
+                    <p className="text-gray-700">Your space will look better than we found it</p>
                   </div>
                   
                   <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-600">
@@ -178,7 +178,7 @@ const AboutPage: React.FC = () => {
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900">Family-Focused</h4>
                     </div>
-                    <p className="text-gray-600">We treat your home with the care we'd want in ours</p>
+                    <p className="text-gray-700">We treat your home with the care we'd want in ours</p>
                   </div>
                 </div>
               </div>
@@ -202,7 +202,7 @@ const AboutPage: React.FC = () => {
                     'Nashville Metro'
                   ].map((area, index) => (
                     <div key={index} className="flex items-center justify-center bg-white p-3 rounded-lg shadow-sm">
-                      <CheckCircle size={16} className="text-green-600 mr-2" />
+                      <CheckCircle size={16} className="text-green-700 mr-2" />
                       <span className="text-sm font-medium text-gray-700">{area}</span>
                     </div>
                   ))}
@@ -217,7 +217,7 @@ const AboutPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h3 className="text-3xl font-bold mb-6">Ready to Get Started?</h3>
-              <p className="text-xl text-blue-100 mb-8">
+              <p className="text-xl text-blue-50 mb-8">
                 Let Nicholas and the Boxed2Built team take the stress out of furniture assembly for your Spring Hill area home.
               </p>
               
@@ -248,7 +248,7 @@ const AboutPage: React.FC = () => {
                 </a>
               </div>
               
-              <p className="text-xs text-blue-200 font-medium">
+              <p className="text-xs text-blue-50 font-medium">
                 By submitting any request, you agree to our Terms of Service
               </p>
             </div>

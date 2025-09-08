@@ -52,15 +52,15 @@ const Hero: React.FC = () => {
               {/* Enhanced trust indicators without ratings/licensing */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
-                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <CheckCircle size={18} className="text-green-700 mr-2" />
                   <span className="font-medium">Professional Service</span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <CheckCircle size={18} className="text-green-700 mr-2" />
                   <span className="font-medium">Free Quotes</span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <CheckCircle size={18} className="text-green-600 mr-2" />
+                  <CheckCircle size={18} className="text-green-700 mr-2" />
                   <span className="font-medium">Local Service</span>
                 </div>
               </div>

@@ -44,15 +44,15 @@ const Services: React.FC = () => {
           {/* Trust indicators without ratings/licensing */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-6 text-sm">
             <div className="flex items-center text-gray-700">
-              <Clock size={16} className="text-blue-600 mr-2" />
+              <Clock size={16} className="text-blue-700 mr-2" />
               <span className="font-medium">Flexible Scheduling</span>
             </div>
             <div className="flex items-center text-gray-700">
-              <Check size={16} className="text-green-600 mr-2" />
+              <Check size={16} className="text-green-700 mr-2" />
               <span className="font-medium">Professional Service</span>
             </div>
             <div className="flex items-center text-gray-700">
-              <Check size={16} className="text-green-600 mr-2" />
+              <Check size={16} className="text-green-700 mr-2" />
               <span className="font-medium">Free Quotes</span>
             </div>
           </div>
@@ -98,7 +98,7 @@ const Services: React.FC = () => {
                 <ul className="space-y-2">
                   {service.includedItems.map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <Check size={18} className="text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <Check size={18} className="text-green-700 mt-0.5 mr-2 flex-shrink-0" />
                       <span className="text-gray-600">{item}</span>
                     </li>
                   ))}
@@ -113,7 +113,7 @@ const Services: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
           <div className="text-center mb-8">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready for Expert Furniture Assembly?</h3>
-            <p className="text-blue-100 text-lg max-w-3xl mx-auto">
+            <p className="text-blue-50 text-lg max-w-3xl mx-auto">
               Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas. 
               Book a free consultation or get a custom quote for multiple items. Volume discounts available!
             </p>
@@ -151,9 +151,9 @@ const Services: React.FC = () => {
           </div>
 
           {/* Terms notice */}
-          <p className="text-xs text-blue-100 text-center">
+          <p className="text-xs text-blue-50 text-center">
             By submitting any request, you agree to our{' '}
-            <a href="/terms-of-service" className="text-blue-100 hover:text-white underline">
+            <a href="/terms-of-service" className="text-blue-50 hover:text-white underline">
               Terms of Service
             </a>
           </p>

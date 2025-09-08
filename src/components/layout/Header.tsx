@@ -130,7 +130,7 @@ const Header: React.FC = () => {
                 <a
                   href="/"
                   onClick={() => handleNavClick('home')}
-                  className={getNavLinkClasses('/')}
+                  className={`${getNavLinkClasses('/')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Go to home page"
                 >
                   Home
@@ -141,7 +141,7 @@ const Header: React.FC = () => {
                 <a
                   href="/about"
                   onClick={() => handleNavClick('about')}
-                  className={getNavLinkClasses('/about')}
+                  className={`${getNavLinkClasses('/about')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Learn about Boxed2Built"
                 >
                   About
@@ -152,7 +152,7 @@ const Header: React.FC = () => {
                 <a
                   href="/services"
                   onClick={() => handleNavClick('services')}
-                  className={getNavLinkClasses('/services')}
+                  className={`${getNavLinkClasses('/services')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our services and pricing"
                 >
                   Services
@@ -163,7 +163,7 @@ const Header: React.FC = () => {
                 <a
                   href="/gallery"
                   onClick={() => handleNavClick('gallery')}
-                  className={getNavLinkClasses('/gallery')}
+                  className={`${getNavLinkClasses('/gallery')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our work gallery"
                 >
                   Gallery
@@ -174,7 +174,7 @@ const Header: React.FC = () => {
                 <a
                   href="/contact"
                   onClick={() => handleNavClick('contact')}
-                  className={getNavLinkClasses('/contact')}
+                  className={`${getNavLinkClasses('/contact')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Contact us for furniture assembly service"
                 >
                   Contact

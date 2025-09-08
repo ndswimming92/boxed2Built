@@ -105,7 +105,7 @@ const ContactPage: React.FC = () => {
                             className="inline-block"
                           />
                         </a>
-                        <p className="text-gray-600 text-sm mt-1">Call for immediate assistance or quotes</p>
+                        <p className="text-gray-700 text-sm mt-1">Call for immediate assistance or quotes</p>
                       </div>
                     </div>
                     
@@ -122,7 +122,7 @@ const ContactPage: React.FC = () => {
                         >
                           boxed2builtco@gmail.com
                         </a>
-                        <p className="text-gray-600 text-sm mt-1">Send us your furniture assembly questions</p>
+                        <p className="text-gray-700 text-sm mt-1">Send us your furniture assembly questions</p>
                       </div>
                     </div>
                     
@@ -132,8 +132,8 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">Service Area</h3>
-                        <p className="text-gray-600">Spring Hill, TN</p>
-                        <p className="text-gray-600 text-sm mt-1">
+                        <p className="text-gray-700">Spring Hill, TN</p>
+                        <p className="text-gray-700 text-sm mt-1">
                           Also serving Columbia, Franklin, Thompson's Station, Brentwood & surrounding areas
                         </p>
                       </div>
@@ -145,8 +145,8 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">Hours</h3>
-                        <p className="text-gray-600">Monday - Saturday: 8:00 AM - 5:00 PM</p>
-                        <p className="text-gray-600 text-sm mt-1">Flexible scheduling available</p>
+                        <p className="text-gray-700">Monday - Saturday: 8:00 AM - 5:00 PM</p>
+                        <p className="text-gray-700 text-sm mt-1">Flexible scheduling available</p>
                       </div>
                     </div>
                   </div>
@@ -162,19 +162,19 @@ const ContactPage: React.FC = () => {
                       <span className="mr-2">Call</span>
                       <img 
                         src="/images/contact/phone-number.svg" 
-                        alt="(931) 674-1196" 
+                    <CheckCircle size={18} className="text-green-700 mr-3" />
                         width="120" 
                         height="18"
                         className="inline-block"
-                      />
+                    <CheckCircle size={18} className="text-green-700 mr-3" />
                     </a>
                     <a
                       href="#"
-                      onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
+                    <CheckCircle size={18} className="text-green-700 mr-3" />
                      className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Mail size={20} className="mr-2" />
-                      Send Email
+                    <CheckCircle size={18} className="text-green-700 mr-3" />
                     </a>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ const ContactPage: React.FC = () => {
                         onChange={(e) => setAcceptTerms(e.target.checked)}
                         className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-700">
                         I accept the{' '}
                         <a
                           href="/terms-of-service"

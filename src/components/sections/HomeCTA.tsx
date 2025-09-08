@@ -31,7 +31,7 @@ const HomeCTA: React.FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready for Professional Furniture Assembly?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-blue-50 mb-8">
             Book a free consultation to discuss your project and get an accurate quote. 
             Serving Spring Hill, TN and surrounding areas.
           </p>
@@ -40,26 +40,26 @@ const HomeCTA: React.FC = () => {
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <Calendar className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Easy Scheduling</h3>
-              <p className="text-blue-200 text-sm font-medium">Book online or call</p>
+              <p className="text-blue-50 text-sm font-medium">Book online or call</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Free Consultation</h3>
-              <p className="text-blue-200 text-sm font-medium">No commitment required</p>
+              <p className="text-blue-50 text-sm font-medium">No commitment required</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h3 className="font-semibold mb-1">Professional Service</h3>
-              <p className="text-blue-200 text-sm font-medium">Quality guaranteed</p>
+              <p className="text-blue-50 text-sm font-medium">Quality guaranteed</p>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-auto">
             <div className="text-gray-900 mb-4">
               <h3 className="text-xl font-bold mb-2">Get Started Today</h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-700 text-sm">
                 Free consultation and transparent quote for your furniture assembly project.
               </p>
             </div>
@@ -73,7 +73,7 @@ const HomeCTA: React.FC = () => {
                   onChange={(e) => setAcceptTerms(e.target.checked)}
                   className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-700">
                   I accept the{' '}
                   <a
                     href="/terms-of-service"
@@ -118,7 +118,7 @@ const HomeCTA: React.FC = () => {
               </a>
             </div>
 
-            <p className="text-xs text-gray-500 mt-3 text-center">
+            <p className="text-xs text-gray-600 mt-3 text-center">
               Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
             </p>
           </div>

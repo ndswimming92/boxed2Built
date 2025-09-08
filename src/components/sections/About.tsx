@@ -66,7 +66,7 @@ const About: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Expert IKEA Assembly</h3>
-                  <p className="text-gray-600">Specialized in IKEA furniture with years of experience in complex assembly projects</p>
+                  <p className="text-gray-700">Specialized in IKEA furniture with years of experience in complex assembly projects</p>
                 </div>
               </div>
             </div>
@@ -78,7 +78,7 @@ const About: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Professional & Clean</h3>
-                  <p className="text-gray-600">Punctual service that leaves your space cleaner than we found it</p>
+                  <p className="text-gray-700">Punctual service that leaves your space cleaner than we found it</p>
                 </div>
               </div>
             </div>
@@ -120,13 +120,13 @@ const About: React.FC = () => {
                     'Nashville Metro'
                   ].map((area, index) => (
                     <div key={index} className="flex items-center">
-                      <CheckCircle size={16} className="text-green-600 mr-2" />
+                      <CheckCircle size={16} className="text-green-700 mr-2" />
                       <span className="text-sm font-medium">{area}</span>
                     </div>
                   ))}
                 </div>
                 <div className="mt-4 p-4 bg-white rounded-lg">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-700">
                     <strong>Service Guarantee:</strong> Professional assembly, cleanup included, 
                     satisfaction guaranteed on all IKEA, Target, Walmart and major brand furniture.
                   </p>

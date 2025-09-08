@@ -177,15 +177,15 @@ const GalleryPage: React.FC = () => {
               
               <div className="flex flex-wrap justify-center items-center gap-8 text-sm">
                 <div className="flex items-center text-gray-700">
-                  <Video size={18} className="text-blue-600 mr-2" />
+                  <Video size={18} className="text-blue-700 mr-2" />
                   <span className="font-medium">Time-lapse Videos</span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <Camera size={18} className="text-green-600 mr-2" />
+                  <Camera size={18} className="text-green-700 mr-2" />
                   <span className="font-medium">Before & After Photos</span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <CheckCircle size={18} className="text-purple-600 mr-2" />
+                  <CheckCircle size={18} className="text-purple-700 mr-2" />
                   <span className="font-medium">Completed Projects</span>
                 </div>
               </div>
@@ -206,7 +206,7 @@ const GalleryPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4">Ready for Your Own Professional Assembly?</h2>
-              <p className="text-xl text-blue-100 mb-8">
+              <p className="text-xl text-blue-50 mb-8">
                 Let us handle your furniture assembly project with the same care and expertise you see in our gallery.
               </p>
               
@@ -237,7 +237,7 @@ const GalleryPage: React.FC = () => {
                 </a>
               </div>
               
-              <p className="text-xs text-blue-200 font-medium">
+              <p className="text-xs text-blue-50 font-medium">
                 Serving Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood & surrounding Tennessee areas
               </p>
             </div>

@@ -113,7 +113,7 @@ const ServicesPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-700 mb-4">
                     Our experienced team specializes in furniture assembly for all major brands including IKEA, Target, 
                     Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Read more{' '}
                     <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
@@ -121,7 +121,7 @@ const ServicesPage: React.FC = () => {
                     </a>{' '}
                     and commitment to quality.
                   </p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Professional tools and equipment</li>
                     <li>• Years of assembly experience</li>
                     <li>• Attention to detail and quality</li>
@@ -131,7 +131,7 @@ const ServicesPage: React.FC = () => {
                 
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Local Spring Hill Service</h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-700 mb-4">
                     Based in Spring Hill, TN, we proudly serve the local community and surrounding areas. 
                     We understand the needs of Tennessee families and provide reliable, professional service. Learn more{' '}
                     <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
@@ -139,7 +139,7 @@ const ServicesPage: React.FC = () => {
                     </a>{' '}
                     and family-focused approach.
                   </p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Spring Hill, Columbia, Franklin</li>
                     <li>• Thompson's Station, Brentwood</li>
                     <li>• Flexible scheduling options</li>
@@ -150,7 +150,7 @@ const ServicesPage: React.FC = () => {
 
               <div className="bg-blue-600 text-white p-8 rounded-lg text-center">
                 <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
-                <p className="text-blue-100 mb-6">
+                <p className="text-blue-50 mb-6">
                   Contact us today for a free consultation and quote for your furniture assembly project.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">

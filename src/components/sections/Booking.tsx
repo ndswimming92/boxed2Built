@@ -32,7 +32,7 @@ const Booking: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Book Your Professional Furniture Assembly Service
             </h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-50 max-w-3xl mx-auto">
               Ready for expert IKEA, Target, or Walmart furniture assembly in Spring Hill, TN? 
               Book a free consultation to discuss your project and get an accurate quote.
             </p>
@@ -43,11 +43,11 @@ const Booking: React.FC = () => {
                 <CheckCircle size={16} className="mr-2" />
                 <span>Professional Service</span>
               </div>
-              <div className="flex items-center text-blue-200">
+              <div className="flex items-center text-blue-50">
                 <CheckCircle size={16} className="mr-2" />
                 <span>Free Quotes</span>
               </div>
-              <div className="flex items-center text-blue-200">
+              <div className="flex items-center text-blue-50">
                 <CheckCircle size={16} className="mr-2" />
                 <span>Flexible Scheduling</span>
               </div>
@@ -60,7 +60,7 @@ const Booking: React.FC = () => {
                 <Calendar className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Easy Online Scheduling</h3>
-              <p className="text-blue-100">
+              <p className="text-blue-50">
                 Pick a convenient time using our simple online booking system for furniture assembly
               </p>
             </div>
@@ -70,7 +70,7 @@ const Booking: React.FC = () => {
                 <Clock className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Free 5-Minute Consultation</h3>
-              <p className="text-blue-100">
+              <p className="text-blue-50">
                 We'll discuss your furniture assembly project, provide a transparent quote, and answer questions
               </p>
             </div>
@@ -80,7 +80,7 @@ const Booking: React.FC = () => {
                 <CheckCircle className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Professional Assembly</h3>
-              <p className="text-blue-100">
+              <p className="text-blue-50">
                 Expert assembly service while you focus on what matters most to your family
               </p>
             </div>
@@ -89,7 +89,7 @@ const Booking: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
             <div className="text-gray-900 mb-6">
               <h3 className="text-2xl font-bold mb-3">Book Your Free Furniture Assembly Consultation</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-700">
                 No commitment required. We'll discuss your IKEA, Target, or Walmart furniture assembly needs 
                 and provide a transparent, upfront quote for Spring Hill area service.
               </p>
@@ -97,19 +97,19 @@ const Booking: React.FC = () => {
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center justify-center text-gray-700">
-                <CheckCircle size={20} className="text-green-600 mr-3" />
+                <CheckCircle size={20} className="text-green-700 mr-3" />
                 <span>Free consultation and detailed quote</span>
               </div>
               <div className="flex items-center justify-center text-gray-700">
-                <CheckCircle size={20} className="text-green-600 mr-3" />
+                <CheckCircle size={20} className="text-green-700 mr-3" />
                 <span>Flexible scheduling including weekends</span>
               </div>
               <div className="flex items-center justify-center text-gray-700">
-                <CheckCircle size={20} className="text-green-600 mr-3" />
+                <CheckCircle size={20} className="text-green-700 mr-3" />
                 <span>Professional service guarantee</span>
               </div>
               <div className="flex items-center justify-center text-gray-700">
-                <CheckCircle size={20} className="text-green-600 mr-3" />
+                <CheckCircle size={20} className="text-green-700 mr-3" />
                 <span>Serving Spring Hill and surrounding areas</span>
               </div>
             </div>
@@ -123,7 +123,7 @@ const Booking: React.FC = () => {
                   onChange={(e) => setAcceptTerms(e.target.checked)}
                   className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-700">
                   I accept the{' '}
                   <a
                     href="/terms-of-service"
@@ -170,7 +170,7 @@ const Booking: React.FC = () => {
               </a>
             </div>
 
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-gray-600 mt-4">
               By submitting, you agree to our Terms of Service • Available weekends • 
               Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas • 
               Professional Furniture Assembly Service

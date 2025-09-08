@@ -75,13 +75,13 @@ const Footer: React.FC = () => {
                   decoding="async"
                 />
               </div>
-              <p className="text-gray-400 max-w-md mb-6 text-center md:text-left">
+              <p className="text-gray-300 max-w-md mb-6 text-center md:text-left">
                 Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
                 Expert IKEA, Target, Walmart furniture assembly with flexible scheduling.
               </p>
 
               <address
-                className="not-italic text-sm text-gray-400 text-center md:text-left mb-4"
+                className="not-italic text-sm text-gray-300 text-center md:text-left mb-4"
                 itemProp="address"
                 itemScope
                 itemType="https://schema.org/PostalAddress"
@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
             {/* Quick Links */}
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Quick Links</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li><a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
                 <li><a href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</a></li>
                 <li><a href="/services" className="text-gray-300 hover:text-white transition-colors">Services & Pricing</a></li>
@@ -116,7 +116,7 @@ const Footer: React.FC = () => {
             {/* Services */}
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Our Services</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li className="text-gray-300">IKEA Furniture Assembly</li>
                 <li className="text-gray-300">Target Furniture Assembly</li>
                 <li className="text-gray-300">Walmart Furniture Assembly</li>
@@ -131,7 +131,7 @@ const Footer: React.FC = () => {
             {/* Payment Methods */}
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Payment Methods</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li className="text-gray-300">Credit & Debit Cards</li>
                 <li className="text-gray-300">Apple Pay</li>
                 <li className="text-gray-300">Venmo</li>
@@ -140,7 +140,7 @@ const Footer: React.FC = () => {
                 <li className="text-gray-300">Square</li>
                 <li className="text-gray-300">Cash</li>
               </ul>
-              <p className="text-xs text-gray-400 mt-3 italic">
+              <p className="text-xs text-gray-300 mt-3 italic">
                 Payment due upon completion
               </p>
             </div>
@@ -148,7 +148,7 @@ const Footer: React.FC = () => {
             {/* Service Areas */}
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Service Areas</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li className="text-gray-300">Spring Hill, TN</li>
                 <li className="text-gray-300">Columbia, TN</li>
                 <li className="text-gray-300">Franklin, TN</li>
@@ -244,15 +244,15 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Enhanced service area description */}
-          <p className="text-xs text-gray-300 text-center mt-4">
+          <p className="text-xs text-gray-200 text-center mt-4">
             Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
             Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
-            <a href="/services" className="text-blue-200 hover:text-white underline">
+            <a href="/services" className="text-blue-100 hover:text-white underline">
               our services and areas
             </a>.
           </p>
 
-          <div className="text-sm text-gray-300 text-center space-y-2 mt-4">
+          <div className="text-sm text-gray-200 text-center space-y-2 mt-4">
             <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
             <div>
               <button 
