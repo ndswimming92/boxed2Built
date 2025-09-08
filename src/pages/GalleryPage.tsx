@@ -18,6 +18,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     thumbnail: '/images/IMG_0217.jpeg',
     category: 'time-lapse',
     platform: 'youtube',
+    date: '2024-12-01',
     width: 1260,
     height: 750
   },
@@ -30,6 +31,7 @@ const SAMPLE_MEDIA: MediaItem[] = [
     thumbnail: '/images/IMG_0199.jpeg',
     category: 'time-lapse',
     platform: 'youtube',
+    date: '2024-12-05',
     width: 1260,
     height: 750
   },

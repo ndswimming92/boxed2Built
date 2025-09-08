@@ -305,7 +305,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 "description": item.description || item.title,
                 "contentUrl": item.src,
                 "thumbnailUrl": item.thumbnail,
-                "uploadDate": item.date,
+                "uploadDate": item.date || new Date().toISOString().split('T')[0],
                 "locationCreated": item.location
               }))
           })
