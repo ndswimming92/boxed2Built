@@ -188,5 +188,3 @@ const HomeHero: React.FC = () => {
 };
 
 export default HomeHero;
-  )
-}
