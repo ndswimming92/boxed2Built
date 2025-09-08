@@ -54,6 +54,7 @@ const HomeHero: React.FC = () => {
               <p className="text-xl md:text-2xl text-gray-600 mb-6">
                 Expert IKEA, Target & Walmart furniture assembly. Save time, avoid frustration.
                 Local expert furniture assembly service. IKEA, Target & Walmart furniture assembly in Spring Hill, Columbia & Franklin.
+              </p>
 
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
