@@ -162,19 +162,15 @@ const ContactPage: React.FC = () => {
                       <span className="mr-2">Call</span>
                       <img 
                         src="/images/contact/phone-number.svg" 
-                    <CheckCircle size={18} className="text-green-700 mr-3" />
-                        width="120" 
-                        height="18"
-                        className="inline-block"
-                    <CheckCircle size={18} className="text-green-700 mr-3" />
+                      />
                     </a>
                     <a
                       href="#"
-                    <CheckCircle size={18} className="text-green-700 mr-3" />
+                      onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
                      className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Mail size={20} className="mr-2" />
-                    <CheckCircle size={18} className="text-green-700 mr-3" />
+                      Email Us
                     </a>
                   </div>
                 </div>
