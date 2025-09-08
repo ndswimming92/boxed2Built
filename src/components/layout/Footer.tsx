@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
                 />
               </div>
               <p className="text-gray-300 max-w-md mb-6 text-center md:text-left">
-                Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
+                Looking for furniture assembly near me? Professional local furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
                 Expert IKEA, Target, Walmart furniture assembly with flexible scheduling.
               </p>
 
@@ -245,7 +245,7 @@ const Footer: React.FC = () => {
 
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-200 text-center mt-4">
-            Professional furniture assembly service proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
+            Local furniture assembly service near me proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
             Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
             <a href="/services" className="text-blue-100 hover:text-white underline">
               our services and areas

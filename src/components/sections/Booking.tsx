@@ -30,10 +30,10 @@ const Booking: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center text-white">
           <div className="mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Book Your Professional Furniture Assembly Service
+              Book Your Local Furniture Assembly Service Near Me
             </h2>
             <p className="text-xl text-blue-50 max-w-3xl mx-auto">
-              Ready for expert IKEA, Target, or Walmart furniture assembly in Spring Hill, TN? 
+              Looking for furniture assembly near me? Ready for expert local IKEA, Target, or Walmart furniture assembly in Spring Hill, TN? 
               Book a free consultation to discuss your project and get an accurate quote.
             </p>
             

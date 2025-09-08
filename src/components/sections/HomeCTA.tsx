@@ -29,10 +29,10 @@ const HomeCTA: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready for Professional Furniture Assembly?
+            Ready for Local Furniture Assembly Near Me?
           </h2>
           <p className="text-xl text-blue-50 mb-8">
-            Book a free consultation to discuss your project and get an accurate quote. 
+            Book a free consultation with your local furniture assembly service to discuss your project and get an accurate quote. 
             Serving Spring Hill, TN and surrounding areas.
           </p>
           

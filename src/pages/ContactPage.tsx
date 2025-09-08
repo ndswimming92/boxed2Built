@@ -11,11 +11,11 @@ const ContactPage: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
-    document.title = 'Contact Boxed2Built - Furniture Assembly Service in Spring Hill, TN';
+    document.title = 'Contact Local Furniture Assembly Near Me - Spring Hill, TN | Boxed2Built';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Contact Boxed2Built for professional furniture assembly in Spring Hill, TN. Call (931) 674-1196 or book online. Serving IKEA, Target, Walmart assembly needs.');
+      metaDescription.setAttribute('content', 'Contact your local furniture assembly service near me in Spring Hill, TN. Call (931) 674-1196 or book online. Serving IKEA, Target, Walmart assembly needs.');
     }
 
     // Set canonical URL for this page
@@ -65,10 +65,10 @@ const ContactPage: React.FC = () => {
               </nav>
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Contact Boxed2Built
+                Contact Your Local Furniture Assembly Service
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Ready for professional furniture assembly in Spring Hill, TN? Get in touch for a free consultation 
+                Looking for furniture assembly near me? Ready for professional local furniture assembly in Spring Hill, TN? Get in touch for a free consultation 
                 and quote for your IKEA, Target, or Walmart furniture assembly project.
               </p>
             </div>

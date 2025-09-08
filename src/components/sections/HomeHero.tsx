@@ -47,13 +47,13 @@ const HomeHero: React.FC = () => {
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <div className="animate-fadeIn">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
-                Professional Furniture Assembly
+                Furniture Assembly Near Me
                 <span className="block text-blue-600">Spring Hill, TN</span>
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-6">
                 Expert IKEA, Target & Walmart furniture assembly. Save time, avoid frustration.
-              </p>
+                Local expert furniture assembly service. IKEA, Target & Walmart furniture assembly in Spring Hill, Columbia & Franklin.
 
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
