@@ -156,7 +156,7 @@ const ContactPage: React.FC = () => {
                     <a
                       href="tel:+19316741196"
                       onClick={handlePhoneClick}
-                     className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Phone size={20} className="mr-2" />
                       <span className="mr-2">Call</span>
@@ -167,7 +167,7 @@ const ContactPage: React.FC = () => {
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                     className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                     >
                       <Mail size={20} className="mr-2" />
                       Email Us
@@ -213,7 +213,7 @@ const ContactPage: React.FC = () => {
                           href="/terms-of-service"
                           target="_blank"
                           rel="noopener noreferrer"
-                         className="text-blue-700 hover:text-blue-800 underline"
+                          className="text-blue-700 hover:text-blue-800 underline"
                           onClick={handleTermsClick}
                         >
                           Terms of Service
@@ -226,11 +226,10 @@ const ContactPage: React.FC = () => {
                     onClick={handleBookingClick}
                     variant="primary"
                     size="lg"
-                    className={`w-full px-8 py-4 text-lg font-semibold ${
+                    className={`w-full px-8 py-4 text-lg font-semibold inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors ${
                       !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     disabled={!acceptTerms}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
                   >
                     <Calendar size={24} className="mr-3" />
                     Book Free Consultation
@@ -306,7 +305,6 @@ const ContactPage: React.FC = () => {
       </main>
       <Footer />
     </>
-  )
   );
 };
 
