@@ -310,6 +310,7 @@ const ContactPage: React.FC = () => {
       </main>
       <Footer />
     </>
+  )
   );
 };
 
