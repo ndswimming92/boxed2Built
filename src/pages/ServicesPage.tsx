@@ -154,15 +154,6 @@ const ServicesPage: React.FC = () => {
                   Contact us today for a free consultation and quote for your furniture assembly project.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    onClick={handleEmailClick}
-                    variant="white"
-                    size="lg"
-                    trackingLabel="email-quote-services-cta"
-                  >
-                    <Mail size={20} className="mr-2" />
-                    Get Free Quote
-                  </Button>
                   <a
                     href="tel:+19316741196"
                     onClick={handlePhoneClick}

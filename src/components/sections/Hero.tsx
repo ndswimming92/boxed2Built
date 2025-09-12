@@ -76,17 +76,6 @@ const Hero: React.FC = () => {
                   Book Free Consultation
                   <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={handleEmailClick}
-                  className="group"
-                  trackingLabel="get-quote-hero"
-                >
-                  Get Free Quote
-                  <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
               </div>
 
               <div className="flex items-center justify-center sm:justify-start mb-8">

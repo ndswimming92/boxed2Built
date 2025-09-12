@@ -35,11 +35,11 @@ const HomePage: React.FC = () => {
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  Get Your Free Furniture Assembly Quote
+                  Request Your Furniture Assembly Service
                 </h2>
                 <p className="text-xl text-gray-600">
-                  Ready to save time and avoid the frustration? Fill out our quick form and we'll provide 
-                  you with a detailed quote for your furniture assembly project in Spring Hill, TN.
+                  Ready to save time and avoid the frustration? Fill out our quick form and we'll get back to you 
+                  with details about your furniture assembly project in Spring Hill, TN.
                 </p>
               </div>
               

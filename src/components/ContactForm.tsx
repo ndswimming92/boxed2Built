@@ -364,7 +364,7 @@ const ContactForm: React.FC = () => {
                   placeholder="(555) 123-4567"
                   autoCapitalize="none"
                   autoCorrect="off"
-                  spellCheck="false"
+                  <Send size={16} /> Submit Request
                 />
               )}
             </InputMask>
