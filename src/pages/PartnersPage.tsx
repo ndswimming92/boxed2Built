@@ -141,11 +141,11 @@ const PartnersPage: React.FC = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Closing Gift</h3>
                   <p className="text-gray-700 mb-4">
-                    Offer a 2-hour furniture assembly session as a memorable closing gift. Perfect for essential pieces like beds, dining tables, or home office setups.
+                    Offer a 2-6 hour furniture assembly session as a memorable closing gift. Perfect for essential pieces like beds, dining tables, or complete room setups.
                   </p>
                   <ul className="text-sm text-gray-600 space-y-2">
-                    <li>• 2-hour professional assembly session</li>
-                    <li>• Covers 2-4 typical furniture pieces</li>
+                    <li>• 2-6 hour professional assembly session</li>
+                    <li>• Covers 2-8 furniture pieces depending on complexity</li>
                     <li>• Scheduled around move-in timeline</li>
                     <li>• Branded as your closing gift</li>
                   </ul>
