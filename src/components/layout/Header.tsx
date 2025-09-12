@@ -161,6 +161,17 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <a
+                  href="/partners"
+                  onClick={() => handleNavClick('partners')}
+                  className={`${getNavLinkClasses('/partners')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  aria-label="View our partnership programs"
+                >
+                  Partners
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="/gallery"
                   onClick={() => handleNavClick('gallery')}
                   className={`${getNavLinkClasses('/gallery')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
@@ -247,6 +258,18 @@ const Header: React.FC = () => {
                 aria-label="View our services and pricing"
               >
                 Services
+              </a>
+              <a
+                href="/partners"
+                onClick={() => handleNavClick('partners')}
+                className={`${getMobileNavLinkClasses('/partners')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/partners') 
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
+                    : 'hover:bg-gray-50'
+                }`}
+                aria-label="View our partnership programs"
+              >
+                Partners
               </a>
               <a
                 href="/gallery"

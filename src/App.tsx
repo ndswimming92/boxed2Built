@@ -8,6 +8,7 @@ import ContactPage from './pages/ContactPage';
 import GalleryPage from './pages/GalleryPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
+import PartnersPage from './pages/PartnersPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
@@ -177,6 +178,7 @@ function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/partners" element={<PartnersPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/terms-of-service" element={<TermsOfServicePage />} />
