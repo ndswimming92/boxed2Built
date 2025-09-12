@@ -187,20 +187,6 @@ const PartnersPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Trusted Locally Section */}
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center mb-10">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted Locally</h2>
-              <p className="text-xl text-gray-600">
-                See what realtors and clients are saying about our partnership program
-              </p>
-            </div>
-            
-            {/* Use existing Testimonials component */}
-            <Testimonials />
-          </div>
-        </section>
 
         {/* Questions FAQ Section */}
         <section className="py-12 bg-gray-50">
