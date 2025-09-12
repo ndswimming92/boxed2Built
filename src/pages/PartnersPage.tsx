@@ -169,17 +169,17 @@ const PartnersPage: React.FC = () => {
 
                 <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
-                    <Tag className="text-purple-600" size={24} />
+                    <CheckCircle className="text-purple-600" size={24} />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Discount Code</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Professional Service</h3>
                   <p className="text-gray-700 mb-4">
-                    Get a personalized discount code that saves your clients money while allowing you to track referrals and build lasting relationships.
+                    We provide the same high-quality, professional furniture assembly service for your clients that we offer to all our customers.
                   </p>
                   <ul className="text-sm text-gray-600 space-y-2">
-                    <li>• Personalized discount code</li>
-                    <li>• Trackable referral system</li>
-                    <li>• Client savings on all services</li>
-                    <li>• Monthly referral reports available</li>
+                    <li>• Expert assembly for all furniture brands</li>
+                    <li>• Clean, professional service</li>
+                    <li>• Flexible scheduling options</li>
+                    <li>• Satisfaction guaranteed</li>
                   </ul>
                 </div>
               </div>
@@ -199,30 +199,6 @@ const PartnersPage: React.FC = () => {
             
             {/* Use existing Testimonials component */}
             <Testimonials />
-            
-            {/* Placeholder for future realtor testimonials */}
-            <div className="mt-12 bg-gray-50 p-8 rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">Realtor Partnership Testimonials</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <p className="text-gray-600 italic mb-4">
-                    "Partnership testimonial from local realtor will be featured here. This space is reserved for feedback about our closing gift program and referral services."
-                  </p>
-                  <div className="text-sm text-gray-500">
-                    <strong>Coming Soon</strong> - Realtor Partner Testimonial
-                  </div>
-                </div>
-                
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <p className="text-gray-600 italic mb-4">
-                    "Client testimonial about receiving furniture assembly as a closing gift will be featured here. This highlights the value of our partnership program."
-                  </p>
-                  <div className="text-sm text-gray-500">
-                    <strong>Coming Soon</strong> - Client Testimonial
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
