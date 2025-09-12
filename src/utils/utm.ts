@@ -27,6 +27,32 @@ export const createUTMUrl = (baseUrl: string, params: UTMParams): string => {
 
 // Predefined UTM configurations for common links
 export const UTM_CONFIGS = {
+  calendly: {
+    hero: {
+      source: 'website',
+      medium: 'cta',
+      campaign: 'hero_booking',
+      content: 'hero_section'
+    },
+    services: {
+      source: 'website',
+      medium: 'cta',
+      campaign: 'services_booking',
+      content: 'services_section'
+    },
+    booking: {
+      source: 'website',
+      medium: 'cta',
+      campaign: 'booking_section',
+      content: 'main_booking_form'
+    },
+    footer: {
+      source: 'website',
+      medium: 'cta',
+      campaign: 'footer_booking',
+      content: 'footer_section'
+    }
+  },
   social: {
     facebook: {
       source: 'website',
@@ -55,6 +81,13 @@ export const UTM_CONFIGS = {
       content: 'footer_review_link'
     }
   }
+};
+
+// Helper function to get Calendly URL with UTM parameters
+export const getCalendlyUrl = (location: keyof typeof UTM_CONFIGS.calendly): string => {
+  const baseUrl = 'https://calendly.com/boxed2built/30min';
+  const utmParams = UTM_CONFIGS.calendly[location];
+  return createUTMUrl(baseUrl, utmParams);
 };
 
 // Helper function to get social media URLs with UTM parameters

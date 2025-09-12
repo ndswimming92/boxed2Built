@@ -5,8 +5,10 @@ import ContactForm from '../components/ContactForm';
 import { ChevronRight, Phone, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
+import { getCalendlyUrl } from '../utils/utm';
 
 const ContactPage: React.FC = () => {
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
     document.title = 'Contact Local Furniture Assembly Near Me - Spring Hill, TN | Boxed2Built';
@@ -25,6 +27,15 @@ const ContactPage: React.FC = () => {
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/contact');
   }, []);
+
+  const handleBookingClick = () => {
+    if (!acceptTerms) {
+      alert('Please accept the Terms of Service to continue.');
+      return;
+    }
+    trackEvent('calendly-booking-click-contact-page');
+    window.open(getCalendlyUrl('booking'), '_blank');
+  };
 
   const handlePhoneClick = () => {
     trackEvent('phone-click-contact-page');
@@ -171,7 +182,7 @@ const ContactPage: React.FC = () => {
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
-                      <span>Free detailed quote</span>
+                      <span>Free consultation and detailed quote</span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
@@ -187,8 +198,46 @@ const ContactPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-600 text-center mb-4">
-                    Use the contact form below or call us directly for immediate assistance.
+                  {/* Terms acceptance checkbox */}
+                  <div className="mb-6">
+                    <label className="flex items-start">
+                      <input
+                        type="checkbox"
+                        checked={acceptTerms}
+                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                        className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="text-sm text-gray-700">
+                        I accept the{' '}
+                        <a
+                          href="/terms-of-service"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-700 hover:text-blue-800 underline"
+                          onClick={handleTermsClick}
+                        >
+                          Terms of Service
+                        </a>
+                      </span>
+                    </label>
+                  </div>
+
+                  <Button
+                    onClick={handleBookingClick}
+                    variant="primary"
+                    size="lg"
+                    className={`w-full px-8 py-4 text-lg font-semibold inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors ${
+                      !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={!acceptTerms}
+                  >
+                    <Calendar size={24} className="mr-3" />
+                    Book Free Consultation
+                  </Button>
+
+                  <p className="text-xs text-gray-500 mt-4 text-center">
+                    By submitting, you agree to our Terms of Service • Available weekends • 
+                    Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
                   </p>
                 </div>
 

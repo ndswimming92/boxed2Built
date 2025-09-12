@@ -5,6 +5,7 @@ import MediaGallery, { MediaItem } from '../components/sections/MediaGallery';
 import { ChevronRight, Camera, Video, Clock, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
+import { getCalendlyUrl } from '../utils/utm';
 
 // Sample media data - replace with your actual content
 const SAMPLE_MEDIA: MediaItem[] = [
@@ -144,8 +145,8 @@ const GalleryPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('contact-click-gallery-page');
-    window.location.href = '/contact';
+    trackEvent('calendly-booking-click-gallery-page');
+    window.open(getCalendlyUrl('services'), '_blank');
   };
 
   const handlePhoneClick = () => {
@@ -214,10 +215,10 @@ const GalleryPage: React.FC = () => {
                   onClick={handleBookingClick}
                   variant="white"
                   size="lg"
-                  trackingLabel="contact-us-gallery-cta"
+                  trackingLabel="book-consultation-gallery-cta"
                 >
-                  <Phone size={20} className="mr-2" />
-                  Contact Us for a Quote
+                  <Clock size={20} className="mr-2" />
+                  Book Free Consultation
                 </Button>
                 <a
                   href="tel:+19316741196"

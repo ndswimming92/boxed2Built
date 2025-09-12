@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { Mail, Phone, CheckCircle } from 'lucide-react';
+import { Calendar, Phone, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
+import { getCalendlyUrl } from '../../utils/utm';
 
 const HomeCTA: React.FC = () => {
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handleBookingClick = () => {
-    trackEvent('contact-click-home-cta');
-    window.location.href = '/contact';
+    if (!acceptTerms) {
+      alert('Please accept the Terms of Service to continue.');
+      return;
+    }
+    trackEvent('calendly-booking-click-home-cta');
+    window.open(getCalendlyUrl('booking'), '_blank');
+  };
+
+  const handleTermsClick = () => {
+    trackEvent('terms-link-click-home-cta');
   };
 
   const handlePhoneClick = () => {
@@ -28,14 +38,14 @@ const HomeCTA: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
-              <Phone className="text-white mx-auto mb-2" size={24} />
-              <h3 className="font-semibold mb-1">Easy Contact</h3>
-              <p className="text-blue-50 text-sm font-medium">Call or use contact form</p>
+              <Calendar className="text-white mx-auto mb-2" size={24} />
+              <h3 className="font-semibold mb-1">Easy Scheduling</h3>
+              <p className="text-blue-50 text-sm font-medium">Book online or call</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
-              <h3 className="font-semibold mb-1">Free Quote</h3>
+              <h3 className="font-semibold mb-1">Free Consultation</h3>
               <p className="text-blue-50 text-sm font-medium">No commitment required</p>
             </div>
             
@@ -50,8 +60,32 @@ const HomeCTA: React.FC = () => {
             <div className="text-gray-900 mb-4">
               <h3 className="text-xl font-bold mb-2">Get Started Today</h3>
               <p className="text-gray-700 text-sm">
-                Free transparent quote for your furniture assembly project.
+                Free consultation and transparent quote for your furniture assembly project.
               </p>
+            </div>
+
+            {/* Terms acceptance checkbox */}
+            <div className="mb-4 flex justify-center">
+              <label className="flex items-start text-left">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">
+                  I accept the{' '}
+                  <a
+                    href="/terms-of-service"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-700 hover:text-blue-800 underline"
+                    onClick={handleTermsClick}
+                  >
+                    Terms of Service
+                  </a>
+                </span>
+              </label>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -59,11 +93,12 @@ const HomeCTA: React.FC = () => {
                 onClick={handleBookingClick}
                 variant="primary"
                 size="lg"
-                className="w-full"
-                trackingLabel="contact-us-home-cta"
+                className={`w-full ${!acceptTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!acceptTerms}
+                trackingLabel="book-consultation-home-cta"
               >
-                <Mail size={20} className="mr-2" />
-                Get a Free Quote
+                <Calendar size={20} className="mr-2" />
+                Book Free Consultation
               </Button>
 
               <a

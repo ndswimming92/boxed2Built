@@ -3,7 +3,7 @@ import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
-import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
+import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
 
@@ -40,8 +40,8 @@ const Footer: React.FC = () => {
   };
 
   const handleBookingClick = () => {
-    trackEvent('footer-contact-click');
-    window.location.href = '/contact';
+    trackEvent('footer-book-now');
+    window.open(getCalendlyUrl('footer'), '_blank');
   };
 
   return (
@@ -234,10 +234,10 @@ const Footer: React.FC = () => {
                   onClick={handleBookingClick}
                   className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg"
                 >
-                  Get a Free Quote →
+                  Book Free Consultation →
                 </button>
                 <p className="text-xs text-gray-300 mt-2">
-                  Contact us for professional furniture assembly service
+                  By booking, you agree to our Terms of Service
                 </p>
               </div>
             </div>
