@@ -6,7 +6,6 @@ import { ChevronRight, Phone, Calendar, CheckCircle, Download, Gift, Users, Tag,
 import Button from '../components/ui/Button';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 
 const PartnersPage: React.FC = () => {
   useEffect(() => {
@@ -32,8 +31,8 @@ const PartnersPage: React.FC = () => {
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-partners-cta');
-    window.open(getCalendlyUrl('booking'), '_blank');
+    trackEvent('contact-click-partners-cta');
+    window.location.href = '/contact';
   };
 
   const handleFlyerDownload = () => {
@@ -294,10 +293,10 @@ const PartnersPage: React.FC = () => {
                   onClick={handleBookingClick}
                   variant="white"
                   size="lg"
-                  trackingLabel="book-consultation-partners-cta"
+                  trackingLabel="contact-us-partners-cta"
                 >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
+                  <Phone size={20} className="mr-2" />
+                  Contact Us for a Quote
                 </Button>
                 <a
                   href="/contact"

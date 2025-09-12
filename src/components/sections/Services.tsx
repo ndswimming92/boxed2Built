@@ -5,7 +5,6 @@ import Button from '../ui/Button';
 import SkeletonCard from '../ui/SkeletonCard';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 
 const Services: React.FC = () => {
   // Simulate loading state for services data
@@ -25,8 +24,8 @@ const Services: React.FC = () => {
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-services');
-    window.open(getCalendlyUrl('services'), '_blank');
+    trackEvent('contact-click-services');
+    window.location.href = '/contact';
   };
 
   return (
@@ -125,9 +124,9 @@ const Services: React.FC = () => {
               variant="white"
               size="lg"
               className="font-semibold px-8 py-4"
-              trackingLabel="book-consultation-services"
+              trackingLabel="contact-us-services"
             >
-              Book Free Consultation
+              Get a Free Quote
             </Button>
             
             <div className="flex flex-col sm:flex-row gap-4">

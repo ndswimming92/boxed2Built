@@ -3,7 +3,6 @@ import { ArrowRight, ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
 import Button from '../ui/Button';
 import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 
 const Hero: React.FC = () => {
   const handlePhoneClick = () => {
@@ -11,8 +10,8 @@ const Hero: React.FC = () => {
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-hero');
-    window.open(getCalendlyUrl('hero'), '_blank');
+    trackEvent('contact-click-hero');
+    window.location.href = '/contact';
   };
 
   const handleEmailClick = () => {
@@ -71,9 +70,9 @@ const Hero: React.FC = () => {
                   size="lg"
                   onClick={handleBookingClick}
                   className="group"
-                  trackingLabel="book-consultation-hero"
+                  trackingLabel="contact-us-hero"
                 >
-                  Book Free Consultation
+                  Contact Us for a Quote
                   <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 

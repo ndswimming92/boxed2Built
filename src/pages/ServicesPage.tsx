@@ -5,7 +5,6 @@ import Services from '../components/sections/Services';
 import { ChevronRight, Phone, Mail, Calendar } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
 
 const ServicesPage: React.FC = () => {
@@ -28,8 +27,8 @@ const ServicesPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-services-page');
-    window.open(getCalendlyUrl('services'), '_blank');
+    trackEvent('contact-click-services-page');
+    window.location.href = '/contact';
   };
 
   const handlePhoneClick = () => {
@@ -71,10 +70,10 @@ const ServicesPage: React.FC = () => {
                   variant="primary"
                   size="lg"
                   className="px-8 py-4"
-                  trackingLabel="book-consultation-services-header"
+                  trackingLabel="contact-us-services-header"
                 >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
+                  <Phone size={20} className="mr-2" />
+                  Get a Free Quote
                 </Button>
                 
                 <a

@@ -3,7 +3,6 @@ import { ArrowRight, CheckCircle, DollarSign, Phone, Calendar } from 'lucide-rea
 import Button from '../ui/Button';
 import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent, trackConversion } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 
 const HomeHero: React.FC = () => {
   const handlePhoneClick = () => {
@@ -16,13 +15,13 @@ const HomeHero: React.FC = () => {
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-home-hero', 'home_hero', {
+    trackEvent('contact-click-home-hero', 'home_hero', {
       event_category: 'conversion',
       value: 1,
-      user_engagement: 'booking_click'
+      user_engagement: 'contact_click'
     });
-    trackConversion('booking_click_hero', 1);
-    window.open(getCalendlyUrl('hero'), '_blank');
+    trackConversion('contact_click_hero', 1);
+    window.location.href = '/contact';
   };
 
   const handleEmailClick = () => {
@@ -77,9 +76,9 @@ const HomeHero: React.FC = () => {
                   size="lg"
                   onClick={handleBookingClick}
                   className="group"
-                  trackingLabel="book-consultation-home-hero"
+                  trackingLabel="contact-us-home-hero"
                 >
-                  Book Free Consultation
+                  Contact Us for a Quote
                   <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 

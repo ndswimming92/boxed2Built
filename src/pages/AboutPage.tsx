@@ -6,7 +6,6 @@ import { ChevronRight, Phone, Calendar, CheckCircle, Users, Clock, Award } from 
 import Button from '../components/ui/Button';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 
 const AboutPage: React.FC = () => {
   useEffect(() => {
@@ -28,8 +27,8 @@ const AboutPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-about-page');
-    window.open(getCalendlyUrl('services'), '_blank');
+    trackEvent('contact-click-about-page');
+    window.location.href = '/contact';
   };
 
   const handlePhoneClick = () => {
@@ -226,10 +225,10 @@ const AboutPage: React.FC = () => {
                   onClick={handleBookingClick}
                   variant="white"
                   size="lg"
-                  trackingLabel="book-consultation-about-cta"
+                  trackingLabel="contact-us-about-cta"
                 >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
+                  <Phone size={20} className="mr-2" />
+                  Contact Us for a Quote
                 </Button>
                 <a
                   href="tel:+19316741196"
