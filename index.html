@@ -2,18 +2,46 @@
 <html lang="en-US">
   <head>
     <meta charset="UTF-8" />
-  
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-PGRCBBL2');</script>
-  <!-- End Google Tag Manager -->
-
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0066cc" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZY3PG1S68G"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-ZY3PG1S68G', {
+      // Enhanced tracking configuration
+      send_page_view: true,
+      allow_google_signals: true,
+      allow_ad_personalization_signals: true,
+      cookie_expires: 63072000, // 2 years
+      
+      // Enhanced ecommerce and conversion tracking
+      custom_map: {
+        'custom_parameter_1': 'source_detail',
+        'custom_parameter_2': 'user_type',
+        'custom_parameter_3': 'service_interest'
+      },
+      
+      // User engagement tracking
+      engagement_time_msec: 100,
+      
+      // Debug mode (remove in production)
+      debug_mode: false
+    });
+    
+    // Enhanced event tracking setup
+    gtag('event', 'page_view', {
+      page_title: document.title,
+      page_location: window.location.href,
+      content_group1: 'furniture_assembly',
+      content_group2: 'spring_hill_tn'
+    });
+  </script>
 
   <!-- Enhanced Title and Meta Description -->
   <title>Furniture Assembly Near Me - Professional Service in Spring Hill, TN | Boxed2Built</title>
@@ -296,11 +324,6 @@
 </head>
 
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PGRCBBL2"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
