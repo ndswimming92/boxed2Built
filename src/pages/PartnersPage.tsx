@@ -272,7 +272,7 @@ const PartnersPage: React.FC = () => {
               </div>
               
               <p className="text-xs text-blue-50 mt-6">
-                Serving Spring Hill, Franklin, Columbia, Nashville & surrounding Tennessee areas
+                Weekend furniture assembly service • Serving Spring Hill, Franklin, Columbia, Nashville & surrounding Tennessee areas
               </p>
             </div>
           </div>

@@ -119,7 +119,7 @@ const HomeCTA: React.FC = () => {
             </div>
 
             <p className="text-xs text-gray-600 mt-3 text-center">
-              Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
+              Weekend furniture assembly service • Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
             </p>
           </div>
         </div>

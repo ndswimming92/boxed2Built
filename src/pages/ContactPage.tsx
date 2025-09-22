@@ -186,7 +186,7 @@ const ContactPage: React.FC = () => {
                     </div>
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
-                      <span>Weekend scheduling available</span>
+                      <span>Flexible scheduling including weekends</span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
@@ -236,7 +236,7 @@ const ContactPage: React.FC = () => {
                   </Button>
 
                   <p className="text-xs text-gray-500 mt-4 text-center">
-                    By submitting, you agree to our Terms of Service • Available weekends • 
+                    By submitting, you agree to our Terms of Service • Weekend service available • 
                     Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
                   </p>
                 </div>

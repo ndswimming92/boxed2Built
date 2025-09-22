@@ -238,7 +238,7 @@ const GalleryPage: React.FC = () => {
               </div>
               
               <p className="text-xs text-blue-50 font-medium">
-                Serving Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood & surrounding Tennessee areas
+                Weekend furniture assembly service • Serving Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood & surrounding Tennessee areas
               </p>
             </div>
           </div>

@@ -171,7 +171,7 @@ const Booking: React.FC = () => {
             </div>
 
             <p className="text-xs text-gray-600 mt-4">
-              By submitting, you agree to our Terms of Service • Available weekends • 
+              By submitting, you agree to our Terms of Service • Weekend service available • 
               Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas • 
               Professional Furniture Assembly Service
             </p>
