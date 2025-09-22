@@ -236,7 +236,7 @@ const ContactPage: React.FC = () => {
                   </Button>
 
                   <p className="text-xs text-gray-500 mt-4 text-center">
-                    By submitting, you agree to our Terms of Service • Weekend service available • 
+                    By submitting, you agree to our Terms of Service • Available weekends • 
                     Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas
                   </p>
                 </div>
@@ -274,7 +274,7 @@ const ContactPage: React.FC = () => {
                     What areas do you serve?
                   </h3>
                   <p className="text-gray-600">
-                    We serve Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding 
+                    We provide weekend furniture assembly service in Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding 
                     Tennessee areas. Contact us to confirm service availability in your location.
                   </p>
                 </div>
