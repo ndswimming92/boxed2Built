@@ -145,9 +145,8 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">Hours</h3>
-                        <p className="text-gray-700">Saturday: 9:00 AM - 4:00 PM</p>
-                        <p className="text-gray-700">Sunday: 1:30 PM - 4:00 PM</p>
-                        <p className="text-gray-700 text-sm mt-1">Weekend furniture assembly service</p>
+                        <p className="text-gray-700">Monday - Saturday: 8:00 AM - 5:00 PM</p>
+                        <p className="text-gray-700 text-sm mt-1">Flexible scheduling available</p>
                       </div>
                     </div>
                   </div>
@@ -187,7 +186,7 @@ const ContactPage: React.FC = () => {
                     </div>
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
-                      <span>Flexible scheduling including weekends</span>
+                      <span>Weekend scheduling available</span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <CheckCircle size={18} className="text-green-600 mr-3" />
