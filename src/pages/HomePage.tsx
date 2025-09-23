@@ -35,11 +35,11 @@ const HomePage: React.FC = () => {
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  Request Your Furniture Assembly Service
+                  Request Your Spring Hill Handyman Services
                 </h2>
                 <p className="text-xl text-gray-600">
-                  Ready to save time and avoid the frustration? Fill out our quick form and we'll get back to you 
-                  with details about your furniture assembly project in Spring Hill, TN.
+                  Ready to save time and avoid the frustration? Our Spring Hill handyman services specialize in furniture assembly. 
+                  Fill out our quick form and we'll get back to you with details about your project.
                 </p>
               </div>
               

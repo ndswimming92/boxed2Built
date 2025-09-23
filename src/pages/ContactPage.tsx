@@ -65,11 +65,11 @@ const ContactPage: React.FC = () => {
               </nav>
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Contact Your Local Furniture Assembly Service
+                Contact Spring Hill Handyman Services
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Looking for furniture assembly near me? Ready for professional local furniture assembly in Spring Hill, TN? Get in touch for a free consultation 
-                and quote for your IKEA, Target, or Walmart furniture assembly project.
+                Need Spring Hill handyman services? Ready for professional furniture assembly in Spring Hill, TN? Get in touch for a free consultation 
+                and quote for your IKEA, Target, or Walmart assembly project.
               </p>
             </div>
           </div>

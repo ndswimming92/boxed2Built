@@ -76,8 +76,7 @@ const Footer: React.FC = () => {
                 />
               </div>
               <p className="text-gray-300 max-w-md mb-6 text-center md:text-left">
-                Looking for furniture assembly near me? Professional local furniture assembly service in Spring Hill, TN and surrounding Tennessee areas. 
-                Expert IKEA, Target, Walmart furniture assembly with flexible scheduling.
+                Spring Hill handyman services specializing in professional furniture assembly. Expert IKEA, Target, Walmart assembly service in Spring Hill, TN and surrounding Tennessee areas with flexible scheduling.
               </p>
 
               <address
@@ -118,6 +117,7 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Our Services</h3>
               <ul className="space-y-2 text-sm text-gray-300">
+                <li className="text-gray-300">Spring Hill Handyman Services</li>
                 <li className="text-gray-300">IKEA Furniture Assembly</li>
                 <li className="text-gray-300">Target Furniture Assembly</li>
                 <li className="text-gray-300">Walmart Furniture Assembly</li>

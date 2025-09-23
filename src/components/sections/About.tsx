@@ -10,12 +10,12 @@ const About: React.FC = () => {
         {/* Enhanced Why Choose Us with more keywords */}
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            Why Choose Boxed2Built for Furniture Assembly in Spring Hill, TN?
+            Why Choose Boxed2Built Spring Hill Handyman Services?
           </h2>
           
           <div className="bg-white p-8 rounded-lg shadow-md mb-10">
             <p className="text-xl text-gray-700 mb-6 leading-relaxed">
-              As Spring Hill's trusted furniture assembly experts, we understand that busy families need reliable, professional service. 
+              As Spring Hill's trusted handyman services specialists, we understand that busy families need reliable, professional furniture assembly service. 
               Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most.
             </p>
             
