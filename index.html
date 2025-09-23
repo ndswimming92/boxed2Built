@@ -285,7 +285,7 @@
         "areaServed": "TN",
         "availableLanguage": "English"
       }
-    },
+    ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Furniture Assembly Services",
@@ -501,6 +501,103 @@
       "priceCurrency": "USD",
       "offerCount": "5"
     }
+  }
+  </script>
+
+  <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Boxed2Built",
+    "url": "https://boxed2built.com",
+    "logo": "https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png",
+    "description": "Professional furniture assembly and handyman services in Spring Hill, TN",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Spring Hill",
+      "addressRegion": "TN", 
+      "addressCountry": "US"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+19316741196",
+      "contactType": "customer service",
+      "areaServed": "TN",
+      "availableLanguage": "English"
+    },
+    "sameAs": [
+      "https://www.facebook.com/BoxedToBuiltUSA",
+      "https://www.instagram.com/boxed2built/", 
+      "https://www.youtube.com/@Boxed2BuiltUSA"
+    ],
+    "founder": {
+      "@type": "Person",
+      "name": "Nicholas Davidson"
+    }
+  }
+  </script>
+
+  <!-- WebSite Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Boxed2Built - Furniture Assembly Spring Hill TN",
+    "url": "https://boxed2built.com",
+    "description": "Professional furniture assembly and handyman services in Spring Hill, TN. Expert IKEA, Target, Walmart assembly.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Boxed2Built"
+    },
+    "potentialAction": [
+      {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://boxed2built.com/services?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    ],
+    "mainEntity": {
+      "@type": "LocalBusiness",
+      "name": "Boxed2Built"
+    }
+  }
+  </script>
+
+  <!-- Breadcrumb Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://boxed2built.com/"
+      },
+      {
+        "@type": "ListItem", 
+        "position": 2,
+        "name": "Services",
+        "item": "https://boxed2built.com/services"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3, 
+        "name": "About",
+        "item": "https://boxed2built.com/about"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Contact",
+        "item": "https://boxed2built.com/contact"
+      }
+    ]
   }
   </script>
 
