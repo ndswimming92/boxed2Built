@@ -103,6 +103,32 @@ const SAMPLE_MEDIA: MediaItem[] = [
     width: 800,
     height: 600
   },
+  {
+    id: '12',
+    type: 'image',
+    src: '/images/white-over-toilet-bathroom-storage-spring-hill.webp',
+    title: 'White Over-Toilet Bathroom Storage Assembly - Spring Hill TN',
+    description: 'Professional assembly of white over-toilet bathroom storage unit with multiple shelves and cabinet doors. Expert furniture assembly service for bathroom organization in Spring Hill, Tennessee.',
+    alt: 'White over-toilet bathroom storage unit professionally assembled showing shelving and cabinet storage in Spring Hill TN',
+    category: 'completed-work',
+    date: '2024-12-10',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '13',
+    type: 'image',
+    src: '/images/white-curtains-installed-on-wood-trim-window-spring-hill.webp',
+    title: 'White Curtains Installed on Wood Trim Window - Spring Hill TN',
+    description: 'Professional curtain rod installation and white curtain hanging service on wood trim window. Expert handyman services for window treatments in Spring Hill, Tennessee homes.',
+    alt: 'White curtains professionally installed on wood trim window showing handyman installation service in Spring Hill TN',
+    category: 'completed-work',
+    date: '2024-12-08',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
 ];
 
 const GalleryPage: React.FC = () => {
