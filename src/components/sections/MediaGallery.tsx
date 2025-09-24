@@ -184,11 +184,11 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
         {/* Lightbox Modal */}
         {lightboxItem && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-            <div className="relative max-w-6xl max-h-full w-full">
+            <div className="relative max-w-4xl max-h-[90vh] w-full overflow-y-auto">
               {/* Close Button */}
               <button
                 onClick={closeLightbox}
-                className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition-all duration-200"
+                className="sticky top-4 right-4 z-10 p-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200 float-right mb-2"
                 aria-label="Close lightbox"
               >
                 <X size={24} />
@@ -199,14 +199,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 <>
                   <button
                     onClick={() => navigateLightbox('prev')}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition-all duration-200"
+                    className="fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
                     aria-label="Previous image"
                   >
                     <ChevronLeft size={24} />
                   </button>
                   <button
                     onClick={() => navigateLightbox('next')}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition-all duration-200"
+                    className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
                     aria-label="Next image"
                   >
                     <ChevronRight size={24} />
@@ -215,13 +215,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
               )}
 
               {/* Content */}
-              <div className="bg-black rounded-lg overflow-hidden">
+              <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
                 {lightboxItem.type === 'image' ? (
                   <div className="relative">
                     <OptimizedImage
                       src={lightboxItem.src}
                       alt={lightboxItem.alt || lightboxItem.title}
-                      className="w-full max-h-[70vh] object-contain"
+                      className="w-full max-h-[50vh] object-contain bg-gray-100"
                       priority={true}
                       imageType="gallery"
                       quality={90}
@@ -229,20 +229,20 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     />
                   </div>
                 ) : (
-                  <div className="aspect-[4/3]">
+                  <div className="aspect-video max-h-[50vh]">
                     <VideoPlayer
                       src={lightboxItem.src}
                       title={lightboxItem.title}
                       description={lightboxItem.description}
                       thumbnail={lightboxItem.thumbnail}
                       platform={lightboxItem.platform || 'youtube'}
-                      className="aspect-[4/3]"
+                      className="aspect-video"
                       lazy={false}
                     />
                   </div>
                 )}
                 
-                <div className="p-6 bg-white">
+                <div className="p-4 bg-white max-h-[35vh] overflow-y-auto">
                   <div className="flex items-center gap-2 mb-3">
                     <span>{getCategoryIcon(lightboxItem.category)}</span>
                     <span className="text-sm text-blue-600 font-medium capitalize">
@@ -250,10 +250,10 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     </span>
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{lightboxItem.title}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{lightboxItem.title}</h3>
                   
                   {lightboxItem.description && (
-                    <p className="text-gray-600 mb-4">{lightboxItem.description}</p>
+                    <p className="text-gray-600 mb-3 text-sm leading-relaxed">{lightboxItem.description}</p>
                   )}
                   
                   <div className="flex items-center gap-4 text-sm text-gray-500">
