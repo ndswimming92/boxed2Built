@@ -184,11 +184,11 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
         {/* Lightbox Modal */}
         {lightboxItem && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-            <div className="relative max-w-4xl max-h-[90vh] w-full overflow-y-auto">
+            <div className="relative max-w-3xl max-h-[85vh] w-full overflow-y-auto bg-white rounded-lg">
               {/* Close Button */}
               <button
                 onClick={closeLightbox}
-                className="sticky top-4 right-4 z-10 p-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200 float-right mb-2"
+                className="absolute top-2 right-2 z-10 p-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
                 aria-label="Close lightbox"
               >
                 <X size={24} />
@@ -215,13 +215,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
               )}
 
               {/* Content */}
-              <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
+              <div className="overflow-hidden shadow-2xl">
                 {lightboxItem.type === 'image' ? (
-                  <div className="relative">
+                  <div className="relative" style={{ maxHeight: '40vh' }}>
                     <OptimizedImage
                       src={lightboxItem.src}
                       alt={lightboxItem.alt || lightboxItem.title}
-                      className="w-full max-h-[50vh] object-contain bg-gray-100"
+                      className="w-full h-full object-contain bg-gray-100"
                       priority={true}
                       imageType="gallery"
                       quality={90}
@@ -229,7 +229,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video max-h-[50vh]">
+                  <div className="aspect-video" style={{ maxHeight: '40vh' }}>
                     <VideoPlayer
                       src={lightboxItem.src}
                       title={lightboxItem.title}
@@ -242,7 +242,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   </div>
                 )}
                 
-                <div className="p-4 bg-white max-h-[35vh] overflow-y-auto">
+                <div className="p-4 bg-white" style={{ maxHeight: '40vh', overflowY: 'auto' }}>
                   <div className="flex items-center gap-2 mb-3">
                     <span>{getCategoryIcon(lightboxItem.category)}</span>
                     <span className="text-sm text-blue-600 font-medium capitalize">
