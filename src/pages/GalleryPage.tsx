@@ -9,6 +9,7 @@ import { getCalendlyUrl } from '../utils/utm';
 
 // Sample media data - replace with your actual content
 const SAMPLE_MEDIA: MediaItem[] = [
+  // Videos
   {
     id: '1',
     type: 'video',
@@ -34,6 +35,73 @@ const SAMPLE_MEDIA: MediaItem[] = [
     date: '2024-12-05',
     width: 1260,
     height: 750
+  },
+  
+  // Photos
+  {
+    id: '3',
+    type: 'image',
+    src: '/images/assembled-barn-door-office-desk-hutch-spring-hill.webp',
+    title: 'Assembled Barn Door Office Desk with Hutch - Spring Hill TN',
+    description: 'Professional furniture assembly of a rustic barn door style office desk with hutch featuring multiple drawers and storage compartments. Expert furniture assembly service in Spring Hill, Tennessee.',
+    alt: 'Completed barn door office desk with hutch assembly showing professional furniture assembly work in Spring Hill TN',
+    category: 'completed-work',
+    date: '2024-12-20',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '4',
+    type: 'image',
+    src: '/images/unopened-flat-pack-furniture-boxes-spring-hill.webp',
+    title: 'Unopened Flat Pack Furniture Boxes - Before Assembly',
+    description: 'Flat pack furniture boxes before professional assembly service. Shows the starting point of our furniture assembly process in Spring Hill, TN homes.',
+    alt: 'Unopened flat pack furniture boxes ready for professional assembly service in Spring Hill Tennessee',
+    category: 'before-after',
+    date: '2024-12-18',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '5',
+    type: 'image',
+    src: '/images/hardware-kit-unboxing-furniture-assembly-spring-hill.webp',
+    title: 'Hardware Kit Unboxing - Furniture Assembly Process',
+    description: 'Professional furniture assembly process showing organized hardware kit unboxing and preparation. Part of our meticulous furniture assembly service in Spring Hill, TN.',
+    alt: 'Furniture assembly hardware kit unboxing showing professional organization and preparation process',
+    category: 'process',
+    date: '2024-12-18',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '6',
+    type: 'image',
+    src: '/images/black-rocking-chair-front-porch-spring-hill.webp',
+    title: 'Black Rocking Chair Assembly - Front Porch Spring Hill',
+    description: 'Professionally assembled black rocking chair placed on front porch in Spring Hill, TN. Expert furniture assembly service with final placement and positioning.',
+    alt: 'Black rocking chair professionally assembled and placed on front porch in Spring Hill Tennessee',
+    category: 'completed-work',
+    date: '2024-12-15',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '7',
+    type: 'image',
+    src: '/images/assembled-lighted-fireplace-console-spring-hill.webp',
+    title: 'Assembled Lighted Fireplace Console - Spring Hill TN',
+    description: 'Professional assembly of large fireplace console with built-in electric fireplace and LED lighting. Complex furniture assembly project completed in Spring Hill, Tennessee.',
+    alt: 'Assembled fireplace console with electric fireplace and LED lighting showing professional furniture assembly in Spring Hill TN',
+    category: 'completed-work',
+    date: '2024-12-22',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
   },
 ];
 
