@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Clock, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
 import VideoPlayer from '../ui/VideoPlayer';
 import { trackEvent } from '../../utils/analytics';
@@ -63,13 +63,11 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
   const navigateLightbox = (direction: 'prev' | 'next') => {
     const currentIndex = filteredItems.findIndex(item => item.id === lightboxItem?.id);
     let newIndex;
-    
     if (direction === 'prev') {
       newIndex = currentIndex > 0 ? currentIndex - 1 : filteredItems.length - 1;
     } else {
       newIndex = currentIndex < filteredItems.length - 1 ? currentIndex + 1 : 0;
     }
-    
     setLightboxItem(filteredItems[newIndex]);
     setLightboxIndex(newIndex);
     trackEvent(`gallery-lightbox-${direction}`, filteredItems[newIndex].title);
@@ -77,26 +75,20 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'time-lapse':
-        return '🎬';
-      case 'photos':
-        return '📸';
-      default:
-        return '📸';
+      case 'time-lapse': return '🎬';
+      case 'photos': return '📸';
+      default: return '📸';
     }
   };
 
   return (
     <section className={`py-12 ${className}`}>
       <div className="container mx-auto px-4">
-
-        {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{title}</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">{description}</p>
         </div>
 
-        {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           {categories.map((category) => (
             <button
@@ -113,14 +105,11 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
             >
               <span>{getCategoryIcon(category.key)}</span>
               <span>{category.label}</span>
-              <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">
-                {category.count}
-              </span>
+              <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">{category.count}</span>
             </button>
           ))}
         </div>
 
-        {/* Gallery Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
           {filteredItems.map((item, index) => (
             <div
@@ -164,7 +153,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredItems.length === 0 && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📸</div>
@@ -173,33 +161,29 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
           </div>
         )}
 
-        {/* Lightbox Modal */}
         {lightboxItem && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-            <div className="relative max-w-3xl w-full max-h-[90vh] overflow-hidden bg-white rounded-lg shadow-xl">
-
-              {/* Close Button */}
+            <div className="relative max-w-3xl w-full max-h-[90vh] bg-white rounded-lg shadow-xl overflow-hidden flex flex-col">
               <button
                 onClick={closeLightbox}
-                className="absolute top-2 right-2 z-10 p-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
+                className="absolute top-2 right-2 z-10 p-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full"
                 aria-label="Close lightbox"
               >
                 <X size={24} />
               </button>
 
-              {/* Navigation Buttons */}
               {filteredItems.length > 1 && (
                 <>
                   <button
                     onClick={() => navigateLightbox('prev')}
-                    className="fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
+                    className="fixed left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full"
                     aria-label="Previous image"
                   >
                     <ChevronLeft size={24} />
                   </button>
                   <button
                     onClick={() => navigateLightbox('next')}
-                    className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full transition-all duration-200"
+                    className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-black bg-opacity-70 hover:bg-opacity-90 text-white rounded-full"
                     aria-label="Next image"
                   >
                     <ChevronRight size={24} />
@@ -207,10 +191,9 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 </>
               )}
 
-              {/* Media Content */}
-              <div className="overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
                 {lightboxItem.type === 'image' ? (
-                  <div className="relative w-full flex justify-center items-center bg-gray-100 p-4">
+                  <div className="w-full flex justify-center items-center bg-gray-100 p-4">
                     <OptimizedImage
                       src={lightboxItem.src}
                       alt={lightboxItem.alt || lightboxItem.title}
@@ -235,8 +218,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   </div>
                 )}
 
-                {/* Text Section */}
-                <div className="p-4 overflow-y-auto max-h-[30vh]">
+                <div className="p-4 bg-white">
                   <div className="flex items-center gap-2 mb-3">
                     <span>{getCategoryIcon(lightboxItem.category)}</span>
                     <span className="text-sm text-blue-600 font-medium capitalize">
@@ -270,41 +252,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
           </div>
         )}
       </div>
-
-      {/* Schema Markup for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ImageGallery",
-            "name": title,
-            "description": description,
-            "image": items
-              .filter(item => item.type === 'image')
-              .map(item => ({
-                "@type": "ImageObject",
-                "name": item.title,
-                "description": item.description || item.title,
-                "contentUrl": item.src,
-                "thumbnailUrl": item.thumbnail || item.src,
-                "uploadDate": item.date,
-                "locationCreated": item.location
-              })),
-            "video": items
-              .filter(item => item.type === 'video')
-              .map(item => ({
-                "@type": "VideoObject",
-                "name": item.title,
-                "description": item.description || item.title,
-                "contentUrl": item.src,
-                "thumbnailUrl": item.thumbnail,
-                "uploadDate": item.date ? new Date(item.date + 'T00:00:00.000Z').toISOString() : new Date().toISOString(),
-                "locationCreated": item.location
-              }))
-          })
-        }}
-      />
     </section>
   );
 };
