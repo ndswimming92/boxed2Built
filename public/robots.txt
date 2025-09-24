@@ -10,12 +10,42 @@ Disallow: /private/
 Disallow: /*.pdf$
 Disallow: /api/
 
-# Allow important pages for SEO
+# Explicitly allow all important pages for SEO
 Allow: /services
+Allow: /services/
 Allow: /contact
+Allow: /contact/
 Allow: /about
+Allow: /about/
+Allow: /gallery
+Allow: /gallery/
+Allow: /partners
+Allow: /partners/
 Allow: /privacy-policy
+Allow: /privacy-policy/
 Allow: /terms-of-service
+Allow: /terms-of-service/
+
+# Allow all static assets
+Allow: /images/
+Allow: /fonts/
+Allow: /assets/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /*.svg
+Allow: /*.woff2
+Allow: /*.ico
+
+# Allow important files
+Allow: /sitemap.xml
+Allow: /sitemap-images.xml
+Allow: /robots.txt
+Allow: /favicon.ico
+Allow: /manifest.json
 
 # Crawl-delay for better server performance
 Crawl-delay: 1
@@ -27,4 +57,3 @@ Sitemap: https://boxed2built.com/sitemap.xml
 Sitemap: https://boxed2built.com/sitemap-images.xml
 
 # Host directive for preferred domain
-Host: https://boxed2built.com
