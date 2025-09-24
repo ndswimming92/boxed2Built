@@ -13,7 +13,7 @@ export interface MediaItem {
   thumbnail?: string;
   date?: string;
   location?: string;
-  category: 'before-after' | 'time-lapse' | 'completed-work' | 'process';
+  category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   platform?: 'youtube' | 'vimeo' | 'direct';
   alt?: string;
   width?: number;
@@ -89,6 +89,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
   return (
     <section className={`py-12 ${className}`}>
       <div className="container mx-auto px-4">
+
         {/* Header */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{title}</h2>
@@ -141,15 +142,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     quality={75}
                     enableAvif={true}
                   />
-                  
-                  {/* Click indicator overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white bg-opacity-90 rounded-full p-2">
-                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                      </svg>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300 rounded-lg bg-white shadow-sm hover:shadow-md">
@@ -184,7 +176,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
         {/* Lightbox Modal */}
         {lightboxItem && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
-            <div className="relative max-w-3xl max-h-[85vh] w-full overflow-y-auto bg-white rounded-lg">
+            <div className="relative max-w-3xl w-full max-h-[90vh] overflow-hidden bg-white rounded-lg shadow-xl">
+
               {/* Close Button */}
               <button
                 onClick={closeLightbox}
@@ -214,14 +207,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 </>
               )}
 
-              {/* Content */}
-              <div className="overflow-hidden shadow-2xl">
+              {/* Media Content */}
+              <div className="overflow-hidden">
                 {lightboxItem.type === 'image' ? (
-                  <div className="relative" style={{ maxHeight: '40vh' }}>
+                  <div className="relative w-full flex justify-center items-center bg-gray-100 p-4">
                     <OptimizedImage
                       src={lightboxItem.src}
                       alt={lightboxItem.alt || lightboxItem.title}
-                      className="w-full h-full object-contain bg-gray-100"
+                      className="max-h-[60vh] w-auto h-auto object-contain rounded-md shadow"
                       priority={true}
                       imageType="gallery"
                       quality={90}
@@ -229,7 +222,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video" style={{ maxHeight: '40vh' }}>
+                  <div className="aspect-video">
                     <VideoPlayer
                       src={lightboxItem.src}
                       title={lightboxItem.title}
@@ -241,21 +234,22 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     />
                   </div>
                 )}
-                
-                <div className="p-4 bg-white" style={{ maxHeight: '40vh', overflowY: 'auto' }}>
+
+                {/* Text Section */}
+                <div className="p-4 overflow-y-auto max-h-[30vh]">
                   <div className="flex items-center gap-2 mb-3">
                     <span>{getCategoryIcon(lightboxItem.category)}</span>
                     <span className="text-sm text-blue-600 font-medium capitalize">
                       {lightboxItem.category.replace('-', ' ')}
                     </span>
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{lightboxItem.title}</h3>
-                  
+
                   {lightboxItem.description && (
                     <p className="text-gray-600 mb-3 text-sm leading-relaxed">{lightboxItem.description}</p>
                   )}
-                  
+
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     {lightboxItem.date && (
                       <div className="flex items-center gap-1">
