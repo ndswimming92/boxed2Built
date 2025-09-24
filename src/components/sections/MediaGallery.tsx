@@ -191,21 +191,19 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 </>
               )}
 
-              <div className="flex-1 overflow-y-auto">
-                {lightboxItem.type === 'image' ? (
-                  <div className="w-full flex justify-center items-center bg-gray-100 p-4">
+              <div className="flex flex-col h-full">
+                <div className="flex-1 max-h-[60vh] flex justify-center items-center bg-gray-100 p-4 overflow-hidden">
+                  {lightboxItem.type === 'image' ? (
                     <OptimizedImage
                       src={lightboxItem.src}
                       alt={lightboxItem.alt || lightboxItem.title}
-                      className="max-h-[60vh] w-auto h-auto object-contain rounded-md shadow"
+                      className="max-h-full max-w-full object-contain rounded-md shadow"
                       priority={true}
                       imageType="gallery"
                       quality={90}
                       enableAvif={true}
                     />
-                  </div>
-                ) : (
-                  <div className="aspect-video">
+                  ) : (
                     <VideoPlayer
                       src={lightboxItem.src}
                       title={lightboxItem.title}
@@ -215,10 +213,10 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                       className="aspect-video"
                       lazy={false}
                     />
-                  </div>
-                )}
+                  )}
+                </div>
 
-                <div className="p-4 bg-white">
+                <div className="max-h-[30vh] overflow-y-auto p-4 bg-white">
                   <div className="flex items-center gap-2 mb-3">
                     <span>{getCategoryIcon(lightboxItem.category)}</span>
                     <span className="text-sm text-blue-600 font-medium capitalize">
