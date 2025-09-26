@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
+import jsPDF from 'jspdf';
 
 const PartnersPage: React.FC = () => {
   useEffect(() => {
@@ -39,176 +40,186 @@ const PartnersPage: React.FC = () => {
   const handleFlyerDownload = () => {
     trackEvent('realtor-flyer-download');
     
-    // Create a comprehensive realtor flyer content
-    const flyerContent = `
-BOXED2BUILT - REALTOR PARTNERSHIP PROGRAM
-Professional Furniture Assembly Service | Spring Hill, TN
+    // Create PDF document
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxWidth = pageWidth - (margin * 2);
+    let yPosition = 30;
 
-═══════════════════════════════════════════════════════════════
+    // Helper function to add text with automatic line wrapping
+    const addText = (text: string, fontSize: number = 10, isBold: boolean = false, color: string = '#000000') => {
+      pdf.setFontSize(fontSize);
+      pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
+      pdf.setTextColor(color);
+      
+      const lines = pdf.splitTextToSize(text, maxWidth);
+      pdf.text(lines, margin, yPosition);
+      yPosition += (lines.length * fontSize * 0.4) + 5;
+      
+      // Add new page if needed
+      if (yPosition > 270) {
+        pdf.addPage();
+        yPosition = 30;
+      }
+    };
 
-🏠 MAKE MOVE-IN DAY STRESS-FREE FOR YOUR CLIENTS
+    const addSection = (title: string, content: string[]) => {
+      addText(title, 14, true, '#1e40af');
+      yPosition += 5;
+      content.forEach(item => {
+        addText(item, 10);
+      });
+      yPosition += 10;
+    };
 
-Partner with Boxed2Built to offer professional furniture assembly 
-as a memorable closing gift that your clients will actually use!
+    // Header
+    addText('BOXED2BUILT - REALTOR PARTNERSHIP PROGRAM', 18, true, '#1e40af');
+    addText('Professional Furniture Assembly Service | Spring Hill, TN', 12, false, '#374151');
+    yPosition += 10;
 
-═══════════════════════════════════════════════════════════════
+    // Main value proposition
+    addText('MAKE MOVE-IN DAY STRESS-FREE FOR YOUR CLIENTS', 16, true, '#059669');
+    addText('Partner with Boxed2Built to offer professional furniture assembly as a memorable closing gift that your clients will actually use!', 11);
+    yPosition += 10;
 
-📞 CONTACT INFORMATION
-Phone: (931) 674-1196
-Email: boxed2builtco@gmail.com
-Website: boxed2built.com
-Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, 
-Brentwood & surrounding Tennessee areas
+    // Contact Information
+    addSection('CONTACT INFORMATION', [
+      'Phone: (931) 674-1196',
+      'Email: boxed2builtco@gmail.com',
+      'Website: boxed2built.com',
+      'Service Area: Spring Hill, Columbia, Franklin, Thompson\'s Station, Brentwood & surrounding Tennessee areas'
+    ]);
 
-═══════════════════════════════════════════════════════════════
+    // Partnership Benefits
+    addSection('PARTNERSHIP BENEFITS', [
+      '✓ Memorable closing gift that clients actually use',
+      '✓ Personalized discount code tied to your name',
+      '✓ Track your referrals and client satisfaction',
+      '✓ Professional service that reflects well on you',
+      '✓ Flexible scheduling around closing timelines',
+      '✓ No upfront costs or commitments required'
+    ]);
 
-💼 PARTNERSHIP BENEFITS
+    // Services
+    addSection('SERVICES WE PROVIDE', [
+      'IKEA Furniture Assembly:',
+      '• Beds, dressers, wardrobes, desks',
+      '• Bookshelves, storage solutions',
+      '• Kitchen and bathroom furniture',
+      '',
+      'Target & Walmart Furniture Assembly:',
+      '• Bedroom sets and individual pieces',
+      '• Living room furniture',
+      '• Office and home organization',
+      '',
+      'General Furniture Assembly:',
+      '• All major furniture brands',
+      '• Complex multi-piece sets',
+      '• Specialty and custom furniture'
+    ]);
 
-✓ Memorable closing gift that clients actually use
-✓ Personalized discount code tied to your name
-✓ Track your referrals and client satisfaction
-✓ Professional service that reflects well on you
-✓ Flexible scheduling around closing timelines
-✓ No upfront costs or commitments required
+    // Pricing
+    addSection('TRANSPARENT PRICING (Updated 2025)', [
+      'Small Furniture (Chairs, Nightstands): $45-$108',
+      'Storage & Shelving (Bookshelves, Units): $116-$172',
+      'Tables & Desks (Coffee Tables, Desks): $96-$209',
+      'Dressers & Storage (Multi-drawer): $166-$204',
+      'Beds & Frames (Simple to Complex): $153-$318',
+      '',
+      'All prices include:',
+      '• Professional assembly',
+      '• Placement in desired room',
+      '• Complete cleanup',
+      '• Quality assurance check'
+    ]);
 
-═══════════════════════════════════════════════════════════════
+    // How it works
+    addSection('HOW IT WORKS', [
+      '1. PARTNER SETUP',
+      '   • Contact us to set up your personalized discount code',
+      '   • Receive marketing materials and service information',
+      '   • No contracts or commitments required',
+      '',
+      '2. OFFER TO CLIENTS',
+      '   • Present furniture assembly as a closing gift',
+      '   • Share our contact information with your clients',
+      '   • We handle all scheduling and coordination',
+      '',
+      '3. PROFESSIONAL SERVICE',
+      '   • We contact your clients directly',
+      '   • Schedule around their move-in timeline',
+      '   • Provide expert assembly service',
+      '   • Follow up to ensure satisfaction'
+    ]);
 
-🛠️ SERVICES WE PROVIDE
+    // What clients get
+    addSection('WHAT YOUR CLIENTS GET', [
+      '✓ Professional furniture assembly service',
+      '✓ Flexible scheduling including weekends',
+      '✓ All tools and expertise provided',
+      '✓ Clean, efficient service',
+      '✓ Satisfaction guaranteed',
+      '✓ Local Spring Hill business support'
+    ]);
 
-IKEA Furniture Assembly
-• Beds, dressers, wardrobes, desks
-• Bookshelves, storage solutions
-• Kitchen and bathroom furniture
+    // Partnership options
+    addSection('PARTNERSHIP OPTIONS', [
+      'CLOSING GIFT OPTION',
+      '• Purchase 2-6 hour assembly session as closing gift',
+      '• Covers 2-8 furniture pieces depending on complexity',
+      '• Branded as your thoughtful closing gift',
+      '• Builds lasting client relationships',
+      '',
+      'REFERRAL PARTNER',
+      '• Simply share our information with clients',
+      '• No upfront costs or commitments',
+      '• We handle all service coordination',
+      '• You get credit for helpful resource'
+    ]);
 
-Target & Walmart Furniture Assembly
-• Bedroom sets and individual pieces
-• Living room furniture
-• Office and home organization
+    // Why choose us
+    addSection('WHY CHOOSE BOXED2BUILT?', [
+      'LOCAL EXPERTISE',
+      '• Based in Spring Hill, TN',
+      '• Serving Middle Tennessee families',
+      '• Understanding of local community needs',
+      '',
+      'PROFESSIONAL SERVICE',
+      '• Years of furniture assembly experience',
+      '• All major furniture brands supported',
+      '• Clean, efficient, reliable service',
+      '',
+      'CLIENT SATISFACTION',
+      '• 5-star Google reviews',
+      '• Satisfaction guaranteed',
+      '• Professional communication'
+    ]);
 
-General Furniture Assembly
-• All major furniture brands
-• Complex multi-piece sets
-• Specialty and custom furniture
+    // Call to action
+    addText('GET STARTED TODAY', 16, true, '#dc2626');
+    addText('Ready to offer your clients a stress-free move-in experience?', 12);
+    yPosition += 5;
+    
+    addSection('CONTACT US', [
+      'Call: (931) 674-1196',
+      'Email: boxed2builtco@gmail.com',
+      'Online: boxed2built.com/partners',
+      '',
+      'Book a free consultation to discuss partnership options',
+      'and get your personalized discount code set up.'
+    ]);
 
-═══════════════════════════════════════════════════════════════
+    // Footer
+    yPosition += 10;
+    addText('BOXED2BUILT', 14, true, '#1e40af');
+    addText('"We turn boxes into comfort so families can focus on what matters most"', 10, true);
+    yPosition += 5;
+    addText('Serving Spring Hill, Columbia, Franklin, Thompson\'s Station, Brentwood & surrounding Tennessee communities', 9);
+    addText('Professional Furniture Assembly • Weekend Service Available • Licensed & Insured • Satisfaction Guaranteed', 9);
 
-💰 TRANSPARENT PRICING (Updated 2025)
-
-Small Furniture (Chairs, Nightstands): $45-$108
-Storage & Shelving (Bookshelves, Units): $116-$172
-Tables & Desks (Coffee Tables, Desks): $96-$209
-Dressers & Storage (Multi-drawer): $166-$204
-Beds & Frames (Simple to Complex): $153-$318
-
-All prices include:
-• Professional assembly
-• Placement in desired room
-• Complete cleanup
-• Quality assurance check
-
-═══════════════════════════════════════════════════════════════
-
-🤝 HOW IT WORKS
-
-1. PARTNER SETUP
-   • Contact us to set up your personalized discount code
-   • Receive marketing materials and service information
-   • No contracts or commitments required
-
-2. OFFER TO CLIENTS
-   • Present furniture assembly as a closing gift
-   • Share our contact information with your clients
-   • We handle all scheduling and coordination
-
-3. PROFESSIONAL SERVICE
-   • We contact your clients directly
-   • Schedule around their move-in timeline
-   • Provide expert assembly service
-   • Follow up to ensure satisfaction
-
-═══════════════════════════════════════════════════════════════
-
-⭐ WHAT YOUR CLIENTS GET
-
-✓ Professional furniture assembly service
-✓ Flexible scheduling including weekends
-✓ All tools and expertise provided
-✓ Clean, efficient service
-✓ Satisfaction guaranteed
-✓ Local Spring Hill business support
-
-═══════════════════════════════════════════════════════════════
-
-📋 PARTNERSHIP OPTIONS
-
-CLOSING GIFT OPTION
-• Purchase 2-6 hour assembly session as closing gift
-• Covers 2-8 furniture pieces depending on complexity
-• Branded as your thoughtful closing gift
-• Builds lasting client relationships
-
-REFERRAL PARTNER
-• Simply share our information with clients
-• No upfront costs or commitments
-• We handle all service coordination
-• You get credit for helpful resource
-
-═══════════════════════════════════════════════════════════════
-
-🎯 WHY CHOOSE BOXED2BUILT?
-
-LOCAL EXPERTISE
-• Based in Spring Hill, TN
-• Serving Middle Tennessee families
-• Understanding of local community needs
-
-PROFESSIONAL SERVICE
-• Years of furniture assembly experience
-• All major furniture brands supported
-• Clean, efficient, reliable service
-
-CLIENT SATISFACTION
-• 5-star Google reviews
-• Satisfaction guaranteed
-• Professional communication
-
-═══════════════════════════════════════════════════════════════
-
-📞 GET STARTED TODAY
-
-Ready to offer your clients a stress-free move-in experience?
-
-Call: (931) 674-1196
-Email: boxed2builtco@gmail.com
-Online: boxed2built.com/partners
-
-Book a free consultation to discuss partnership options
-and get your personalized discount code set up.
-
-═══════════════════════════════════════════════════════════════
-
-BOXED2BUILT
-"We turn boxes into comfort so families can focus on what matters most"
-
-Serving Spring Hill, Columbia, Franklin, Thompson's Station, 
-Brentwood & surrounding Tennessee communities
-
-Professional Furniture Assembly • Weekend Service Available
-Licensed & Insured • Satisfaction Guaranteed
-
-═══════════════════════════════════════════════════════════════
-`;
-
-    // Create and download the file
-    const blob = new Blob([flyerContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'Boxed2Built-Realtor-Partnership-Flyer.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    // Save the PDF
+    pdf.save('Boxed2Built-Realtor-Partnership-Program.pdf');
   };
 
   return (
