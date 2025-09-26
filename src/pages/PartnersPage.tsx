@@ -216,7 +216,7 @@ const PartnersPage: React.FC = () => {
     addText('"We turn boxes into comfort so families can focus on what matters most"', 10, true);
     yPosition += 5;
     addText('Serving Spring Hill, Columbia, Franklin, Thompson\'s Station, Brentwood & surrounding Tennessee communities', 9);
-    addText('Professional Furniture Assembly • Weekend Service Available • Licensed & Insured • Satisfaction Guaranteed', 9);
+    addText('Professional Furniture Assembly • Weekend Service Available • Satisfaction Guaranteed', 9);
 
     // Save the PDF
     pdf.save('Boxed2Built-Realtor-Partnership-Program.pdf');
