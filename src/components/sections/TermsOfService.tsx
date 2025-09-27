@@ -52,21 +52,51 @@ const TermsOfService = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">6. Service Area</h2>
+        <h2 className="text-xl font-semibold mb-2">6. Affiliate Links and Third-Party Services</h2>
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program</h3>
+          <p className="mb-4">
+            Boxed2Built participates in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com. This means:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>Some links to Amazon products on our website are affiliate links</li>
+            <li>We may earn a commission if you make a qualifying purchase through these links</li>
+            <li>The price you pay remains the same - there is no additional cost to you</li>
+            <li>We only recommend products we have personally assembled or believe will be valuable to our customers</li>
+          </ul>
+          
+          <h3 className="text-lg font-semibold mb-2">Third-Party Websites</h3>
+          <p className="mb-4">
+            Our website may contain links to third-party websites, including Amazon.com and other retailers. We are not responsible for:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>The content, products, or services offered by third-party websites</li>
+            <li>The privacy practices or terms of service of third-party websites</li>
+            <li>Any transactions you conduct with third-party websites</li>
+            <li>The quality, safety, or legality of products purchased from third-party websites</li>
+          </ul>
+          <p>
+            We encourage you to review the terms of service and privacy policies of any third-party websites you visit.
+          </p>
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">7. Service Area</h2>
         <p>
           Our furniture assembly services are available in Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding Tennessee areas. Travel fees may apply for locations outside our primary service area.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">7. Changes to Terms</h2>
+        <h2 className="text-xl font-semibold mb-2">8. Changes to Terms</h2>
         <p>
           We may update these Terms of Service at any time. Continued use of our furniture assembly services after changes means you accept the new terms.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">8. Contact Boxed2Built</h2>
+        <h2 className="text-xl font-semibold mb-2">9. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about these Terms or our furniture assembly services in Spring Hill, TN, contact us at:</p>
         <ul className="list-none pl-0 mt-2">
           <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
