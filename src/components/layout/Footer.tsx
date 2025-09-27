@@ -238,6 +238,9 @@ const Footer: React.FC = () => {
 
           <div className="text-sm text-gray-200 text-center space-y-2 mt-4">
             <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
+            <div className="text-xs text-gray-300">
+              Boxed2Built is an Amazon Associate and earns from qualifying purchases.
+            </div>
             <div>
               <a 
                 href="/privacy-policy"
