@@ -124,11 +124,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
           {filteredItems.map((item, index) => (
             <div
               key={item.id}
-              className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300 rounded-lg"
-              onClick={() => openLightbox(item, index)}
+              className="group relative overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-300"
             >
               {item.type === 'image' ? (
-                <div className="aspect-square relative overflow-hidden border-2 border-gray-200 hover:border-blue-300 shadow-sm hover:shadow-md transition-all duration-300">
+                <div 
+                  className="aspect-square relative overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer"
+                  onClick={() => openLightbox(item, index)}
+                >
                   <OptimizedImage
                     src={item.src}
                     alt={item.alt || item.title}
@@ -143,8 +145,10 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   />
                 </div>
               ) : (
-                <div className="group relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-300 rounded-lg bg-white shadow-sm hover:shadow-md">
-                  <div className="aspect-square relative overflow-hidden transition-all duration-300">
+                <div 
+                  className="aspect-square relative overflow-hidden transition-all duration-300 cursor-pointer"
+                  onClick={() => openLightbox(item, index)}
+                >
                     <VideoPlayer
                       src={item.src}
                       title={item.title}
@@ -156,9 +160,43 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                       width={item.width}
                       height={item.height}
                     />
-                  </div>
                 </div>
               )}
+              
+              {/* Card Content */}
+              <div className="p-3">
+                <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">{item.title}</h3>
+                
+                {item.location && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                    <MapPin size={12} />
+                    <span>{item.location}</span>
+                  </div>
+                )}
+                
+                {item.amazonLink && (
+                  <div className="mt-2">
+                    <a
+                      href={item.amazonLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAmazonLinkClick(item.title, item.amazonLink!);
+                      }}
+                      className="inline-flex items-center px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded text-xs shadow-sm hover:shadow-md transition-all duration-200 w-full justify-center"
+                    >
+                      <svg className="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 8.206 3.166 12.758 3.166 2.639 0 5.462-.394 8.29-1.275.232-.072.29-.058.29.145 0 .203-.145.348-.435.435-2.639.87-5.723 1.26-8.726 1.26-4.64 0-9.485-1.26-12.525-3.71zm-.87-2.088c-.116-.145-.029-.348.174-.29 4.262.87 8.697 1.275 12.932 1.275 3.71 0 7.826-.58 11.536-1.74.203-.058.29.029.29.203 0 .174-.116.29-.348.377-3.71 1.16-7.942 1.74-11.652 1.74-4.262 0-8.697-.406-12.932-1.565zm1.74-2.32c-.145-.174-.029-.377.203-.29 3.71.87 7.826 1.275 11.652 1.275 3.71 0 7.42-.406 10.956-1.275.203-.058.29.029.29.203 0 .174-.087.29-.29.348-3.536.87-7.246 1.275-10.956 1.275-3.826 0-7.942-.406-11.652-1.275-.232-.087-.348-.203-.203-.261z"/>
+                      </svg>
+                      Get on Amazon
+                    </a>
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      As an Amazon Associate, we earn from qualifying purchases.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
