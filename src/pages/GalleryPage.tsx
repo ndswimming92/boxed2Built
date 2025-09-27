@@ -42,14 +42,15 @@ const SAMPLE_MEDIA: MediaItem[] = [
     id: '3',
     type: 'image',
     src: '/images/assembled-barn-door-office-desk-hutch-spring-hill.webp',
-    title: 'RedLemon 60" Farmhouse Desk with Hutch, Wood Home Office Executive Desk with Drawer, Charging Station, Keyboard Tray, File Drawer, Storage Cabinet, Rustic Writing Computer Desk (Dark Rustic Oak)',
-    description: 'Professional furniture assembly of this RedLemon farmhouse desk with hutch featuring multiple drawers, charging station, keyboard tray, and storage compartments. Expert furniture assembly service in Spring Hill, Tennessee. Get this desk: https://amzn.to/3KHz4F7 - As an Amazon Associate I earn from qualifying purchases.',
+    title: 'RedLemon 60" Farmhouse Desk with Hutch',
+    description: 'Professional furniture assembly of this RedLemon farmhouse desk with hutch featuring multiple drawers, charging station, keyboard tray, and storage compartments. Expert furniture assembly service in Spring Hill, Tennessee.',
     alt: 'Completed barn door office desk with hutch assembly showing professional furniture assembly work in Spring Hill TN',
     category: 'completed-work',
     date: '2024-12-20',
     location: 'Spring Hill, TN',
     width: 800,
-    height: 600
+    height: 600,
+    amazonLink: 'https://amzn.to/3KHz4F7'
   },
   {
     id: '4',
@@ -81,40 +82,43 @@ const SAMPLE_MEDIA: MediaItem[] = [
     id: '6',
     type: 'image',
     src: '/images/black-rocking-chair-front-porch-spring-hill.webp',
-    title: 'Shine Company Vermont Porch Rocker, High Back Wood Rocking Chair, Black',
-    description: 'Professionally assembled Shine Company Vermont Porch Rocker placed on front porch in Spring Hill, TN. Expert furniture assembly service with final placement and positioning. Get this rocking chair: https://amzn.to/3VFC7A7 - As an Amazon Associate I earn from qualifying purchases.',
+    title: 'Shine Company Vermont Porch Rocker',
+    description: 'Professionally assembled Shine Company Vermont Porch Rocker placed on front porch in Spring Hill, TN. Expert furniture assembly service with final placement and positioning.',
     alt: 'Black rocking chair professionally assembled and placed on front porch in Spring Hill Tennessee',
     category: 'completed-work',
     date: '2024-12-15',
     location: 'Spring Hill, TN',
     width: 800,
-    height: 600
+    height: 600,
+    amazonLink: 'https://amzn.to/3VFC7A7'
   },
   {
     id: '7',
     type: 'image',
     src: '/images/assembled-lighted-fireplace-console-spring-hill.webp',
-    title: 'RedLemon Farmhouse Fireplace TV Stand for 80 Inch TV, 36" Tall Entertainment Center with 42" Crystal Eletric Fireplace, Modern Media Console Table with LED Lights for Living Room, Light Rustic Oak',
-    description: 'Professional assembly of large fireplace console with built-in electric fireplace and LED lighting. Complex furniture assembly project completed in Spring Hill, Tennessee. Get this fireplace TV stand: https://amzn.to/46F5443 - As an Amazon Associate I earn from qualifying purchases.',
+    title: 'RedLemon Farmhouse Fireplace TV Stand',
+    description: 'Professional assembly of large fireplace console with built-in electric fireplace and LED lighting. Complex furniture assembly project completed in Spring Hill, Tennessee.',
     alt: 'Assembled fireplace console with electric fireplace and LED lighting showing professional furniture assembly in Spring Hill TN',
     category: 'completed-work',
     date: '2024-12-22',
     location: 'Spring Hill, TN',
     width: 800,
-    height: 600
+    height: 600,
+    amazonLink: 'https://amzn.to/46F5443'
   },
   {
     id: '12',
     type: 'image',
     src: '/images/white-over-toilet-bathroom-storage-spring-hill.webp',
-    title: 'Ahomly Over The Toilet Storage Cabinet, 32.3" W Over Toilet Bathroom Organizer with Doors, Adjustable Shelves, Toilet Paper Holder, 2 Side Hooks, Space-Saver for Bathroom, Laundry, White',
-    description: 'Professional assembly of Ahomly over-toilet bathroom storage cabinet with adjustable shelves, toilet paper holder, and side hooks. Expert furniture assembly service for bathroom organization in Spring Hill, Tennessee. Get this storage cabinet: https://amzn.to/3VDFqYv - As an Amazon Associate I earn from qualifying purchases.',
+    title: 'Ahomly Over The Toilet Storage Cabinet',
+    description: 'Professional assembly of Ahomly over-toilet bathroom storage cabinet with adjustable shelves, toilet paper holder, and side hooks. Expert furniture assembly service for bathroom organization in Spring Hill, Tennessee.',
     alt: 'White over-toilet bathroom storage unit professionally assembled showing shelving and cabinet storage in Spring Hill TN',
     category: 'completed-work',
     date: '2024-12-10',
     location: 'Spring Hill, TN',
     width: 800,
-    height: 600
+    height: 600,
+    amazonLink: 'https://amzn.to/3VDFqYv'
   },
   {
     id: '13',
