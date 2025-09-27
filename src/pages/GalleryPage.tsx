@@ -42,8 +42,8 @@ const SAMPLE_MEDIA: MediaItem[] = [
     id: '3',
     type: 'image',
     src: '/images/assembled-barn-door-office-desk-hutch-spring-hill.webp',
-    title: 'Assembled Barn Door Office Desk with Hutch - Spring Hill TN',
-    description: 'Professional furniture assembly of a rustic barn door style office desk with hutch featuring multiple drawers and storage compartments. Expert furniture assembly service in Spring Hill, Tennessee.',
+    title: 'RedLemon 60" Farmhouse Desk with Hutch, Wood Home Office Executive Desk with Drawer, Charging Station, Keyboard Tray, File Drawer, Storage Cabinet, Rustic Writing Computer Desk (Dark Rustic Oak)',
+    description: 'Professional furniture assembly of this RedLemon farmhouse desk with hutch featuring multiple drawers, charging station, keyboard tray, and storage compartments. Expert furniture assembly service in Spring Hill, Tennessee. Get this desk: https://amzn.to/3KHz4F7 - As an Amazon Associate I earn from qualifying purchases.',
     alt: 'Completed barn door office desk with hutch assembly showing professional furniture assembly work in Spring Hill TN',
     category: 'completed-work',
     date: '2024-12-20',
@@ -246,6 +246,13 @@ const GalleryPage: React.FC = () => {
               <p className="text-xs text-blue-50 font-medium">
                 Weekend furniture assembly service • Serving Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood & surrounding Tennessee areas
               </p>
+              
+              <div className="mt-8 pt-6 border-t border-blue-500">
+                <p className="text-xs text-blue-100">
+                  <strong>Affiliate Disclosure:</strong> As an Amazon Associate I earn from qualifying purchases. 
+                  Product links may contain affiliate links to help support our business.
+                </p>
+              </div>
             </div>
           </div>
         </section>
