@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, MapPin, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
 import VideoPlayer from '../ui/VideoPlayer';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, trackExternalLink } from '../../utils/analytics';
 
 export interface MediaItem {
   id: string;
