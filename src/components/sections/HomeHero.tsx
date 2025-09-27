@@ -153,12 +153,6 @@ const HomeHero: React.FC = () => {
                 As an Amazon Associate, we earn from qualifying purchases.
               </p>
             </div>
-            
-            <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
-              <p className="text-green-800 font-medium text-sm">
-                "Expert assembly, stress-free experience!"
-              </p>
-            </div>
           </div>
         </div>
 
