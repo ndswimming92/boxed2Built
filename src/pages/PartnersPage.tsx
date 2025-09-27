@@ -11,11 +11,11 @@ import jsPDF from 'jspdf';
 
 const PartnersPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Partner with Boxed2Built - Realtor & Business Partnerships | Spring Hill TN';
+    document.title = 'Boxed2Built Partnerships | Realtors & Movers in Spring Hill';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Partner with Boxed2Built for stress-free client move-ins. Realtor partnerships, closing gifts, and referral programs for furniture assembly in Spring Hill, Franklin, Nashville TN.');
+      metaDescription.setAttribute('content', 'Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts.');
     }
 
     // Set canonical URL for this page

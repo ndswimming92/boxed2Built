@@ -10,11 +10,11 @@ import { getCalendlyUrl } from '../utils/utm';
 
 const AboutPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'About Your Local Furniture Assembly Service Near Me | Boxed2Built – Spring Hill TN';
+    document.title = 'About Boxed2Built | Furniture Assembly in Spring Hill';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Looking for furniture assembly near me? Boxed2Built is your local furniture assembly service providing affordable IKEA, Walmart, Target, Lowe\'s furniture assembly in Spring Hill, TN. Fast service, guaranteed satisfaction.');
+      metaDescription.setAttribute('content', 'Learn about Boxed2Built\'s mission: expert furniture assembly for IKEA, Walmart, Target & more in Spring Hill, TN. Trusted by local families.');
     }
 
     // Set canonical URL for this page

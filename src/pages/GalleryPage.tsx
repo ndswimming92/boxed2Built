@@ -133,11 +133,11 @@ const SAMPLE_MEDIA: MediaItem[] = [
 
 const GalleryPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Gallery - Professional Furniture Assembly Work | Boxed2Built Spring Hill TN';
+    document.title = 'Furniture Assembly Gallery | Boxed2Built Spring Hill';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'View our professional furniture assembly work in Spring Hill, TN. Time-lapse videos, before/after photos, and completed IKEA, Target, Walmart furniture projects.');
+      metaDescription.setAttribute('content', 'View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas.');
     }
 
     // Set canonical URL for this page

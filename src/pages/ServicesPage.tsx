@@ -10,11 +10,11 @@ import Testimonials from '../components/sections/Testimonials';
 
 const ServicesPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Furniture Assembly Services Near Me - Spring Hill, TN | Boxed2Built';
+    document.title = 'Furniture Assembly Services | Boxed2Built Spring Hill';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Looking for furniture assembly services near me? Professional local furniture assembly in Spring Hill, TN. IKEA, Target, Walmart assembly with transparent pricing. Starting at $45. Free quotes available.');
+      metaDescription.setAttribute('content', 'Explore furniture assembly services in Spring Hill, TN. We build IKEA, Target, Walmart & more—professional, reliable, and affordable pricing.');
     }
 
     // Set canonical URL for this page

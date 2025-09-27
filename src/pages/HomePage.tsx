@@ -10,6 +10,13 @@ import Testimonials from '../components/sections/Testimonials';
 
 const HomePage: React.FC = () => {
   useEffect(() => {
+    document.title = 'Furniture Assembly in Spring Hill, TN | Boxed2Built';
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Affordable furniture assembly in Spring Hill & nearby areas. Save time and stress with Boxed2Built\'s expert service. Call today for fast help.');
+    }
+
     // Set canonical URL for home page (should remain as root)
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
