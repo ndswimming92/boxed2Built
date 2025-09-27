@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowRight, CheckCircle, DollarSign, Phone, Calendar } from 'lucide-react';
 import Button from '../ui/Button';
 import OptimizedImage from '../ui/OptimizedImage';
-import { trackEvent, trackConversion } from '../../utils/analytics';
+import { trackEvent, trackConversion, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
 const HomeHero: React.FC = () => {
@@ -33,6 +33,15 @@ const HomeHero: React.FC = () => {
     });
     trackConversion('email_click_hero', 1);
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Website%20Home&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Home%20Page';
+  };
+
+  const handleAmazonLinkClick = () => {
+    trackEvent('amazon-affiliate-click-home-hero', 'Shine Company Vermont Porch Rocker', {
+      event_category: 'affiliate',
+      value: 1,
+      user_engagement: 'amazon_click'
+    });
+    trackExternalLink('https://amzn.to/3VFC7A7', 'Amazon Product: Shine Company Vermont Porch Rocker');
   };
 
   return (
@@ -125,6 +134,26 @@ const HomeHero: React.FC = () => {
                 enableAvif={true}
               />
             </div>
+            
+            {/* Amazon Affiliate Button */}
+            <div className="text-center mt-4">
+              <a
+                href="https://amzn.to/3VFC7A7"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleAmazonLinkClick}
+                className="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm"
+              >
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 8.206 3.166 12.758 3.166 2.639 0 5.462-.394 8.29-1.275.232-.072.29-.058.29.145 0 .203-.145.348-.435.435-2.639.87-5.723 1.26-8.726 1.26-4.64 0-9.485-1.26-12.525-3.71zm-.87-2.088c-.116-.145-.029-.348.174-.29 4.262.87 8.697 1.275 12.932 1.275 3.71 0 7.826-.58 11.536-1.74.203-.058.29.029.29.203 0 .174-.116.29-.348.377-3.71 1.16-7.942 1.74-11.652 1.74-4.262 0-8.697-.406-12.932-1.565zm1.74-2.32c-.145-.174-.029-.377.203-.29 3.71.87 7.826 1.275 11.652 1.275 3.71 0 7.42-.406 10.956-1.275.203-.058.29.029.29.203 0 .174-.087.29-.29.348-3.536.87-7.246 1.275-10.956 1.275-3.826 0-7.942-.406-11.652-1.275-.232-.087-.348-.203-.203-.261z"/>
+                </svg>
+                Get This Rocking Chair on Amazon
+              </a>
+              <p className="text-xs text-gray-500 mt-2">
+                As an Amazon Associate, we earn from qualifying purchases.
+              </p>
+            </div>
+            
             <div className="absolute -bottom-6 -left-6 bg-green-100 p-4 rounded-lg shadow-md transform -rotate-2 hover:rotate-0 transition-transform duration-300">
               <p className="text-green-800 font-medium text-sm">
                 "Expert assembly, stress-free experience!"
