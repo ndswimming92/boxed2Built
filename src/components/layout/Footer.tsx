@@ -1,18 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-react';
-import PrivacyPolicyModal from '../PrivacyPolicyModal';
-import TermsOfServiceModal from '../TermsOfServiceModal';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
 const currentYear = new Date().getFullYear();
 
 const Footer: React.FC = () => {
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
-  const privacyButtonRef = useRef<HTMLButtonElement>(null);
-  const termsButtonRef = useRef<HTMLButtonElement>(null);
-
   const handleSocialClick = (platform: string) => {
     trackEvent(`social-click-${platform}`, platform, {
       event_category: 'social_media',
@@ -27,16 +20,6 @@ const Footer: React.FC = () => {
       user_engagement: 'review_click'
     });
     trackExternalLink(getGoogleReviewUrl(), 'Google Review');
-  };
-
-  const handlePrivacyClick = () => {
-    setShowPrivacy(true);
-    trackEvent('privacy-policy-click');
-  };
-
-  const handleTermsClick = () => {
-    setShowTerms(true);
-    trackEvent('terms-of-service-click');
   };
 
   const handleBookingClick = () => {
@@ -256,37 +239,26 @@ const Footer: React.FC = () => {
           <div className="text-sm text-gray-200 text-center space-y-2 mt-4">
             <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
             <div>
-              <button 
-                ref={privacyButtonRef}
-                onClick={handlePrivacyClick} 
+              <a 
+                href="/privacy-policy"
                 className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+                onClick={() => trackEvent('privacy-policy-footer-click')}
               >
                 Privacy Policy
-              </button>
+              </a>
               &nbsp;|&nbsp;
-              <button 
-                ref={termsButtonRef}
-                onClick={handleTermsClick} 
+              <a 
+                href="/terms-of-service"
                 className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+                onClick={() => trackEvent('terms-of-service-footer-click')}
               >
                 Terms of Service
-              </button>
+              </a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Modals */}
-      <PrivacyPolicyModal 
-        isOpen={showPrivacy} 
-        onClose={() => setShowPrivacy(false)} 
-        triggerRef={privacyButtonRef}
-      />
-      <TermsOfServiceModal 
-        isOpen={showTerms} 
-        onClose={() => setShowTerms(false)} 
-        triggerRef={termsButtonRef}
-      />
     </>
   );
 };
