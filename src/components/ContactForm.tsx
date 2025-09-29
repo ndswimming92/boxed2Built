@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock, Loader2 } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
+import FormField from './ui/FormField';
+import ValidationMessage from './ui/ValidationMessage';
+import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 
-interface FieldState {
-  value: string;
-  error: string;
-  touched: boolean;
-}
-
-const initialFields = {
+const initialValues = {
   name: { value: '', error: '', touched: false },
   email: { value: '', error: '', touched: false },
   phone: { value: '', error: '', touched: false },
@@ -21,17 +18,130 @@ const initialFields = {
   notes: { value: '', error: '', touched: false },
 };
 
+// Enhanced validation rules
+const validationRules: Record<string, ValidationRule> = {
+  name: {
+    required: true,
+    minLength: 2,
+    maxLength: 50,
+    pattern: /^[a-zA-Z\s'-]+$/,
+    custom: (value) => {
+      if (value.trim().split(' ').length < 1) {
+        return 'Please enter your full name';
+      }
+      if (value.trim().length < 2) {
+        return 'Name must be at least 2 characters';
+      }
+      return null;
+    },
+    validateOnChange: true
+  },
+  email: {
+    required: true,
+    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    custom: (value) => {
+      if (!value.includes('@')) return 'Email must contain @ symbol';
+      if (!value.includes('.')) return 'Email must contain a domain (e.g., .com)';
+      if (value.includes('..')) return 'Invalid email format';
+      if (value.startsWith('.') || value.endsWith('.')) return 'Invalid email format';
+      if (value.split('@').length !== 2) return 'Email must contain exactly one @ symbol';
+      const [localPart, domain] = value.split('@');
+      if (localPart.length === 0) return 'Email must have text before @ symbol';
+      if (domain.length === 0) return 'Email must have a domain after @ symbol';
+      if (!domain.includes('.')) return 'Email domain must contain a dot (e.g., .com)';
+      return null;
+    },
+    validateOnChange: true
+  },
+  phone: {
+    required: false,
+    custom: (value) => {
+      if (!value) return null;
+      const digits = value.replace(/\D/g, '');
+      if (digits.length > 0 && digits.length < 10) {
+        return 'Please enter a complete phone number';
+      }
+      if (digits.length > 11) {
+        return 'Phone number is too long';
+      }
+      return null;
+    }
+  },
+  furnitureType: {
+    required: true,
+    custom: (value) => {
+      const validTypes = ['Chair', 'Table', 'Bed', 'Dresser', 'Bookshelf', 'IKEA', 'Other'];
+      if (!validTypes.includes(value)) {
+        return 'Please select a valid furniture type';
+      }
+      return null;
+    }
+  },
+  pieces: {
+    required: true,
+    custom: (value) => {
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1) {
+        return 'Please enter at least 1 piece';
+      }
+      if (num > 50) {
+        return 'For large projects, please contact us directly';
+      }
+      return null;
+    }
+  },
+  notes: {
+    required: false,
+    maxLength: 500,
+    custom: (value, allValues) => {
+      // Only require notes if "Other" is selected for furniture type
+      if (allValues?.furnitureType === 'Other' && !value?.trim()) {
+        return 'Please specify the furniture type';
+      }
+      return null;
+    }
+  },
+  preferredDate: {
+    required: false
+  },
+  preferredTimeSlot: {
+    required: false
+  }
+};
+
 const ContactForm: React.FC = () => {
   const [state, handleSubmit] = useForm("mwpqepva");
-  const [fields, setFields] = useState(initialFields);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
   const [userCity, setUserCity] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const submitTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Use enhanced form validation
+  const {
+    fields,
+    isFormValid,
+    hasErrors,
+    isValidating,
+    isSubmitting,
+    submitAttempted,
+    handleFieldChange,
+    handleFieldBlur,
+    handleSubmit: handleValidatedSubmit,
+    reset,
+    getFieldProps
+  } = useFormValidation({
+    initialValues: Object.keys(initialValues).reduce((acc, key) => {
+      acc[key] = '';
+      return acc;
+    }, {} as Record<string, string>),
+    validationRules,
+    validateOnChange: false,
+    validateOnBlur: true,
+    debounceMs: 300
+  });
 
   // Detect iOS
   useEffect(() => {
@@ -62,8 +172,8 @@ const ContactForm: React.FC = () => {
 
   // Smart estimation based on furniture type and pieces
   useEffect(() => {
-    const furnitureType = fields.furnitureType.value;
-    const pieces = parseInt(fields.pieces.value) || 0;
+    const furnitureType = fields.furnitureType?.value;
+    const pieces = parseInt(fields.pieces?.value) || 0;
     
     if (furnitureType && pieces > 0) {
       let baseTime = 0;
@@ -115,257 +225,86 @@ const ContactForm: React.FC = () => {
       setEstimatedTime('');
       setEstimatedPrice('');
     }
-  }, [fields.furnitureType.value, fields.pieces.value]);
-
-  // iOS-specific fixes
-  useEffect(() => {
-    if (!isIOS) return;
-
-    // Handle iOS autofill events without interfering with form submission
-    const handleAutofill = (e: Event) => {
-      // Don't prevent default - let iOS autofill work naturally
-      setTimeout(() => {
-        if (formRef.current) {
-          const formData = new FormData(formRef.current);
-          const updatedFields = { ...fields };
-          
-          // Update state with autofilled values
-          Object.keys(initialFields).forEach(key => {
-            const value = formData.get(key) as string || '';
-            if (value && value !== fields[key as keyof typeof fields].value) {
-              updatedFields[key as keyof typeof fields] = {
-                ...updatedFields[key as keyof typeof fields],
-                value: value
-              };
-            }
-          });
-          
-          setFields(updatedFields);
-        }
-      }, 100);
-    };
-
-    // Handle page show (back/forward cache)
-    const handlePageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) {
-        setIsSubmitting(false);
-        if (submitTimeoutRef.current) {
-          clearTimeout(submitTimeoutRef.current);
-        }
-      }
-    };
-
-    // Handle visibility change
-    const handleVisibilityChange = () => {
-      if (document.hidden && isSubmitting) {
-        setIsSubmitting(false);
-      }
-    };
-
-    // Add event listeners
-    window.addEventListener('pageshow', handlePageShow);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Add form-specific listeners for iOS autofill
-    if (formRef.current) {
-      const form = formRef.current;
-      form.addEventListener('input', handleAutofill, { passive: true });
-      form.addEventListener('change', handleAutofill, { passive: true });
-    }
-
-    return () => {
-      window.removeEventListener('pageshow', handlePageShow);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      
-      if (formRef.current) {
-        const form = formRef.current;
-        form.removeEventListener('input', handleAutofill);
-        form.removeEventListener('change', handleAutofill);
-      }
-      
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-      }
-    };
-  }, [isIOS, fields, isSubmitting]);
+  }, [fields.furnitureType?.value, fields.pieces?.value]);
 
   // Handle successful submission
   useEffect(() => {
     if (state.succeeded) {
-      setFields(initialFields);
-      setIsSubmitting(false);
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-      }
+      setSubmitSuccess(true);
+      reset();
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 5000);
     }
-  }, [state.succeeded]);
+  }, [state.succeeded, reset]);
 
-  if (state.succeeded) {
+  if (state.succeeded || submitSuccess) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-        <CheckCircle size={48} className="text-green-600 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-green-800 mb-2">Thank You!</h3>
-        <p className="text-green-700">We'll get back to you shortly with a quote.</p>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center animate-fadeIn">
+        <div className="animate-bounce mb-4">
+          <CheckCircle size={48} className="text-green-600 mx-auto" />
+        </div>
+        <h3 className="text-2xl font-bold text-green-800 mb-3">Thank You!</h3>
+        <p className="text-green-700 text-lg mb-4">
+          Your request has been submitted successfully. We'll get back to you within 24 hours with a detailed quote.
+        </p>
+        <div className="bg-white p-4 rounded-lg border border-green-200 inline-block">
+          <p className="text-sm text-gray-600">
+            <strong>What's next?</strong><br />
+            • We'll review your project details<br />
+            • Prepare a customized quote<br />
+            • Contact you to schedule service
+          </p>
+        </div>
       </div>
     );
   }
-
-  const validators = {
-    name: (v: string) => !v.trim() ? 'Name is required' : v.trim().length < 2 ? 'Name must be at least 2 characters' : '',
-    email: (v: string) => {
-      if (!v.trim()) return 'Email is required';
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(v)) return 'Please enter a valid email address (e.g., john@example.com)';
-      if (!v.includes('@')) return 'Email must contain @ symbol';
-      if (!v.includes('.')) return 'Email must contain a domain (e.g., .com)';
-      return '';
-    },
-    phone: (v: string) => {
-      const digits = v.replace(/\D/g, '');
-      return digits.length > 0 && digits.length < 10 ? 'Incomplete phone number' : '';
-    },
-    furnitureType: (v: string) => !v ? 'Please select a furniture type' : '',
-    pieces: (v: string) => {
-      const n = parseInt(v, 10);
-      if (!v) return 'Number of pieces is required';
-      if (isNaN(n) || n < 1) return 'Must be at least 1 piece';
-      return '';
-    },
-    notes: (v: string) => {
-      // Only require notes if "Other" is selected for furniture type
-      if (fields.furnitureType.value === 'Other' && !v.trim()) {
-        return 'Please specify the furniture type';
-      }
-      return '';
-    },
-    preferredDate: () => '',
-    preferredTimeSlot: () => '',
-  };
-
-  const handleChange = (field: keyof typeof fields, value: string) => {
-    const error = fields[field].touched ? validators[field](value) : '';
-    setFields(prev => ({
-      ...prev,
-      [field]: { ...prev[field], value, error }
-    }));
-    
-    // Track form field interactions
-    if (!fields[field].touched && value.length > 0) {
-      trackFormInteraction('contact_form', 'start', field);
-    }
-  };
-
-  const handleBlur = (field: keyof typeof fields) => {
-    const error = validators[field](fields[field].value);
-    setFields(prev => ({
-      ...prev,
-      [field]: { ...prev[field], touched: true, error }
-    }));
-  };
-
-  const handleInputChange = (field: keyof typeof fields, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    handleChange(field, value);
-  };
-
-  const isFormValid = () => {
-    const requiredFields = ['name', 'email', 'furnitureType', 'pieces'];
-    
-    // Add notes as required if "Other" is selected
-    if (fields.furnitureType.value === 'Other') {
-      requiredFields.push('notes');
-    }
-    
-    return requiredFields.every(field => {
-      const fieldKey = field as keyof typeof fields;
-      const value = fields[fieldKey].value;
-      const error = validators[fieldKey](value);
-      return !error && value.trim() !== '';
-    });
-  };
 
   const toggleOptionalFields = () => {
     setShowOptionalFields(!showOptionalFields);
     trackEvent('form-optional-fields-toggle', showOptionalFields ? 'hide' : 'show');
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Prevent double submission
-    if (isSubmitting || state.submitting) return;
-
-    setIsSubmitting(true);
-
-    // Clear any existing timeout
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
-    }
-
-    // Set a timeout to reset submission state
-    submitTimeoutRef.current = setTimeout(() => {
-      setIsSubmitting(false);
-    }, 10000);
-
-    // Validate all fields
-    const updated = { ...fields };
-    let valid = true;
-
-    (Object.keys(fields) as (keyof typeof fields)[]).forEach(key => {
-      const err = validators[key](fields[key].value);
-      if (err) valid = false;
-      updated[key] = { ...fields[key], touched: true, error: err };
+  const onSubmit = handleValidatedSubmit(async (values) => {
+    trackFormInteraction('contact_form', 'complete');
+    trackConversion('form_submission', 1);
+    trackEvent('contact-form-submit', 'contact_form', {
+      event_category: 'conversion',
+      value: 1,
+      user_engagement: 'form_submission'
     });
+    
+    // Create form data for submission
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formData.append('user_city', userCity);
 
-    setFields(updated);
+    // Use Formspree's handleSubmit function
+    await handleSubmit(formData);
+  });
 
-    if (valid) {
-      trackFormInteraction('contact_form', 'complete');
-      trackConversion('form_submission', 1);
-      trackEvent('contact-form-submit', 'contact_form', {
-        event_category: 'conversion',
-        value: 1,
-        user_engagement: 'form_submission'
-      });
-      
-      try {
-        // Create form data for submission
-        const formData = new FormData();
-        formData.append('name', fields.name.value);
-        formData.append('email', fields.email.value);
-        formData.append('phone', fields.phone.value);
-        formData.append('furnitureType', fields.furnitureType.value);
-        formData.append('pieces', fields.pieces.value);
-        formData.append('preferredDate', fields.preferredDate.value);
-        formData.append('preferredTimeSlot', fields.preferredTimeSlot.value);
-        formData.append('notes', fields.notes.value);
-        formData.append('user_city', userCity);
-
-        // Use Formspree's handleSubmit function
-        await handleSubmit(formData);
-        
-      } catch (error) {
-        console.error('Form submission error:', error);
-        setIsSubmitting(false);
-      }
-    } else {
-      setIsSubmitting(false);
+  const getInputClasses = (fieldName: string) => {
+    const field = fields[fieldName];
+    const baseClasses = 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200';
+    
+    if (!field?.touched && !submitAttempted) {
+      return `${baseClasses} border-gray-300`;
     }
-
-    // Clear timeout
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
+    
+    if (field?.error) {
+      return `${baseClasses} border-red-500 bg-red-50`;
     }
+    
+    if (field?.valid && field?.touched) {
+      return `${baseClasses} border-green-500 bg-green-50`;
+    }
+    
+    return `${baseClasses} border-gray-300`;
   };
-
-  const inputClass = (field: keyof typeof fields) =>
-    `w-full px-3 py-2 border rounded focus:outline-none transition-colors ${
-      !fields[field].touched
-        ? 'border-gray-400 focus:border-blue-700'
-        : fields[field].error
-        ? 'border-red-600 bg-red-50 focus:border-red-700'
-        : 'border-green-600 bg-green-50 focus:border-green-700'
-    }`;
 
   return (
     <div className="bg-white rounded shadow p-6">
@@ -380,9 +319,18 @@ const ContactForm: React.FC = () => {
         )}
       </div>
 
+      {/* Form validation summary */}
+      {submitAttempted && hasErrors && (
+        <ValidationMessage
+          type="error"
+          message="Please fix the errors below before submitting."
+          className="mb-6"
+        />
+      )}
+
       <form 
         ref={formRef}
-        onSubmit={onSubmit} 
+        onSubmit={onSubmit}
         noValidate 
         autoComplete="on"
       >
@@ -399,61 +347,348 @@ const ContactForm: React.FC = () => {
             <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
               <span className="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs mr-2">1</span>
               Contact Information
+              {isValidating && <Loader2 size={16} className="ml-2 animate-spin text-blue-600" />}
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+              <FormField
+                label="Your Name"
+                required
+                error={fields.name?.error}
+                success={fields.name?.valid && fields.name?.touched}
+                helpText="Enter your full name"
+              >
                 <input
                   id="name"
                   name="name"
                   type="text"
                   autoComplete="name"
                   placeholder="John Smith"
-                  value={fields.name.value}
-                  onChange={(e) => handleInputChange('name', e)}
-                  onBlur={() => handleBlur('name')}
-                  className={inputClass('name')}
-                  aria-invalid={!!fields.name.error}
+                  className={getInputClasses('name')}
                   autoCapitalize="words"
                   autoCorrect="off"
                   spellCheck="false"
+                  {...getFieldProps('name')}
                 />
-                {fields.name.touched && fields.name.error && (
-                  <p className="text-red-700 text-sm mt-1">{fields.name.error}</p>
-                )}
-              </div>
+              </FormField>
 
               {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+              <FormField
+                label="Email Address"
+                required
+                error={fields.email?.error}
+                success={fields.email?.valid && fields.email?.touched}
+                helpText="We'll send your quote to this email"
+              >
                 <input
                   id="email"
                   type="email"
                   name="email"
                   autoComplete="email"
                   placeholder="john@example.com"
-                  value={fields.email.value}
-                  onChange={(e) => handleInputChange('email', e)}
-                  onBlur={() => handleBlur('email')}
-                  className={inputClass('email')}
-                  aria-invalid={!!fields.email.error}
+                  className={getInputClasses('email')}
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
+                  {...getFieldProps('email')}
                 />
-                {fields.email.touched && fields.email.error && (
-                  <p className="text-red-700 text-sm mt-1">{fields.email.error}</p>
-                )}
-              </div>
+              </FormField>
             </div>
 
             {/* Phone - Optional but prominent */}
             <div className="mt-4">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number <span className="text-gray-500 text-xs">(optional - for faster response)</span>
-              </label>
+              <FormField
+                label="Phone Number (optional - for faster response)"
+                error={fields.phone?.error}
+                success={fields.phone?.valid && fields.phone?.touched && fields.phone?.value}
+                helpText="10-digit US phone number"
+              >
+                <InputMask
+                  mask="(999) 999-9999"
+                  {...getFieldProps('phone')}
+                >
+                  {(inputProps: any) => (
+                    <input
+                      {...inputProps}
+                      id="phone"
+                      name="phone"
+                      autoComplete="tel"
+                      className={getInputClasses('phone')}
+                      placeholder="(555) 123-4567"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                    />
+                  )}
+                </InputMask>
+              </FormField>
+            </div>
+          </div>
+
+          {/* Project Details Group */}
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="text-sm font-semibold text-green-900 mb-3 flex items-center">
+              <span className="w-5 h-5 bg-green-600 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
+              Project Details
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Furniture Type */}
+              <FormField
+                label="What needs assembly?"
+                required
+                error={fields.furnitureType?.error}
+                success={fields.furnitureType?.valid && fields.furnitureType?.touched}
+                helpText="Select the type of furniture you need assembled"
+              >
+                <select
+                  id="furnitureType"
+                  name="furnitureType"
+                  className={getInputClasses('furnitureType')}
+                  {...getFieldProps('furnitureType')}
+                >
+                  <option value="">Select furniture type</option>
+                  <option value="Chair">Dining Chairs</option>
+                  <option value="Table">Tables & Desks</option>
+                  <option value="Bed">Bed Frames</option>
+                  <option value="Dresser">Dressers & Storage</option>
+                  <option value="Bookshelf">Bookshelves & Media Units</option>
+                  <option value="IKEA">IKEA Furniture</option>
+                  <option value="Other">Other (please specify in notes)</option>
+                </select>
+              </FormField>
+
+              {/* Pieces */}
+              <FormField
+                label="How many pieces?"
+                required
+                error={fields.pieces?.error}
+                success={fields.pieces?.valid && fields.pieces?.touched}
+                helpText="Number of furniture items to assemble"
+              >
+                <input
+                  id="pieces"
+                  type="number"
+                  name="pieces"
+                  min="1"
+                  max="20"
+                  className={getInputClasses('pieces')}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="1"
+                  {...getFieldProps('pieces')}
+                />
+              </FormField>
+            </div>
+
+            {/* Conditional Notes Field for "Other" Selection */}
+            {fields.furnitureType?.value === 'Other' && (
+              <div className="mt-4">
+                <FormField
+                  label="Please specify the furniture type"
+                  required
+                  error={fields.notes?.error}
+                  success={fields.notes?.valid && fields.notes?.touched}
+                  helpText="Describe the furniture you need assembled"
+                  showCharacterCount
+                  maxLength={500}
+                  currentLength={fields.notes?.value?.length || 0}
+                >
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={3}
+                    className={getInputClasses('notes')}
+                    placeholder="Please describe the furniture you need assembled (e.g., outdoor furniture, exercise equipment, etc.)"
+                    autoCapitalize="sentences"
+                    autoCorrect="on"
+                    maxLength={500}
+                    {...getFieldProps('notes')}
+                  />
+                </FormField>
+              </div>
+            )}
+
+            {/* Smart Estimation Display */}
+            {estimatedTime && estimatedPrice && (
+              <div className="mt-4 p-4 bg-white rounded-lg border border-green-300 animate-fadeIn">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <div className="flex items-center text-green-700">
+                    <Clock size={16} className="mr-2" />
+                    <span>Estimated time: <strong>{estimatedTime}</strong></span>
+                  </div>
+                  <div className="text-green-700">
+                    <span>Estimated cost: <strong>{estimatedPrice}</strong></span>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600">
+                  {parseInt(fields.pieces?.value || '0') > 3 && "Volume discount applied! "}
+                  Final quote provided after consultation.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Progressive Disclosure for Optional Fields */}
+          <div className="border-t border-gray-200 pt-4">
+            <button
+              type="button"
+              onClick={toggleOptionalFields}
+              className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+              aria-expanded={showOptionalFields}
+            >
+              <span>Scheduling Preferences (optional)</span>
+              {showOptionalFields ? (
+                <ChevronUp size={16} className="text-gray-500" />
+              ) : (
+                <ChevronDown size={16} className="text-gray-500" />
+              )}
+            </button>
+            
+            {showOptionalFields && (
+              <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg animate-fadeIn">
+                {/* Preferred Date */}
+                <FormField
+                  label="Preferred Date"
+                  error={fields.preferredDate?.error}
+                  success={fields.preferredDate?.valid && fields.preferredDate?.touched && fields.preferredDate?.value}
+                  helpText="When would you like the assembly completed?"
+                >
+                  <input
+                    id="preferredDate"
+                    name="preferredDate"
+                    type="date"
+                    className={getInputClasses('preferredDate')}
+                    min={new Date().toISOString().split('T')[0]}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    {...getFieldProps('preferredDate')}
+                  />
+                </FormField>
+
+                {/* Preferred Time Slot */}
+                <FormField
+                  label="Preferred Time"
+                  error={fields.preferredTimeSlot?.error}
+                  success={fields.preferredTimeSlot?.valid && fields.preferredTimeSlot?.touched && fields.preferredTimeSlot?.value}
+                  helpText="What time works best for you?"
+                >
+                  <select
+                    id="preferredTimeSlot"
+                    name="preferredTimeSlot"
+                    className={getInputClasses('preferredTimeSlot')}
+                    {...getFieldProps('preferredTimeSlot')}
+                  >
+                    <option value="">No preference</option>
+                    <option value="morning">Morning (9 AM - 12 PM)</option>
+                    <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                    <option value="evening">Evening (5 PM - 8 PM)</option>
+                    <option value="weekend">Weekend preferred</option>
+                  </select>
+                </FormField>
+
+                {/* Additional Notes */}
+                {fields.furnitureType?.value !== 'Other' && (
+                  <FormField
+                    label="Additional Details"
+                    error={fields.notes?.error}
+                    warning={fields.notes?.warning}
+                    success={fields.notes?.valid && fields.notes?.touched && fields.notes?.value}
+                    helpText="Any special requirements or questions?"
+                    showCharacterCount
+                    maxLength={500}
+                    currentLength={fields.notes?.value?.length || 0}
+                  >
+                    <textarea
+                      id="additionalNotes"
+                      name="notes"
+                      rows={3}
+                      className={getInputClasses('notes')}
+                      placeholder="Any special requirements, access instructions, or questions..."
+                      autoCapitalize="sentences"
+                      autoCorrect="on"
+                      maxLength={500}
+                      {...getFieldProps('notes')}
+                    />
+                  </FormField>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-6">
+            <button
+              type="submit"
+              disabled={isSubmitting || (!isFormValid && submitAttempted)}
+              className={`w-full py-4 px-6 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
+                isSubmitting || (!isFormValid && submitAttempted)
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-700 text-white hover:bg-blue-800 transform hover:-translate-y-0.5'
+              }`}
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  Get My Free Quote
+                </>
+              )}
+            </button>
+
+            {/* Form status messages */}
+            {submitAttempted && !isFormValid && (
+              <ValidationMessage
+                type="warning"
+                message="Please complete all required fields to submit your request."
+                className="mt-4"
+              />
+            )}
+
+            {state.errors && state.errors.length > 0 && (
+              <ValidationMessage
+                type="error"
+                message="There was an error submitting your form. Please try again."
+                className="mt-4"
+              />
+            )}
+          </div>
+
+          {/* Terms and Benefits */}
+          <div className="text-center pt-4 space-y-3">
+            <p className="text-xs text-gray-600">
+              By submitting, you agree to our{' '}
+              <a href="/terms-of-service" className="text-blue-700 hover:text-blue-800 underline">
+                Terms of Service
+              </a>
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 text-xs text-green-700 font-medium">
+              <span className="flex items-center">
+                <CheckCircle size={12} className="mr-1" />
+                Free consultation
+              </span>
+              <span className="flex items-center">
+                <CheckCircle size={12} className="mr-1" />
+                Weekend service available
+              </span>
+              <span className="flex items-center">
+                <CheckCircle size={12} className="mr-1" />
+                No commitment required
+              </span>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default ContactForm;
               <InputMask
                 id="phone"
                 name="phone"
