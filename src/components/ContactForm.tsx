@@ -655,7 +655,6 @@ const ContactForm: React.FC = () => {
               ✓ Free consultation ✓ Weekend service available ✓ No commitment required
             </p>
           </div>
-          </p>
         </div>
       </form>
     </div>
