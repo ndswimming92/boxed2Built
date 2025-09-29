@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import NAPConsistency from '../components/seo/NAPConsistency';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -7,16 +9,25 @@ import { ChevronRight, Phone, Mail, MapPin, Clock, Calendar, CheckCircle } from 
 import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
+import { 
+  BUSINESS_INFO, 
+  ADDRESS_INFO, 
+  SERVICE_AREAS, 
+  PRIMARY_SERVICES, 
+  SOCIAL_MEDIA_URLS,
+  CUSTOMER_REVIEWS,
+  LOCAL_SEO_CONTENT
+} from '../constants/localSEO';
 
 const ContactPage: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
-    document.title = 'Contact Boxed2Built | Furniture Assembly in Spring Hill';
+    document.title = LOCAL_SEO_CONTENT.contact.title;
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Need furniture assembly in Spring Hill? Call 615-403-4538 or email boxed2builtco@gmail.com for fast quotes, bookings & reliable service.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.contact.description);
     }
 
     // Set canonical URL for this page
@@ -51,8 +62,26 @@ const ContactPage: React.FC = () => {
     trackEvent('terms-link-click-contact');
   };
 
+  const napData = {
+    businessName: BUSINESS_INFO.name,
+    phone: BUSINESS_INFO.phone,
+    email: BUSINESS_INFO.email,
+    address: ADDRESS_INFO,
+    serviceAreas: SERVICE_AREAS,
+    website: BUSINESS_INFO.website
+  };
+
   return (
     <>
+      <LocalBusinessSchema
+        phone={BUSINESS_INFO.phone}
+        email={BUSINESS_INFO.email}
+        website={BUSINESS_INFO.website}
+        serviceAreas={SERVICE_AREAS}
+        services={PRIMARY_SERVICES}
+        socialMediaUrls={SOCIAL_MEDIA_URLS}
+        reviews={CUSTOMER_REVIEWS}
+      />
       <Header />
       <Breadcrumbs 
         items={[
@@ -92,6 +121,16 @@ const ContactPage: React.FC = () => {
                 {/* Contact Details */}
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-8">Get In Touch</h2>
+                  
+                  {/* NAP Consistency Component */}
+                  <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                    <NAPConsistency 
+                      data={napData}
+                      showAddress={true}
+                      showServiceAreas={true}
+                      variant="contact"
+                    />
+                  </div>
                   
                   <div className="space-y-6 mb-8">
                     <div className="flex items-start">

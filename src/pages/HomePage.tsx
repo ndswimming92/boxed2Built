@@ -1,5 +1,8 @@
 import React from 'react';
 import { useEffect } from 'react';
+import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import NAPConsistency from '../components/seo/NAPConsistency';
+import LocalSEOContent from '../components/seo/LocalSEOContent';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
@@ -8,14 +11,24 @@ import HomeCTA from '../components/sections/HomeCTA';
 import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
+import { 
+  BUSINESS_INFO, 
+  ADDRESS_INFO, 
+  SERVICE_AREAS, 
+  PRIMARY_SERVICES, 
+  SOCIAL_MEDIA_URLS,
+  CUSTOMER_REVIEWS,
+  LOCAL_SEO_CONTENT,
+  SERVICE_KEYWORDS
+} from '../constants/localSEO';
 
 const HomePage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Furniture Assembly in Spring Hill, TN | Boxed2Built';
+    document.title = LOCAL_SEO_CONTENT.homepage.title;
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Affordable furniture assembly in Spring Hill & nearby areas. Save time and stress with Boxed2Built\'s expert service. Call today for fast help.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.homepage.description);
     }
 
     // Set canonical URL for home page (should remain as root)
@@ -28,8 +41,26 @@ const HomePage: React.FC = () => {
     canonicalLink.setAttribute('href', 'https://boxed2built.com/');
   }, []);
 
+  const napData = {
+    businessName: BUSINESS_INFO.name,
+    phone: BUSINESS_INFO.phone,
+    email: BUSINESS_INFO.email,
+    address: ADDRESS_INFO,
+    serviceAreas: SERVICE_AREAS,
+    website: BUSINESS_INFO.website
+  };
+
   return (
     <>
+      <LocalBusinessSchema
+        phone={BUSINESS_INFO.phone}
+        email={BUSINESS_INFO.email}
+        website={BUSINESS_INFO.website}
+        serviceAreas={SERVICE_AREAS}
+        services={PRIMARY_SERVICES}
+        socialMediaUrls={SOCIAL_MEDIA_URLS}
+        reviews={CUSTOMER_REVIEWS}
+      />
       <Header />
       <Breadcrumbs 
         items={[
@@ -42,6 +73,15 @@ const HomePage: React.FC = () => {
         <HomeServices />
         
         <Testimonials />
+        
+        {/* Local SEO Content */}
+        <LocalSEOContent
+          city="Spring Hill"
+          state="TN"
+          businessType="Furniture Assembly Service"
+          services={SERVICE_KEYWORDS}
+          serviceAreas={SERVICE_AREAS}
+        />
         
         {/* Contact Form Section */}
         <section className="py-12 bg-gray-50">

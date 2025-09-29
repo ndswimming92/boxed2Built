@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -8,14 +9,23 @@ import Button from '../components/ui/Button';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
+import { 
+  BUSINESS_INFO, 
+  ADDRESS_INFO, 
+  SERVICE_AREAS, 
+  PRIMARY_SERVICES, 
+  SOCIAL_MEDIA_URLS,
+  CUSTOMER_REVIEWS,
+  LOCAL_SEO_CONTENT
+} from '../constants/localSEO';
 
 const ServicesPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'Furniture Assembly Services | Boxed2Built Spring Hill';
+    document.title = LOCAL_SEO_CONTENT.services.title;
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Explore furniture assembly services in Spring Hill, TN. We build IKEA, Target, Walmart & more—professional, reliable, and affordable pricing.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
     }
 
     // Set canonical URL for this page
@@ -44,6 +54,15 @@ const ServicesPage: React.FC = () => {
 
   return (
     <>
+      <LocalBusinessSchema
+        phone={BUSINESS_INFO.phone}
+        email={BUSINESS_INFO.email}
+        website={BUSINESS_INFO.website}
+        serviceAreas={SERVICE_AREAS}
+        services={PRIMARY_SERVICES}
+        socialMediaUrls={SOCIAL_MEDIA_URLS}
+        reviews={CUSTOMER_REVIEWS}
+      />
       <Header />
       <Breadcrumbs 
         items={[

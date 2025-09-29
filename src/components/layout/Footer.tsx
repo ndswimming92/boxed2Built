@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-react';
+import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
+import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
 
 const currentYear = new Date().getFullYear();
 
@@ -28,6 +30,15 @@ const Footer: React.FC = () => {
     window.open(getCalendlyUrl('footer'), '_blank');
   };
 
+  const napData = {
+    businessName: BUSINESS_INFO.name,
+    phone: BUSINESS_INFO.phone,
+    email: BUSINESS_INFO.email,
+    address: ADDRESS_INFO,
+    serviceAreas: SERVICE_AREAS,
+    website: BUSINESS_INFO.website
+  };
+
   return (
     <>
       <footer
@@ -35,11 +46,11 @@ const Footer: React.FC = () => {
         itemScope
         itemType="https://schema.org/LocalBusiness"
       >
-        <meta itemProp="name" content="Boxed2Built" />
-        <meta itemProp="telephone" content="+19316741196" />
-        <meta itemProp="email" content="boxed2builtco@gmail.com" />
-        <meta itemProp="url" content="https://www.boxed2built.com" />
-        <meta itemProp="priceRange" content="$41-$289" />
+        <meta itemProp="name" content={BUSINESS_INFO.name} />
+        <meta itemProp="telephone" content={BUSINESS_INFO.phone} />
+        <meta itemProp="email" content={BUSINESS_INFO.email} />
+        <meta itemProp="url" content={BUSINESS_INFO.website} />
+        <meta itemProp="priceRange" content={BUSINESS_INFO.priceRange} />
         <meta itemProp="paymentAccepted" content="Cash, Credit Card, Debit Card" />
 
         <div className="container mx-auto px-4">
@@ -50,7 +61,7 @@ const Footer: React.FC = () => {
               <div className="flex items-center justify-center md:justify-start mb-4">
                 <img
                   src="/Modern Minimalist Logo for Boxed2Built.png"
-                  alt="Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN"
+                  alt={`${BUSINESS_INFO.name} - Professional Furniture Assembly Service in Spring Hill TN`}
                   loading="lazy"
                   className="h-12 w-auto object-contain"
                   width="120"
@@ -60,26 +71,17 @@ const Footer: React.FC = () => {
                 />
               </div>
               <p className="text-gray-300 max-w-md mb-6 text-center md:text-left">
-                Spring Hill handyman services specializing in professional furniture assembly. Expert IKEA, Target, Walmart assembly service in Spring Hill, TN and surrounding Tennessee areas with flexible scheduling.
+                {ADDRESS_INFO.addressLocality} handyman services specializing in professional furniture assembly. Expert IKEA, Target, Walmart assembly service in {ADDRESS_INFO.addressLocality}, {ADDRESS_INFO.addressRegion} and surrounding Tennessee areas with flexible scheduling.
               </p>
 
-              <address
-                className="not-italic text-sm text-gray-300 text-center md:text-left mb-4"
-                itemProp="address"
-                itemScope
-                itemType="https://schema.org/PostalAddress"
-              >
-                <div className="flex items-center justify-center md:justify-start mb-2">
-                  <MapPin size={16} className="mr-2" />
-                  <span>
-                    <span itemProp="addressLocality">Spring Hill</span>, <span itemProp="addressRegion">TN</span>
-                  </span>
-                </div>
-                <a href="tel:+19316741196" className="hover:text-white flex items-center justify-center md:justify-start" itemProp="telephone">
-                  <Phone size={16} className="mr-2" />
-                  <span className="text-gray-300">(931) 674-1196</span>
-                </a>
-              </address>
+              {/* NAP Consistency in Footer */}
+              <div className="text-center md:text-left mb-4">
+                <NAPConsistency 
+                  data={napData}
+                  showAddress={true}
+                  variant="footer"
+                />
+              </div>
             </div>
 
             {/* Quick Links */}
@@ -134,14 +136,9 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Service Areas</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li className="text-gray-300">Spring Hill, TN</li>
-                <li className="text-gray-300">Columbia, TN</li>
-                <li className="text-gray-300">Franklin, TN</li>
-                <li className="text-gray-300">Thompson's Station, TN</li>
-                <li className="text-gray-300">Brentwood, TN</li>
-                <li className="text-gray-300">Nashville Metro Area</li>
-                <li className="text-gray-300">Williamson County</li>
-                <li className="text-gray-300">Maury County</li>
+                {SERVICE_AREAS.map((area, index) => (
+                  <li key={index} className="text-gray-300">{area}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -194,6 +191,7 @@ const Footer: React.FC = () => {
                   href="tel:+19316741196" 
                   className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Phone"
+                  itemProp="telephone"
                   onClick={() => handleSocialClick('phone')}
                 >
                   <Phone size={24} title="Phone" />
@@ -230,17 +228,17 @@ const Footer: React.FC = () => {
 
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-200 text-center mt-4">
-            Local furniture assembly service near me proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
-            Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
+            Local furniture assembly service near me proudly serving {SERVICE_AREAS.slice(0, 5).join(', ')}, 
+            and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
             <InternalLink href="/services" className="text-blue-100 hover:text-white underline" trackingCategory="footer_content">
               our services and areas
             </InternalLink>.
           </p>
 
           <div className="text-sm text-gray-200 text-center space-y-2 mt-4">
-            <div>&copy; {currentYear} Boxed2Built. All rights reserved.</div>
+            <div>&copy; {currentYear} {BUSINESS_INFO.name}. All rights reserved.</div>
             <div className="text-xs text-gray-300">
-              Boxed2Built is an Amazon Associate and earns from qualifying purchases.
+              {BUSINESS_INFO.name} is an Amazon Associate and earns from qualifying purchases.
             </div>
             <div>
               <a 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
+import NAPConsistency from '../seo/NAPConsistency';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
+import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -63,6 +65,15 @@ const Header: React.FC = () => {
 
   const isActivePage = (path: string) => {
     return location.pathname === path;
+  };
+
+  const napData = {
+    businessName: BUSINESS_INFO.name,
+    phone: BUSINESS_INFO.phone,
+    email: BUSINESS_INFO.email,
+    address: ADDRESS_INFO,
+    serviceAreas: SERVICE_AREAS,
+    website: BUSINESS_INFO.website
   };
 
   const getNavLinkClasses = (path: string) => {
@@ -202,9 +213,10 @@ const Header: React.FC = () => {
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (931) 674-1196"
+              itemProp="telephone"
             >
               <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-              <span className="font-bold text-white">(931) 674-1196</span>
+              <span className="font-bold text-white">{BUSINESS_INFO.phoneFormatted}</span>
             </a>
           </div>
 
@@ -303,9 +315,10 @@ const Header: React.FC = () => {
                   className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
+                  itemProp="telephone"
                 >
                   <Phone size={20} className="mr-2 group-hover:animate-pulse" />
-                  <span className="font-bold text-white">(931) 674-1196</span>
+                  <span className="font-bold text-white">{BUSINESS_INFO.phoneFormatted}</span>
                 </a>
               </div>
             </nav>
