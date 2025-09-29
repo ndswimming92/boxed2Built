@@ -212,7 +212,14 @@ const ContactForm: React.FC = () => {
 
   const validators = {
     name: (v: string) => !v.trim() ? 'Name is required' : v.trim().length < 2 ? 'Name must be at least 2 characters' : '',
-    email: (v: string) => !v.trim() ? 'Email is required' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Invalid email' : '',
+    email: (v: string) => {
+      if (!v.trim()) return 'Email is required';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(v)) return 'Please enter a valid email address (e.g., john@example.com)';
+      if (!v.includes('@')) return 'Email must contain @ symbol';
+      if (!v.includes('.')) return 'Email must contain a domain (e.g., .com)';
+      return '';
+    },
     phone: (v: string) => {
       const digits = v.replace(/\D/g, '');
       return digits.length > 0 && digits.length < 10 ? 'Incomplete phone number' : '';
@@ -487,7 +494,6 @@ const ContactForm: React.FC = () => {
                   <option value="Dresser">Dressers & Storage</option>
                   <option value="Bookshelf">Bookshelves & Media Units</option>
                   <option value="IKEA">IKEA Furniture</option>
-                  <option value="Multiple">Multiple Different Items</option>
                   <option value="Other">Other (please specify in notes)</option>
                 </select>
                 {fields.furnitureType.touched && fields.furnitureType.error && (

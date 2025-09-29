@@ -75,11 +75,17 @@ export const validators = {
   
   email: createValidator({
     required: true,
-    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     custom: (value) => {
-      // Additional email validation
+      if (!value.includes('@')) return 'Email must contain @ symbol';
+      if (!value.includes('.')) return 'Email must contain a domain (e.g., .com)';
       if (value.includes('..')) return 'Invalid email format';
       if (value.startsWith('.') || value.endsWith('.')) return 'Invalid email format';
+      if (value.split('@').length !== 2) return 'Email must contain exactly one @ symbol';
+      const [localPart, domain] = value.split('@');
+      if (localPart.length === 0) return 'Email must have text before @ symbol';
+      if (domain.length === 0) return 'Email must have a domain after @ symbol';
+      if (!domain.includes('.')) return 'Email domain must contain a dot (e.g., .com)';
       return null;
     }
   }),
