@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { initializeThemeSystem } from './utils/themeUtils';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense } from 'react';
 import HomePage from './pages/HomePage';
@@ -158,9 +157,6 @@ function App() {
     // Initialize font optimization
     initializeFontOptimization();
     
-    // Initialize theme system
-    const cleanupTheme = initializeThemeSystem();
-    
     // Track app initialization
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'app_initialized', {
@@ -168,10 +164,6 @@ function App() {
         page_location: window.location.href
       });
     }
-    
-    return () => {
-      cleanupTheme();
-    };
   }, []);
 
   return (
