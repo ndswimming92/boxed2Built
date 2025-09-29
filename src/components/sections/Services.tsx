@@ -100,6 +100,14 @@ const Services: React.FC = () => {
                 </div>
                 
                 <h4 className="font-medium text-gray-800 mb-2">Professional Service Includes:</h4>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  {service.includedItems.map((item, itemIndex) => (
+                    <li key={itemIndex} className="flex items-start">
+                      <Check size={16} className="text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
             ))
