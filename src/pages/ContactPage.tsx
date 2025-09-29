@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ContactForm from '../components/ContactForm';
@@ -53,6 +54,13 @@ const ContactPage: React.FC = () => {
   return (
     <>
       <Header />
+      <Breadcrumbs 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Contact', href: '/contact', current: true }
+        ]}
+        className="container mx-auto px-4 pt-24 pb-4"
+      />
       <main className="pt-20">
         {/* Page Header */}
         <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">

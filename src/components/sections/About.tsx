@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Users, Clock, CheckCircle, Award } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
+import InternalLink from '../ui/InternalLink';
 
 const About: React.FC = () => {
   return (
@@ -16,7 +17,12 @@ const About: React.FC = () => {
           <div className="bg-white p-8 rounded-lg shadow-md mb-10">
             <p className="text-xl text-gray-700 mb-6 leading-relaxed">
               As Spring Hill's trusted handyman services specialists, we understand that busy families need reliable, professional furniture assembly service. 
-              Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most.
+              Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most. 
+              View our complete{' '}
+              <InternalLink href="/services" trackingCategory="about_page">
+                furniture assembly services and pricing
+              </InternalLink>{' '}
+              for all furniture types.
             </p>
             
             <p className="text-2xl font-medium text-blue-600 italic">
@@ -108,7 +114,14 @@ const About: React.FC = () => {
                 <p className="text-gray-700 mb-6 leading-relaxed">
                   As a local Spring Hill furniture assembly company, we understand the needs of Tennessee families. 
                   From single chairs to complete bedroom sets, we provide honest work with a helpful attitude throughout 
-                  Williamson County and Maury County.
+                  Williamson County and Maury County. See examples of our work in our{' '}
+                  <InternalLink href="/gallery" trackingCategory="about_page">
+                    project gallery
+                  </InternalLink>{' '}
+                  or{' '}
+                  <InternalLink href="/contact" trackingCategory="about_page">
+                    contact us for a free quote
+                  </InternalLink>.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[

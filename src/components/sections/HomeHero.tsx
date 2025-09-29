@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, CheckCircle, DollarSign, Phone, Calendar } from 'lucide-react';
 import Button from '../ui/Button';
 import OptimizedImage from '../ui/OptimizedImage';
+import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackConversion, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
@@ -61,7 +62,7 @@ const HomeHero: React.FC = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-6">
-                Professional Spring Hill handyman services specializing in furniture assembly. Expert IKEA, Target & Walmart assembly in Spring Hill, Columbia & Franklin.
+                Professional Spring Hill handyman services specializing in <InternalLink href="/services" trackingCategory="hero_link">furniture assembly</InternalLink>. Expert IKEA, Target & Walmart assembly in Spring Hill, Columbia & Franklin.
               </p>
 
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
@@ -186,9 +187,9 @@ const HomeHero: React.FC = () => {
               </div>
               <div className="text-center mt-4">
                 <p className="text-sm text-gray-500">All prices include assembly, cleanup & placement</p>
-                <a href="/services" className="text-blue-700 hover:text-blue-800 text-sm font-medium">
+                <InternalLink href="/services" className="text-blue-700 hover:text-blue-800 text-sm font-medium" trackingCategory="pricing_link">
                   View all services →
-                </a>
+                </InternalLink>
               </div>
             </div>
           </div>

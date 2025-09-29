@@ -3,6 +3,7 @@ import { SERVICES } from '../../constants';
 import { Check, ChevronDown, Phone, Mail, Clock } from 'lucide-react';
 import Button from '../ui/Button';
 import SkeletonCard from '../ui/SkeletonCard';
+import InternalLink from '../ui/InternalLink';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -38,7 +39,11 @@ const Services: React.FC = () => {
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
             Professional Spring Hill handyman services specializing in furniture assembly. Expert assembly for IKEA, Target, Walmart, and all major furniture brands. 
-            Transparent pricing, professional handyman service, flexible scheduling.
+            Transparent pricing, professional handyman service, flexible scheduling. Learn more{' '}
+            <InternalLink href="/about" trackingCategory="services_page">
+              about our expertise and commitment
+            </InternalLink>{' '}
+            to Tennessee families.
           </p>
           
           {/* Trust indicators without ratings/licensing */}
@@ -104,9 +109,9 @@ const Services: React.FC = () => {
         {/* Enhanced CTA Section with more local keywords */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready for Expert Furniture Assembly?</h3>
+              <InternalLink href="/about" trackingCategory="services_info">
             <p className="text-blue-50 text-lg max-w-3xl mx-auto">
-              Serving Spring Hill, Columbia, Franklin & surrounding Tennessee areas. 
+              </InternalLink>{' '}
               Book a free consultation or get a custom quote for multiple items. Volume discounts available!
             </p>
           </div>

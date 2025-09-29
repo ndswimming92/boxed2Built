@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-react';
+import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 
@@ -85,14 +86,14 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
-                <li><a href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</a></li>
-                <li><a href="/services" className="text-gray-300 hover:text-white transition-colors">Services & Pricing</a></li>
-                <li><a href="/partners" className="text-gray-300 hover:text-white transition-colors">Partners</a></li>
-                <li><a href="/gallery" className="text-gray-300 hover:text-white transition-colors">Gallery</a></li>
-                <li><a href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
-                <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</a></li>
+                <li><InternalLink href="/" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Home</InternalLink></li>
+                <li><InternalLink href="/about" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">About Us</InternalLink></li>
+                <li><InternalLink href="/services" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Services & Pricing</InternalLink></li>
+                <li><InternalLink href="/partners" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Partners</InternalLink></li>
+                <li><InternalLink href="/gallery" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Gallery</InternalLink></li>
+                <li><InternalLink href="/contact" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Contact</InternalLink></li>
+                <li><InternalLink href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Privacy Policy</InternalLink></li>
+                <li><InternalLink href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Terms of Service</InternalLink></li>
               </ul>
             </div>
 
@@ -231,9 +232,9 @@ const Footer: React.FC = () => {
           <p className="text-xs text-gray-200 text-center mt-4">
             Local furniture assembly service near me proudly serving Spring Hill, Columbia, Franklin, Thompson's Station, 
             Brentwood, and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
-            <a href="/services" className="text-blue-100 hover:text-white underline">
+            <InternalLink href="/services" className="text-blue-100 hover:text-white underline" trackingCategory="footer_content">
               our services and areas
-            </a>.
+            </InternalLink>.
           </p>
 
           <div className="text-sm text-gray-200 text-center space-y-2 mt-4">

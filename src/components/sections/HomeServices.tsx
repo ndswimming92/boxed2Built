@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wrench, Clock, CheckCircle } from 'lucide-react';
+import InternalLink from '../ui/InternalLink';
 
 const HomeServices: React.FC = () => {
   return (
@@ -24,9 +25,9 @@ const HomeServices: React.FC = () => {
             <p className="text-gray-700">
               Professional assembly for IKEA, Target, Walmart, and all major furniture brands. 
               We handle everything from simple chairs to complex bedroom sets. Learn more about our{' '}
-              <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+              <InternalLink href="/services" trackingCategory="services_section">
                 furniture assembly services
-              </a>.
+              </InternalLink>.
             </p>
           </div>
 
@@ -38,9 +39,9 @@ const HomeServices: React.FC = () => {
             <p className="text-gray-700">
               Skip the hours of frustration and confusing instructions. We'll have your furniture 
               assembled quickly and correctly while you focus on what matters most. See our{' '}
-              <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+              <InternalLink href="/services" trackingCategory="services_section">
                 transparent pricing
-              </a>{' '}
+              </InternalLink>{' '}
               for all furniture types.
             </p>
           </div>
@@ -53,9 +54,9 @@ const HomeServices: React.FC = () => {
             <p className="text-gray-700">
               Based in Spring Hill, TN, serving the local community with professional service, 
               transparent pricing, and satisfaction guaranteed. Learn more{' '}
-              <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
+              <InternalLink href="/about" trackingCategory="services_section">
                 about our commitment
-              </a>{' '}
+              </InternalLink>{' '}
               to Tennessee families.
             </p>
           </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEffect } from 'react';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
@@ -30,6 +31,12 @@ const HomePage: React.FC = () => {
   return (
     <>
       <Header />
+      <Breadcrumbs 
+        items={[
+          { label: 'Home', href: '/', current: true }
+        ]}
+        className="container mx-auto px-4 pt-24 pb-4"
+      />
       <main>
         <HomeHero />
         <HomeServices />
