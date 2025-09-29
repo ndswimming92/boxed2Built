@@ -111,9 +111,9 @@ const Services: React.FC = () => {
           <div className="text-center mb-8">
               <InternalLink href="/about" trackingCategory="services_info">
             <p className="text-blue-50 text-lg max-w-3xl mx-auto">
-              </InternalLink>{' '}
               Book a free consultation or get a custom quote for multiple items. Volume discounts available!
             </p>
+              </InternalLink>
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
