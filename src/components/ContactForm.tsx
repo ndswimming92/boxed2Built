@@ -231,9 +231,15 @@ const ContactForm: React.FC = () => {
       if (isNaN(n) || n < 1) return 'Must be at least 1 piece';
       return '';
     },
+    notes: (v: string) => {
+      // Only require notes if "Other" is selected for furniture type
+      if (fields.furnitureType.value === 'Other' && !v.trim()) {
+        return 'Please specify the furniture type';
+      }
+      return '';
+    },
     preferredDate: () => '',
     preferredTimeSlot: () => '',
-    notes: () => '',
   };
 
   const handleChange = (field: keyof typeof fields, value: string) => {
@@ -264,6 +270,12 @@ const ContactForm: React.FC = () => {
 
   const isFormValid = () => {
     const requiredFields = ['name', 'email', 'furnitureType', 'pieces'];
+    
+    // Add notes as required if "Other" is selected
+    if (fields.furnitureType.value === 'Other') {
+      requiredFields.push('notes');
+    }
+    
     return requiredFields.every(field => {
       const fieldKey = field as keyof typeof fields;
       const value = fields[fieldKey].value;
@@ -501,6 +513,30 @@ const ContactForm: React.FC = () => {
                 )}
               </div>
 
+              {/* Conditional Notes Field for "Other" Selection */}
+              {fields.furnitureType.value === 'Other' && (
+                <div className="md:col-span-2">
+                  <label htmlFor="otherFurnitureDetails" className="block text-sm font-medium text-gray-700 mb-1">
+                    Please specify the furniture type *
+                  </label>
+                  <textarea
+                    id="otherFurnitureDetails"
+                    name="otherFurnitureDetails"
+                    rows={2}
+                    value={fields.notes.value}
+                    onChange={(e) => handleInputChange('notes', e)}
+                    onBlur={() => handleBlur('notes')}
+                    className={inputClass('notes')}
+                    placeholder="Please describe the furniture you need assembled (e.g., outdoor furniture, exercise equipment, etc.)"
+                    required
+                    autoCapitalize="sentences"
+                    autoCorrect="on"
+                  />
+                  {fields.notes.touched && fields.notes.error && (
+                    <p className="text-red-700 text-sm mt-1">{fields.notes.error}</p>
+                  )}
+                </div>
+              )}
               {/* Pieces */}
               <div>
                 <label htmlFor="pieces" className="block text-sm font-medium text-gray-700 mb-1">How many pieces? *</label>
