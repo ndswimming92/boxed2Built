@@ -28,7 +28,7 @@ const HomeCTA: React.FC = () => {
     <section className="py-12 bg-gradient-to-br from-blue-600 to-blue-800">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Ready for Local Furniture Assembly Near Me?
           </h2>
           <p className="text-xl text-blue-50 mb-8">
@@ -39,26 +39,26 @@ const HomeCTA: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <Calendar className="text-white mx-auto mb-2" size={24} />
-              <h3 className="font-semibold mb-1">Easy Scheduling</h3>
+              <h4 className="font-semibold mb-1">Easy Scheduling</h4>
               <p className="text-blue-50 text-sm font-medium">Book online or call</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
-              <h3 className="font-semibold mb-1">Free Consultation</h3>
+              <h4 className="font-semibold mb-1">Free Consultation</h4>
               <p className="text-blue-50 text-sm font-medium">No commitment required</p>
             </div>
             
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
-              <h3 className="font-semibold mb-1">Professional Service</h3>
+              <h4 className="font-semibold mb-1">Professional Service</h4>
               <p className="text-blue-50 text-sm font-medium">Quality guaranteed</p>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-auto">
             <div className="text-gray-900 mb-4">
-              <h3 className="text-xl font-bold mb-2">Get Started Today</h3>
+              <h4 className="text-lg font-bold mb-2">Get Started Today</h4>
               <p className="text-gray-700 text-sm">
                 Free consultation and transparent quote for your furniture assembly project.
               </p>

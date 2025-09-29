@@ -120,7 +120,7 @@ const ContactPage: React.FC = () => {
                 
                 {/* Contact Details */}
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-8">Get In Touch</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Get In Touch</h2>
                   
                   {/* NAP Consistency Component */}
                   <div className="mb-8 p-4 bg-gray-50 rounded-lg">
@@ -138,7 +138,7 @@ const ContactPage: React.FC = () => {
                         <Phone className="text-blue-600" size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Phone</h3>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
                           href="tel:+19316741196" 
                           className="text-blue-700 hover:text-blue-800 text-lg"
@@ -161,7 +161,7 @@ const ContactPage: React.FC = () => {
                         <Mail className="text-green-600" size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Email</h3>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">Email</h3>
                         <a 
                           href="#" 
                           onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
@@ -178,7 +178,7 @@ const ContactPage: React.FC = () => {
                         <MapPin className="text-purple-600" size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Service Area</h3>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">Service Area</h3>
                         <p className="text-gray-700">Spring Hill, TN</p>
                         <p className="text-gray-700 text-sm mt-1">
                           Also serving Columbia, Franklin, Thompson's Station, Brentwood & surrounding areas
@@ -191,7 +191,7 @@ const ContactPage: React.FC = () => {
                         <Clock className="text-amber-600" size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Hours</h3>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">Hours</h3>
                         <p className="text-gray-700">Saturday: 9:00 AM - 4:00 PM</p>
                         <p className="text-gray-700">Sunday: 1:30 PM - 4:00 PM</p>
                         <p className="text-gray-700 text-sm mt-1">Weekend furniture assembly service</p>
@@ -225,7 +225,7 @@ const ContactPage: React.FC = () => {
 
                 {/* Quick Booking */}
                 <div className="bg-gray-50 p-8 rounded-lg lg:col-span-1">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Book Free Consultation</h2>
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Book Free Consultation</h3>
                   
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center text-gray-700">
@@ -302,13 +302,13 @@ const ContactPage: React.FC = () => {
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
                 Frequently Asked Questions
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">
                     How do I schedule furniture assembly service?
                   </h3>
                   <p className="text-gray-600">
@@ -318,7 +318,7 @@ const ContactPage: React.FC = () => {
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">
                     What areas do you serve?
                   </h3>
                   <p className="text-gray-600">
@@ -328,7 +328,7 @@ const ContactPage: React.FC = () => {
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">
                     How much does furniture assembly cost?
                   </h3>
                   <p className="text-gray-600">
@@ -338,7 +338,7 @@ const ContactPage: React.FC = () => {
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-base font-semibold text-gray-900 mb-3">
                     Do you assemble all furniture brands?
                   </h3>
                   <p className="text-gray-600">

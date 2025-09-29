@@ -7,7 +7,7 @@ const HomeServices: React.FC = () => {
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
             Why Choose Boxed2Built?
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
@@ -21,7 +21,7 @@ const HomeServices: React.FC = () => {
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Wrench className="text-blue-600" size={32} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Expert Assembly</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Expert Assembly</h3>
             <p className="text-gray-700">
               Professional assembly for IKEA, Target, Walmart, and all major furniture brands. 
               We handle everything from simple chairs to complex bedroom sets. Learn more about our{' '}
@@ -35,7 +35,7 @@ const HomeServices: React.FC = () => {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="text-green-600" size={32} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Save Your Time</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Save Your Time</h3>
             <p className="text-gray-700">
               Skip the hours of frustration and confusing instructions. We'll have your furniture 
               assembled quickly and correctly while you focus on what matters most. See our{' '}
@@ -50,7 +50,7 @@ const HomeServices: React.FC = () => {
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="text-purple-600" size={32} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Local & Reliable</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Local & Reliable</h3>
             <p className="text-gray-700">
               Based in Spring Hill, TN, serving the local community with professional service, 
               transparent pricing, and satisfaction guaranteed. Learn more{' '}

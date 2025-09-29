@@ -34,7 +34,7 @@ const Services: React.FC = () => {
     <section id="services" className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
             Spring Hill Handyman Services - Furniture Assembly Specialists
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
@@ -80,7 +80,7 @@ const Services: React.FC = () => {
             <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
               <div className="p-6">
                 <div className="flex items-center mb-3">
-                  <h3 className="text-xl font-bold text-gray-900">{service.type} Assembly</h3>
+                  <h3 className="text-lg font-bold text-gray-900">{service.type} Assembly</h3>
                   {index === 0 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
                 </div>
                 <p className="text-gray-600 mb-4">{service.description}</p>
@@ -99,7 +99,7 @@ const Services: React.FC = () => {
                   )}
                 </div>
                 
-                <h4 className="font-medium text-gray-800 mb-2">Professional Service Includes:</h4>
+                <h4 className="text-sm font-medium text-gray-800 mb-2">Professional Service Includes:</h4>
                 <ul className="space-y-1 text-sm text-gray-600">
                   {service.includedItems.map((item, itemIndex) => (
                     <li key={itemIndex} className="flex items-start">
@@ -166,7 +166,7 @@ const Services: React.FC = () => {
 
         {/* Enhanced Service Areas with more local keywords */}
         <div className="bg-gray-50 p-6 rounded-lg text-center mb-8">
-          <h4 className="font-semibold text-gray-900 mb-2">Professional Furniture Assembly Service Areas in Tennessee</h4>
+          <h3 className="text-base font-semibold text-gray-900 mb-2">Professional Furniture Assembly Service Areas in Tennessee</h3>
           <p className="text-gray-600 mb-2">
             <strong>Primary Service Areas:</strong> Spring Hill • Columbia • Franklin • Thompson's Station • Brentwood
           </p>
@@ -177,22 +177,22 @@ const Services: React.FC = () => {
 
         {/* FAQ Section for SEO */}
         <div className="bg-white p-8 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Frequently Asked Questions</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Do you assemble IKEA furniture?</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Do you assemble IKEA furniture?</h4>
               <p className="text-gray-600 text-sm">Yes, we specialize in IKEA furniture assembly and are experienced with all IKEA product lines including beds, dressers, desks, and storage solutions.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">What's included in the assembly service?</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">What's included in the assembly service?</h4>
               <p className="text-gray-600 text-sm">All services include unboxing, complete assembly, placement in your desired location, debris cleanup, and a final quality check.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
               <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (931) 674-1196 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>
               <p className="text-gray-600 text-sm">Yes, we offer volume discounts for multiple furniture items. Contact us for a custom quote on larger projects.</p>
             </div>
           </div>

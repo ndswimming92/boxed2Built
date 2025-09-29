@@ -96,7 +96,7 @@ const AboutPage: React.FC = () => {
               {/* Meet the Owner */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Meet the Owner</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Meet the Owner</h2>
                   <p className="text-xl text-gray-700 mb-6 font-medium">
                     Hi, I'm Nicholas Davidson, the hands (and heart) behind Boxed2Built.
                   </p>
@@ -139,7 +139,7 @@ const AboutPage: React.FC = () => {
 
               {/* Mission Statement */}
               <div className="bg-blue-50 p-8 rounded-lg shadow-md mb-16">
-                <h3 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Mission</h3>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Our Mission</h2>
                 <p className="text-2xl text-blue-600 font-medium text-center italic mb-6">
                   We turn boxes into comfort so families can focus on what matters most.
                 </p>
@@ -153,7 +153,7 @@ const AboutPage: React.FC = () => {
 
               {/* Why We Exist */}
               <div className="mb-16">
-                <h3 className="text-3xl font-bold text-gray-900 mb-6">Why We Exist</h3>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Why We Exist</h2>
                 <p className="text-gray-700 mb-6 leading-relaxed text-lg">
                   Families today are busier than ever. Between work, kids, and the endless to-do list, furniture assembly 
                   shouldn't be one more thing weighing you down. At Boxed2Built, we step in to take the stress off your 
@@ -166,14 +166,14 @@ const AboutPage: React.FC = () => {
 
               {/* What You Can Expect */}
               <div className="mb-16">
-                <h3 className="text-3xl font-bold text-gray-900 mb-8">What You Can Expect</h3>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">What You Can Expect</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-600">
                     <div className="flex items-center mb-3">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
                         <Award className="text-blue-600" size={24} />
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900">Professional Service</h4>
+                      <h3 className="text-base font-semibold text-gray-900">Professional Service</h3>
                     </div>
                     <p className="text-gray-700">From someone who actually enjoys the process and takes pride in quality work</p>
                   </div>
@@ -183,7 +183,7 @@ const AboutPage: React.FC = () => {
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
                         <Clock className="text-green-600" size={24} />
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900">Punctual & Reliable</h4>
+                      <h3 className="text-base font-semibold text-gray-900">Punctual & Reliable</h3>
                     </div>
                     <p className="text-gray-700">Scheduling that respects your time and commitments</p>
                   </div>
@@ -193,7 +193,7 @@ const AboutPage: React.FC = () => {
                       <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
                         <CheckCircle className="text-purple-600" size={24} />
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900">Clean & Tidy</h4>
+                      <h3 className="text-base font-semibold text-gray-900">Clean & Tidy</h3>
                     </div>
                     <p className="text-gray-700">Your space will look better than we found it</p>
                   </div>
@@ -203,7 +203,7 @@ const AboutPage: React.FC = () => {
                       <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mr-4">
                         <Users className="text-amber-600" size={24} />
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900">Family-Focused</h4>
+                      <h3 className="text-base font-semibold text-gray-900">Family-Focused</h3>
                     </div>
                     <p className="text-gray-700">We treat your home with the care we'd want in ours</p>
                   </div>
@@ -212,7 +212,7 @@ const AboutPage: React.FC = () => {
 
               {/* Serving Our Community */}
               <div className="bg-gradient-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
-                <h3 className="text-3xl font-bold text-gray-900 mb-6 text-center">Serving Our Community</h3>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Serving Our Community</h2>
                 <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto mb-6">
                   Based in Spring Hill, TN, we proudly serve local families in the surrounding area with honest work and 
                   a helpful attitude. Whether it's a single chair or a whole nursery setup, we're here to make your life 
@@ -243,7 +243,7 @@ const AboutPage: React.FC = () => {
         <section className="py-12 bg-blue-600 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h3 className="text-3xl font-bold mb-6">Ready to Get Started?</h3>
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">Ready to Get Started?</h2>
               <p className="text-xl text-blue-50 mb-8">
                 Let Nicholas and the Boxed2Built team take the stress out of furniture assembly for your Spring Hill area home.
               </p>

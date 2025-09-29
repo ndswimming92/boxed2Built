@@ -133,13 +133,13 @@ const ServicesPage: React.FC = () => {
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
                 Why Choose Boxed2Built for Furniture Assembly?
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
                   <p className="text-gray-700 mb-4">
                     Our experienced team specializes in furniture assembly for all major brands including IKEA, Target, 
                     Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Read more{' '}
@@ -157,7 +157,7 @@ const ServicesPage: React.FC = () => {
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Local Spring Hill Service</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service</h3>
                   <p className="text-gray-700 mb-4">
                     Based in Spring Hill, TN, we proudly serve the local community and surrounding areas. 
                     We understand the needs of Tennessee families and provide reliable, professional service. Learn more{' '}
@@ -176,7 +176,7 @@ const ServicesPage: React.FC = () => {
               </div>
 
               <div className="bg-blue-600 text-white p-8 rounded-lg text-center">
-                <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
+                <h4 className="text-xl font-bold mb-4">Ready to Get Started?</h4>
                 <p className="text-blue-50 mb-6">
                   Contact us today for a free consultation and quote for your furniture assembly project.
                 </p>

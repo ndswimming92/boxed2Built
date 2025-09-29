@@ -163,7 +163,7 @@ const HomeHero: React.FC = () => {
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
               <div className="flex items-center justify-center">
                 <DollarSign size={20} className="mr-2" />
-                <h2 className="font-semibold">Starting Prices</h2>
+                <h2 className="font-semibold">Transparent Pricing</h2>
               </div>
             </div>
             <div className="p-6">
