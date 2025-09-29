@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 
 interface FieldState {
@@ -24,6 +24,9 @@ const initialFields = {
 const ContactForm: React.FC = () => {
   const [state, handleSubmit] = useForm("mwpqepva");
   const [fields, setFields] = useState(initialFields);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [estimatedTime, setEstimatedTime] = useState('');
+  const [estimatedPrice, setEstimatedPrice] = useState('');
   const [userCity, setUserCity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -56,6 +59,63 @@ const ContactForm: React.FC = () => {
 
     fetchUserLocation();
   }, []);
+
+  // Smart estimation based on furniture type and pieces
+  useEffect(() => {
+    const furnitureType = fields.furnitureType.value;
+    const pieces = parseInt(fields.pieces.value) || 0;
+    
+    if (furnitureType && pieces > 0) {
+      let baseTime = 0;
+      let basePrice = 0;
+      
+      switch (furnitureType) {
+        case 'Chair':
+          baseTime = 30;
+          basePrice = 45;
+          break;
+        case 'Table':
+          baseTime = 60;
+          basePrice = 96;
+          break;
+        case 'Bookshelf':
+          baseTime = 90;
+          basePrice = 116;
+          break;
+        case 'Dresser':
+          baseTime = 120;
+          basePrice = 166;
+          break;
+        case 'Bed':
+          baseTime = 90;
+          basePrice = 153;
+          break;
+        case 'IKEA':
+          baseTime = 75;
+          basePrice = 96;
+          break;
+        case 'Multiple':
+          baseTime = 45;
+          basePrice = 45;
+          break;
+        default:
+          baseTime = 60;
+          basePrice = 96;
+      }
+      
+      const totalTime = baseTime * pieces;
+      const totalPrice = basePrice * pieces;
+      
+      // Apply volume discount for multiple pieces
+      const discountedPrice = pieces > 3 ? totalPrice * 0.9 : totalPrice;
+      
+      setEstimatedTime(`${Math.round(totalTime / 60 * 10) / 10} hours`);
+      setEstimatedPrice(`$${Math.round(discountedPrice)}`);
+    } else {
+      setEstimatedTime('');
+      setEstimatedPrice('');
+    }
+  }, [fields.furnitureType.value, fields.pieces.value]);
 
   // iOS-specific fixes
   useEffect(() => {
@@ -205,6 +265,11 @@ const ContactForm: React.FC = () => {
     });
   };
 
+  const toggleOptionalFields = () => {
+    setShowOptionalFields(!showOptionalFields);
+    trackEvent('form-optional-fields-toggle', showOptionalFields ? 'hide' : 'show');
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -285,14 +350,24 @@ const ContactForm: React.FC = () => {
 
   return (
     <div className="bg-white rounded shadow p-6">
-      <h3 className="text-xl font-bold mb-4">Get Your Free Quote</h3>
+      <div className="mb-6">
+        <h3 className="text-xl font-bold mb-2">Get Your Free Quote</h3>
+        <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
+        {userCity && (
+          <div className="flex items-center mt-2 text-sm text-blue-700">
+            <MapPin size={14} className="mr-1" />
+            <span>Service available in {userCity}</span>
+          </div>
+        )}
+      </div>
+
       <form 
         ref={formRef}
         onSubmit={onSubmit} 
         noValidate 
         autoComplete="on"
       >
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Hidden field for user location */}
           <input
             type="hidden"
@@ -300,206 +375,286 @@ const ContactForm: React.FC = () => {
             value={userCity}
           />
 
-          {/* Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              autoComplete="name"
-              value={fields.name.value}
-              onChange={(e) => handleInputChange('name', e)}
-              onBlur={() => handleBlur('name')}
-              className={inputClass('name')}
-              aria-invalid={!!fields.name.error}
-              autoCapitalize="words"
-              autoCorrect="off"
-              spellCheck="false"
-            />
-            {fields.name.touched && fields.name.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.name.error}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={fields.email.value}
-              onChange={(e) => handleInputChange('email', e)}
-              onBlur={() => handleBlur('email')}
-              className={inputClass('email')}
-              aria-invalid={!!fields.email.error}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck="false"
-            />
-            {fields.email.touched && fields.email.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.email.error}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
-            <InputMask
-              id="phone"
-              name="phone"
-              mask="(999) 999-9999"
-              value={fields.phone.value}
-              onChange={(e) => handleInputChange('phone', e)}
-              onBlur={() => handleBlur('phone')}
-            >
-              {(inputProps: any) => (
+          {/* Essential Information Group */}
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+              <span className="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs mr-2">1</span>
+              Contact Information
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
                 <input
-                  {...inputProps}
-                  autoComplete="tel"
-                  className={inputClass('phone')}
-                  aria-invalid={!!fields.phone.error}
-                  placeholder="(555) 123-4567"
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="John Smith"
+                  value={fields.name.value}
+                  onChange={(e) => handleInputChange('name', e)}
+                  onBlur={() => handleBlur('name')}
+                  className={inputClass('name')}
+                  aria-invalid={!!fields.name.error}
+                  autoCapitalize="words"
+                  autoCorrect="off"
+                  spellCheck="false"
+                />
+                {fields.name.touched && fields.name.error && (
+                  <p className="text-red-700 text-sm mt-1">{fields.name.error}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  placeholder="john@example.com"
+                  value={fields.email.value}
+                  onChange={(e) => handleInputChange('email', e)}
+                  onBlur={() => handleBlur('email')}
+                  className={inputClass('email')}
+                  aria-invalid={!!fields.email.error}
                   autoCapitalize="none"
                   autoCorrect="off"
+                  spellCheck="false"
                 />
+                {fields.email.touched && fields.email.error && (
+                  <p className="text-red-700 text-sm mt-1">{fields.email.error}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Phone - Optional but prominent */}
+            <div className="mt-4">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number <span className="text-gray-500 text-xs">(optional - for faster response)</span>
+              </label>
+              <InputMask
+                id="phone"
+                name="phone"
+                mask="(999) 999-9999"
+                value={fields.phone.value}
+                onChange={(e) => handleInputChange('phone', e)}
+                onBlur={() => handleBlur('phone')}
+              >
+                {(inputProps: any) => (
+                  <input
+                    {...inputProps}
+                    autoComplete="tel"
+                    className={inputClass('phone')}
+                    aria-invalid={!!fields.phone.error}
+                    placeholder="(555) 123-4567"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                  />
+                )}
+              </InputMask>
+              {fields.phone.touched && fields.phone.error && (
+                <p className="text-red-700 text-sm mt-1">{fields.phone.error}</p>
               )}
-            </InputMask>
-            {fields.phone.touched && fields.phone.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.phone.error}</p>
+            </div>
+          </div>
+
+          {/* Project Details Group */}
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h4 className="text-sm font-semibold text-green-900 mb-3 flex items-center">
+              <span className="w-5 h-5 bg-green-600 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
+              Project Details
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Furniture Type */}
+              <div>
+                <label htmlFor="furnitureType" className="block text-sm font-medium text-gray-700 mb-1">What needs assembly? *</label>
+                <select
+                  id="furnitureType"
+                  name="furnitureType"
+                  value={fields.furnitureType.value}
+                  onChange={(e) => handleInputChange('furnitureType', e)}
+                  onBlur={() => handleBlur('furnitureType')}
+                  className={inputClass('furnitureType')}
+                >
+                  <option value="">Select furniture type</option>
+                  <option value="Chair">Dining Chairs</option>
+                  <option value="Table">Tables & Desks</option>
+                  <option value="Bed">Bed Frames</option>
+                  <option value="Dresser">Dressers & Storage</option>
+                  <option value="Bookshelf">Bookshelves & Media Units</option>
+                  <option value="IKEA">IKEA Furniture</option>
+                  <option value="Multiple">Multiple Different Items</option>
+                  <option value="Other">Other (please specify in notes)</option>
+                </select>
+                {fields.furnitureType.touched && fields.furnitureType.error && (
+                  <p className="text-red-700 text-sm mt-1">{fields.furnitureType.error}</p>
+                )}
+              </div>
+
+              {/* Pieces */}
+              <div>
+                <label htmlFor="pieces" className="block text-sm font-medium text-gray-700 mb-1">How many pieces? *</label>
+                <input
+                  id="pieces"
+                  type="number"
+                  name="pieces"
+                  min="1"
+                  max="20"
+                  value={fields.pieces.value}
+                  onChange={(e) => handleInputChange('pieces', e)}
+                  onBlur={() => handleBlur('pieces')}
+                  className={inputClass('pieces')}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="1"
+                />
+                {fields.pieces.touched && fields.pieces.error && (
+                  <p className="text-red-700 text-sm mt-1">{fields.pieces.error}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Smart Estimation Display */}
+            {estimatedTime && estimatedPrice && (
+              <div className="mt-4 p-3 bg-white rounded-lg border border-green-300">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-green-700">
+                    <Clock size={16} className="mr-2" />
+                    <span>Estimated time: <strong>{estimatedTime}</strong></span>
+                  </div>
+                  <div className="text-green-700">
+                    <span>Estimated cost: <strong>{estimatedPrice}</strong></span>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600 mt-1">
+                  {parseInt(fields.pieces.value) > 3 && "Volume discount applied! "}
+                  Final quote provided after consultation.
+                </p>
+              </div>
             )}
           </div>
 
-          {/* Furniture Type */}
-          <div>
-            <label htmlFor="furnitureType" className="block text-sm font-medium text-gray-700 mb-1">Furniture Type *</label>
-            <select
-              id="furnitureType"
-              name="furnitureType"
-              value={fields.furnitureType.value}
-              onChange={(e) => handleInputChange('furnitureType', e)}
-              onBlur={() => handleBlur('furnitureType')}
-              className={inputClass('furnitureType')}
+          {/* Progressive Disclosure for Optional Fields */}
+          <div className="border-t border-gray-200 pt-4">
+            <button
+              type="button"
+              onClick={toggleOptionalFields}
+              className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
             >
-              <option value="">-- Please choose --</option>
-              <option value="Bed">Bed</option>
-              <option value="Dresser">Dresser</option>
-              <option value="Table">Table</option>
-              <option value="Chair">Chair</option>
-              <option value="Bookshelf">Bookshelf</option>
-              <option value="IKEA">IKEA Furniture</option>
-              <option value="Multiple">Multiple Items</option>
-              <option value="Other">Other</option>
-            </select>
-            {fields.furnitureType.touched && fields.furnitureType.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.furnitureType.error}</p>
-            )}
-          </div>
+              <span>Scheduling Preferences (optional)</span>
+              {showOptionalFields ? (
+                <ChevronUp size={16} className="text-gray-500" />
+              ) : (
+                <ChevronDown size={16} className="text-gray-500" />
+              )}
+            </button>
+            
+            {showOptionalFields && (
+              <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
+                {/* Preferred Date */}
+                <div>
+                  <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                  <input
+                    id="preferredDate"
+                    name="preferredDate"
+                    type="date"
+                    value={fields.preferredDate.value}
+                    onChange={(e) => handleInputChange('preferredDate', e)}
+                    onBlur={() => handleBlur('preferredDate')}
+                    className={inputClass('preferredDate')}
+                    min={new Date().toISOString().split('T')[0]}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                  />
+                  {fields.preferredDate.touched && fields.preferredDate.error && (
+                    <p className="text-red-700 text-sm mt-1">{fields.preferredDate.error}</p>
+                  )}
+                </div>
 
-          {/* Pieces */}
-          <div>
-            <label htmlFor="pieces" className="block text-sm font-medium text-gray-700 mb-1">Number of Pieces *</label>
-            <input
-              id="pieces"
-              type="number"
-              name="pieces"
-              min="1"
-              value={fields.pieces.value}
-              onChange={(e) => handleInputChange('pieces', e)}
-              onBlur={() => handleBlur('pieces')}
-              className={inputClass('pieces')}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="e.g., 3"
-            />
-            {fields.pieces.touched && fields.pieces.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.pieces.error}</p>
-            )}
-          </div>
+                {/* Preferred Time Slot */}
+                <div>
+                  <label htmlFor="preferredTimeSlot" className="block text-sm font-medium text-gray-700 mb-1">Preferred Time</label>
+                  <select
+                    id="preferredTimeSlot"
+                    name="preferredTimeSlot"
+                    value={fields.preferredTimeSlot.value}
+                    onChange={(e) => handleInputChange('preferredTimeSlot', e)}
+                    onBlur={() => handleBlur('preferredTimeSlot')}
+                    className={inputClass('preferredTimeSlot')}
+                  >
+                    <option value="">No preference</option>
+                    <option value="morning">Morning (9 AM - 12 PM)</option>
+                    <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                    <option value="evening">Evening (5 PM - 8 PM)</option>
+                    <option value="weekend">Weekend preferred</option>
+                  </select>
+                  {fields.preferredTimeSlot.touched && fields.preferredTimeSlot.error && (
+                    <p className="text-red-700 text-sm mt-1">{fields.preferredTimeSlot.error}</p>
+                  )}
+                </div>
 
-          {/* Preferred Date */}
-          <div>
-            <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700 mb-1">Preferred Date (optional)</label>
-            <input
-              id="preferredDate"
-              name="preferredDate"
-              type="date"
-              value={fields.preferredDate.value}
-              onChange={(e) => handleInputChange('preferredDate', e)}
-              onBlur={() => handleBlur('preferredDate')}
-              className={inputClass('preferredDate')}
-              min={new Date().toISOString().split('T')[0]}
-              autoCapitalize="none"
-              autoCorrect="off"
-            />
-            {fields.preferredDate.touched && fields.preferredDate.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.preferredDate.error}</p>
+                {/* Notes */}
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Additional Details</label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={3}
+                    value={fields.notes.value}
+                    onChange={(e) => handleInputChange('notes', e)}
+                    onBlur={() => handleBlur('notes')}
+                    className={inputClass('notes')}
+                    placeholder="Any special requirements, access instructions, or questions..."
+                    autoCapitalize="sentences"
+                    autoCorrect="on"
+                  />
+                </div>
+              </div>
             )}
-          </div>
-
-          {/* Preferred Time Slot */}
-          <div>
-            <label htmlFor="preferredTimeSlot" className="block text-sm font-medium text-gray-700 mb-1">Preferred Time (optional)</label>
-            <input
-              id="preferredTimeSlot"
-              name="preferredTimeSlot"
-              type="time"
-              value={fields.preferredTimeSlot.value}
-              onChange={(e) => handleInputChange('preferredTimeSlot', e)}
-              onBlur={() => handleBlur('preferredTimeSlot')}
-              className={inputClass('preferredTimeSlot')}
-              autoCapitalize="none"
-              autoCorrect="off"
-            />
-            {fields.preferredTimeSlot.touched && fields.preferredTimeSlot.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.preferredTimeSlot.error}</p>
-            )}
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={3}
-              value={fields.notes.value}
-              onChange={(e) => handleInputChange('notes', e)}
-              onBlur={() => handleBlur('notes')}
-              className={inputClass('notes')}
-              placeholder="Any extra details"
-              autoCapitalize="sentences"
-              autoCorrect="on"
-            />
           </div>
 
           {/* Submit */}
           <button
             type="submit"
             disabled={state.submitting || isSubmitting || !isFormValid()}
-            className={`w-full py-3 px-4 bg-blue-700 text-white font-bold rounded hover:bg-blue-800 transition ${
+            className={`w-full py-4 px-6 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all duration-200 shadow-md hover:shadow-lg ${
               state.submitting || isSubmitting || !isFormValid() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             aria-busy={state.submitting || isSubmitting}
           >
             {state.submitting || isSubmitting ? 'Submitting…' : (
               <span className="flex items-center justify-center gap-2">
-                <Send size={16} /> Get Free Quote
+                <Send size={18} /> Get My Free Quote
               </span>
             )}
           </button>
 
           {state.errors && state.errors.length > 0 && (
-            <div className="mt-4 bg-red-100 text-red-800 p-2 rounded flex items-center">
-              <AlertCircle size={16} className="mr-1" /> Please fix the errors above.
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg flex items-start">
+              <AlertCircle size={16} className="mr-2 mt-0.5 flex-shrink-0" /> 
+              <div>
+                <p className="font-medium">Please check the following:</p>
+                <ul className="text-sm mt-1 list-disc list-inside">
+                  {state.errors.map((error, index) => (
+                    <li key={index}>{error.message}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
 
-          <p className="text-xs text-gray-600 mt-2 text-center">
-            By submitting, you agree to our <a href="/terms-of-service" className="underline">Terms of Service</a>. Weekend service available.
-            {userCity && <span className="block mt-1">Detected location: {userCity}</span>}
+          <div className="text-center">
+            <p className="text-xs text-gray-600">
+              By submitting, you agree to our <a href="/terms-of-service" className="text-blue-700 hover:text-blue-800 underline">Terms of Service</a>
+            </p>
+            <p className="text-xs text-green-700 mt-1 font-medium">
+              ✓ Free consultation ✓ Weekend service available ✓ No commitment required
+            </p>
+          </div>
           </p>
         </div>
       </form>
