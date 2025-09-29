@@ -33,26 +33,71 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">3. Payment Terms for Furniture Assembly</h2>
         <p>
-          Payment for furniture assembly services is due upon completion unless otherwise agreed. We accept major forms of payment including credit/debit cards and cash for all furniture assembly projects.
+          Payment for furniture assembly services is due upon completion unless otherwise agreed. We accept major forms of payment including credit/debit cards (processed through Square), cash, and other electronic payment methods for all furniture assembly projects.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">4. Cancellations and Rescheduling</h2>
+        <h2 className="text-xl font-semibold mb-2">4. Payment Processing and Square Services</h2>
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Square Payment Processing</h3>
+          <p className="mb-4">
+            We use Square, Inc. as our payment processor for credit and debit card transactions. By making a payment through Square, you agree to:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>Square's Terms of Service and Privacy Notice</li>
+            <li>Provide accurate payment and billing information</li>
+            <li>Allow Square to process and store your payment information as needed</li>
+            <li>Square's fraud prevention and security measures</li>
+          </ul>
+          
+          <h3 className="text-lg font-semibold mb-2">Payment Security and Disputes</h3>
+          <p className="mb-4">
+            Payment processing security and dispute resolution:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>All card payments are processed securely through Square's PCI DSS compliant systems</li>
+            <li>We do not store complete credit card information on our systems</li>
+            <li>Payment disputes should be directed to Square's customer support</li>
+            <li>Chargebacks and refunds are subject to Square's policies and procedures</li>
+            <li>You may be charged additional fees for disputed or failed payments</li>
+          </ul>
+          
+          <h3 className="text-lg font-semibold mb-2">Refund Policy</h3>
+          <p className="mb-4">
+            Refunds for furniture assembly services:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>Refunds are provided at our discretion for unsatisfactory work</li>
+            <li>Payment processing fees may not be refundable</li>
+            <li>Refund processing times depend on Square's payment processing schedule</li>
+            <li>Partial refunds may be issued for partially completed work</li>
+          </ul>
+          
+          <p className="text-sm text-gray-600">
+            For more information about Square's payment processing terms, please review 
+            <a href="https://squareup.com/legal/general/ua" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Square's Terms of Service</a> and 
+            <a href="https://squareup.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Privacy Notice</a>.
+          </p>
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">5. Cancellations and Rescheduling</h2>
         <p>
-          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee. Rescheduling is available when possible for Spring Hill area services.
+          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee that will be processed through Square. Rescheduling is available when possible for Spring Hill area services.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">5. Liability and Furniture Assembly Warranty</h2>
+        <h2 className="text-xl font-semibold mb-2">6. Liability and Furniture Assembly Warranty</h2>
         <p>
           We are not responsible for damage due to pre-existing defects in furniture or misuse of assembled products. Our liability for furniture assembly services is limited to the cost of the service provided. We guarantee professional assembly according to manufacturer specifications.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">6. Affiliate Links and Third-Party Services</h2>
+        <h2 className="text-xl font-semibold mb-2">7. Affiliate Links and Third-Party Services</h2>
         <div>
           <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program</h3>
           <p className="mb-4">
@@ -82,21 +127,21 @@ const TermsOfService = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">7. Service Area</h2>
+        <h2 className="text-xl font-semibold mb-2">8. Service Area</h2>
         <p>
           Our furniture assembly services are available in Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding Tennessee areas. Travel fees may apply for locations outside our primary service area.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">8. Changes to Terms</h2>
+        <h2 className="text-xl font-semibold mb-2">9. Changes to Terms</h2>
         <p>
           We may update these Terms of Service at any time. Continued use of our furniture assembly services after changes means you accept the new terms.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">9. Contact Boxed2Built</h2>
+        <h2 className="text-xl font-semibold mb-2">10. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about these Terms or our furniture assembly services in Spring Hill, TN, contact us at:</p>
         <ul className="list-none pl-0 mt-2">
           <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
@@ -104,6 +149,10 @@ const TermsOfService = () => {
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
           <li>Services: IKEA Assembly, Target Furniture Assembly, Walmart Furniture Assembly, Professional Furniture Assembly</li>
         </ul>
+        <p className="mt-4 text-sm text-gray-600">
+          For payment processing questions or disputes, please contact Square customer support directly at 
+          <a href="https://squareup.com/help" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> https://squareup.com/help</a>.
+        </p>
       </section>
     </div>
   );

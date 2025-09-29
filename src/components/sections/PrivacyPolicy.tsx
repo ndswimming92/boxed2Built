@@ -49,32 +49,70 @@ const PrivacyPolicy = () => {
         <p className="mb-4">We do not sell or rent your personal information. We may share it with:</p>
         <ul className="list-disc pl-6 mt-2">
           <li>Service providers assisting with our furniture assembly business operations</li>
+          <li>Square, Inc. for payment processing when you make payments for our services</li>
           <li>Google (through Google Analytics 4) and Microsoft (through Clarity) for website analytics purposes</li>
           <li>Third-party analytics providers to help us understand website usage and improve our services</li>
           <li>Amazon (through the Amazon Services LLC Associates Program) when you click on affiliate links to Amazon products</li>
           <li>Law enforcement if required by Tennessee state law or federal law</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          Note: Google Analytics and Microsoft Clarity have their own privacy policies and data handling practices. 
-          We recommend reviewing their privacy policies for more information about how they process data. 
-          Similarly, Amazon has its own privacy policy governing how they handle data from affiliate link clicks.
+          Note: Square, Google Analytics, Microsoft Clarity, and Amazon have their own privacy policies and data handling practices. 
+          We recommend reviewing their privacy policies for more information about how they process data:
+          <br />• Square Privacy Notice: <a href="https://squareup.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">https://squareup.com/legal/privacy</a>
+          <br />• Google Analytics and Microsoft Clarity privacy policies are available on their respective websites
+          <br />• Amazon's privacy policy governs how they handle data from affiliate link clicks
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">4. Your Rights and Choices</h2>
+        <h2 className="text-xl font-semibold mb-2">4. Payment Processing</h2>
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Square Payment Processing</h3>
+          <p className="mb-4">
+            We use Square, Inc. as our payment processor for furniture assembly services. When you make a payment:
+          </p>
+          <ul className="list-disc pl-6 mb-4">
+            <li>Square collects and processes your payment information (credit/debit card details, billing address)</li>
+            <li>Square may store your payment information for future transactions if you consent</li>
+            <li>Square uses industry-standard security measures to protect your payment data</li>
+            <li>Your payment information is subject to Square's Privacy Notice and Terms of Service</li>
+            <li>We do not store your complete credit card information on our systems</li>
+            <li>Square may use your information for fraud prevention and compliance purposes</li>
+          </ul>
+          <p className="text-sm text-gray-600 mb-3">
+            For more information about how Square handles your payment data, please review 
+            <a href="https://squareup.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Square's Privacy Notice</a> and 
+            <a href="https://squareup.com/legal/general/ua" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Terms of Service</a>.
+          </p>
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">5. Your Rights and Choices</h2>
         <p className="mb-4">Regarding your furniture assembly service information, you may:</p>
         <ul className="list-disc pl-6 mt-2">
           <li>Request a copy of your data related to our furniture assembly services</li>
           <li>Request deletion of your personal information</li>
           <li>Opt out of promotional communications about furniture assembly services at any time</li>
+          <li>Contact Square directly regarding payment data through their customer support</li>
         </ul>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">5. Cookies and Tracking Technologies</h2>
+        <h2 className="text-xl font-semibold mb-2">6. Cookies and Tracking Technologies</h2>
         <div>
           <p className="mb-4">We use cookies and similar technologies to analyze site traffic, improve performance, and enhance user experience on our furniture assembly website.</p>
+          
+          <h3 className="text-lg font-semibold mb-2">Square Payment Processing:</h3>
+          <div className="mb-4">
+            <p className="mb-2">When processing payments through Square:</p>
+            <ul className="list-disc pl-6 mb-3">
+              <li>Square may place cookies and tracking pixels for payment processing and fraud prevention</li>
+              <li>Square may collect device and browser information during payment transactions</li>
+              <li>Square uses this data to secure transactions and prevent fraudulent activity</li>
+              <li>Payment processing data is governed by Square's privacy practices</li>
+            </ul>
+          </div>
           
           <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program:</h3>
           <div className="mb-4">
@@ -135,28 +173,31 @@ const PrivacyPolicy = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">6. How We Protect Your Information</h2>
-        <p>We use reasonable security measures such as encryption, secure forms, and restricted access to protect your furniture assembly service data.</p>
+        <h2 className="text-xl font-semibold mb-2">7. How We Protect Your Information</h2>
+        <p>We use reasonable security measures such as encryption, secure forms, and restricted access to protect your furniture assembly service data. Payment processing is handled securely through Square's PCI DSS compliant systems.</p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">7. Children's Privacy</h2>
+        <h2 className="text-xl font-semibold mb-2">8. Children's Privacy</h2>
         <p>Our furniture assembly services are not directed to children under 13, and we do not knowingly collect data from minors.</p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">8. Changes to This Policy</h2>
+        <h2 className="text-xl font-semibold mb-2">9. Changes to This Policy</h2>
         <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with the updated date.</p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">9. Contact Boxed2Built</h2>
+        <h2 className="text-xl font-semibold mb-2">10. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about this privacy policy or our furniture assembly services in Spring Hill, TN, you can contact us at:</p>
         <ul className="list-none pl-0 mt-2">
           <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
           <li>Phone: <a href="tel:+19316741196" className="text-blue-700 hover:text-blue-800 underline">(931) 674-1196</a></li>
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
         </ul>
+        <p className="mt-4 text-sm text-gray-600">
+          For payment-related inquiries, you may also contact Square directly through their customer support channels.
+        </p>
       </section>
     </div>
   );
