@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
+import ThemeToggle from '../ui/ThemeToggle';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
@@ -220,6 +221,11 @@ const Header: React.FC = () => {
             </a>
           </div>
 
+          {/* Theme Toggle - Desktop */}
+          <div className="hidden md:flex items-center mr-4">
+            <ThemeToggle variant="button" />
+          </div>
+
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
@@ -310,6 +316,10 @@ const Header: React.FC = () => {
               
               {/* Call Now Button - Mobile */}
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
+                <div className="mb-3 flex justify-center">
+                  <ThemeToggle variant="dropdown" showLabel={true} className="w-full max-w-xs" />
+                </div>
+                
                 <a
                   href="tel:+19316741196"
                   className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
