@@ -285,12 +285,13 @@ const ContactForm: React.FC = () => {
 
   return (
     <div className="bg-white rounded shadow p-6">
-      <h3 className="text-xl font-bold mb-4">Get Your Free Quote</h3>
+      <h3 className="text-xl font-bold mb-4" id="contact-form-title">Get Your Free Quote</h3>
       <form 
         ref={formRef}
         onSubmit={onSubmit} 
         noValidate 
         autoComplete="on"
+        aria-labelledby="contact-form-title"
       >
         <div className="space-y-4">
           {/* Hidden field for user location */}
@@ -313,12 +314,13 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('name')}
               className={inputClass('name')}
               aria-invalid={!!fields.name.error}
+              aria-describedby={fields.name.error ? "name-error" : undefined}
               autoCapitalize="words"
               autoCorrect="off"
               spellCheck="false"
             />
             {fields.name.touched && fields.name.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.name.error}</p>
+              <p id="name-error" className="text-red-700 text-sm mt-1" role="alert">{fields.name.error}</p>
             )}
           </div>
 
@@ -335,12 +337,13 @@ const ContactForm: React.FC = () => {
               onBlur={() => handleBlur('email')}
               className={inputClass('email')}
               aria-invalid={!!fields.email.error}
+              aria-describedby={fields.email.error ? "email-error" : undefined}
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck="false"
             />
             {fields.email.touched && fields.email.error && (
-              <p className="text-red-700 text-sm mt-1">{fields.email.error}</p>
+              <p id="email-error" className="text-red-700 text-sm mt-1" role="alert">{fields.email.error}</p>
             )}
           </div>
 

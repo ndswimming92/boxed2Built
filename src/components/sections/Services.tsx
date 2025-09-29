@@ -30,10 +30,10 @@ const Services: React.FC = () => {
   };
 
   return (
-    <section id="services" className="py-12 bg-white">
+    <section id="services" className="py-12 bg-white" aria-labelledby="services-heading">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 id="services-heading" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Spring Hill Handyman Services - Furniture Assembly Specialists
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
