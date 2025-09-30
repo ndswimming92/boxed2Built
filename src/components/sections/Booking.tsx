@@ -156,17 +156,11 @@ const Booking: React.FC = () => {
               <a
                 href="tel:+19316741196"
                 onClick={handlePhoneClick}
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
-                <Phone size={24} className="mr-3" />
+                <Phone size={18} className="mr-2" />
                 <span className="mr-2">Call</span>
-                <img 
-                  src="/images/contact/phone-number.svg" 
-                  alt="(931) 674-1196" 
-                  width="120" 
-                  height="18"
-                  className="inline-block"
-                />
+                <span className="font-bold text-white">(931) 674-1196</span>
               </a>
             </div>
 

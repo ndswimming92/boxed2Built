@@ -210,7 +210,7 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center ml-8">
             <a
               href="tel:+19316741196"
-              className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
               onClick={handlePhoneClick}
               aria-label="Call Boxed2Built at (931) 674-1196"
               itemProp="telephone"
@@ -312,7 +312,7 @@ const Header: React.FC = () => {
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
                 <a
                   href="tel:+19316741196"
-                  className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
+                  className="flex items-center justify-center w-full px-4 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
                   aria-label="Call Boxed2Built at (931) 674-1196"
                   itemProp="telephone"
