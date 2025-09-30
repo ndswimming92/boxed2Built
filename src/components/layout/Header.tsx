@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Phone, Moon, Sun } from 'lucide-react';
+import { Menu, X, Phone } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
 import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
-import { useTheme } from '../../hooks/useTheme';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -103,13 +101,13 @@ const Header: React.FC = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-lg py-2' : 'bg-white/98 dark:bg-gray-800/98 backdrop-blur-sm shadow-sm py-4'
+        isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-lg py-2' : 'bg-white/98 backdrop-blur-sm shadow-sm py-4'
       }`}
       ref={menuRef}
       style={{
         boxShadow: isScrolled 
-          ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' // Light mode shadow
-          : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' // Light mode shadow
+          ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' 
+          : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
       }}
     >
       <div className="container mx-auto px-4">
@@ -144,7 +142,7 @@ const Header: React.FC = () => {
                   href="/"
                   onClick={() => handleNavClick('home')}
                   className={`${getNavLinkClasses('/')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="Go to home page" // Light mode text
+                  aria-label="Go to home page"
                 >
                   Home
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -155,7 +153,7 @@ const Header: React.FC = () => {
                   href="/about"
                   onClick={() => handleNavClick('about')}
                   className={`${getNavLinkClasses('/about')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="Learn about Boxed2Built" // Light mode text
+                  aria-label="Learn about Boxed2Built"
                 >
                   About
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -166,7 +164,7 @@ const Header: React.FC = () => {
                   href="/services"
                   onClick={() => handleNavClick('services')}
                   className={`${getNavLinkClasses('/services')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="View our services and pricing" // Light mode text
+                  aria-label="View our services and pricing"
                 >
                   Services
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -177,7 +175,7 @@ const Header: React.FC = () => {
                   href="/partners"
                   onClick={() => handleNavClick('partners')}
                   className={`${getNavLinkClasses('/partners')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="View our partnership programs" // Light mode text
+                  aria-label="View our partnership programs"
                 >
                   Partners
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -188,7 +186,7 @@ const Header: React.FC = () => {
                   href="/gallery"
                   onClick={() => handleNavClick('gallery')}
                   className={`${getNavLinkClasses('/gallery')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="View our work gallery" // Light mode text
+                  aria-label="View our work gallery"
                 >
                   Gallery
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -199,7 +197,7 @@ const Header: React.FC = () => {
                   href="/contact"
                   onClick={() => handleNavClick('contact')}
                   className={`${getNavLinkClasses('/contact')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
-                  aria-label="Contact us for furniture assembly service" // Light mode text
+                  aria-label="Contact us for furniture assembly service"
                 >
                   Contact
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
@@ -222,23 +220,10 @@ const Header: React.FC = () => {
             </a>
           </div>
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="ml-4 p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? (
-              <Moon size={20} className="text-blue-600" />
-            ) : (
-              <Sun size={20} className="text-yellow-400" />
-            )}
-          </button>
-
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden ml-4 text-gray-800 dark:text-gray-200 hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none transition-colors duration-200"
+            className="md:hidden text-gray-800 hover:text-blue-700 focus:outline-none transition-colors duration-200"
             aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={isMenuOpen}
           >
@@ -248,13 +233,13 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="md:hidden mt-4 pb-4 bg-white shadow-xl rounded-xl border border-gray-200 overflow-hidden">
             <nav className="flex flex-col p-2" role="navigation" aria-label="Mobile navigation">
               <a
                 href="/"
                 onClick={() => handleNavClick('home')}
                 className={`${getMobileNavLinkClasses('/')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
-                  isActivePage('/')
+                  isActivePage('/') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
                     : 'hover:bg-gray-50'
                 }`}

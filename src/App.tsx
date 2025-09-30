@@ -14,7 +14,6 @@ import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilest
 import PageLoader from './components/ui/PageLoader';
 import { usePageLoading } from './hooks/usePageLoading';
 import { initializeFontOptimization } from './utils/fontOptimization';
-import { useTheme } from './hooks/useTheme'; // Import useTheme hook
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -168,9 +167,6 @@ function App() {
   }, []);
 
   return (
-    // The useTheme hook is called here to initialize theme and apply 'dark' class to <html>
-    // No explicit wrapper is needed as useTheme directly manipulates document.documentElement
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     <Router>
       <div className="min-h-screen">
         <Analytics />
