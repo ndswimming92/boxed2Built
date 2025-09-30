@@ -112,6 +112,7 @@ const ServicesPage: React.FC = () => {
                   <Phone size={18} className="mr-2" />
                   <span className="mr-2">Call</span>
                   <span className="font-bold text-white">(931) 674-1196</span>
+                </a>
         {/* Services Section */}
         <Services />
 
