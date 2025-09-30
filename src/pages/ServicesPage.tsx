@@ -189,6 +189,7 @@ const ServicesPage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
         </section>
       </main>
       <Footer />
