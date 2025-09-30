@@ -452,7 +452,7 @@ const PartnersPage: React.FC = () => {
                 <a
                   href="/contact"
                   onClick={handleContactClick}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Phone size={20} className="mr-2" />
                   Contact Us Today
