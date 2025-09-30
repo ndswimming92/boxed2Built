@@ -62,13 +62,7 @@ const HomePage: React.FC = () => {
         reviews={CUSTOMER_REVIEWS}
       />
       <Header />
-      <Breadcrumbs 
-        items={[
-          { label: 'Home', href: '/', current: true }
-        ]}
-        className="container mx-auto px-4 pt-24 pb-4"
-      />
-      <main>
+      <main className="pt-20">
         <HomeHero />
         <HomeServices />
         

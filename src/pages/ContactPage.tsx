@@ -83,23 +83,18 @@ const ContactPage: React.FC = () => {
         reviews={CUSTOMER_REVIEWS}
       />
       <Header />
-      <Breadcrumbs 
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Contact', href: '/contact', current: true }
-        ]}
-        className="container mx-auto px-4 pt-24 pb-4"
-      />
       <main className="pt-20">
         {/* Page Header */}
         <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <nav className="flex items-center justify-center mb-6 text-sm">
-                <a href="/" className="text-blue-600 hover:text-blue-800">Home</a>
-                <ChevronRight size={16} className="mx-2 text-gray-400" />
-                <span className="text-gray-600">Contact</span>
-              </nav>
+              <Breadcrumbs 
+                items={[
+                  { label: 'Home', href: '/' },
+                  { label: 'Contact', href: '/contact', current: true }
+                ]}
+                className="mb-6"
+              />
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                 Contact Spring Hill Handyman Services
