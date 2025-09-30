@@ -185,7 +185,6 @@ const ServicesPage: React.FC = () => {
                     />
                   </a>
                 </div>
-                </a>
               </div>
             </div>
           </div>
