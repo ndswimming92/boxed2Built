@@ -1,60 +1,38 @@
-```typescript
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark';
 
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Initialize theme from localStorage or system preference
-    if (typeof window !== 'undefined') {
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme) {
-        return storedTheme as Theme;
-      }
-      // Check system preference
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-      }
+    // Check localStorage first
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    if (savedTheme) {
+      return savedTheme;
     }
-    return 'light'; // Default to light if no preference
+    
+    // Fall back to system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    
+    return 'light';
   });
 
-  const applyTheme = useCallback((newTheme: Theme) => {
+  useEffect(() => {
     const root = document.documentElement;
-    if (newTheme === 'dark') {
+    
+    if (theme === 'dark') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('theme', newTheme);
-  }, []);
+    
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if no explicit user preference is stored
-      if (!localStorage.getItem('theme')) {
-        setTheme(e.matches ? 'dark' : 'light');
-      }
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prevTheme) => {
-      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      applyTheme(newTheme);
-      return newTheme;
-    });
-  }, [applyTheme]);
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   return { theme, toggleTheme };
 };
-
-```

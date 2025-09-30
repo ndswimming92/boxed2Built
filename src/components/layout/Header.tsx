@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, Phone, Moon, Sun } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
 import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
+import { useTheme } from '../../hooks/useTheme';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
