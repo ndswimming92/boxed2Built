@@ -204,11 +204,13 @@ const ContactPage: React.FC = () => {
                     <a
                       href="tel:+19316741196"
                       onClick={handlePhoneClick}
-                      className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
                     >
-                      <Phone size={18} className="mr-2" />
+                      <Phone size={20} className="mr-2" />
                       <span className="mr-2">Call</span>
-                      <span className="font-bold text-white">(931) 674-1196</span>
+                      <img 
+                        src="/images/contact/phone-number.svg" 
+                      />
                     </a>
                     <a
                       href="#"
