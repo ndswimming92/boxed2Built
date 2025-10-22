@@ -130,17 +130,21 @@ const Testimonials: React.FC = () => {
           </div>
         </div>
 
-        {/* Call to Action */}
         <div className="text-center mt-10">
           <p className="text-gray-600 mb-4">
             Ready to join our satisfied customers?
           </p>
-          <a
-            href="/contact"
+          <button
+            onClick={() => {
+              const formSection = document.getElementById('contact-form-section');
+              if (formSection) {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
             className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
           >
             Get Your Free Quote
-          </a>
+          </button>
         </div>
       </div>
     </section>
