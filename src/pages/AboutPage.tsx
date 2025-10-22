@@ -74,7 +74,7 @@ const AboutPage: React.FC = () => {
         serviceAreas={SERVICE_AREAS}
         services={PRIMARY_SERVICES}
         socialMediaUrls={SOCIAL_MEDIA_URLS}
-        reviews={CUSTOMER_REVIEWS}
+        includeReviews={false}
       />
       <Header />
       <main className="pt-20">

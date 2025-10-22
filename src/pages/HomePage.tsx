@@ -48,6 +48,7 @@ const HomePage: React.FC = () => {
         services={PRIMARY_SERVICES}
         socialMediaUrls={SOCIAL_MEDIA_URLS}
         reviews={CUSTOMER_REVIEWS}
+        includeReviews={true}
       />
       <Header />
       <main className="pt-20">

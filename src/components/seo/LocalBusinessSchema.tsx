@@ -31,6 +31,7 @@ interface LocalBusinessSchemaProps {
     ratingValue: number;
     datePublished: string;
   }>;
+  includeReviews?: boolean;
 }
 
 const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
@@ -53,7 +54,8 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
   founder = "Nicholas Davidson",
   yearEstablished = "2024",
   socialMediaUrls = [],
-  reviews = []
+  reviews = [],
+  includeReviews = false
 }) => {
   const schemaData = {
     "@context": "https://schema.org",
@@ -203,8 +205,8 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
     ]
   };
 
-  // Add reviews if provided
-  if (reviews.length > 0) {
+  // Add reviews only if explicitly enabled (only on homepage to avoid duplicate aggregate ratings)
+  if (includeReviews && reviews.length > 0) {
     schemaData.aggregateRating = {
       "@type": "AggregateRating",
       "ratingValue": "5.0",
