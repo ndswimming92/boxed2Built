@@ -49,7 +49,7 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
   services,
   openingHours = ["Sa 09:00-16:00", "Su 13:30-16:00"],
   paymentAccepted = ["Cash", "Credit Card", "Debit Card", "Apple Pay", "Venmo", "Zelle", "Contactless Payments", "Square"],
-  priceRange = "$45-$318",
+  priceRange = "$85-$610",
   founder = "Nicholas Davidson",
   yearEstablished = "2024",
   socialMediaUrls = [],
@@ -77,13 +77,15 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
     "knowsAbout": [
       "Furniture Assembly",
       "IKEA Assembly",
-      "Target Furniture Assembly", 
+      "Target Furniture Assembly",
       "Walmart Furniture Assembly",
       "Handyman Services",
+      "TV Mounting",
       "Bed Frame Assembly",
       "Dresser Assembly",
       "Desk Assembly",
-      "Bookshelf Assembly"
+      "Bookshelf Assembly",
+      "Lawn Chair Assembly"
     ],
     "address": {
       "@type": "PostalAddress",

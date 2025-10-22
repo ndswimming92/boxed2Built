@@ -9,7 +9,7 @@ export const BUSINESS_INFO = {
   founder: "Nicholas Davidson",
   yearEstablished: "2024",
   slogan: "We turn boxes into comfort so families can focus on what matters most",
-  priceRange: "$45-$318"
+  priceRange: "$85-$610"
 };
 
 export const ADDRESS_INFO = {
@@ -39,40 +39,42 @@ export const PRIMARY_SERVICES = [
   {
     name: "Small Furniture Assembly",
     description: "Assembly of chairs, nightstands, and side tables",
-    price: "45"
+    price: "85"
   },
   {
     name: "Storage & Shelving Assembly",
     description: "Assembly of bookshelves, storage units, and media consoles",
-    price: "116"
+    price: "220"
   },
   {
     name: "Tables & Desks Assembly",
     description: "Assembly of coffee tables, desks, and office furniture",
-    price: "96"
+    price: "185"
   },
   {
     name: "Dressers & Storage Assembly",
     description: "Assembly of dressers and large storage furniture",
-    price: "166"
+    price: "320"
   },
   {
     name: "Beds & Frames Assembly",
     description: "Assembly of bed frames and bedroom furniture",
-    price: "153"
+    price: "295"
   }
 ];
 
 export const SERVICE_KEYWORDS = [
   "Furniture Assembly",
   "IKEA Assembly",
-  "Target Furniture Assembly", 
+  "Target Furniture Assembly",
   "Walmart Furniture Assembly",
   "Handyman Services",
+  "TV Mounting",
   "Bed Frame Assembly",
   "Dresser Assembly",
   "Desk Assembly",
   "Bookshelf Assembly",
+  "Lawn Chair Assembly",
   "Professional Assembly Service"
 ];
 
@@ -110,6 +112,12 @@ export const PAYMENT_METHODS = [
 ];
 
 export const CUSTOMER_REVIEWS = [
+  {
+    author: "Natalie Rae",
+    reviewBody: "Incredible service! Nicholas was extremely professional, punctual, and detail-oriented. He came out to set up our lawn chairs and mount our TV, and everything was done perfectly. He went above and beyond to make sure we were happy with the setup. Highly recommend this company — we're extremely pleased with the entire experience!",
+    ratingValue: 5,
+    datePublished: "2025-10-22"
+  },
   {
     author: "Samantha H.",
     reviewBody: "Highly recommend Nicholas if you need someone reliable, trustworthy and punctual! He took care of our furniture like it was his own and completed the tasks he said he'd do! Super professional and kind! Great quality of work!",
