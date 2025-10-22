@@ -81,7 +81,7 @@ const Services: React.FC = () => {
               <div className="p-6">
                 <div className="flex items-center mb-3">
                   <h3 className="text-lg font-bold text-gray-900">{service.type} Assembly</h3>
-                  {index === 0 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
+                  {service.id === 3 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
                 </div>
                 <p className="text-gray-600 mb-4">{service.description}</p>
                 
