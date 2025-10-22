@@ -181,36 +181,36 @@ const ContactForm: React.FC = () => {
       
       switch (furnitureType) {
         case 'Chair':
-          baseTime = 30;
-          basePrice = 45;
+          baseTime = 60;
+          basePrice = 85;
           break;
         case 'Table':
-          baseTime = 60;
-          basePrice = 96;
+          baseTime = 120;
+          basePrice = 185;
           break;
         case 'Bookshelf':
-          baseTime = 90;
-          basePrice = 116;
+          baseTime = 150;
+          basePrice = 220;
           break;
         case 'Dresser':
-          baseTime = 120;
-          basePrice = 166;
+          baseTime = 210;
+          basePrice = 320;
           break;
         case 'Bed':
-          baseTime = 90;
-          basePrice = 153;
+          baseTime = 180;
+          basePrice = 295;
           break;
         case 'IKEA':
-          baseTime = 75;
-          basePrice = 96;
+          baseTime = 120;
+          basePrice = 185;
           break;
         case 'Multiple':
-          baseTime = 45;
-          basePrice = 45;
+          baseTime = 60;
+          basePrice = 85;
           break;
         default:
-          baseTime = 60;
-          basePrice = 96;
+          baseTime = 120;
+          basePrice = 185;
       }
       
       const totalTime = baseTime * pieces;
