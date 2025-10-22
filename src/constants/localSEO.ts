@@ -113,7 +113,7 @@ export const PAYMENT_METHODS = [
 
 export const CUSTOMER_REVIEWS = [
   {
-    author: "Natalie Rae",
+    author: "Natalie R.",
     reviewBody: "Incredible service! Nicholas was extremely professional, punctual, and detail-oriented. He came out to set up our lawn chairs and mount our TV, and everything was done perfectly. He went above and beyond to make sure we were happy with the setup. Highly recommend this company — we're extremely pleased with the entire experience!",
     ratingValue: 5,
     datePublished: "2025-10-22"
