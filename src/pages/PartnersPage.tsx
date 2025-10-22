@@ -86,7 +86,7 @@ const PartnersPage: React.FC = () => {
 
     // Contact Information
     addSection('CONTACT INFORMATION', [
-      'Phone: (931) 674-1196',
+      'Phone: (615) 403-4538',
       'Email: boxed2builtco@gmail.com',
       'Website: boxed2built.com',
       'Service Area: Spring Hill, Columbia, Franklin, Thompson\'s Station, Brentwood & surrounding Tennessee areas'
@@ -203,7 +203,7 @@ const PartnersPage: React.FC = () => {
     yPosition += 5;
     
     addSection('CONTACT US', [
-      'Call: (931) 674-1196',
+      'Call: (615) 403-4538',
       'Email: boxed2builtco@gmail.com',
       'Online: boxed2built.com/partners',
       '',

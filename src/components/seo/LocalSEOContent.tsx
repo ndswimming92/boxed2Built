@@ -71,7 +71,7 @@ const LocalSEOContent: React.FC<LocalSEOContentProps> = ({
                 <Phone className="text-purple-600 mr-3" size={24} />
                 <h3 className="text-lg font-semibold text-gray-900">Local Contact</h3>
               </div>
-              <p className="text-gray-700 font-medium">(931) 674-1196</p>
+              <p className="text-gray-700 font-medium">(615) 403-4538</p>
               <p className="text-sm text-gray-600 mt-2">
                 Call for immediate service in {city} and surrounding areas.
               </p>

@@ -188,7 +188,7 @@ const Footer: React.FC = () => {
                   <Mail size={24} title="Email" />
                 </a>
                 <a
-                  href="tel:+19316741196" 
+                  href="tel:+16154034538" 
                   className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Phone"
                   itemProp="telephone"

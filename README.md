@@ -67,7 +67,7 @@
 ## 📞 Contact Information
 
 ### Get Your Free Quote Today!
-- **Phone**: [(931) 674-1196](tel:+19316741196)
+- **Phone**: [(615) 403-4538](tel:+16154034538)
 - **Email**: [boxed2builtco@gmail.com](mailto:boxed2builtco@gmail.com)
 - **Website**: [boxed2built.com](https://boxed2built.com)
 - **Online Booking**: [Schedule Free Consultation](https://calendly.com/boxed2built/30min)
@@ -159,6 +159,6 @@ This website is optimized for local search results in:
 
 ---
 
-**Ready to get started?** [Book your free consultation today](https://calendly.com/boxed2built/30min) or call [(931) 674-1196](tel:+19316741196) for immediate assistance.
+**Ready to get started?** [Book your free consultation today](https://calendly.com/boxed2built/30min) or call [(615) 403-4538](tel:+16154034538) for immediate assistance.
 
 *Boxed2Built - Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee communities.*

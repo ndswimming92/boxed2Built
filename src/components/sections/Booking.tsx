@@ -154,7 +154,7 @@ const Booking: React.FC = () => {
               </Button>
 
               <a
-                href="tel:+19316741196"
+                href="tel:+16154034538"
                 onClick={handlePhoneClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
@@ -162,7 +162,7 @@ const Booking: React.FC = () => {
                 <span className="mr-2">Call</span>
                 <img 
                   src="/images/contact/phone-number.svg" 
-                  alt="(931) 674-1196" 
+                  alt="(615) 403-4538" 
                   width="120" 
                   height="18"
                   className="inline-block"

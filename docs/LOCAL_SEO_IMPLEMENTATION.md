@@ -108,7 +108,7 @@ Offers:
 
 ### **Standardized Format**
 - **Name**: Boxed2Built
-- **Phone**: (931) 674-1196
+- **Phone**: (615) 403-4538
 - **Email**: boxed2builtco@gmail.com
 - **Address**: Spring Hill, TN 37174
 
@@ -125,7 +125,7 @@ Offers:
 - Homepage: "Furniture Assembly Spring Hill TN | Handyman Near Me | Boxed2Built"
 - Services: "Furniture Assembly Services Spring Hill TN | IKEA Target Walmart | Boxed2Built"
 - About: "About Boxed2Built | Spring Hill TN Furniture Assembly Expert | Local Handyman"
-- Contact: "Contact Boxed2Built | Spring Hill TN Furniture Assembly | (931) 674-1196"
+- Contact: "Contact Boxed2Built | Spring Hill TN Furniture Assembly | (615) 403-4538"
 
 ### **Meta Descriptions (Optimized)**
 - Include location keywords

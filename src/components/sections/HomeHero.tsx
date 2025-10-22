@@ -80,13 +80,13 @@ const HomeHero: React.FC = () => {
                   <Phone size={18} className="text-blue-600" />
                   <span className="text-sm">Or call us at</span>
                   <a
-                    href="tel:9316741196"
+                    href="tel:6154034538"
                     className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                     onClick={handlePhoneClick}
                   >
                     <img
                       src="/images/contact/phone-number.svg"
-                      alt="(931) 674-1196"
+                      alt="(615) 403-4538"
                       width="110"
                       height="16"
                       className="inline-block"

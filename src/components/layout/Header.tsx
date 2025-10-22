@@ -52,7 +52,7 @@ const Header: React.FC = () => {
       value: 1,
       user_engagement: 'phone_click'
     });
-    trackExternalLink('tel:+19316741196', 'Header Phone');
+    trackExternalLink('tel:+16154034538', 'Header Phone');
   };
 
   const handleNavClick = (page: string) => {
@@ -209,10 +209,10 @@ const Header: React.FC = () => {
           {/* Call Now Button - Desktop */}
           <div className="hidden md:flex items-center ml-8">
             <a
-              href="tel:+19316741196"
+              href="tel:+16154034538"
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
               onClick={handlePhoneClick}
-              aria-label="Call Boxed2Built at (931) 674-1196"
+              aria-label="Call Boxed2Built at (615) 403-4538"
               itemProp="telephone"
             >
               <Phone size={18} className="mr-2 group-hover:animate-pulse" />
@@ -311,10 +311,10 @@ const Header: React.FC = () => {
               {/* Call Now Button - Mobile */}
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
                 <a
-                  href="tel:+19316741196"
+                  href="tel:+16154034538"
                   className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
                   onClick={() => trackEvent('phone-click-mobile-menu')}
-                  aria-label="Call Boxed2Built at (931) 674-1196"
+                  aria-label="Call Boxed2Built at (615) 403-4538"
                   itemProp="telephone"
                 >
                   <Phone size={20} className="mr-2 group-hover:animate-pulse" />

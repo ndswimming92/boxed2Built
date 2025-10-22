@@ -80,7 +80,7 @@ const Hero: React.FC = () => {
 
               <div className="flex items-center justify-center sm:justify-start mb-8">
                 <a 
-                  href="tel:9316741196" 
+                  href="tel:6154034538" 
                   className="inline-flex items-center justify-center text-blue-700 hover:text-blue-800 font-medium text-lg"
                   onClick={handlePhoneClick}
                 >
@@ -90,7 +90,7 @@ const Hero: React.FC = () => {
                   <span className="mr-2">Call</span>
                   <img 
                     src="/images/contact/phone-number.svg" 
-                    alt="(931) 674-1196" 
+                    alt="(615) 403-4538" 
                     width="120" 
                     height="18"
                     className="inline-block"

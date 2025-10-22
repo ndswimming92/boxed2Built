@@ -135,13 +135,13 @@ const ContactPage: React.FC = () => {
                       <div>
                         <h3 className="text-base font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
-                          href="tel:+19316741196" 
+                          href="tel:+16154034538" 
                           className="text-blue-700 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
                           <img 
                             src="/images/contact/phone-number.svg" 
-                            alt="Boxed2Built Phone Number (931) 674-1196" 
+                            alt="Boxed2Built Phone Number (615) 403-4538" 
                             width="120" 
                             height="18"
                             className="inline-block"
@@ -197,7 +197,7 @@ const ContactPage: React.FC = () => {
                   {/* Quick Contact Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4">
                     <a
-                      href="tel:+19316741196"
+                      href="tel:+16154034538"
                       onClick={handlePhoneClick}
                       className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
                     >
@@ -307,7 +307,7 @@ const ContactPage: React.FC = () => {
                     How do I schedule furniture assembly service?
                   </h3>
                   <p className="text-gray-600">
-                    You can schedule service by calling us at (931) 674-1196, sending an email, or booking 
+                    You can schedule service by calling us at (615) 403-4538, sending an email, or booking 
                     online through our website. We offer flexible scheduling to fit your needs.
                   </p>
                 </div>
