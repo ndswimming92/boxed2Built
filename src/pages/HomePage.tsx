@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
         includeReviews={true}
       />
       <Header />
-      <main className="pt-20">
+      <main className="pt-16">
         <HomeHero />
 
         <section id="contact-form-section" className="py-12 bg-gradient-to-b from-gray-50 to-white">

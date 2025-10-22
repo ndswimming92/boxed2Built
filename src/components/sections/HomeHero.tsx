@@ -46,7 +46,7 @@ const HomeHero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-12 md:pt-40 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+    <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-96 h-96 bg-blue-100 rounded-full opacity-30 blur-3xl transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-80 h-80 bg-green-100 rounded-full opacity-30 blur-3xl transform -translate-x-1/2"></div>
