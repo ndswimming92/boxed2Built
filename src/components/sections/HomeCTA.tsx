@@ -12,16 +12,42 @@ const HomeCTA: React.FC = () => {
       alert('Please accept the Terms of Service to continue.');
       return;
     }
-    trackEvent('calendly-booking-click-home-cta');
+    trackEvent('booking_click', 'cta', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_cta',
+      value: 1,
+      element_type: 'button',
+      element_location: 'cta',
+      page_section: 'cta',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
   const handleTermsClick = () => {
-    trackEvent('terms-link-click-home-cta');
+    trackEvent('link_click', 'cta', {
+      event_category: 'navigation',
+      event_label: 'terms_link_cta',
+      element_type: 'link',
+      element_location: 'cta',
+      page_section: 'cta',
+      action_type: 'click',
+      action_value: '/terms-of-service'
+    });
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-home-cta');
+    trackEvent('phone_click', 'cta', {
+      event_category: 'contact',
+      event_label: 'phone_click_cta',
+      value: 1,
+      element_type: 'link',
+      element_location: 'cta',
+      page_section: 'cta',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   return (
@@ -95,7 +121,8 @@ const HomeCTA: React.FC = () => {
                 size="lg"
                 className={`w-full ${!acceptTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!acceptTerms}
-                trackingLabel="book-consultation-home-cta"
+                trackingLabel="book_consultation_cta"
+                pageSection="cta"
               >
                 <Calendar size={20} className="mr-2" />
                 Book Free Consultation

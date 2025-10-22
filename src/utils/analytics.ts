@@ -6,35 +6,91 @@ declare global {
   }
 }
 
-// Enhanced event parameters interface
+// Enhanced event parameters interface with page context
 export interface GAEventParams {
   event_category?: string;
   event_label?: string;
   value?: number;
-  custom_parameter_1?: string;
   page_location?: string;
   page_title?: string;
   user_engagement?: string;
   session_engaged?: boolean;
   engagement_time_msec?: number;
+
+  // Enhanced page context parameters
+  page_name?: string;
+  page_section?: string;
+  page_path?: string;
+
+  // Element context parameters
+  element_type?: string;
+  element_location?: string;
+  element_text?: string;
+
+  // Action context parameters
+  action_type?: string;
+  action_value?: string;
+
+  // Form-specific parameters
+  form_name?: string;
+  form_field?: string;
+  form_step?: string;
+  furniture_type?: string;
+  number_of_pieces?: number;
+  estimated_value?: string;
+
+  // Conversion parameters
+  conversion_type?: string;
+  conversion_value?: number;
+  currency?: string;
 }
 
-// Google Analytics event tracking
+// Helper function to get page context from current URL
+export const getPageContext = (): { page_name: string; page_path: string } => {
+  if (typeof window === 'undefined') {
+    return { page_name: 'unknown', page_path: '/' };
+  }
+
+  const path = window.location.pathname;
+  const pageNames: Record<string, string> = {
+    '/': 'home',
+    '/about': 'about',
+    '/services': 'services',
+    '/partners': 'partners',
+    '/gallery': 'gallery',
+    '/contact': 'contact',
+    '/privacy-policy': 'privacy_policy',
+    '/terms-of-service': 'terms_of_service'
+  };
+
+  return {
+    page_name: pageNames[path] || path.replace(/\//g, '_').replace(/^_/, '') || 'unknown',
+    page_path: path
+  };
+}
+
+// Google Analytics event tracking with automatic page context
 export const trackGAEvent = (eventName: string, parameters?: GAEventParams) => {
   if (typeof window !== 'undefined' && window.gtag) {
+    const pageContext = getPageContext();
+
     window.gtag('event', eventName, {
-      event_category: 'engagement',
-      event_label: eventName,
+      event_category: parameters?.event_category || 'engagement',
+      event_label: parameters?.event_label || eventName,
       page_location: window.location.href,
       page_title: document.title,
+      page_name: pageContext.page_name,
+      page_path: pageContext.page_path,
       ...parameters
     });
   }
 };
 
-// Enhanced conversion tracking
-export const trackConversion = (action: string, value?: number, currency: string = 'USD') => {
+// Enhanced conversion tracking with page context
+export const trackConversion = (action: string, value?: number, currency: string = 'USD', additionalParams?: GAEventParams) => {
   if (typeof window !== 'undefined' && window.gtag) {
+    const pageContext = getPageContext();
+
     window.gtag('event', 'conversion', {
       send_to: 'G-ZY3PG1S68G',
       event_category: 'conversion',
@@ -42,18 +98,33 @@ export const trackConversion = (action: string, value?: number, currency: string
       value: value,
       currency: currency,
       page_location: window.location.href,
-      page_title: document.title
+      page_title: document.title,
+      page_name: pageContext.page_name,
+      page_path: pageContext.page_path,
+      conversion_type: action,
+      conversion_value: value,
+      ...additionalParams
     });
   }
 };
 
-// Track form interactions
-export const trackFormInteraction = (formName: string, action: 'start' | 'complete' | 'abandon', fieldName?: string) => {
+// Track form interactions with enhanced parameters
+export const trackFormInteraction = (
+  formName: string,
+  action: 'start' | 'complete' | 'abandon' | 'field_interaction' | 'validation_error',
+  additionalParams?: GAEventParams
+) => {
+  const pageContext = getPageContext();
+
   trackGAEvent(`form_${action}`, {
     event_category: 'form_interaction',
     event_label: formName,
-    custom_parameter_1: fieldName || action,
-    user_engagement: 'form_interaction'
+    form_name: formName,
+    action_type: action,
+    page_section: additionalParams?.page_section || 'form',
+    element_type: 'form',
+    user_engagement: 'form_interaction',
+    ...additionalParams
   });
 };
 
@@ -142,12 +213,16 @@ export const trackGAPageView = (path: string, title?: string) => {
   }
 };
 
-// Enhanced event tracking with Google Analytics
-export const trackEvent = (eventName: string, path?: string, additionalParams?: GAEventParams) => {
-  // Track with Google Analytics
+// Enhanced event tracking with automatic page context
+export const trackEvent = (eventName: string, pageSection?: string, additionalParams?: GAEventParams) => {
+  const pageContext = getPageContext();
+
   trackGAEvent(eventName, {
-    event_category: 'user_interaction',
-    custom_parameter_1: path || eventName,
+    event_category: additionalParams?.event_category || 'user_interaction',
+    event_label: additionalParams?.event_label || eventName,
+    page_section: pageSection || additionalParams?.page_section || 'general',
+    element_location: pageSection,
+    action_type: eventName.split('-').pop() || 'click',
     user_engagement: 'user_interaction',
     ...additionalParams
   });

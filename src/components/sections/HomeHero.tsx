@@ -6,21 +6,39 @@ import { trackEvent, trackConversion } from '../../utils/analytics';
 
 const HomeHero: React.FC = () => {
   const handlePhoneClick = () => {
-    trackEvent('phone-click-home-hero', 'home_hero', {
+    trackEvent('phone_click', 'hero', {
       event_category: 'contact',
+      event_label: 'phone_click_hero',
       value: 1,
-      user_engagement: 'phone_click'
+      user_engagement: 'phone_click',
+      element_type: 'link',
+      element_location: 'hero',
+      page_section: 'hero',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
     });
-    trackConversion('phone_click_hero', 1);
+    trackConversion('phone_click', 1, 'USD', {
+      page_section: 'hero',
+      conversion_type: 'phone_lead'
+    });
   };
 
   const handleContactFormClick = () => {
-    trackEvent('contact-form-click-home-hero', 'home_hero', {
+    trackEvent('cta_click', 'hero', {
       event_category: 'conversion',
+      event_label: 'get_free_quote_hero',
       value: 1,
-      user_engagement: 'scroll_to_form'
+      user_engagement: 'scroll_to_form',
+      element_type: 'button',
+      element_location: 'hero',
+      page_section: 'hero',
+      action_type: 'scroll_to_form',
+      conversion_type: 'form_intent'
     });
-    trackConversion('contact_form_click_hero', 1);
+    trackConversion('cta_click', 1, 'USD', {
+      page_section: 'hero',
+      conversion_type: 'form_intent'
+    });
     const formSection = document.getElementById('contact-form-section');
     if (formSection) {
       formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -69,7 +87,8 @@ const HomeHero: React.FC = () => {
                     size="lg"
                     onClick={handleContactFormClick}
                     className="group text-lg px-8 py-4 shadow-xl hover:shadow-2xl"
-                    trackingLabel="get-free-quote-home-hero"
+                    trackingLabel="get_free_quote_hero"
+                    pageSection="hero"
                   >
                     Get Your Free Quote
                     <ArrowRight size={24} className="ml-2 group-hover:translate-x-1 transition-transform" />

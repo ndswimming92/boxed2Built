@@ -264,16 +264,42 @@ const ContactForm: React.FC = () => {
 
   const toggleOptionalFields = () => {
     setShowOptionalFields(!showOptionalFields);
-    trackEvent('form-optional-fields-toggle', showOptionalFields ? 'hide' : 'show');
+    trackEvent('form-optional-fields-toggle', 'contact_form', {
+      event_category: 'form_interaction',
+      action_type: showOptionalFields ? 'hide' : 'show',
+      action_value: showOptionalFields ? 'hide' : 'show',
+      page_section: 'contact_form',
+      element_type: 'button',
+      form_name: 'contact_form'
+    });
   };
 
   const onSubmit = handleValidatedSubmit(async (values) => {
-    trackFormInteraction('contact_form', 'complete');
-    trackConversion('form_submission', 1);
+    // Track form completion with detailed parameters
+    trackFormInteraction('contact_form', 'complete', {
+      page_section: 'contact_form',
+      furniture_type: values.furnitureType,
+      number_of_pieces: parseInt(values.pieces) || 0,
+      estimated_value: estimatedPrice,
+      form_step: 'submit'
+    });
+
+    // Track conversion with enhanced parameters
+    trackConversion('form_submission', 1, 'USD', {
+      page_section: 'contact_form',
+      conversion_type: 'lead',
+      furniture_type: values.furnitureType,
+      number_of_pieces: parseInt(values.pieces) || 0
+    });
+
     trackEvent('contact-form-submit', 'contact_form', {
       event_category: 'conversion',
       value: 1,
-      user_engagement: 'form_submission'
+      user_engagement: 'form_submission',
+      element_type: 'form',
+      action_type: 'submit',
+      furniture_type: values.furnitureType,
+      number_of_pieces: parseInt(values.pieces) || 0
     });
     
     // Create form data for submission

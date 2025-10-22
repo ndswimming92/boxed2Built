@@ -1,5 +1,5 @@
 import React from 'react';
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent, getPageContext } from '../../utils/analytics';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ButtonProps {
@@ -12,6 +12,7 @@ interface ButtonProps {
   disabled?: boolean;
   trackingLabel?: string;
   loading?: boolean;
+  pageSection?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -24,16 +25,17 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   trackingLabel,
   loading = false,
+  pageSection,
 }) => {
   const baseClasses = 'rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center';
-  
+
   const variantClasses = {
     primary: 'bg-blue-700 text-white hover:bg-blue-800 shadow-md hover:shadow-lg disabled:bg-gray-500 disabled:text-gray-200 disabled:cursor-not-allowed',
     secondary: 'bg-green-700 text-white hover:bg-green-800 shadow-md hover:shadow-lg disabled:bg-gray-500 disabled:text-gray-200 disabled:cursor-not-allowed',
     outline: 'bg-transparent border-2 border-blue-700 text-blue-700 hover:bg-blue-50 disabled:border-gray-500 disabled:text-gray-500 disabled:cursor-not-allowed',
     white: 'bg-white text-blue-700 hover:bg-gray-50 shadow-md hover:shadow-lg border border-gray-300 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed',
   };
-  
+
   const sizeClasses = {
     sm: 'text-sm py-2 px-3',
     md: 'text-base py-2.5 px-5',
@@ -42,7 +44,18 @@ const Button: React.FC<ButtonProps> = ({
 
   const handleClick = () => {
     if (trackingLabel) {
-      trackEvent(`button-click-${trackingLabel}`);
+      const pageContext = getPageContext();
+      const buttonText = typeof children === 'string' ? children : trackingLabel;
+
+      trackEvent(`button_click`, pageSection || 'general', {
+        event_category: 'button_click',
+        event_label: trackingLabel,
+        element_type: 'button',
+        element_text: buttonText,
+        element_location: pageSection || 'general',
+        action_type: 'click',
+        action_value: trackingLabel
+      });
     }
     if (onClick) {
       onClick();

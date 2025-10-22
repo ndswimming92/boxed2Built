@@ -45,21 +45,56 @@ const ContactPage: React.FC = () => {
       alert('Please accept the Terms of Service to continue.');
       return;
     }
-    trackEvent('calendly-booking-click-contact-page');
+    trackEvent('booking_click', 'contact_page_header', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_contact',
+      value: 1,
+      element_type: 'button',
+      element_location: 'contact_page_header',
+      page_section: 'contact_page_header',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-contact-page');
+    trackEvent('phone_click', 'contact_page_header', {
+      event_category: 'contact',
+      event_label: 'phone_click_contact',
+      value: 1,
+      element_type: 'link',
+      element_location: 'contact_page_header',
+      page_section: 'contact_page_header',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   const handleEmailClick = () => {
-    trackEvent('email-click-contact-page');
+    trackEvent('email_click', 'contact_page_header', {
+      event_category: 'contact',
+      event_label: 'email_click_contact',
+      value: 1,
+      element_type: 'link',
+      element_location: 'contact_page_header',
+      page_section: 'contact_page_header',
+      action_type: 'email_click',
+      conversion_type: 'email_lead'
+    });
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Contact%20Page&body=I%20would%20like%20to%20inquire%20about%20furniture%20assembly%20services.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Contact%20Page';
   };
 
   const handleTermsClick = () => {
-    trackEvent('terms-link-click-contact');
+    trackEvent('link_click', 'contact_page_header', {
+      event_category: 'navigation',
+      event_label: 'terms_link_contact',
+      element_type: 'link',
+      element_location: 'contact_page_header',
+      page_section: 'contact_page_header',
+      action_type: 'click',
+      action_value: '/terms-of-service'
+    });
   };
 
   const napData = {

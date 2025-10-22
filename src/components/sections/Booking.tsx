@@ -12,16 +12,42 @@ const Booking: React.FC = () => {
       alert('Please accept the Terms of Service to continue.');
       return;
     }
-    trackEvent('calendly-booking-click');
+    trackEvent('booking_click', 'booking_section', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_booking_section',
+      value: 1,
+      element_type: 'button',
+      element_location: 'booking_section',
+      page_section: 'booking_section',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
   const handleTermsClick = () => {
-    trackEvent('terms-link-click-booking');
+    trackEvent('link_click', 'booking_section', {
+      event_category: 'navigation',
+      event_label: 'terms_link_booking_section',
+      element_type: 'link',
+      element_location: 'booking_section',
+      page_section: 'booking_section',
+      action_type: 'click',
+      action_value: '/terms-of-service'
+    });
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-booking');
+    trackEvent('phone_click', 'booking_section', {
+      event_category: 'contact',
+      event_label: 'phone_click_booking_section',
+      value: 1,
+      element_type: 'link',
+      element_location: 'booking_section',
+      page_section: 'booking_section',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   return (
@@ -147,7 +173,8 @@ const Booking: React.FC = () => {
                   !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 disabled={!acceptTerms}
-                trackingLabel="book-consultation"
+                trackingLabel="book_consultation_booking_section"
+                pageSection="booking_section"
               >
                 <Calendar size={24} className="mr-3" />
                 Book Free Consultation

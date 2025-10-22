@@ -39,12 +39,30 @@ const AboutPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-about-page');
+    trackEvent('booking_click', 'about_page_header', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_about',
+      value: 1,
+      element_type: 'button',
+      element_location: 'about_page_header',
+      page_section: 'about_page_header',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-about-page');
+    trackEvent('phone_click', 'about_page_header', {
+      event_category: 'contact',
+      event_label: 'phone_click_about',
+      value: 1,
+      element_type: 'link',
+      element_location: 'about_page_header',
+      page_section: 'about_page_header',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   return (

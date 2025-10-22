@@ -39,16 +39,43 @@ const ServicesPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-services-page');
+    trackEvent('booking_click', 'services_page_header', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_services',
+      value: 1,
+      element_type: 'button',
+      element_location: 'services_page_header',
+      page_section: 'services_page_header',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-services-page');
+    trackEvent('phone_click', 'services_page_header', {
+      event_category: 'contact',
+      event_label: 'phone_click_services',
+      value: 1,
+      element_type: 'link',
+      element_location: 'services_page_header',
+      page_section: 'services_page_header',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   const handleEmailClick = () => {
-    trackEvent('email-click-services-page');
+    trackEvent('email_click', 'services_page_header', {
+      event_category: 'contact',
+      event_label: 'email_click_services',
+      value: 1,
+      element_type: 'link',
+      element_location: 'services_page_header',
+      page_section: 'services_page_header',
+      action_type: 'email_click',
+      conversion_type: 'email_lead'
+    });
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Page&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Services%20Page';
   };
 
@@ -93,7 +120,8 @@ const ServicesPage: React.FC = () => {
                   variant="primary"
                   size="lg"
                   className="px-8 py-4"
-                  trackingLabel="book-consultation-services-header"
+                  trackingLabel="book_consultation_services_header"
+                  pageSection="services_page_header"
                 >
                   <Calendar size={20} className="mr-2" />
                   Book Free Consultation

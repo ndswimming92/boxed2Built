@@ -30,16 +30,42 @@ const PartnersPage: React.FC = () => {
   }, []);
 
   const handleContactClick = () => {
-    trackEvent('contact-click-partners-hero');
+    trackEvent('link_click', 'partners_page_hero', {
+      event_category: 'navigation',
+      event_label: 'contact_link_partners',
+      element_type: 'link',
+      element_location: 'partners_page_hero',
+      page_section: 'partners_page_hero',
+      action_type: 'click',
+      action_value: '/contact'
+    });
   };
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-partners-cta');
+    trackEvent('booking_click', 'partners_page_cta', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_partners',
+      value: 1,
+      element_type: 'button',
+      element_location: 'partners_page_cta',
+      page_section: 'partners_page_cta',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
   const handleFlyerDownload = () => {
-    trackEvent('realtor-flyer-download');
+    trackEvent('file_download', 'partners_page_flyer', {
+      event_category: 'download',
+      event_label: 'realtor_flyer_download',
+      value: 1,
+      element_type: 'button',
+      element_location: 'partners_page_flyer',
+      page_section: 'partners_page_flyer',
+      action_type: 'download',
+      action_value: 'realtor_flyer_pdf'
+    });
     
     // Create PDF document
     const pdf = new jsPDF();

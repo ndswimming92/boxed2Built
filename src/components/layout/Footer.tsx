@@ -10,23 +10,44 @@ const currentYear = new Date().getFullYear();
 
 const Footer: React.FC = () => {
   const handleSocialClick = (platform: string) => {
-    trackEvent(`social-click-${platform}`, platform, {
+    trackEvent('social_click', 'footer', {
       event_category: 'social_media',
-      user_engagement: 'social_click'
+      event_label: `social_click_${platform}`,
+      user_engagement: 'social_click',
+      element_type: 'link',
+      element_location: 'footer',
+      page_section: 'footer',
+      action_type: 'social_click',
+      action_value: platform
     });
   };
 
   const handleReviewClick = () => {
-    trackEvent('google-review-click', 'footer', {
+    trackEvent('review_click', 'footer', {
       event_category: 'review',
+      event_label: 'google_review_click',
       value: 1,
-      user_engagement: 'review_click'
+      user_engagement: 'review_click',
+      element_type: 'button',
+      element_location: 'footer',
+      page_section: 'footer',
+      action_type: 'review_click',
+      conversion_type: 'review_request'
     });
     trackExternalLink(getGoogleReviewUrl(), 'Google Review');
   };
 
   const handleBookingClick = () => {
-    trackEvent('footer-book-now');
+    trackEvent('booking_click', 'footer', {
+      event_category: 'conversion',
+      event_label: 'footer_book_consultation',
+      value: 1,
+      element_type: 'button',
+      element_location: 'footer',
+      page_section: 'footer',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('footer'), '_blank');
   };
 
@@ -244,7 +265,15 @@ const Footer: React.FC = () => {
               <a 
                 href="/privacy-policy"
                 className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
-                onClick={() => trackEvent('privacy-policy-footer-click')}
+                onClick={() => trackEvent('link_click', 'footer', {
+                  event_category: 'navigation',
+                  event_label: 'privacy_policy',
+                  element_type: 'link',
+                  element_location: 'footer',
+                  page_section: 'footer',
+                  action_type: 'click',
+                  action_value: '/privacy-policy'
+                })}
               >
                 Privacy Policy
               </a>
@@ -252,7 +281,15 @@ const Footer: React.FC = () => {
               <a 
                 href="/terms-of-service"
                 className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
-                onClick={() => trackEvent('terms-of-service-footer-click')}
+                onClick={() => trackEvent('link_click', 'footer', {
+                  event_category: 'navigation',
+                  event_label: 'terms_of_service',
+                  element_type: 'link',
+                  element_location: 'footer',
+                  page_section: 'footer',
+                  action_type: 'click',
+                  action_value: '/terms-of-service'
+                })}
               >
                 Terms of Service
               </a>

@@ -221,12 +221,30 @@ const GalleryPage: React.FC = () => {
   }, []);
 
   const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-gallery-page');
+    trackEvent('booking_click', 'gallery_page_cta', {
+      event_category: 'conversion',
+      event_label: 'book_consultation_gallery',
+      value: 1,
+      element_type: 'button',
+      element_location: 'gallery_page_cta',
+      page_section: 'gallery_page_cta',
+      action_type: 'booking_click',
+      conversion_type: 'calendly_booking'
+    });
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-gallery-page');
+    trackEvent('phone_click', 'gallery_page_cta', {
+      event_category: 'contact',
+      event_label: 'phone_click_gallery',
+      value: 1,
+      element_type: 'link',
+      element_location: 'gallery_page_cta',
+      page_section: 'gallery_page_cta',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
   };
 
   return (

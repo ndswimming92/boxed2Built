@@ -43,23 +43,41 @@ const Header: React.FC = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    trackEvent('mobile-menu-toggle');
+    trackEvent('mobile-menu-toggle', 'header', {
+      event_category: 'navigation',
+      action_type: isMenuOpen ? 'close' : 'open',
+      element_type: 'button',
+      element_location: 'header',
+      page_section: 'header'
+    });
   };
 
   const handlePhoneClick = () => {
-    trackEvent('phone-click-header', 'header', {
+    trackEvent('phone_click', 'header', {
       event_category: 'contact',
+      event_label: 'phone_click_header',
       value: 1,
-      user_engagement: 'phone_click'
+      user_engagement: 'phone_click',
+      element_type: 'link',
+      element_location: 'header',
+      page_section: 'header',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
     });
     trackExternalLink('tel:+16154034538', 'Header Phone');
   };
 
-  const handleNavClick = (page: string) => {
+  const handleNavClick = (page: string, destination: string) => {
     setIsMenuOpen(false);
-    trackEvent(`nav-click-${page}`, page, {
+    trackEvent('navigation_click', 'header', {
       event_category: 'navigation',
-      user_engagement: 'navigation_click'
+      event_label: `nav_${page}`,
+      user_engagement: 'navigation_click',
+      element_type: 'link',
+      element_location: 'header',
+      page_section: 'header',
+      action_type: 'click',
+      action_value: destination
     });
   };
 
@@ -116,7 +134,13 @@ const Header: React.FC = () => {
             <a
               href="/"
               className="flex items-center"
-              onClick={() => trackEvent('logo-click')}
+              onClick={() => trackEvent('logo_click', 'header', {
+                event_category: 'navigation',
+                element_type: 'logo',
+                element_location: 'header',
+                page_section: 'header',
+                action_type: 'click'
+              })}
               aria-label="Boxed2Built - Home"
             >
               <img
@@ -140,7 +164,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/"
-                  onClick={() => handleNavClick('home')}
+                  onClick={() => handleNavClick('home', '/')}
                   className={`${getNavLinkClasses('/')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Go to home page"
                 >
@@ -151,7 +175,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/about"
-                  onClick={() => handleNavClick('about')}
+                  onClick={() => handleNavClick('about', '/about')}
                   className={`${getNavLinkClasses('/about')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Learn about Boxed2Built"
                 >
@@ -162,7 +186,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/services"
-                  onClick={() => handleNavClick('services')}
+                  onClick={() => handleNavClick('services', '/services')}
                   className={`${getNavLinkClasses('/services')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our services and pricing"
                 >
@@ -173,7 +197,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/partners"
-                  onClick={() => handleNavClick('partners')}
+                  onClick={() => handleNavClick('partners', '/partners')}
                   className={`${getNavLinkClasses('/partners')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our partnership programs"
                 >
@@ -184,7 +208,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/gallery"
-                  onClick={() => handleNavClick('gallery')}
+                  onClick={() => handleNavClick('gallery', '/gallery')}
                   className={`${getNavLinkClasses('/gallery')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our work gallery"
                 >
@@ -195,7 +219,7 @@ const Header: React.FC = () => {
               <li>
                 <a
                   href="/contact"
-                  onClick={() => handleNavClick('contact')}
+                  onClick={() => handleNavClick('contact', '/contact')}
                   className={`${getNavLinkClasses('/contact')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Contact us for furniture assembly service"
                 >
@@ -237,7 +261,7 @@ const Header: React.FC = () => {
             <nav className="flex flex-col p-2" role="navigation" aria-label="Mobile navigation">
               <a
                 href="/"
-                onClick={() => handleNavClick('home')}
+                onClick={() => handleNavClick('home', '/')}
                 className={`${getMobileNavLinkClasses('/')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -249,7 +273,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/about"
-                onClick={() => handleNavClick('about')}
+                onClick={() => handleNavClick('about', '/about')}
                 className={`${getMobileNavLinkClasses('/about')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/about') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -261,7 +285,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/services"
-                onClick={() => handleNavClick('services')}
+                onClick={() => handleNavClick('services', '/services')}
                 className={`${getMobileNavLinkClasses('/services')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/services') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -273,7 +297,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/partners"
-                onClick={() => handleNavClick('partners')}
+                onClick={() => handleNavClick('partners', '/partners')}
                 className={`${getMobileNavLinkClasses('/partners')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/partners') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -285,7 +309,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/gallery"
-                onClick={() => handleNavClick('gallery')}
+                onClick={() => handleNavClick('gallery', '/gallery')}
                 className={`${getMobileNavLinkClasses('/gallery')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/gallery') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -297,7 +321,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/contact"
-                onClick={() => handleNavClick('contact')}
+                onClick={() => handleNavClick('contact', '/contact')}
                 className={`${getMobileNavLinkClasses('/contact')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
                   isActivePage('/contact') 
                     ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
@@ -313,7 +337,15 @@ const Header: React.FC = () => {
                 <a
                   href="tel:+16154034538"
                   className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
-                  onClick={() => trackEvent('phone-click-mobile-menu')}
+                  onClick={() => trackEvent('phone_click', 'header_mobile_menu', {
+                    event_category: 'contact',
+                    event_label: 'phone_click_mobile_menu',
+                    element_type: 'link',
+                    element_location: 'header_mobile_menu',
+                    page_section: 'header',
+                    action_type: 'phone_click',
+                    conversion_type: 'phone_lead'
+                  })}
                   aria-label="Call Boxed2Built at (615) 403-4538"
                   itemProp="telephone"
                 >
