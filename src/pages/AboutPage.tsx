@@ -116,11 +116,11 @@ const AboutPage: React.FC = () => {
                 
                 <div className="relative">
                   <OptimizedImage
-                    src="https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                    alt="Nicholas Davidson - Professional furniture assembly expert in Spring Hill Tennessee" 
+                    src="/images/nicholas-davidson-founder-portrait-spring-hill.webp"
+                    alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
                     className="rounded-lg shadow-lg object-cover"
                     width="500"
-                    height="333"
+                    height="667"
                     imageType="gallery"
                     quality={85}
                     enableAvif={true}
