@@ -134,6 +134,71 @@ const SAMPLE_MEDIA: MediaItem[] = [
     width: 800,
     height: 600
   },
+  {
+    id: '14',
+    type: 'image',
+    src: '/images/sauder-executive-desk-front-angle-spring-hill.webp',
+    title: 'Sauder Executive Desk - Professional Assembly',
+    description: 'Professionally assembled Sauder executive desk with 7 drawers featuring vintage oak finish. Complex furniture assembly with precision drawer alignment and hardware installation completed in Spring Hill, Tennessee.',
+    alt: 'Sauder executive desk professionally assembled showing front angle view with multiple drawers in Spring Hill TN',
+    category: 'completed-work',
+    date: '2025-10-20',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '15',
+    type: 'image',
+    src: '/images/sauder-desk-box-closeup-spring-hill.webp',
+    title: 'Sauder Desk Box - Before Assembly',
+    description: 'Unopened Sauder executive desk boxes showing the before stage of our professional furniture assembly service. Expert assembly transforms flat-pack furniture into functional workspace in Spring Hill, TN homes.',
+    alt: 'Sauder desk flat pack boxes before professional furniture assembly service in Spring Hill Tennessee',
+    category: 'before-after',
+    date: '2025-10-20',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '16',
+    type: 'image',
+    src: '/images/patio-heater-assembled-garage-spring-hill.webp',
+    title: 'Patio Heater Assembly - Indoor Setup',
+    description: 'Professional patio heater assembly completed in garage setting. Expert assembly service for outdoor heating equipment in Spring Hill, Tennessee. Safe and efficient installation ready for outdoor use.',
+    alt: 'Assembled patio heater professionally completed in garage showing outdoor furniture assembly in Spring Hill TN',
+    category: 'completed-work',
+    date: '2025-10-18',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '17',
+    type: 'image',
+    src: '/images/black-adirondack-chair-completed-spring-hill.webp',
+    title: 'Black Adirondack Chair - Outdoor Furniture Assembly',
+    description: 'Professionally assembled black Adirondack chair with wide armrests completed in garage workspace. Expert outdoor furniture assembly service in Spring Hill, Tennessee.',
+    alt: 'Black Adirondack chair professionally assembled showing outdoor furniture assembly expertise in Spring Hill TN',
+    category: 'completed-work',
+    date: '2025-10-22',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
+  {
+    id: '18',
+    type: 'image',
+    src: '/images/assembled-2-drawer-filing-cabinet-spring-hill.webp',
+    title: '2-Drawer Filing Cabinet - Professional Assembly',
+    description: 'Professionally assembled 2-drawer filing cabinet with vintage oak finish. Precision drawer alignment and smooth glide hardware installation. Expert office furniture assembly service in Spring Hill, Tennessee.',
+    alt: 'Two drawer filing cabinet professionally assembled showing quality office furniture assembly in Spring Hill TN',
+    category: 'completed-work',
+    date: '2025-10-21',
+    location: 'Spring Hill, TN',
+    width: 800,
+    height: 600
+  },
 ];
 
 const GalleryPage: React.FC = () => {
