@@ -5,7 +5,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ContactForm from '../components/ContactForm';
-import { ChevronRight, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
+import { ChevronRight, Phone, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
@@ -59,6 +59,18 @@ const ContactPage: React.FC = () => {
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
+  const handlePhoneClick = () => {
+    trackEvent('phone_click', 'contact_page_info', {
+      event_category: 'contact',
+      event_label: 'phone_click_contact_info',
+      value: 1,
+      element_type: 'link',
+      element_location: 'contact_page_info',
+      page_section: 'contact_page_info',
+      action_type: 'phone_click',
+      conversion_type: 'phone_lead'
+    });
+  };
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'contact_page_header', {
