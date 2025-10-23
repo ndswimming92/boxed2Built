@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, Phone, CheckCircle } from 'lucide-react';
+import { Calendar, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
+import CallButton from '../ui/CallButton';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
 
@@ -37,18 +38,6 @@ const HomeCTA: React.FC = () => {
     });
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'cta', {
-      event_category: 'contact',
-      event_label: 'phone_click_cta',
-      value: 1,
-      element_type: 'link',
-      element_location: 'cta',
-      page_section: 'cta',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   return (
     <section className="py-12 bg-gradient-to-br from-blue-600 to-blue-800">
@@ -128,21 +117,7 @@ const HomeCTA: React.FC = () => {
                 Book Free Consultation
               </Button>
 
-              <a
-                href="tel:+16154034538"
-                onClick={handlePhoneClick}
-                className="inline-flex items-center justify-center w-full px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
-              >
-                <Phone size={20} className="mr-2" />
-                <span className="mr-2">Call</span>
-                <img 
-                  src="/images/contact/phone-number.svg" 
-                  alt="(615) 403-4538" 
-                  width="120" 
-                  height="18"
-                  className="inline-block"
-                />
-              </a>
+              <CallButton size="lg" pageSection="cta" fullWidth={true} />
             </div>
 
             <p className="text-xs text-gray-600 mt-3 text-center">

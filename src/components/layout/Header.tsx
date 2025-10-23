@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
-import { trackEvent, trackExternalLink } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
+import CallButton from '../ui/CallButton';
 import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
 
 const Header: React.FC = () => {
@@ -52,20 +53,6 @@ const Header: React.FC = () => {
     });
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'header', {
-      event_category: 'contact',
-      event_label: 'phone_click_header',
-      value: 1,
-      user_engagement: 'phone_click',
-      element_type: 'link',
-      element_location: 'header',
-      page_section: 'header',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-    trackExternalLink('tel:+16154034538', 'Header Phone');
-  };
 
   const handleNavClick = (page: string, destination: string) => {
     setIsMenuOpen(false);
@@ -232,16 +219,7 @@ const Header: React.FC = () => {
 
           {/* Call Now Button - Desktop */}
           <div className="hidden md:flex items-center ml-8">
-            <a
-              href="tel:+16154034538"
-              className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
-              onClick={handlePhoneClick}
-              aria-label="Call Boxed2Built at (615) 403-4538"
-              itemProp="telephone"
-            >
-              <Phone size={18} className="mr-2 group-hover:animate-pulse" />
-              <span className="font-bold text-white">{BUSINESS_INFO.phoneFormatted}</span>
-            </a>
+            <CallButton size="md" pageSection="header" />
           </div>
 
           {/* Mobile Menu Button */}
@@ -334,24 +312,7 @@ const Header: React.FC = () => {
               
               {/* Call Now Button - Mobile */}
               <div className="pt-4 border-t border-gray-200 mt-4 mx-2">
-                <a
-                  href="tel:+16154034538"
-                  className="flex items-center justify-center w-full px-4 py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 group"
-                  onClick={() => trackEvent('phone_click', 'header_mobile_menu', {
-                    event_category: 'contact',
-                    event_label: 'phone_click_mobile_menu',
-                    element_type: 'link',
-                    element_location: 'header_mobile_menu',
-                    page_section: 'header',
-                    action_type: 'phone_click',
-                    conversion_type: 'phone_lead'
-                  })}
-                  aria-label="Call Boxed2Built at (615) 403-4538"
-                  itemProp="telephone"
-                >
-                  <Phone size={20} className="mr-2 group-hover:animate-pulse" />
-                  <span className="font-bold text-white">{BUSINESS_INFO.phoneFormatted}</span>
-                </a>
+                <CallButton size="lg" pageSection="header_mobile_menu" fullWidth={true} className="rounded-xl py-3.5" />
               </div>
             </nav>
           </div>

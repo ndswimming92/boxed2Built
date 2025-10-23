@@ -4,8 +4,9 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import About from '../components/sections/About';
-import { ChevronRight, Phone, Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
+import { ChevronRight, Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
 import Button from '../components/ui/Button';
+import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
@@ -52,18 +53,6 @@ const AboutPage: React.FC = () => {
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'about_page_header', {
-      event_category: 'contact',
-      event_label: 'phone_click_about',
-      value: 1,
-      element_type: 'link',
-      element_location: 'about_page_header',
-      page_section: 'about_page_header',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   return (
     <>
@@ -300,21 +289,7 @@ const AboutPage: React.FC = () => {
                   <Calendar size={20} className="mr-2" />
                   Book Free Consultation
                 </Button>
-                <a
-                  href="tel:+16154034538"
-                  onClick={handlePhoneClick}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
-                >
-                  <Phone size={20} className="mr-2" />
-                  <span className="mr-2">Call</span>
-                  <img 
-                    src="/images/contact/phone-number.svg" 
-                    alt="(615) 403-4538" 
-                    width="120" 
-                    height="18"
-                    className="inline-block"
-                  />
-                </a>
+                <CallButton size="lg" pageSection="about_page_cta" />
               </div>
               
               <p className="text-xs text-blue-50 font-medium">

@@ -1,27 +1,11 @@
 import React from 'react';
-import { ArrowRight, CheckCircle, Phone } from 'lucide-react';
+import { ArrowRight, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
+import CallButton from '../ui/CallButton';
 import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent, trackConversion } from '../../utils/analytics';
 
 const HomeHero: React.FC = () => {
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'hero', {
-      event_category: 'contact',
-      event_label: 'phone_click_hero',
-      value: 1,
-      user_engagement: 'phone_click',
-      element_type: 'link',
-      element_location: 'hero',
-      page_section: 'hero',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-    trackConversion('phone_click', 1, 'USD', {
-      page_section: 'hero',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   const handleContactFormClick = () => {
     trackEvent('cta_click', 'hero', {
@@ -96,21 +80,8 @@ const HomeHero: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-600">
-                  <Phone size={18} className="text-blue-600" />
-                  <span className="text-sm">Or call us at</span>
-                  <a
-                    href="tel:6154034538"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors"
-                    onClick={handlePhoneClick}
-                  >
-                    <img
-                      src="/images/contact/phone-number.svg"
-                      alt="(615) 403-4538"
-                      width="110"
-                      height="16"
-                      className="inline-block"
-                    />
-                  </a>
+                  <span className="text-sm">Or call us:</span>
+                  <CallButton size="md" pageSection="hero" />
                 </div>
               </div>
             </div>

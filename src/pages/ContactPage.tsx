@@ -5,8 +5,9 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ContactForm from '../components/ContactForm';
-import { ChevronRight, Phone, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
+import { ChevronRight, Mail, MapPin, Clock, Calendar, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
+import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 import { 
@@ -58,18 +59,6 @@ const ContactPage: React.FC = () => {
     window.open(getCalendlyUrl('booking'), '_blank');
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'contact_page_header', {
-      event_category: 'contact',
-      event_label: 'phone_click_contact',
-      value: 1,
-      element_type: 'link',
-      element_location: 'contact_page_header',
-      page_section: 'contact_page_header',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'contact_page_header', {
@@ -231,17 +220,7 @@ const ContactPage: React.FC = () => {
 
                   {/* Quick Contact Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <a
-                      href="tel:+16154034538"
-                      onClick={handlePhoneClick}
-                      className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-medium transition-colors"
-                    >
-                      <Phone size={20} className="mr-2" />
-                      <span className="mr-2">Call</span>
-                      <img 
-                        src="/images/contact/phone-number.svg" 
-                      />
-                    </a>
+                    <CallButton size="lg" pageSection="contact_page_quick_contact" />
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
@@ -304,10 +283,10 @@ const ContactPage: React.FC = () => {
                     onClick={handleBookingClick}
                     variant="primary"
                     size="lg"
-                    className={`w-full px-8 py-4 text-lg font-semibold inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors ${
-                      !acceptTerms ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                    className={`w-full ${!acceptTerms ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={!acceptTerms}
+                    trackingLabel="book_consultation_contact"
+                    pageSection="contact_page_booking"
                   >
                     <Calendar size={24} className="mr-3" />
                     Book Free Consultation

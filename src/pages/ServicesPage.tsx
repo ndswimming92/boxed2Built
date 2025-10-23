@@ -4,8 +4,9 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
-import { ChevronRight, Phone, Mail, Calendar } from 'lucide-react';
+import { ChevronRight, Calendar } from 'lucide-react';
 import Button from '../components/ui/Button';
+import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
@@ -52,18 +53,6 @@ const ServicesPage: React.FC = () => {
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'services_page_header', {
-      event_category: 'contact',
-      event_label: 'phone_click_services',
-      value: 1,
-      element_type: 'link',
-      element_location: 'services_page_header',
-      page_section: 'services_page_header',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'services_page_header', {
@@ -127,21 +116,7 @@ const ServicesPage: React.FC = () => {
                   Book Free Consultation
                 </Button>
                 
-                <a
-                  href="tel:+16154034538"
-                  onClick={handlePhoneClick}
-                  className="inline-flex items-center justify-center px-8 py-4 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
-                >
-                  <Phone size={20} className="mr-2" />
-                  <span className="mr-2">Call</span>
-                  <img 
-                    src="/images/contact/phone-number.svg" 
-                    alt="(615) 403-4538" 
-                    width="120" 
-                    height="18"
-                    className="inline-block"
-                  />
-                </a>
+                <CallButton size="lg" pageSection="services_page_header" className="px-8 py-4" />
               </div>
             </div>
           </div>
@@ -204,21 +179,7 @@ const ServicesPage: React.FC = () => {
                   Contact us today for a free consultation and quote for your furniture assembly project.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="tel:+16154034538"
-                    onClick={handlePhoneClick}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
-                  >
-                    <Phone size={20} className="mr-2" />
-                    <span className="mr-2">Call</span>
-                    <img 
-                      src="/images/contact/phone-number.svg" 
-                      alt="(615) 403-4538" 
-                      width="120" 
-                      height="18"
-                      className="inline-block"
-                    />
-                  </a>
+                  <CallButton size="lg" pageSection="services_page_cta" />
                 </div>
               </div>
             </div>

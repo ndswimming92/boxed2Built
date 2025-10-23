@@ -5,6 +5,7 @@ import Footer from '../components/layout/Footer';
 import MediaGallery, { MediaItem } from '../components/sections/MediaGallery';
 import { ChevronRight, Camera, Video, Clock, CheckCircle } from 'lucide-react';
 import Button from '../components/ui/Button';
+import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 
@@ -234,18 +235,6 @@ const GalleryPage: React.FC = () => {
     window.open(getCalendlyUrl('services'), '_blank');
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'gallery_page_cta', {
-      event_category: 'contact',
-      event_label: 'phone_click_gallery',
-      value: 1,
-      element_type: 'link',
-      element_location: 'gallery_page_cta',
-      page_section: 'gallery_page_cta',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
 
   return (
     <>
@@ -316,21 +305,7 @@ const GalleryPage: React.FC = () => {
                   <Clock size={20} className="mr-2" />
                   Book Free Consultation
                 </Button>
-                <a
-                  href="tel:+16154034538"
-                  onClick={handlePhoneClick}
-                  className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
-                >
-                  <CheckCircle size={20} className="mr-2" />
-                  <span className="mr-2">Call</span>
-                  <img 
-                    src="/images/contact/phone-number.svg" 
-                    alt="(615) 403-4538" 
-                    width="120" 
-                    height="18"
-                    className="inline-block"
-                  />
-                </a>
+                <CallButton size="lg" pageSection="gallery_page_cta" />
               </div>
               
               <p className="text-xs text-blue-50 font-medium">
