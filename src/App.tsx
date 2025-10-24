@@ -14,6 +14,19 @@ import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilest
 import PageLoader from './components/ui/PageLoader';
 import { usePageLoading } from './hooks/usePageLoading';
 import { initializeFontOptimization } from './utils/fontOptimization';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/admin/ProtectedRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import LoginPage from './pages/admin/LoginPage';
+import DashboardPage from './pages/admin/DashboardPage';
+import BusinessInfoPage from './pages/admin/BusinessInfoPage';
+import ServicesAdminPage from './pages/admin/ServicesPage';
+import ServiceAreasPage from './pages/admin/ServiceAreasPage';
+import ReviewsPage from './pages/admin/ReviewsPage';
+import BusinessHoursPage from './pages/admin/BusinessHoursPage';
+import PaymentMethodsPage from './pages/admin/PaymentMethodsPage';
+import SocialMediaPage from './pages/admin/SocialMediaPage';
+import AttributesPage from './pages/admin/AttributesPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -168,25 +181,40 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen">
-        <Analytics />
-        <HashHandler />
-        <Suspense fallback={<PageLoader message="Loading application..." />}>
-          <PageLoadingWrapper>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/partners" element={<PartnersPage />} />
-              <Route path="/gallery" element={<GalleryPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-            </Routes>
-          </PageLoadingWrapper>
-        </Suspense>
-        <ScrollToTop />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen">
+          <Analytics />
+          <HashHandler />
+          <Suspense fallback={<PageLoader message="Loading application..." />}>
+            <PageLoadingWrapper>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/partners" element={<PartnersPage />} />
+                <Route path="/gallery" element={<GalleryPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+
+                <Route path="/admin/login" element={<LoginPage />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="business-info" element={<BusinessInfoPage />} />
+                  <Route path="services" element={<ServicesAdminPage />} />
+                  <Route path="service-areas" element={<ServiceAreasPage />} />
+                  <Route path="reviews" element={<ReviewsPage />} />
+                  <Route path="business-hours" element={<BusinessHoursPage />} />
+                  <Route path="payment-methods" element={<PaymentMethodsPage />} />
+                  <Route path="social-media" element={<SocialMediaPage />} />
+                  <Route path="attributes" element={<AttributesPage />} />
+                </Route>
+              </Routes>
+            </PageLoadingWrapper>
+          </Suspense>
+          <ScrollToTop />
+        </div>
+      </AuthProvider>
     </Router>
   );
 }
