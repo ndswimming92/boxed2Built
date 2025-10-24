@@ -1,35 +1,28 @@
 import React, { useEffect } from 'react';
-import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import About from '../components/sections/About';
-import { ChevronRight, Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
+import { Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
-import { 
-  BUSINESS_INFO, 
-  ADDRESS_INFO, 
-  SERVICE_AREAS, 
-  PRIMARY_SERVICES, 
-  SOCIAL_MEDIA_URLS,
-  CUSTOMER_REVIEWS,
-  LOCAL_SEO_CONTENT
-} from '../constants/localSEO';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const AboutPage: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.about.title;
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.about.description);
     }
 
-    // Set canonical URL for this page
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -54,16 +47,27 @@ const AboutPage: React.FC = () => {
   };
 
 
+  if (loading || !businessData) {
+    return (
+      <>
+        <Header />
+        <main className="pt-16 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
-      <LocalBusinessSchema
-        phone={BUSINESS_INFO.phone}
-        email={BUSINESS_INFO.email}
-        website={BUSINESS_INFO.website}
-        serviceAreas={SERVICE_AREAS}
-        services={PRIMARY_SERVICES}
-        socialMediaUrls={SOCIAL_MEDIA_URLS}
+      <EnhancedLocalBusinessSchema
+        businessData={businessData}
         includeReviews={false}
+        pageType="about"
       />
       <Header />
       <main className="pt-20">

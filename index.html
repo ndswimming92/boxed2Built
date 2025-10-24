@@ -96,6 +96,10 @@
   <!-- Google Site Verification -->
   <meta name="google-site-verification" content="6VZ2LC42LWkgSDAhWy1UYhH0YoLzoxIfnSP1DwuH_gg" />
 
+  <!-- Enhanced Google Search Console Support -->
+  <meta name="google" content="notranslate" />
+  <meta name="format-detection" content="telephone=yes" />
+
   <!-- Enhanced Open Graph (Facebook, LinkedIn, etc.) -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Boxed2Built" />
@@ -230,32 +234,90 @@
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://boxed2built.com/#organization",
     "name": "Boxed2Built",
     "url": "https://boxed2built.com",
-    "logo": "https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png",
-    "description": "Professional furniture assembly and handyman services in Spring Hill, TN",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png",
+      "width": 512,
+      "height": 512
+    },
+    "image": "https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png",
+    "description": "Professional furniture assembly and handyman services in Spring Hill, TN. Expert IKEA, Target, Walmart assembly serving Spring Hill, Columbia, Franklin, Thompson's Station, and Brentwood.",
+    "slogan": "We turn boxes into comfort so families can focus on what matters most",
+    "foundingDate": "2024",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Spring Hill",
-      "addressRegion": "TN", 
+      "addressRegion": "TN",
+      "postalCode": "37174",
       "addressCountry": "US"
     },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+16154034538",
-      "contactType": "customer service",
-      "areaServed": "TN",
-      "availableLanguage": "English"
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "35.7512",
+      "longitude": "-86.9300"
     },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+16154034538",
+        "contactType": "customer service",
+        "areaServed": ["TN", "US"],
+        "availableLanguage": ["English"],
+        "contactOption": "TollFree"
+      },
+      {
+        "@type": "ContactPoint",
+        "email": "boxed2builtco@gmail.com",
+        "contactType": "customer service",
+        "areaServed": ["TN", "US"],
+        "availableLanguage": ["English"]
+      }
+    ],
     "sameAs": [
       "https://www.facebook.com/BoxedToBuiltUSA",
-      "https://www.instagram.com/boxed2built/", 
+      "https://www.instagram.com/boxed2built/",
       "https://www.youtube.com/@Boxed2BuiltUSA"
     ],
     "founder": {
       "@type": "Person",
-      "name": "Nicholas Davidson"
-    }
+      "name": "Nicholas Davidson",
+      "jobTitle": "Founder & Lead Technician"
+    },
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Spring Hill",
+        "addressRegion": "TN",
+        "addressCountry": "US"
+      },
+      {
+        "@type": "City",
+        "name": "Columbia",
+        "addressRegion": "TN",
+        "addressCountry": "US"
+      },
+      {
+        "@type": "City",
+        "name": "Franklin",
+        "addressRegion": "TN",
+        "addressCountry": "US"
+      },
+      {
+        "@type": "City",
+        "name": "Thompson's Station",
+        "addressRegion": "TN",
+        "addressCountry": "US"
+      },
+      {
+        "@type": "City",
+        "name": "Brentwood",
+        "addressRegion": "TN",
+        "addressCountry": "US"
+      }
+    ]
   }
   </script>
 

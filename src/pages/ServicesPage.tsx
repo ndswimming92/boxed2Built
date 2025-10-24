@@ -1,35 +1,30 @@
 import React, { useEffect } from 'react';
-import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
+import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
-import { ChevronRight, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
-import { 
-  BUSINESS_INFO, 
-  ADDRESS_INFO, 
-  SERVICE_AREAS, 
-  PRIMARY_SERVICES, 
-  SOCIAL_MEDIA_URLS,
-  CUSTOMER_REVIEWS,
-  LOCAL_SEO_CONTENT
-} from '../constants/localSEO';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const ServicesPage: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.services.title;
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
     }
 
-    // Set canonical URL for this page
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -38,6 +33,25 @@ const ServicesPage: React.FC = () => {
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/services');
   }, []);
+
+  const servicesFAQs = [
+    {
+      question: "What furniture brands do you assemble?",
+      answer: "We assemble furniture from all major brands including IKEA, Target, Walmart, Wayfair, Amazon, Ashley Furniture, and more. If it comes in a box, we can build it!"
+    },
+    {
+      question: "How long does furniture assembly take?",
+      answer: "Assembly time varies by item complexity. Small items like chairs take 30-60 minutes, while larger items like bed frames or dressers can take 2-3 hours. We provide time estimates with every quote."
+    },
+    {
+      question: "Do you provide the tools for assembly?",
+      answer: "Yes! We bring all professional tools and equipment needed for assembly. You don't need to provide anything - we handle everything from start to finish."
+    },
+    {
+      question: "What's included in the assembly price?",
+      answer: "Our prices include complete assembly, hardware installation, placement in your desired location, debris cleanup, and quality inspection. No hidden fees!"
+    }
+  ];
 
   const handleBookingClick = () => {
     trackEvent('booking_click', 'services_page_header', {
@@ -68,17 +82,29 @@ const ServicesPage: React.FC = () => {
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Page&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Services%20Page';
   };
 
+  if (loading || !businessData) {
+    return (
+      <>
+        <Header />
+        <main className="pt-16 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
-      <LocalBusinessSchema
-        phone={BUSINESS_INFO.phone}
-        email={BUSINESS_INFO.email}
-        website={BUSINESS_INFO.website}
-        serviceAreas={SERVICE_AREAS}
-        services={PRIMARY_SERVICES}
-        socialMediaUrls={SOCIAL_MEDIA_URLS}
+      <EnhancedLocalBusinessSchema
+        businessData={businessData}
         includeReviews={false}
+        pageType="services"
       />
+      <FAQSchema faqs={servicesFAQs} />
       <Header />
       <main className="pt-20">
         {/* Page Header */}

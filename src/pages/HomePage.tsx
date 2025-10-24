@@ -1,6 +1,8 @@
 import React from 'react';
 import { useEffect } from 'react';
-import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
+import FAQSchema from '../components/seo/FAQSchema';
+import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
@@ -8,26 +10,22 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import {
-  BUSINESS_INFO,
-  ADDRESS_INFO,
-  SERVICE_AREAS,
-  PRIMARY_SERVICES,
-  SOCIAL_MEDIA_URLS,
-  CUSTOMER_REVIEWS,
   LOCAL_SEO_CONTENT
 } from '../constants/localSEO';
 
 const HomePage: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.homepage.title;
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.homepage.description);
     }
 
-    // Set canonical URL for home page (should remain as root)
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -37,18 +35,53 @@ const HomePage: React.FC = () => {
     canonicalLink.setAttribute('href', 'https://boxed2built.com/');
   }, []);
 
+  const homepageFAQs = [
+    {
+      question: "How do I schedule furniture assembly service?",
+      answer: "You can schedule furniture assembly by calling us at (615) 403-4538 or booking online through our website. We offer flexible scheduling to fit your needs."
+    },
+    {
+      question: "Do you assemble IKEA furniture?",
+      answer: "Yes, we specialize in IKEA furniture assembly as well as furniture from Target, Walmart, and all major furniture brands. We're experienced with all types of furniture assembly instructions."
+    },
+    {
+      question: "What areas do you serve for furniture assembly?",
+      answer: "We serve Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding areas in Tennessee for professional furniture assembly services."
+    },
+    {
+      question: "How much does furniture assembly cost in Spring Hill, TN?",
+      answer: "Our furniture assembly prices start at $85 for small items like chairs, $185 for tables and desks, $220 for storage and shelving, $320 for dressers, and $295 for bed frames. All prices include assembly, cleanup, and placement."
+    }
+  ];
+
+  if (loading || !businessData) {
+    return (
+      <>
+        <Header />
+        <main className="pt-16 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
 
   return (
     <>
-      <LocalBusinessSchema
-        phone={BUSINESS_INFO.phone}
-        email={BUSINESS_INFO.email}
-        website={BUSINESS_INFO.website}
-        serviceAreas={SERVICE_AREAS}
-        services={PRIMARY_SERVICES}
-        socialMediaUrls={SOCIAL_MEDIA_URLS}
-        reviews={CUSTOMER_REVIEWS}
+      <EnhancedLocalBusinessSchema
+        businessData={businessData}
         includeReviews={true}
+        pageType="home"
+      />
+      <FAQSchema faqs={homepageFAQs} />
+      <ServiceAreaSchema
+        businessName={businessData.info.name}
+        businessUrl={businessData.info.website}
+        serviceAreas={businessData.serviceAreas}
       />
       <Header />
       <main className="pt-16">
