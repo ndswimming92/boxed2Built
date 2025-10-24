@@ -1,20 +1,23 @@
 import React from 'react';
-import { SERVICES } from '../../constants';
-import { Check, ChevronDown, Phone, Mail, Clock } from 'lucide-react';
+import { Check, Phone, Mail, Clock } from 'lucide-react';
 import Button from '../ui/Button';
 import SkeletonCard from '../ui/SkeletonCard';
 import InternalLink from '../ui/InternalLink';
-import { useAsyncData } from '../../hooks/useAsyncData';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const Services: React.FC = () => {
-  // Simulate loading state for services data
-  const { data: services, loading } = useAsyncData(
-    () => Promise.resolve(SERVICES),
-    [],
-    { delay: 300 }
-  );
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  const services = businessData?.services.map(service => ({
+    id: service.id,
+    type: service.name,
+    description: service.description,
+    startingPrice: `$${service.base_price.toFixed(0)}`,
+    priceRange: service.category || '',
+    includedItems: service.description.split('. ')
+  })) || [];
 
   const handlePhoneClick = () => {
     trackEvent('phone-click-services');
@@ -99,15 +102,9 @@ const Services: React.FC = () => {
                   )}
                 </div>
                 
-                <h4 className="text-sm font-medium text-gray-800 mb-2">Professional Service Includes:</h4>
-                <ul className="space-y-1 text-sm text-gray-600">
-                  {service.includedItems.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start">
-                      <Check size={16} className="text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="text-sm text-gray-600">
+                  <p>{service.description}</p>
+                </div>
               </div>
             </div>
             ))

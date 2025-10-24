@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { REVIEWS } from '../../constants/reviews';
 import ReviewCard from '../ReviewCard';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const Testimonials: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
 
+  const REVIEWS = businessData?.reviews.map(review => ({
+    id: review.id,
+    name: review.author_name,
+    date: review.date_published,
+    rating: review.rating_value,
+    review: review.review_body,
+    verified: review.is_verified
+  })) || [];
+
   // Auto-scroll functionality
   useEffect(() => {
-    if (!isAutoScrolling) return;
+    if (!isAutoScrolling || REVIEWS.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
+      setCurrentIndex((prevIndex) =>
         prevIndex === REVIEWS.length - 1 ? 0 : prevIndex + 1
       );
-    }, 5000); // Auto-scroll every 5 seconds
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [isAutoScrolling]);
+  }, [isAutoScrolling, REVIEWS.length]);
 
   // Pause auto-scroll when user interacts
   const handleManualNavigation = (newIndex: number) => {
@@ -45,6 +55,23 @@ const Testimonials: React.FC = () => {
     handleManualNavigation(index);
   };
 
+  if (loading) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10 animate-pulse">
+            <div className="h-10 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-96 mx-auto"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (REVIEWS.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -55,7 +82,7 @@ const Testimonials: React.FC = () => {
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
             Real reviews from satisfied customers in Spring Hill, TN and surrounding areas.
           </p>
-          
+
           {/* Average rating display */}
           <div className="flex items-center justify-center mt-6">
             <div className="flex items-center">

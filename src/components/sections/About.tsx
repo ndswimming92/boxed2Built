@@ -2,8 +2,30 @@ import React from 'react';
 import { Heart, Users, Clock, CheckCircle, Award } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
 import InternalLink from '../ui/InternalLink';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const About: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  const businessName = businessData?.info?.name || 'Boxed2Built';
+  const locality = businessData?.address?.address_locality || 'Spring Hill';
+  const region = businessData?.address?.address_region || 'TN';
+  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
+  const serviceAreas = businessData?.serviceAreas.slice(0, 6).map(area => `${area.city_name}, ${area.region}`) || [];
+
+  if (loading) {
+    return (
+      <section id="about" className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto animate-pulse">
+            <div className="h-10 bg-gray-200 rounded w-3/4 mx-auto mb-6"></div>
+            <div className="h-32 bg-gray-200 rounded mb-6"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="about" className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -11,22 +33,22 @@ const About: React.FC = () => {
         {/* Enhanced Why Choose Us with more keywords */}
         <div className="max-w-4xl mx-auto text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            Why Choose Boxed2Built Spring Hill Handyman Services?
+            Why Choose {businessName} {locality} Handyman Services?
           </h2>
           
           <div className="bg-white p-8 rounded-lg shadow-md mb-10">
             <p className="text-xl text-gray-700 mb-6 leading-relaxed">
-              As Spring Hill's trusted handyman services specialists, we understand that busy families need reliable, professional furniture assembly service. 
-              Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most. 
+              As {locality}'s trusted handyman services specialists, we understand that busy families need reliable, professional furniture assembly service.
+              Whether it's IKEA, Target, Walmart, or any major furniture brand, we handle the assembly so you can focus on what matters most.
               View our complete{' '}
               <InternalLink href="/services" trackingCategory="about_page">
                 furniture assembly services and pricing
               </InternalLink>{' '}
               for all furniture types.
             </p>
-            
+
             <p className="text-2xl font-medium text-blue-600 italic">
-              We don't just build furniture—we build peace of mind for Tennessee families.
+              {slogan}
             </p>
           </div>
 
@@ -109,11 +131,11 @@ const About: React.FC = () => {
               </div>
               <div className="md:w-1/2">
                 <h4 className="text-2xl font-bold text-gray-900 mb-4">
-                  Proudly Serving Spring Hill, TN & Middle Tennessee
+                  Proudly Serving {locality}, {region} & Middle Tennessee
                 </h4>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  As a local Spring Hill furniture assembly company, we understand the needs of Tennessee families. 
-                  From single chairs to complete bedroom sets, we provide honest work with a helpful attitude throughout 
+                  As a local {locality} furniture assembly company, we understand the needs of Tennessee families.
+                  From single chairs to complete bedroom sets, we provide honest work with a helpful attitude throughout
                   Williamson County and Maury County. See examples of our work in our{' '}
                   <InternalLink href="/gallery" trackingCategory="about_page">
                     project gallery
@@ -124,14 +146,14 @@ const About: React.FC = () => {
                   </InternalLink>.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    'Spring Hill, TN', 
-                    'Columbia, TN', 
-                    'Franklin, TN', 
-                    'Thompson\'s Station', 
+                  {(serviceAreas.length > 0 ? serviceAreas : [
+                    'Spring Hill, TN',
+                    'Columbia, TN',
+                    'Franklin, TN',
+                    'Thompson\'s Station',
                     'Brentwood, TN',
                     'Nashville Metro'
-                  ].map((area, index) => (
+                  ]).map((area, index) => (
                     <div key={index} className="flex items-center">
                       <CheckCircle size={16} className="text-green-700 mr-2" />
                       <span className="text-sm font-medium">{area}</span>

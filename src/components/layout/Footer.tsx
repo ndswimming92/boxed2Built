@@ -1,14 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { Facebook, Mail, Phone, Instagram, MapPin, Star, Youtube } from 'lucide-react';
+import React from 'react';
+import { Facebook, Mail, Phone, Instagram, Star, Youtube } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
-import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
 
 const Footer: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  const businessName = businessData?.info?.name || 'Boxed2Built';
+  const phone = businessData?.info?.phone || '+16154034538';
+  const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
+  const website = businessData?.info?.website || 'https://boxed2built.com';
+  const priceRange = businessData?.info?.price_range || '$85-$610';
+  const locality = businessData?.address?.address_locality || 'Spring Hill';
+  const region = businessData?.address?.address_region || 'TN';
+  const serviceAreas = businessData?.serviceAreas.map(area => `${area.city_name}, ${area.region}`) || [];
+  const paymentMethods = businessData?.paymentMethods.map(pm => pm.method_name) || [];
+  const socialMedia = businessData?.socialMedia || [];
   const handleSocialClick = (platform: string) => {
     trackEvent('social_click', 'footer', {
       event_category: 'social_media',
@@ -52,13 +64,36 @@ const Footer: React.FC = () => {
   };
 
   const napData = {
-    businessName: BUSINESS_INFO.name,
-    phone: BUSINESS_INFO.phone,
-    email: BUSINESS_INFO.email,
-    address: ADDRESS_INFO,
-    serviceAreas: SERVICE_AREAS,
-    website: BUSINESS_INFO.website
+    businessName,
+    phone,
+    email,
+    address: businessData?.address ? {
+      streetAddress: businessData.address.street_address,
+      addressLocality: businessData.address.address_locality,
+      addressRegion: businessData.address.address_region,
+      postalCode: businessData.address.postal_code || '',
+      addressCountry: businessData.address.address_country,
+      coordinates: {
+        latitude: String(businessData.address.latitude || 0),
+        longitude: String(businessData.address.longitude || 0)
+      }
+    } : undefined,
+    serviceAreas,
+    website
   };
+
+  if (loading) {
+    return (
+      <footer className="bg-gray-900 text-white pt-12 pb-6">
+        <div className="container mx-auto px-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-700 rounded w-48 mb-4"></div>
+            <div className="h-4 bg-gray-700 rounded w-64"></div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <>
@@ -67,12 +102,12 @@ const Footer: React.FC = () => {
         itemScope
         itemType="https://schema.org/LocalBusiness"
       >
-        <meta itemProp="name" content={BUSINESS_INFO.name} />
-        <meta itemProp="telephone" content={BUSINESS_INFO.phone} />
-        <meta itemProp="email" content={BUSINESS_INFO.email} />
-        <meta itemProp="url" content={BUSINESS_INFO.website} />
-        <meta itemProp="priceRange" content={BUSINESS_INFO.priceRange} />
-        <meta itemProp="paymentAccepted" content="Cash, Credit Card, Debit Card" />
+        <meta itemProp="name" content={businessName} />
+        <meta itemProp="telephone" content={phone} />
+        <meta itemProp="email" content={email} />
+        <meta itemProp="url" content={website} />
+        <meta itemProp="priceRange" content={priceRange} />
+        <meta itemProp="paymentAccepted" content={paymentMethods.join(', ')} />
 
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -82,7 +117,7 @@ const Footer: React.FC = () => {
               <div className="flex items-center justify-center md:justify-start mb-4">
                 <img
                   src="/Modern Minimalist Logo for Boxed2Built.png"
-                  alt={`${BUSINESS_INFO.name} - Professional Furniture Assembly Service in Spring Hill TN`}
+                  alt={`${businessName} - Professional Furniture Assembly Service in ${locality} ${region}`}
                   loading="lazy"
                   className="h-12 w-auto object-contain"
                   width="120"
@@ -92,7 +127,7 @@ const Footer: React.FC = () => {
                 />
               </div>
               <p className="text-gray-300 max-w-md mb-6 text-center md:text-left">
-                {ADDRESS_INFO.addressLocality} handyman services specializing in professional furniture assembly. Expert IKEA, Target, Walmart assembly service in {ADDRESS_INFO.addressLocality}, {ADDRESS_INFO.addressRegion} and surrounding Tennessee areas with flexible scheduling.
+                {locality} handyman services specializing in professional furniture assembly. Expert IKEA, Target, Walmart assembly service in {locality}, {region} and surrounding Tennessee areas with flexible scheduling.
               </p>
 
               {/* NAP Consistency in Footer */}
@@ -140,13 +175,16 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Payment Methods</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li className="text-gray-300">Credit & Debit Cards</li>
-                <li className="text-gray-300">Apple Pay</li>
-                <li className="text-gray-300">Venmo</li>
-                <li className="text-gray-300">Zelle</li>
-                <li className="text-gray-300">Contactless Payments</li>
-                <li className="text-gray-300">Square</li>
-                <li className="text-gray-300">Cash</li>
+                {paymentMethods.length > 0 ? (
+                  paymentMethods.map((method, index) => (
+                    <li key={index} className="text-gray-300">{method}</li>
+                  ))
+                ) : (
+                  <>
+                    <li className="text-gray-300">Credit & Debit Cards</li>
+                    <li className="text-gray-300">Cash</li>
+                  </>
+                )}
               </ul>
               <p className="text-xs text-gray-300 mt-3 italic">
                 Payment due upon completion
@@ -157,9 +195,13 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <h3 className="font-semibold text-white mb-4">Service Areas</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                {SERVICE_AREAS.map((area, index) => (
-                  <li key={index} className="text-gray-300">{area}</li>
-                ))}
+                {serviceAreas.length > 0 ? (
+                  serviceAreas.map((area, index) => (
+                    <li key={index} className="text-gray-300">{area}</li>
+                  ))
+                ) : (
+                  <li className="text-gray-300">Spring Hill, TN</li>
+                )}
               </ul>
             </div>
           </div>
@@ -170,38 +212,30 @@ const Footer: React.FC = () => {
               <div className="flex flex-col items-center md:items-start gap-4 mb-6 md:mb-0">
                 {/* Social Media Icons */}
                 <div className="flex space-x-4 justify-center md:justify-start">
+                {socialMedia.map((social) => {
+                  let Icon = Mail;
+                  let label = social.platform;
+
+                  if (social.platform.toLowerCase().includes('facebook')) Icon = Facebook;
+                  else if (social.platform.toLowerCase().includes('instagram')) Icon = Instagram;
+                  else if (social.platform.toLowerCase().includes('youtube')) Icon = Youtube;
+
+                  return (
+                    <a
+                      key={social.id}
+                      href={getSocialUrl(social.platform.toLowerCase(), social.profile_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-white transition-colors"
+                      aria-label={label}
+                      onClick={() => handleSocialClick(social.platform.toLowerCase())}
+                    >
+                      <Icon size={24} title={label} />
+                    </a>
+                  );
+                })}
                 <a
-                  href={getSocialUrl('facebook', 'https://www.facebook.com/BoxedToBuiltUSA')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Facebook"
-                  onClick={() => handleSocialClick('facebook')}
-                >
-                  <Facebook size={24} title="Facebook" />
-                </a>
-                <a
-                  href={getSocialUrl('instagram', 'https://www.instagram.com/boxed2built/')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Instagram"
-                  onClick={() => handleSocialClick('instagram')}
-                >
-                  <Instagram size={24} title="Instagram" />
-                </a>
-                <a
-                  href={getSocialUrl('youtube', 'https://www.youtube.com/@Boxed2BuiltUSA')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="YouTube"
-                  onClick={() => handleSocialClick('youtube')}
-                >
-                  <Youtube size={24} title="YouTube" />
-                </a>
-                <a
-                  href="mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer"
+                  href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
                   className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Email"
                   onClick={() => handleSocialClick('email')}
@@ -209,7 +243,7 @@ const Footer: React.FC = () => {
                   <Mail size={24} title="Email" />
                 </a>
                 <a
-                  href="tel:+16154034538" 
+                  href={`tel:${phone}`}
                   className="text-gray-300 hover:text-white transition-colors"
                   aria-label="Phone"
                   itemProp="telephone"
@@ -249,7 +283,7 @@ const Footer: React.FC = () => {
 
           {/* Enhanced service area description */}
           <p className="text-xs text-gray-200 text-center mt-4">
-            Local furniture assembly service near me proudly serving {SERVICE_AREAS.slice(0, 5).join(', ')}, 
+            Local furniture assembly service near me proudly serving {serviceAreas.slice(0, 5).join(', ')},
             and surrounding Tennessee communities. Expert IKEA, Target, Walmart furniture assembly. View all{' '}
             <InternalLink href="/services" className="text-blue-100 hover:text-white underline" trackingCategory="footer_content">
               our services and areas
@@ -257,9 +291,9 @@ const Footer: React.FC = () => {
           </p>
 
           <div className="text-sm text-gray-200 text-center space-y-2 mt-4">
-            <div>&copy; {currentYear} {BUSINESS_INFO.name}. All rights reserved.</div>
+            <div>&copy; {currentYear} {businessName}. All rights reserved.</div>
             <div className="text-xs text-gray-300">
-              {BUSINESS_INFO.name} is an Amazon Associate and earns from qualifying purchases.
+              {businessName} is an Amazon Associate and earns from qualifying purchases.
             </div>
             <div>
               <a 

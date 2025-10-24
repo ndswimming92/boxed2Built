@@ -4,8 +4,10 @@ import Button from '../ui/Button';
 import CallButton from '../ui/CallButton';
 import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent, trackConversion } from '../../utils/analytics';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const HomeHero: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
 
   const handleContactFormClick = () => {
     trackEvent('cta_click', 'hero', {
@@ -29,6 +31,25 @@ const HomeHero: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto animate-pulse">
+            <div className="h-16 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-8 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="h-12 bg-gray-200 rounded w-48"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const businessName = businessData?.info?.name || 'Boxed2Built';
+  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
+  const locality = businessData?.address?.address_locality || 'Spring Hill';
+  const region = businessData?.address?.address_region || 'TN';
+
   return (
     <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
       <div className="absolute inset-0 overflow-hidden">
@@ -47,7 +68,7 @@ const HomeHero: React.FC = () => {
                 </h1>
 
                 <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-                  Professional furniture assembly in Spring Hill, TN. From IKEA to Walmart, we handle the hassle so you don't have to.
+                  Professional furniture assembly in {locality}, {region}. From IKEA to Walmart, we handle the hassle so you don't have to.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 mb-10">
