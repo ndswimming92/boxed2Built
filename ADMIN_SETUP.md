@@ -13,7 +13,7 @@ To create your admin account, you'll need to use the Supabase Dashboard:
    - Sign in with your Supabase account
 
 2. **Navigate to Your Project**
-   - Select your project: `drqrhyoktzlpeufxpgkt`
+   - Select your project: `nlqzjzxkqteihffptkah`
 
 3. **Create Admin User**
    - In the left sidebar, click on "Authentication"
