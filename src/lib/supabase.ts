@@ -1,5 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+// supabase.ts
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Environment & Client (public website settings)
+ *  - No session persistence (public reads only)
+ *  - No auto token refresh
+ *  - Narrow global headers if you later add RLS audiences, etc.
+ *  -------------------------------------------------------------------------- */
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -7,8 +15,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+  // db: { schema: 'public' }, // uncomment if you use a non-default schema
+});
 
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Domain Types (TS) — keep these in sync with DB schema
+ *  -------------------------------------------------------------------------- */
 export type BusinessInfo = {
   id: string;
   name: string;
@@ -78,9 +96,9 @@ export type Service = {
 export type BusinessHours = {
   id: string;
   business_id: string;
-  day_of_week: string;
-  opens: string | null;
-  closes: string | null;
+  day_of_week: 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun' | string; // relax if needed
+  opens: string | null;   // '09:00'
+  closes: string | null;  // '17:00'
   is_closed: boolean;
   created_at: string;
   updated_at: string;
@@ -110,7 +128,7 @@ export type CustomerReview = {
   business_id: string;
   author_name: string;
   review_body: string;
-  rating_value: number;
+  rating_value: number; // 1–5
   date_published: string;
   is_featured: boolean;
   is_verified: boolean;
@@ -138,3 +156,267 @@ export type CompleteBusinessData = {
   reviews: CustomerReview[];
   attributes: BusinessAttribute[];
 };
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Runtime Validation (Zod) — catches silent schema drift in production
+ *  - Optional: relax/extend as your schema evolves
+ *  -------------------------------------------------------------------------- */
+const zBusinessInfo = z.object({
+  id: z.string(),
+  name: z.string(),
+  alternate_name: z.string().nullable(),
+  description: z.string(),
+  slogan: z.string().nullable(),
+  phone: z.string(),
+  email: z.string(),
+  website: z.string(),
+  founded_year: z.string().nullable(),
+  founder_name: z.string().nullable(),
+  price_range: z.string().nullable(),
+  currencies_accepted: z.string(),
+  logo_url: z.string().nullable(),
+  image_url: z.string().nullable(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zBusinessAddress = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  street_address: z.string(),
+  address_locality: z.string(),
+  address_region: z.string(),
+  postal_code: z.string().nullable(),
+  address_country: z.string(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zServiceArea = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  city_name: z.string(),
+  region: z.string(),
+  country: z.string(),
+  postal_codes: z.array(z.string()).nullable(),
+  latitude: z.number().nullable(),
+  longitude: z.number().nullable(),
+  radius_miles: z.number(),
+  priority: z.number(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zService = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  category: z.string().nullable(),
+  base_price: z.number(),
+  price_currency: z.string(),
+  duration_minutes: z.number().nullable(),
+  is_featured: z.boolean(),
+  display_order: z.number(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zBusinessHours = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  day_of_week: z.string(),
+  opens: z.string().nullable(),
+  closes: z.string().nullable(),
+  is_closed: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zPaymentMethod = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  method_name: z.string(),
+  is_active: z.boolean(),
+  display_order: z.number(),
+  created_at: z.string(),
+});
+
+const zSocialMedia = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  platform: z.string(),
+  profile_url: z.string(),
+  is_active: z.boolean(),
+  display_order: z.number(),
+  created_at: z.string(),
+});
+
+const zCustomerReview = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  author_name: z.string(),
+  review_body: z.string(),
+  rating_value: z.number().min(1).max(5),
+  date_published: z.string(),
+  is_featured: z.boolean(),
+  is_verified: z.boolean(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+const zBusinessAttribute = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  attribute_name: z.string(),
+  attribute_value: z.string(),
+  created_at: z.string(),
+});
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Table & Column helpers (centralize names + narrow selects)
+ *  -------------------------------------------------------------------------- */
+const T = {
+  business_info: 'business_info',
+  business_addresses: 'business_addresses',
+  service_areas: 'service_areas',
+  services: 'services',
+  business_hours: 'business_hours',
+  payment_methods: 'payment_methods',
+  social_media: 'social_media',
+  customer_reviews: 'customer_reviews',
+  business_attributes: 'business_attributes',
+} as const;
+
+const COLS = {
+  info:
+    'id,name,alternate_name,description,slogan,phone,email,website,founded_year,founder_name,price_range,currencies_accepted,logo_url,image_url,is_active,created_at,updated_at',
+  address:
+    'id,business_id,street_address,address_locality,address_region,postal_code,address_country,latitude,longitude,created_at,updated_at',
+  serviceArea:
+    'id,business_id,city_name,region,country,postal_codes,latitude,longitude,radius_miles,priority,is_active,created_at,updated_at',
+  service:
+    'id,business_id,name,description,category,base_price,price_currency,duration_minutes,is_featured,display_order,is_active,created_at,updated_at',
+  hours:
+    'id,business_id,day_of_week,opens,closes,is_closed,created_at,updated_at',
+  payment:
+    'id,business_id,method_name,is_active,display_order,created_at',
+  social:
+    'id,business_id,platform,profile_url,is_active,display_order,created_at',
+  review:
+    'id,business_id,author_name,review_body,rating_value,date_published,is_featured,is_verified,is_active,created_at,updated_at',
+  attribute:
+    'id,business_id,attribute_name,attribute_value,created_at',
+} as const;
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Small Error Helper
+ *  -------------------------------------------------------------------------- */
+function assertNoError<T>(data: T, error: { message?: string } | null, ctx: string): T {
+  if (error) throw new Error(`${ctx}: ${error.message ?? 'Unknown Supabase error'}`);
+  if (data == null) throw new Error(`${ctx}: No data`);
+  return data;
+}
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  In-memory cache (simple SWR style)
+ *  -------------------------------------------------------------------------- */
+let _cache: { payload: CompleteBusinessData; ts: number } | null = null;
+const REVALIDATE_MS = 60_000; // 1 minute; tweak as needed
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Public API: Fetch the full business data in parallel
+ *  - Filters to is_active where appropriate
+ *  - Validates at runtime with Zod (optional but recommended)
+ *  -------------------------------------------------------------------------- */
+export async function getCompleteBusiness(): Promise<CompleteBusinessData> {
+  const now = Date.now();
+  if (_cache && now - _cache.ts < REVALIDATE_MS) return _cache.payload;
+
+  const [
+    infoRes,
+    addrRes,
+    areasRes,
+    servicesRes,
+    hoursRes,
+    paymentsRes,
+    socialsRes,
+    reviewsRes,
+    attrsRes,
+  ] = await Promise.all([
+    supabase.from(T.business_info).select(COLS.info).eq('is_active', true).limit(1).maybeSingle(),
+    supabase.from(T.business_addresses).select(COLS.address).limit(1).maybeSingle(),
+    supabase.from(T.service_areas).select(COLS.serviceArea).eq('is_active', true).order('priority', { ascending: false }),
+    supabase.from(T.services).select(COLS.service).eq('is_active', true).order('display_order', { ascending: true }),
+    supabase.from(T.business_hours).select(COLS.hours).order('day_of_week', { ascending: true }),
+    supabase.from(T.payment_methods).select(COLS.payment).eq('is_active', true).order('display_order', { ascending: true }),
+    supabase.from(T.social_media).select(COLS.social).eq('is_active', true).order('display_order', { ascending: true }),
+    supabase.from(T.customer_reviews).select(COLS.review).eq('is_active', true).order('is_featured', { ascending: false }),
+    supabase.from(T.business_attributes).select(COLS.attribute),
+  ]);
+
+  const info = assertNoError(infoRes.data, infoRes.error, 'Fetch business_info');
+  const address = addrRes.error ? null : addrRes.data ?? null;
+
+  const serviceAreas = assertNoError(areasRes.data ?? [], areasRes.error, 'Fetch service_areas');
+  const services = assertNoError(servicesRes.data ?? [], servicesRes.error, 'Fetch services');
+  const businessHours = assertNoError(hoursRes.data ?? [], hoursRes.error, 'Fetch business_hours');
+  const paymentMethods = assertNoError(paymentsRes.data ?? [], paymentsRes.error, 'Fetch payment_methods');
+  const socialMedia = assertNoError(socialsRes.data ?? [], socialsRes.error, 'Fetch social_media');
+  const reviews = assertNoError(reviewsRes.data ?? [], reviewsRes.error, 'Fetch customer_reviews');
+  const attributes = assertNoError(attrsRes.data ?? [], attrsRes.error, 'Fetch business_attributes');
+
+  // Runtime validation (throws if schema drift)
+  zBusinessInfo.parse(info);
+  if (address) zBusinessAddress.parse(address);
+  serviceAreas.forEach(zServiceArea.parse);
+  services.forEach(zService.parse);
+  businessHours.forEach(zBusinessHours.parse);
+  paymentMethods.forEach(zPaymentMethod.parse);
+  socialMedia.forEach(zSocialMedia.parse);
+  reviews.forEach(zCustomerReview.parse);
+  attributes.forEach(zBusinessAttribute.parse);
+
+  const payload: CompleteBusinessData = {
+    info,
+    address,
+    serviceAreas,
+    services,
+    businessHours,
+    paymentMethods,
+    socialMedia,
+    reviews,
+    attributes,
+  };
+
+  _cache = { payload, ts: now };
+  return payload;
+}
+
+/** ────────────────────────────────────────────────────────────────────────────
+ *  Extra niceties you can use elsewhere
+ *  -------------------------------------------------------------------------- */
+
+/** Simple keyword search across active services */
+export async function searchServices(q: string): Promise<Service[]> {
+  if (!q || q.trim().length < 2) return [];
+  const { data, error } = await supabase
+    .from(T.services)
+    .select(COLS.service)
+    .eq('is_active', true)
+    // If you added a generated tsvector col "search" use .textSearch('search', q)
+    .ilike('name', `%${q}%`);
+
+  return assertNoError<Service[]>(data ?? [], error, 'Search services');
+}
+
+/** Clear in-memory cache — call after admin edits or when forcing refresh */
+export function invalidateBusinessCache() {
+  _cache = null;
+}
