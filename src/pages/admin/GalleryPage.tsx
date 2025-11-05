@@ -29,6 +29,7 @@ export default function GalleryPage() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -84,10 +85,14 @@ export default function GalleryPage() {
 
   const handleToggleActive = async (item: GalleryItem) => {
     try {
+      setTogglingId(item.id);
       await GalleryService.updateGalleryItem(item.id, { is_active: !item.is_active });
-      refresh();
+      await refresh();
     } catch (err) {
       console.error('Error toggling item status:', err);
+      alert(`Failed to toggle visibility: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -281,13 +286,16 @@ export default function GalleryPage() {
                   </button>
                   <button
                     onClick={() => handleToggleActive(item)}
-                    className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+                    disabled={togglingId === item.id}
+                    className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                       item.is_active
                         ? 'bg-orange-100 hover:bg-orange-200 text-orange-700'
                         : 'bg-green-100 hover:bg-green-200 text-green-700'
                     }`}
                   >
-                    {item.is_active ? (
+                    {togglingId === item.id ? (
+                      'Updating...'
+                    ) : item.is_active ? (
                       <>
                         <EyeOff size={12} className="inline mr-1" />
                         Hide
