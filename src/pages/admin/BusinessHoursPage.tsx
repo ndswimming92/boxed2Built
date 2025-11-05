@@ -81,8 +81,8 @@ export default function BusinessHoursPage() {
             }]);
         }
       }
-      setMessage({ type: 'success', text: 'Business hours saved!' });
-      setTimeout(() => setMessage(null), 3000);
+      setMessage({ type: 'success', text: 'Business hours saved! Refresh your public site to see the changes.' });
+      setTimeout(() => setMessage(null), 5000);
       fetchData();
     } catch (error) {
       console.error('Error saving:', error);

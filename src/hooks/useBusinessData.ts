@@ -11,7 +11,7 @@ import {
   CUSTOMER_REVIEWS
 } from '../constants/localSEO';
 
-export const useBusinessData = () => {
+export const useBusinessData = (forceRefresh?: number) => {
   const [data, setData] = useState<CompleteBusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -65,7 +65,8 @@ export const useBusinessData = () => {
           supabase
             .from('business_hours')
             .select('*')
-            .eq('business_id', businessInfo.id),
+            .eq('business_id', businessInfo.id)
+            .order('day_of_week', { ascending: false }),
           supabase
             .from('payment_methods')
             .select('*')
@@ -114,7 +115,7 @@ export const useBusinessData = () => {
     };
 
     fetchBusinessData();
-  }, []);
+  }, [forceRefresh]);
 
   return { data, loading, error };
 };
