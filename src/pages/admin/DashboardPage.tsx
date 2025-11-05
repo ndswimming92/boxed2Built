@@ -9,7 +9,9 @@ import {
   TrendingUp,
   Clock,
   CreditCard,
-  Share2
+  Share2,
+  BarChart3,
+  ArrowRight
 } from 'lucide-react';
 
 interface Stats {
@@ -231,6 +233,21 @@ export default function DashboardPage() {
             >
               <p className="font-medium text-slate-900">Manage Reviews</p>
               <p className="text-sm text-slate-600">Add or update customer reviews</p>
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className="block px-4 py-3 bg-gradient-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100 border border-emerald-200 rounded-lg transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-emerald-900 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    View Analytics Dashboard
+                  </p>
+                  <p className="text-sm text-emerald-700">Charts, graphs, and detailed insights</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-emerald-600" />
+              </div>
             </Link>
           </div>
         </div>

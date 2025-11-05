@@ -15,11 +15,13 @@ import {
   Menu,
   X,
   ChevronRight,
-  Image
+  Image,
+  BarChart3
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
   { name: 'Services', href: '/admin/services', icon: Briefcase },
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
