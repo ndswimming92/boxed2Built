@@ -66,16 +66,16 @@ export async function optimizeImage(
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
+        const mimeType = opts.convertToWebP ? 'image/webp' : file.type;
+        const extension = opts.convertToWebP ? 'webp' : file.name.split('.').pop();
+        const fileName = file.name.replace(/\.[^.]+$/, `.${extension}`);
+
         canvas.toBlob(
           (blob) => {
             if (!blob) {
               reject(new Error('Failed to create blob from canvas'));
               return;
             }
-
-            const mimeType = opts.convertToWebP ? 'image/webp' : file.type;
-            const extension = opts.convertToWebP ? 'webp' : file.name.split('.').pop();
-            const fileName = file.name.replace(/\.[^.]+$/, `.${extension}`);
 
             const optimizedFile = new File([blob], fileName, {
               type: mimeType,
