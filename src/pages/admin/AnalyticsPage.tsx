@@ -432,60 +432,75 @@ export default function AnalyticsPage() {
             <div className="bg-white rounded-xl p-6 border border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Key Efficiency Ratios</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Profit Margin</p>
-                    <p className="text-2xl font-bold text-slate-900">{formatPercent(metrics.profitMarginPercent)}</p>
+                <div className="flex flex-col p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Profit Margin</p>
+                      <p className="text-2xl font-bold text-slate-900">{formatPercent(metrics.profitMarginPercent)}</p>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        metrics.profitMarginPercent >= 70
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : metrics.profitMarginPercent >= 50
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {metrics.profitMarginPercent >= 70 ? 'Excellent' : metrics.profitMarginPercent >= 50 ? 'Good' : 'Fair'}
+                    </div>
                   </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      metrics.profitMarginPercent >= 70
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : metrics.profitMarginPercent >= 50
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {metrics.profitMarginPercent >= 70 ? 'Excellent' : metrics.profitMarginPercent >= 50 ? 'Good' : 'Fair'}
-                  </div>
+                  <p className="text-xs text-slate-500">
+                    Revenue after materials cost. Excellent: 70%+, Good: 50-70%, Fair: &lt;50%
+                  </p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Revenue per Hour</p>
-                    <p className="text-2xl font-bold text-slate-900">{formatCurrency(metrics.revenuePerHourRatio)}</p>
+                <div className="flex flex-col p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Revenue per Hour</p>
+                      <p className="text-2xl font-bold text-slate-900">{formatCurrency(metrics.revenuePerHourRatio)}</p>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        metrics.revenuePerHourRatio >= 60
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : metrics.revenuePerHourRatio >= 40
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {metrics.revenuePerHourRatio >= 60 ? 'Excellent' : metrics.revenuePerHourRatio >= 40 ? 'Good' : 'Fair'}
+                    </div>
                   </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      metrics.revenuePerHourRatio >= 60
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : metrics.revenuePerHourRatio >= 40
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {metrics.revenuePerHourRatio >= 60 ? 'Excellent' : metrics.revenuePerHourRatio >= 40 ? 'Good' : 'Fair'}
-                  </div>
+                  <p className="text-xs text-slate-500">
+                    Hourly earnings from jobs. Excellent: $60+/hr, Good: $40-60/hr, Fair: &lt;$40/hr
+                  </p>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Quoted vs Final Price</p>
-                    <p className="text-2xl font-bold text-slate-900">{formatPercent((metrics.quotedVsFinalRatio - 1) * 100)}</p>
-                  </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
-                        ? 'bg-emerald-100 text-emerald-800'
+                <div className="flex flex-col p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Quoted vs Final Price</p>
+                      <p className="text-2xl font-bold text-slate-900">{formatPercent((metrics.quotedVsFinalRatio - 1) * 100)}</p>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
+                        ? 'Excellent'
                         : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
-                      ? 'Excellent'
-                      : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
-                      ? 'Good'
-                      : 'Review'}
+                        ? 'Good'
+                        : 'Review'}
+                    </div>
                   </div>
+                  <p className="text-xs text-slate-500">
+                    Quote accuracy vs final price. Excellent: ±5%, Good: ±15%, Review: &gt;±15%
+                  </p>
                 </div>
               </div>
             </div>
