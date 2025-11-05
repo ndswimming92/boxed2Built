@@ -206,9 +206,10 @@ export class GalleryService {
         })
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error('Gallery item not found or could not be updated');
       return data;
     } catch (error) {
       console.error('Error updating gallery item:', error);
