@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import {
   Building2,
   Briefcase,
@@ -38,21 +39,46 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState('');
+  const [businessId, setBusinessId] = useState<string | null>(null);
+  const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    if (realtimeJobs.length > 0 && businessId) {
+      updateRevenueFromJobs();
+    }
+  }, [realtimeJobs, businessId]);
+
+  const updateRevenueFromJobs = () => {
+    const completedJobs = realtimeJobs.filter(job => job.date_completed);
+    const totalRevenue = completedJobs.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0);
+
+    setStats(prev => ({
+      ...prev,
+      jobs: realtimeJobs.length,
+      totalRevenue,
+    }));
+  };
+
   const fetchStats = async () => {
     try {
       const { data: businessInfo } = await supabase
         .from('business_info')
-        .select('name')
+        .select('id, name')
         .eq('is_active', true)
         .maybeSingle();
 
       if (businessInfo) {
         setBusinessName(businessInfo.name);
+        setBusinessId(businessInfo.id);
+      }
+
+      if (!businessInfo) {
+        setLoading(false);
+        return;
       }
 
       const [
@@ -70,7 +96,7 @@ export default function DashboardPage() {
         supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true),
-        supabase.from('jobs').select('final_price').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
+        supabase.from('jobs').select('final_price, date_completed').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
       ]);
 
       const avgRating = reviewsData && reviewsData.length > 0
@@ -78,7 +104,7 @@ export default function DashboardPage() {
         : 0;
 
       const totalRevenue = jobsData && jobsData.length > 0
-        ? jobsData.reduce((sum, job) => sum + (job.final_price || 0), 0)
+        ? jobsData.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0)
         : 0;
 
       setStats({
