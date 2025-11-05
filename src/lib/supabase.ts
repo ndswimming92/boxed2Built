@@ -167,6 +167,34 @@ export type GalleryItem = {
   updated_at: string;
 };
 
+export type Job = {
+  id: string;
+  business_id: string;
+  client_name: string;
+  client_phone: string | null;
+  client_email: string | null;
+  job_type: string | null;
+  job_description: string | null;
+  date_quoted: string | null;
+  date_scheduled: string | null;
+  date_completed: string | null;
+  hours_worked: number | null;
+  quoted_price: number | null;
+  final_price: number | null;
+  materials_cost: number | null;
+  location_city: string | null;
+  payment_method: string | null;
+  payment_date: string | null;
+  reviews_received: boolean;
+  google_review_link_sent: boolean;
+  repeat_client: boolean;
+  referral_source: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;

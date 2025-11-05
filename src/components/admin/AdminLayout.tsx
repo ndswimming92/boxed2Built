@@ -25,6 +25,7 @@ const navigation = [
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
   { name: 'Reviews', href: '/admin/reviews', icon: Star },
   { name: 'Gallery', href: '/admin/gallery', icon: Image },
+  { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
   { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
   { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
   { name: 'Social Media', href: '/admin/social-media', icon: Share2 },

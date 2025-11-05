@@ -19,6 +19,8 @@ interface Stats {
   avgRating: number;
   paymentMethods: number;
   socialMedia: number;
+  jobs: number;
+  totalRevenue: number;
 }
 
 export default function DashboardPage() {
@@ -29,6 +31,8 @@ export default function DashboardPage() {
     avgRating: 0,
     paymentMethods: 0,
     socialMedia: 0,
+    jobs: 0,
+    totalRevenue: 0,
   });
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState('');
@@ -54,17 +58,25 @@ export default function DashboardPage() {
         { count: serviceAreasCount },
         { data: reviewsData },
         { count: paymentMethodsCount },
-        { count: socialMediaCount }
+        { count: socialMediaCount },
+        { count: jobsCount },
+        { data: jobsData }
       ] = await Promise.all([
         supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('service_areas').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('customer_reviews').select('rating_value').eq('is_active', true),
         supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true)
+        supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true),
+        supabase.from('jobs').select('final_price').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
       ]);
 
       const avgRating = reviewsData && reviewsData.length > 0
         ? reviewsData.reduce((sum, r) => sum + r.rating_value, 0) / reviewsData.length
+        : 0;
+
+      const totalRevenue = jobsData && jobsData.length > 0
+        ? jobsData.reduce((sum, job) => sum + (job.final_price || 0), 0)
         : 0;
 
       setStats({
@@ -74,6 +86,8 @@ export default function DashboardPage() {
         avgRating: Math.round(avgRating * 10) / 10,
         paymentMethods: paymentMethodsCount || 0,
         socialMedia: socialMediaCount || 0,
+        jobs: jobsCount || 0,
+        totalRevenue,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -82,20 +96,43 @@ export default function DashboardPage() {
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const statCards = [
+    {
+      name: 'Total Jobs',
+      value: stats.jobs,
+      icon: Briefcase,
+      link: '/admin/jobs',
+      color: 'bg-blue-500'
+    },
+    {
+      name: 'Total Revenue',
+      value: formatCurrency(stats.totalRevenue),
+      icon: TrendingUp,
+      link: '/admin/jobs',
+      color: 'bg-emerald-500'
+    },
     {
       name: 'Services',
       value: stats.services,
       icon: Briefcase,
       link: '/admin/services',
-      color: 'bg-blue-500'
+      color: 'bg-indigo-500'
     },
     {
       name: 'Service Areas',
       value: stats.serviceAreas,
       icon: MapPin,
       link: '/admin/service-areas',
-      color: 'bg-emerald-500'
+      color: 'bg-teal-500'
     },
     {
       name: 'Reviews',
@@ -107,23 +144,9 @@ export default function DashboardPage() {
     {
       name: 'Avg Rating',
       value: stats.avgRating > 0 ? `${stats.avgRating}/5` : 'N/A',
-      icon: TrendingUp,
+      icon: Star,
       link: '/admin/reviews',
-      color: 'bg-purple-500'
-    },
-    {
-      name: 'Payment Methods',
-      value: stats.paymentMethods,
-      icon: CreditCard,
-      link: '/admin/payment-methods',
-      color: 'bg-rose-500'
-    },
-    {
-      name: 'Social Media',
-      value: stats.socialMedia,
-      icon: Share2,
-      link: '/admin/social-media',
-      color: 'bg-cyan-500'
+      color: 'bg-yellow-500'
     },
   ];
 
@@ -181,6 +204,13 @@ export default function DashboardPage() {
             Quick Actions
           </h2>
           <div className="space-y-3">
+            <Link
+              to="/admin/jobs"
+              className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
+            >
+              <p className="font-medium text-slate-900">Add New Job</p>
+              <p className="text-sm text-slate-600">Track completed jobs and revenue</p>
+            </Link>
             <Link
               to="/admin/business-info"
               className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
