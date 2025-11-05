@@ -39,13 +39,19 @@ import {
   Calendar,
   MapPin,
   UserCheck,
+  Download,
+  Upload,
 } from 'lucide-react';
+import ImportJobsModal from '../../components/admin/ImportJobsModal';
+import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
 export default function AnalyticsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('current_year');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const { jobs, loading, lastUpdated, isConnected } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -85,6 +91,26 @@ export default function AnalyticsPage() {
     return `${value.toFixed(1)}%`;
   };
 
+  const handleExportJobs = () => {
+    const jobsToExport = timePeriod === 'current_year'
+      ? jobs.filter(job => {
+          const year = new Date(job.created_at).getFullYear();
+          return year === new Date().getFullYear();
+        })
+      : jobs;
+
+    const csv = exportJobsToCSV(jobsToExport);
+    const filename = generateExportFilename();
+    downloadCSV(csv, filename);
+    setMessage({ type: 'success', text: `Exported ${jobsToExport.length} jobs successfully!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleImportSuccess = (count: number) => {
+    setMessage({ type: 'success', text: `Successfully imported ${count} jobs!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -110,6 +136,22 @@ export default function AnalyticsPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={handleExportJobs}
+            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            title="Export jobs to CSV"
+          >
+            <Download className="w-5 h-5" />
+            Export
+          </button>
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            title="Import jobs from CSV"
+          >
+            <Upload className="w-5 h-5" />
+            Import
+          </button>
+          <button
             onClick={() => setTimePeriod('current_year')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               timePeriod === 'current_year'
@@ -131,6 +173,21 @@ export default function AnalyticsPage() {
           </button>
         </div>
       </div>
+
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+          {message.type === 'success' ? (
+            <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          )}
+          <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{message.text}</p>
+        </div>
+      )}
 
       {jobs.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
@@ -428,6 +485,14 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {showImportModal && businessId && (
+        <ImportJobsModal
+          businessId={businessId}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
+        />
       )}
     </div>
   );

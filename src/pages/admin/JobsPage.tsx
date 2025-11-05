@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload } from 'lucide-react';
 import {
   determineJobStatus,
   calculateNetProfit,
@@ -12,6 +12,8 @@ import {
   JobStatus
 } from '../../utils/jobCalculations';
 import JobFormModal from '../../components/admin/JobFormModal';
+import ImportJobsModal from '../../components/admin/ImportJobsModal';
+import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 
 interface JobStats {
   totalJobs: number;
@@ -33,6 +35,7 @@ export default function JobsPage() {
   const [stats, setStats] = useState<JobStats>({ totalJobs: 0, totalRevenue: 0, totalProfit: 0, avgHourlyRate: 0 });
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -125,6 +128,20 @@ export default function JobsPage() {
     }
   };
 
+  const handleExportJobs = () => {
+    const csv = exportJobsToCSV(jobs);
+    const filename = generateExportFilename();
+    downloadCSV(csv, filename);
+    setMessage({ type: 'success', text: `Exported ${jobs.length} jobs successfully!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleImportSuccess = (count: number) => {
+    fetchData();
+    setMessage({ type: 'success', text: `Successfully imported ${count} jobs!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
   const uniqueLocations = Array.from(new Set(jobs.map(job => job.location_city).filter(Boolean))) as string[];
 
   if (loading) {
@@ -142,13 +159,31 @@ export default function JobsPage() {
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Jobs</h1>
           <p className="text-slate-600">Track and manage all your completed jobs</p>
         </div>
-        <button
-          onClick={() => { setEditingJob(null); setShowModal(true); }}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Job
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportJobs}
+            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            title="Export jobs to CSV"
+          >
+            <Download className="w-5 h-5" />
+            Export
+          </button>
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            title="Import jobs from CSV"
+          >
+            <Upload className="w-5 h-5" />
+            Import
+          </button>
+          <button
+            onClick={() => { setEditingJob(null); setShowModal(true); }}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Add Job
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -371,6 +406,14 @@ export default function JobsPage() {
             setMessage({ type: 'success', text: editingJob ? 'Job updated successfully!' : 'Job added successfully!' });
             setTimeout(() => setMessage(null), 3000);
           }}
+        />
+      )}
+
+      {showImportModal && businessId && (
+        <ImportJobsModal
+          businessId={businessId}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
         />
       )}
     </div>
