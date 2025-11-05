@@ -199,14 +199,10 @@ function validateReferralSource(source: string, row: number, errors: ValidationE
   if (!source || !source.trim()) return null;
 
   const cleaned = source.trim();
-  if (!REFERRAL_SOURCES.includes(cleaned)) {
-    errors.push({
-      row,
-      field: 'Referral Source',
-      message: `Invalid referral source. Must be one of: ${REFERRAL_SOURCES.join(', ')}`,
-      currentValue: cleaned,
-    });
-    return null;
+  const found = REFERRAL_SOURCES.find(s => s.toLowerCase() === cleaned.toLowerCase());
+
+  if (found) {
+    return found;
   }
 
   return cleaned;
@@ -218,17 +214,11 @@ function validateCity(city: string, row: number, serviceAreas: ServiceArea[], er
   const cleaned = city.trim();
   const found = serviceAreas.find(area => area.city_name.toLowerCase() === cleaned.toLowerCase());
 
-  if (!found) {
-    errors.push({
-      row,
-      field: 'Location (City)',
-      message: `City not found in service areas. Available cities: ${serviceAreas.map(a => a.city_name).join(', ')}`,
-      currentValue: cleaned,
-    });
-    return null;
+  if (found) {
+    return found.city_name;
   }
 
-  return found.city_name;
+  return cleaned;
 }
 
 function validatePaymentMethod(method: string, row: number, paymentMethods: PaymentMethod[], errors: ValidationError[]): string | null {
@@ -237,17 +227,11 @@ function validatePaymentMethod(method: string, row: number, paymentMethods: Paym
   const cleaned = method.trim();
   const found = paymentMethods.find(pm => pm.method_name.toLowerCase() === cleaned.toLowerCase());
 
-  if (!found) {
-    errors.push({
-      row,
-      field: 'Payment Method',
-      message: `Payment method not found. Available methods: ${paymentMethods.map(pm => pm.method_name).join(', ')}`,
-      currentValue: cleaned,
-    });
-    return null;
+  if (found) {
+    return found.method_name;
   }
 
-  return found.method_name;
+  return cleaned;
 }
 
 export async function validateCSVData(

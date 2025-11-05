@@ -13,8 +13,10 @@ export interface JobCSVRow {
   'Quoted Price': string;
   'Final Price': string;
   'Materials/Extra Cost': string;
+  'Def': string;
   'Location (City)': string;
   'State': string;
+  'Location (City) State': string;
   'Payment Method': string;
   'Payment Date': string;
   'Reviews Received': string;
@@ -37,8 +39,10 @@ const CSV_HEADERS: (keyof JobCSVRow)[] = [
   'Quoted Price',
   'Final Price',
   'Materials/Extra Cost',
+  'Def',
   'Location (City)',
   'State',
+  'Location (City) State',
   'Payment Method',
   'Payment Date',
   'Reviews Received',
@@ -82,6 +86,10 @@ function escapeCSVValue(value: string): string {
 }
 
 function jobToCSVRow(job: Job): JobCSVRow {
+  const city = job.location_city || '';
+  const state = '';
+  const cityState = city && state ? `${city}, ${state}` : city;
+
   return {
     'Client Name': job.client_name || '',
     'Client Phone': job.client_phone || '',
@@ -95,8 +103,10 @@ function jobToCSVRow(job: Job): JobCSVRow {
     'Quoted Price': formatNumberForExport(job.quoted_price),
     'Final Price': formatNumberForExport(job.final_price),
     'Materials/Extra Cost': formatNumberForExport(job.materials_cost),
-    'Location (City)': job.location_city || '',
-    'State': '',
+    'Def': '',
+    'Location (City)': city,
+    'State': state,
+    'Location (City) State': cityState,
     'Payment Method': job.payment_method || '',
     'Payment Date': formatDateForExport(job.payment_date),
     'Reviews Received': formatBooleanForExport(job.reviews_received),
@@ -115,17 +125,19 @@ export function generateCSVTemplate(): string {
     'Client Email': 'john.smith@example.com',
     'Job Type': 'Furniture Assembly',
     'Job Description': 'Assemble office desk and filing cabinet',
-    'Date Quoted': '01/15/2024',
-    'Date Scheduled': '01/20/2024',
-    'Date Completed': '01/20/2024',
+    'Date Quoted': '1/15/2025',
+    'Date Scheduled': '1/20/2025',
+    'Date Completed': '1/20/2025',
     'Hours Worked': '2.5',
     'Quoted Price': '150',
     'Final Price': '150',
     'Materials/Extra Cost': '0',
+    'Def': '',
     'Location (City)': 'Spring Hill',
     'State': 'TN',
+    'Location (City) State': 'Spring Hill, TN',
     'Payment Method': 'Cash',
-    'Payment Date': '01/20/2024',
+    'Payment Date': '1/20/2025',
     'Reviews Received': 'Yes',
     'Google Review Link Sent': 'Yes',
     'Repeat Client': 'No',
