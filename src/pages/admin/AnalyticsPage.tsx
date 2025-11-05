@@ -9,6 +9,11 @@ import {
   getReferralSourceData,
   getClientTypeData,
   getHealthStatus,
+  getJobTypePerformance,
+  getProfitabilityLeaderboard,
+  getPricingRecommendations,
+  getProfitMarginDistribution,
+  getMaterialsCostAnalysis,
   TimePeriod,
 } from '../../services/analyticsService';
 import MetricCard from '../../components/analytics/MetricCard';
@@ -44,6 +49,9 @@ import {
 } from 'lucide-react';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
+import ProfitabilityLeaderboard from '../../components/analytics/ProfitabilityLeaderboard';
+import JobTypePerformanceTable from '../../components/analytics/JobTypePerformanceTable';
+import PricingInsightsCard from '../../components/analytics/PricingInsightsCard';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
@@ -52,6 +60,7 @@ export default function AnalyticsPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('current_year');
   const [showImportModal, setShowImportModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [targetHourlyRate, setTargetHourlyRate] = useState(50);
   const { jobs, loading, lastUpdated, isConnected } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -77,6 +86,15 @@ export default function AnalyticsPage() {
   const referralData = useMemo(() => getReferralSourceData(jobs, timePeriod), [jobs, timePeriod]);
   const clientTypeData = useMemo(() => getClientTypeData(jobs, timePeriod), [jobs, timePeriod]);
   const healthStatus = useMemo(() => getHealthStatus(metrics), [metrics]);
+
+  const jobTypePerformance = useMemo(() => getJobTypePerformance(jobs, timePeriod), [jobs, timePeriod]);
+  const profitabilityLeaderboard = useMemo(() => getProfitabilityLeaderboard(jobs, timePeriod, 10), [jobs, timePeriod]);
+  const pricingRecommendations = useMemo(
+    () => getPricingRecommendations(jobs, timePeriod, targetHourlyRate),
+    [jobs, timePeriod, targetHourlyRate]
+  );
+  const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(jobs, timePeriod), [jobs, timePeriod]);
+  const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(jobs, timePeriod), [jobs, timePeriod]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -503,6 +521,89 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t-4 border-slate-200">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Profitability & Pricing Intelligence</h2>
+              <p className="text-slate-600">Deep dive into your most and least profitable jobs, pricing strategies, and optimization opportunities</p>
+            </div>
+
+            <div className="mb-8">
+              <PricingInsightsCard
+                recommendations={pricingRecommendations}
+                defaultTargetRate={targetHourlyRate}
+                onTargetRateChange={setTargetHourlyRate}
+              />
+            </div>
+
+            <div className="mb-8">
+              <JobTypePerformanceTable performance={jobTypePerformance} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <ChartCard title="Profit Margin Distribution" subtitle="Jobs by profit margin quality">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={profitMarginDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="range" stroke="#64748b" style={{ fontSize: '11px' }} />
+                    <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+
+              <div className="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Materials Cost Analysis</h3>
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {materialsCostAnalysis.length > 0 ? (
+                    materialsCostAnalysis.map((analysis) => (
+                      <div key={analysis.jobType} className="p-3 bg-slate-50 rounded-lg">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900">{analysis.jobType}</p>
+                            <p className="text-xs text-slate-500">{analysis.count} jobs</p>
+                          </div>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                              analysis.avgMaterialsPercent > 40
+                                ? 'bg-red-100 text-red-800'
+                                : analysis.avgMaterialsPercent > 30
+                                ? 'bg-amber-100 text-amber-800'
+                                : analysis.avgMaterialsPercent > 20
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            {formatPercent(analysis.avgMaterialsPercent)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-600">Avg: {formatCurrency(analysis.avgMaterialsCost)}</span>
+                          <span className="text-slate-500">{analysis.suggestion}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center py-8 text-slate-500">No materials cost data available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <ProfitabilityLeaderboard
+                topJobs={profitabilityLeaderboard.topJobs}
+                bottomJobs={profitabilityLeaderboard.bottomJobs}
+              />
             </div>
           </div>
         </>
