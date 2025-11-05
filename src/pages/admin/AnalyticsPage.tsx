@@ -473,12 +473,18 @@ export default function AnalyticsPage() {
                   </div>
                   <div
                     className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.1
+                      Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
                         ? 'bg-emerald-100 text-emerald-800'
+                        : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
+                        ? 'bg-blue-100 text-blue-800'
                         : 'bg-amber-100 text-amber-800'
                     }`}
                   >
-                    {Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.1 ? 'Accurate' : 'Review'}
+                    {Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
+                      ? 'Excellent'
+                      : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
+                      ? 'Good'
+                      : 'Review'}
                   </div>
                 </div>
               </div>
