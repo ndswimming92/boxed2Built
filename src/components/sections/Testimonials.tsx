@@ -10,11 +10,12 @@ const Testimonials: React.FC = () => {
 
   const REVIEWS = businessData?.reviews.map(review => ({
     id: review.id,
-    name: review.author_name,
-    date: review.date_published,
+    author: review.author_name,
+    text: review.review_body,
     rating: review.rating_value,
-    review: review.review_body,
-    verified: review.is_verified
+    datePublished: review.date_published,
+    source: review.is_verified ? 'Google' : 'Customer',
+    googleReviewUrl: review.is_verified ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z' : undefined
   })) || [];
 
   // Auto-scroll functionality
