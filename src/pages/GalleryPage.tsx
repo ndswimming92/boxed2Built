@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -8,8 +8,9 @@ import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { getCalendlyUrl } from '../utils/utm';
+import { usePublicGalleryItems } from '../hooks/useGalleryItems';
+import { supabase } from '../lib/supabase';
 
-// Sample media data - replace with your actual content
 const SAMPLE_MEDIA: MediaItem[] = [
   // Videos
   {
@@ -203,15 +204,33 @@ const SAMPLE_MEDIA: MediaItem[] = [
 ];
 
 const GalleryPage: React.FC = () => {
+  const [businessId, setBusinessId] = useState<string>('');
+  const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
+
+  useEffect(() => {
+    const fetchBusinessId = async () => {
+      try {
+        const { data } = await supabase
+          .from('business_info')
+          .select('id')
+          .eq('is_active', true)
+          .maybeSingle();
+        if (data) setBusinessId(data.id);
+      } catch (err) {
+        console.error('Error fetching business ID:', err);
+      }
+    };
+    fetchBusinessId();
+  }, []);
+
   useEffect(() => {
     document.title = 'Furniture Assembly Gallery | Boxed2Built Spring Hill';
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas.');
     }
 
-    // Set canonical URL for this page
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -279,12 +298,30 @@ const GalleryPage: React.FC = () => {
         </section>
 
         {/* Media Gallery */}
-        <MediaGallery
-          items={SAMPLE_MEDIA}
-          title="Our Work"
-          description=""
-          className="bg-white"
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : error ? (
+          <div className="container mx-auto px-4 py-12">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+              <p className="text-red-700">Failed to load gallery. Using sample images.</p>
+            </div>
+            <MediaGallery
+              items={SAMPLE_MEDIA}
+              title="Our Work"
+              description=""
+              className="bg-white"
+            />
+          </div>
+        ) : (
+          <MediaGallery
+            items={galleryItems.length > 0 ? galleryItems : SAMPLE_MEDIA}
+            title="Our Work"
+            description=""
+            className="bg-white"
+          />
+        )}
 
         {/* Call to Action */}
         <section className="py-12 bg-blue-600 text-white">

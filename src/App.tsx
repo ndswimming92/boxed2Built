@@ -27,6 +27,7 @@ import BusinessHoursPage from './pages/admin/BusinessHoursPage';
 import PaymentMethodsPage from './pages/admin/PaymentMethodsPage';
 import SocialMediaPage from './pages/admin/SocialMediaPage';
 import AttributesPage from './pages/admin/AttributesPage';
+import GalleryAdminPage from './pages/admin/GalleryPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -204,6 +205,7 @@ function App() {
                   <Route path="services" element={<ServicesAdminPage />} />
                   <Route path="service-areas" element={<ServiceAreasPage />} />
                   <Route path="reviews" element={<ReviewsPage />} />
+                  <Route path="gallery" element={<GalleryAdminPage />} />
                   <Route path="business-hours" element={<BusinessHoursPage />} />
                   <Route path="payment-methods" element={<PaymentMethodsPage />} />
                   <Route path="social-media" element={<SocialMediaPage />} />

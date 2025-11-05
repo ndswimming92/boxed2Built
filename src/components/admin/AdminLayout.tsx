@@ -14,7 +14,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Image
 } from 'lucide-react';
 
 const navigation = [
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Services', href: '/admin/services', icon: Briefcase },
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
   { name: 'Reviews', href: '/admin/reviews', icon: Star },
+  { name: 'Gallery', href: '/admin/gallery', icon: Image },
   { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
   { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
   { name: 'Social Media', href: '/admin/social-media', icon: Share2 },

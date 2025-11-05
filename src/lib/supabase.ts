@@ -145,6 +145,28 @@ export type BusinessAttribute = {
   created_at: string;
 };
 
+export type GalleryItem = {
+  id: string;
+  business_id: string;
+  type: 'image' | 'video';
+  src: string;
+  title: string;
+  description: string | null;
+  thumbnail: string | null;
+  alt: string | null;
+  category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
+  date: string | null;
+  location: string | null;
+  width: number | null;
+  height: number | null;
+  amazon_link: string | null;
+  platform: 'youtube' | 'vimeo' | 'direct' | null;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;
