@@ -207,12 +207,16 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
 
   // Add reviews only if explicitly enabled (only on homepage to avoid duplicate aggregate ratings)
   if (includeReviews && reviews.length > 0) {
+    const totalRating = reviews.reduce((sum, review) => sum + review.ratingValue, 0);
+    const averageRating = totalRating / reviews.length;
+    const minRating = Math.min(...reviews.map(r => r.ratingValue));
+
     schemaData.aggregateRating = {
       "@type": "AggregateRating",
-      "ratingValue": "5.0",
+      "ratingValue": averageRating.toFixed(1),
       "reviewCount": reviews.length.toString(),
       "bestRating": "5",
-      "worstRating": "5"
+      "worstRating": minRating.toString()
     };
 
     schemaData.review = reviews.map(review => ({

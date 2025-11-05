@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ReviewCard from '../ReviewCard';
+import StarRating from '../ui/StarRating';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { calculateRatingStats } from '../../utils/ratingCalculations';
 
 const Testimonials: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -17,6 +19,11 @@ const Testimonials: React.FC = () => {
     source: review.is_verified ? 'Google' : 'Customer',
     googleReviewUrl: review.is_verified ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z' : undefined
   })) || [];
+
+  const ratingStats = useMemo(() => {
+    if (!businessData?.reviews) return null;
+    return calculateRatingStats(businessData.reviews);
+  }, [businessData?.reviews]);
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -84,20 +91,21 @@ const Testimonials: React.FC = () => {
             Real reviews from satisfied customers in Spring Hill, TN and surrounding areas.
           </p>
 
-          {/* Average rating display */}
-          <div className="flex items-center justify-center mt-6">
-            <div className="flex items-center">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={24}
-                  className="text-yellow-400 fill-current"
-                />
-              ))}
+          {ratingStats && ratingStats.totalReviews > 0 && (
+            <div className="flex items-center justify-center mt-6">
+              <StarRating
+                rating={ratingStats.averageRating}
+                size={24}
+                allowPartialStars={true}
+              />
+              <span className="ml-3 text-xl font-semibold text-gray-900">
+                {ratingStats.averageRating.toFixed(1)}
+              </span>
+              <span className="ml-2 text-gray-600">
+                ({ratingStats.totalReviews} {ratingStats.totalReviews === 1 ? 'review' : 'reviews'})
+              </span>
             </div>
-            <span className="ml-3 text-xl font-semibold text-gray-900">5.0</span>
-            <span className="ml-2 text-gray-600">({REVIEWS.length} reviews)</span>
-          </div>
+          )}
         </div>
 
         {/* Carousel Container */}
