@@ -5,6 +5,7 @@ import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
+import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import BatchImageUpload from '../../components/admin/BatchImageUpload';
 import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm';
@@ -13,6 +14,7 @@ import GalleryItemModal from '../../components/admin/GalleryItemModal';
 export default function GalleryPage() {
   const { user } = useAuth();
   const [businessId, setBusinessId] = useState<string>('');
+  const [loadingBusinessId, setLoadingBusinessId] = useState(true);
   const { items, loading, error, refresh } = useGalleryItems(businessId, true);
 
   const [showBatchUpload, setShowBatchUpload] = useState(false);
@@ -31,12 +33,17 @@ export default function GalleryPage() {
   useEffect(() => {
     const fetchBusinessId = async () => {
       try {
-        const { data } = await import('../../lib/supabase').then(m =>
-          m.supabase.from('business_info').select('id').eq('is_active', true).maybeSingle()
-        );
+        setLoadingBusinessId(true);
+        const { data } = await supabase
+          .from('business_info')
+          .select('id')
+          .eq('is_active', true)
+          .maybeSingle();
         if (data) setBusinessId(data.id);
       } catch (err) {
         console.error('Error fetching business ID:', err);
+      } finally {
+        setLoadingBusinessId(false);
       }
     };
     fetchBusinessId();
@@ -97,10 +104,18 @@ export default function GalleryPage() {
     }
   };
 
-  if (!businessId) {
+  if (loadingBusinessId) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  if (!businessId) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-700">Unable to load business information. Please refresh the page.</p>
       </div>
     );
   }
