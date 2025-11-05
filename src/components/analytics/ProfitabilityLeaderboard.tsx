@@ -71,9 +71,9 @@ export default function ProfitabilityLeaderboard({ topJobs, bottomJobs }: Profit
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 border-b border-emerald-200">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 sm:p-6 border-b border-emerald-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <TrendingUp className="w-5 h-5 text-emerald-600" />

@@ -46,6 +46,7 @@ import {
   UserCheck,
   Download,
   Upload,
+  ChevronDown,
 } from 'lucide-react';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
@@ -58,6 +59,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444'
 export default function AnalyticsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('current_year');
+  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [targetHourlyRate, setTargetHourlyRate] = useState(50);
@@ -138,12 +140,12 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto">
-      <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Analytics</h1>
-          <div className="flex items-center gap-4 text-sm text-slate-600">
-            <p>Comprehensive insights into your business performance</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Business Analytics</h1>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm text-slate-600">
+            <p className="hidden sm:block">Comprehensive insights into your business performance</p>
             {lastUpdated && (
               <span className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
@@ -152,43 +154,82 @@ export default function AnalyticsPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleExportJobs}
-            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="px-3 sm:px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
             title="Export jobs to CSV"
           >
             <Download className="w-5 h-5" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </button>
           <button
             onClick={() => setShowImportModal(true)}
-            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="px-3 sm:px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
             title="Import jobs from CSV"
           >
             <Upload className="w-5 h-5" />
-            Import
+            <span className="hidden sm:inline">Import</span>
           </button>
-          <button
-            onClick={() => setTimePeriod('current_year')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              timePeriod === 'current_year'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            Current Year
-          </button>
-          <button
-            onClick={() => setTimePeriod('all_time')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              timePeriod === 'all_time'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            All Time
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+              className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 min-w-[140px] sm:min-w-[180px] justify-between text-sm sm:text-base"
+            >
+              <span>
+                {timePeriod === 'current_month' && 'Current Month'}
+                {timePeriod === 'last_3_months' && 'Last 3 Months'}
+                {timePeriod === 'last_6_months' && 'Last 6 Months'}
+                {timePeriod === 'current_year' && 'Current Year'}
+                {timePeriod === 'all_time' && 'All Time'}
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showPeriodDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            {showPeriodDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
+                <button
+                  onClick={() => { setTimePeriod('current_month'); setShowPeriodDropdown(false); }}
+                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
+                    timePeriod === 'current_month' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  Current Month
+                </button>
+                <button
+                  onClick={() => { setTimePeriod('last_3_months'); setShowPeriodDropdown(false); }}
+                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
+                    timePeriod === 'last_3_months' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  Last 3 Months
+                </button>
+                <button
+                  onClick={() => { setTimePeriod('last_6_months'); setShowPeriodDropdown(false); }}
+                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
+                    timePeriod === 'last_6_months' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  Last 6 Months
+                </button>
+                <button
+                  onClick={() => { setTimePeriod('current_year'); setShowPeriodDropdown(false); }}
+                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
+                    timePeriod === 'current_year' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  Current Year
+                </button>
+                <button
+                  onClick={() => { setTimePeriod('all_time'); setShowPeriodDropdown(false); }}
+                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
+                    timePeriod === 'all_time' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  All Time
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -215,20 +256,20 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-6 border border-emerald-200 mb-8">
-            <div className="flex items-center justify-between">
+          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-4 sm:p-6 border border-emerald-200 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-1">Boxed2Built Health</h2>
-                <p className="text-slate-600">Overall business performance indicator</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Boxed2Built Health</h2>
+                <p className="text-sm sm:text-base text-slate-600">Overall business performance indicator</p>
               </div>
-              <div className="text-right">
-                <p className={`text-4xl font-bold ${healthStatus.color} mb-1`}>{healthStatus.status}</p>
-                <p className="text-sm text-slate-600">Based on key metrics</p>
+              <div className="text-left sm:text-right">
+                <p className={`text-3xl sm:text-4xl font-bold ${healthStatus.color} mb-1`}>{healthStatus.status}</p>
+                <p className="text-xs sm:text-sm text-slate-600">Based on key metrics</p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <MetricCard
               title="Total Revenue"
               value={formatCurrency(metrics.totalRevenue)}
@@ -295,12 +336,12 @@ export default function AnalyticsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <ChartCard title="Jobs by Type" subtitle="Distribution of job categories">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={jobsByType}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="type" stroke="#64748b" style={{ fontSize: '12px' }} />
+                  <XAxis dataKey="type" stroke="#64748b" style={{ fontSize: '10px' }} angle={-45} textAnchor="end" height={80} />
                   <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
                   <Tooltip
                     contentStyle={{
@@ -323,8 +364,8 @@ export default function AnalyticsPage() {
                     nameKey="city"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={(entry) => `${entry.city}: ${entry.count}`}
+                    outerRadius={80}
+                    label={false}
                   >
                     {locationRevenue.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -342,13 +383,13 @@ export default function AnalyticsPage() {
             </ChartCard>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <ChartCard title="Net Profit by Location" subtitle="Most profitable cities">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={locationRevenue} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis type="number" stroke="#64748b" style={{ fontSize: '12px' }} />
-                  <YAxis dataKey="city" type="category" stroke="#64748b" style={{ fontSize: '12px' }} width={100} />
+                  <XAxis type="number" stroke="#64748b" style={{ fontSize: '10px' }} />
+                  <YAxis dataKey="city" type="category" stroke="#64748b" style={{ fontSize: '10px' }} width={80} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#fff',
@@ -366,7 +407,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={referralData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="source" stroke="#64748b" style={{ fontSize: '12px' }} />
+                  <XAxis dataKey="source" stroke="#64748b" style={{ fontSize: '10px' }} angle={-45} textAnchor="end" height={80} />
                   <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
                   <Tooltip
                     contentStyle={{
@@ -382,8 +423,8 @@ export default function AnalyticsPage() {
             </ChartCard>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 mb-8">
-            <ChartCard title="Monthly Revenue & Net Profit" subtitle="Financial performance over time" height="h-96">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <ChartCard title="Monthly Revenue & Net Profit" subtitle="Financial performance over time" height="h-64 sm:h-80 lg:h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -419,7 +460,7 @@ export default function AnalyticsPage() {
             </ChartCard>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <ChartCard title="Client Type Distribution" subtitle="Repeat vs new clients">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -429,8 +470,8 @@ export default function AnalyticsPage() {
                     nameKey="type"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={(entry) => `${entry.type}: ${entry.count} (${formatPercent(entry.percent)})`}
+                    outerRadius={80}
+                    label={false}
                   >
                     {clientTypeData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#3b82f6'} />
@@ -447,17 +488,17 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </ChartCard>
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Key Efficiency Ratios</h3>
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-4">Key Efficiency Ratios</h3>
               <div className="space-y-4">
-                <div className="flex flex-col p-4 bg-slate-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col p-3 sm:p-4 bg-slate-50 rounded-lg">
+                  <div className="flex items-start sm:items-center justify-between mb-2 gap-2">
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Profit Margin</p>
-                      <p className="text-2xl font-bold text-slate-900">{formatPercent(metrics.profitMarginPercent)}</p>
+                      <p className="text-xs sm:text-sm font-medium text-slate-600">Profit Margin</p>
+                      <p className="text-xl sm:text-2xl font-bold text-slate-900">{formatPercent(metrics.profitMarginPercent)}</p>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap ${
                         metrics.profitMarginPercent >= 70
                           ? 'bg-emerald-100 text-emerald-800'
                           : metrics.profitMarginPercent >= 50
@@ -479,7 +520,7 @@ export default function AnalyticsPage() {
                       <p className="text-2xl font-bold text-slate-900">{formatCurrency(metrics.revenuePerHourRatio)}</p>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap ${
                         metrics.revenuePerHourRatio >= 60
                           ? 'bg-emerald-100 text-emerald-800'
                           : metrics.revenuePerHourRatio >= 40
@@ -501,7 +542,7 @@ export default function AnalyticsPage() {
                       <p className="text-2xl font-bold text-slate-900">{formatPercent((metrics.quotedVsFinalRatio - 1) * 100)}</p>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap ${
                         Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.05
                           ? 'bg-emerald-100 text-emerald-800'
                           : Math.abs(metrics.quotedVsFinalRatio - 1) <= 0.15
@@ -524,10 +565,10 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t-4 border-slate-200">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Profitability & Pricing Intelligence</h2>
-              <p className="text-slate-600">Deep dive into your most and least profitable jobs, pricing strategies, and optimization opportunities</p>
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t-4 border-slate-200">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Profitability & Pricing Intelligence</h2>
+              <p className="text-sm sm:text-base text-slate-600">Deep dive into your most and least profitable jobs, pricing strategies, and optimization opportunities</p>
             </div>
 
             <div className="mb-8">
@@ -542,12 +583,12 @@ export default function AnalyticsPage() {
               <JobTypePerformanceTable performance={jobTypePerformance} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <ChartCard title="Profit Margin Distribution" subtitle="Jobs by profit margin quality">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={profitMarginDistribution}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="range" stroke="#64748b" style={{ fontSize: '11px' }} />
+                    <XAxis dataKey="range" stroke="#64748b" style={{ fontSize: '9px' }} angle={-45} textAnchor="end" height={80} />
                     <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
@@ -561,8 +602,8 @@ export default function AnalyticsPage() {
                 </ResponsiveContainer>
               </ChartCard>
 
-              <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Materials Cost Analysis</h3>
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-4">Materials Cost Analysis</h3>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
                   {materialsCostAnalysis.length > 0 ? (
                     materialsCostAnalysis.map((analysis) => (

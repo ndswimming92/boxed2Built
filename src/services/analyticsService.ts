@@ -48,7 +48,7 @@ export interface ClientTypeData {
   percent: number;
 }
 
-export type TimePeriod = 'current_year' | 'all_time';
+export type TimePeriod = 'current_month' | 'last_3_months' | 'last_6_months' | 'current_year' | 'all_time';
 
 function calculateNetProfit(finalPrice: number | null, materialsCost: number | null): number {
   if (finalPrice === null) return 0;
@@ -59,11 +59,38 @@ function calculateNetProfit(finalPrice: number | null, materialsCost: number | n
 function filterJobsByPeriod(jobs: Job[], period: TimePeriod): Job[] {
   if (period === 'all_time') return jobs;
 
-  const currentYear = new Date().getFullYear();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
   return jobs.filter(job => {
     if (!job.date_completed) return false;
-    const jobYear = new Date(job.date_completed).getFullYear();
-    return jobYear === currentYear;
+    const jobDate = new Date(job.date_completed);
+    const jobYear = jobDate.getFullYear();
+    const jobMonth = jobDate.getMonth();
+
+    switch (period) {
+      case 'current_month':
+        return jobYear === currentYear && jobMonth === currentMonth;
+
+      case 'last_3_months': {
+        const threeMonthsAgo = new Date(now);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        return jobDate >= threeMonthsAgo;
+      }
+
+      case 'last_6_months': {
+        const sixMonthsAgo = new Date(now);
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        return jobDate >= sixMonthsAgo;
+      }
+
+      case 'current_year':
+        return jobYear === currentYear;
+
+      default:
+        return true;
+    }
   });
 }
 

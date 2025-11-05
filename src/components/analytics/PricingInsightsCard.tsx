@@ -58,18 +58,18 @@ export default function PricingInsightsCard({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-blue-50">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-teal-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-teal-600" />
+      <div className="p-4 sm:p-6 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-blue-50">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-teal-100 rounded-lg">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900">Pricing Intelligence</h3>
-              <p className="text-sm text-slate-600">Data-driven pricing recommendations by job type</p>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Pricing Intelligence</h3>
+              <p className="text-xs sm:text-sm text-slate-600">Data-driven pricing recommendations by job type</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <label htmlFor="targetRate" className="text-sm font-medium text-slate-700 whitespace-nowrap">
               Target Rate:
             </label>

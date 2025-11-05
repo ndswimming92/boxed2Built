@@ -24,18 +24,18 @@ export default function MetricCard({
   trend,
 }: MetricCardProps) {
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`p-2 ${iconBgColor} rounded-lg`}>
-          <Icon className={`w-5 h-5 ${iconColor}`} />
+    <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200 hover:shadow-lg transition-shadow">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+        <div className={`p-1.5 sm:p-2 ${iconBgColor} rounded-lg`}>
+          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${iconColor}`} />
         </div>
-        <p className="text-sm font-medium text-slate-600">{title}</p>
+        <p className="text-xs sm:text-sm font-medium text-slate-600">{title}</p>
       </div>
-      <p className="text-3xl font-bold text-slate-900 mb-1">{value}</p>
-      {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
+      <p className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">{value}</p>
+      {subtitle && <p className="text-xs sm:text-sm text-slate-600">{subtitle}</p>}
       {trend && (
         <p
-          className={`text-sm font-medium mt-2 ${
+          className={`text-xs sm:text-sm font-medium mt-2 ${
             trend.positive ? 'text-emerald-600' : 'text-red-600'
           }`}
         >
