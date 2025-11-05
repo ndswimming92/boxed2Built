@@ -106,7 +106,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">
-            {job ? 'Edit Job' : 'Add New Job'}
+            {job ? 'Edit Job' : initialData ? 'Copy Job' : 'Add New Job'}
           </h2>
           <button
             onClick={onClose}

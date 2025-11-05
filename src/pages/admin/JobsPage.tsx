@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy } from 'lucide-react';
 import {
   determineJobStatus,
   calculateNetProfit,
@@ -36,6 +36,7 @@ export default function JobsPage() {
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [copyingJob, setCopyingJob] = useState<Partial<Job> | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -142,6 +143,35 @@ export default function JobsPage() {
     setTimeout(() => setMessage(null), 3000);
   };
 
+  const handleCopyJob = (job: Job) => {
+    const jobCopy: Partial<Job> = {
+      client_name: job.client_name,
+      client_phone: job.client_phone,
+      client_email: job.client_email,
+      job_type: job.job_type,
+      job_description: job.job_description,
+      location_city: job.location_city,
+      quoted_price: job.quoted_price,
+      materials_cost: job.materials_cost,
+      payment_method: job.payment_method,
+      repeat_client: true,
+      referral_source: job.referral_source,
+      date_quoted: null,
+      date_scheduled: null,
+      date_completed: null,
+      hours_worked: null,
+      final_price: null,
+      payment_date: null,
+      reviews_received: false,
+      google_review_link_sent: false,
+      notes: job.notes ? `Copied from previous job\n\n${job.notes}` : 'Copied from previous job',
+    };
+
+    setCopyingJob(jobCopy);
+    setEditingJob(null);
+    setShowModal(true);
+  };
+
   const uniqueLocations = Array.from(new Set(jobs.map(job => job.location_city).filter(Boolean))) as string[];
 
   if (loading) {
@@ -177,7 +207,11 @@ export default function JobsPage() {
             Import
           </button>
           <button
-            onClick={() => { setEditingJob(null); setShowModal(true); }}
+            onClick={() => {
+              setEditingJob(null);
+              setCopyingJob(null);
+              setShowModal(true);
+            }}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
@@ -297,7 +331,11 @@ export default function JobsPage() {
             </p>
             {jobs.length === 0 && (
               <button
-                onClick={() => { setEditingJob(null); setShowModal(true); }}
+                onClick={() => {
+                  setEditingJob(null);
+                  setCopyingJob(null);
+                  setShowModal(true);
+                }}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Add Your First Job
@@ -332,14 +370,23 @@ export default function JobsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => { setEditingJob(job); setShowModal(true); }}
+                      onClick={() => handleCopyJob(job)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Copy job"
+                    >
+                      <Copy className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => { setEditingJob(job); setCopyingJob(null); setShowModal(true); }}
                       className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      title="Edit job"
                     >
                       <Edit2 className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(job.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete job"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -400,10 +447,20 @@ export default function JobsPage() {
         <JobFormModal
           job={editingJob}
           businessId={businessId}
-          onClose={() => { setShowModal(false); setEditingJob(null); }}
+          initialData={copyingJob || undefined}
+          onClose={() => {
+            setShowModal(false);
+            setEditingJob(null);
+            setCopyingJob(null);
+          }}
           onSave={() => {
             fetchData();
-            setMessage({ type: 'success', text: editingJob ? 'Job updated successfully!' : 'Job added successfully!' });
+            const messageText = editingJob
+              ? 'Job updated successfully!'
+              : copyingJob
+                ? 'Job copied and saved successfully!'
+                : 'Job added successfully!';
+            setMessage({ type: 'success', text: messageText });
             setTimeout(() => setMessage(null), 3000);
           }}
         />
