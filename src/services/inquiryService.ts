@@ -1,0 +1,311 @@
+import { supabase, FormInquiry } from '../lib/supabase';
+
+export interface CreateInquiryData {
+  business_id: string;
+  client_name: string;
+  client_email: string;
+  client_phone?: string;
+  furniture_type: string;
+  pieces: number;
+  preferred_date?: string;
+  preferred_time_slot?: string;
+  notes?: string;
+  user_city?: string;
+  estimated_price?: string;
+  estimated_time?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  referral_source?: string;
+}
+
+export interface UpdateInquiryData {
+  viewed?: boolean;
+  status?: 'pending' | 'converted_to_job' | 'archived';
+  converted_job_id?: string;
+  last_contact_date?: string;
+  contact_method?: string;
+  contact_notes?: string;
+  response_count?: number;
+}
+
+export interface InquiryFilters {
+  status?: 'pending' | 'converted_to_job' | 'archived' | 'all';
+  viewed?: boolean;
+  furniture_type?: string;
+  searchTerm?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function createInquiry(data: CreateInquiryData): Promise<FormInquiry> {
+  const { data: inquiry, error } = await supabase
+    .from('form_inquiries')
+    .insert({
+      business_id: data.business_id,
+      client_name: data.client_name,
+      client_email: data.client_email,
+      client_phone: data.client_phone || null,
+      furniture_type: data.furniture_type,
+      pieces: data.pieces,
+      preferred_date: data.preferred_date || null,
+      preferred_time_slot: data.preferred_time_slot || null,
+      notes: data.notes || null,
+      user_city: data.user_city || null,
+      estimated_price: data.estimated_price || null,
+      estimated_time: data.estimated_time || null,
+      utm_source: data.utm_source || null,
+      utm_medium: data.utm_medium || null,
+      utm_campaign: data.utm_campaign || null,
+      referral_source: data.referral_source || null,
+      source: 'contact_form',
+      status: 'pending',
+      viewed: false,
+      response_count: 0,
+      is_active: true,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating inquiry:', error);
+    throw new Error(`Failed to create inquiry: ${error.message}`);
+  }
+
+  return inquiry as FormInquiry;
+}
+
+export async function getInquiries(
+  businessId: string,
+  filters?: InquiryFilters
+): Promise<FormInquiry[]> {
+  let query = supabase
+    .from('form_inquiries')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('is_active', true);
+
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status);
+  }
+
+  if (filters?.viewed !== undefined) {
+    query = query.eq('viewed', filters.viewed);
+  }
+
+  if (filters?.furniture_type) {
+    query = query.eq('furniture_type', filters.furniture_type);
+  }
+
+  if (filters?.searchTerm) {
+    const term = filters.searchTerm.toLowerCase();
+    query = query.or(
+      `client_name.ilike.%${term}%,client_email.ilike.%${term}%,client_phone.ilike.%${term}%`
+    );
+  }
+
+  if (filters?.startDate) {
+    query = query.gte('submission_date', filters.startDate);
+  }
+
+  if (filters?.endDate) {
+    query = query.lte('submission_date', filters.endDate);
+  }
+
+  query = query.order('submission_date', { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching inquiries:', error);
+    throw new Error(`Failed to fetch inquiries: ${error.message}`);
+  }
+
+  return (data || []) as FormInquiry[];
+}
+
+export async function getInquiryById(id: string): Promise<FormInquiry | null> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching inquiry:', error);
+    throw new Error(`Failed to fetch inquiry: ${error.message}`);
+  }
+
+  return data as FormInquiry | null;
+}
+
+export async function updateInquiry(
+  id: string,
+  updates: UpdateInquiryData
+): Promise<FormInquiry> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating inquiry:', error);
+    throw new Error(`Failed to update inquiry: ${error.message}`);
+  }
+
+  return data as FormInquiry;
+}
+
+export async function markAsViewed(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('form_inquiries')
+    .update({ viewed: true })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error marking inquiry as viewed:', error);
+    throw new Error(`Failed to mark inquiry as viewed: ${error.message}`);
+  }
+}
+
+export async function archiveInquiry(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('form_inquiries')
+    .update({ status: 'archived' })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error archiving inquiry:', error);
+    throw new Error(`Failed to archive inquiry: ${error.message}`);
+  }
+}
+
+export async function convertToJob(
+  id: string,
+  jobId: string
+): Promise<FormInquiry> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .update({
+      status: 'converted_to_job',
+      converted_job_id: jobId,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error converting inquiry to job:', error);
+    throw new Error(`Failed to convert inquiry: ${error.message}`);
+  }
+
+  return data as FormInquiry;
+}
+
+export async function logCommunication(
+  id: string,
+  method: 'email' | 'sms' | 'phone',
+  notes?: string
+): Promise<FormInquiry> {
+  const inquiry = await getInquiryById(id);
+  if (!inquiry) {
+    throw new Error('Inquiry not found');
+  }
+
+  const newNotes = notes
+    ? inquiry.contact_notes
+      ? `${inquiry.contact_notes}\n\n[${new Date().toLocaleString()}] ${method.toUpperCase()}: ${notes}`
+      : `[${new Date().toLocaleString()}] ${method.toUpperCase()}: ${notes}`
+    : inquiry.contact_notes;
+
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .update({
+      last_contact_date: new Date().toISOString(),
+      contact_method: method,
+      contact_notes: newNotes,
+      response_count: inquiry.response_count + 1,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error logging communication:', error);
+    throw new Error(`Failed to log communication: ${error.message}`);
+  }
+
+  return data as FormInquiry;
+}
+
+export async function getUnviewedCount(businessId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('form_inquiries')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', businessId)
+    .eq('is_active', true)
+    .eq('viewed', false);
+
+  if (error) {
+    console.error('Error getting unviewed count:', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+export async function getInquiryStats(businessId: string) {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('is_active', true);
+
+  if (error) {
+    console.error('Error fetching inquiry stats:', error);
+    return {
+      total: 0,
+      pending: 0,
+      converted: 0,
+      archived: 0,
+      conversionRate: 0,
+    };
+  }
+
+  const inquiries = data || [];
+  const total = inquiries.length;
+  const pending = inquiries.filter((i) => i.status === 'pending').length;
+  const converted = inquiries.filter((i) => i.status === 'converted_to_job').length;
+  const archived = inquiries.filter((i) => i.status === 'archived').length;
+  const conversionRate = total > 0 ? (converted / total) * 100 : 0;
+
+  return {
+    total,
+    pending,
+    converted,
+    archived,
+    conversionRate: Math.round(conversionRate),
+  };
+}
+
+export async function getRecentInquiries(
+  businessId: string,
+  limit: number = 5
+): Promise<FormInquiry[]> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('is_active', true)
+    .order('submission_date', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent inquiries:', error);
+    return [];
+  }
+
+  return (data || []) as FormInquiry[];
+}

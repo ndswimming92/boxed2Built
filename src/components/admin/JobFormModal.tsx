@@ -8,9 +8,10 @@ interface JobFormModalProps {
   businessId: string;
   onClose: () => void;
   onSave: () => void;
+  initialData?: Partial<Job>;
 }
 
-export default function JobFormModal({ job, businessId, onClose, onSave }: JobFormModalProps) {
+export default function JobFormModal({ job, businessId, onClose, onSave, initialData }: JobFormModalProps) {
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [saving, setSaving] = useState(false);
@@ -43,8 +44,10 @@ export default function JobFormModal({ job, businessId, onClose, onSave }: JobFo
     fetchDropdownData();
     if (job) {
       setFormData(job);
+    } else if (initialData) {
+      setFormData(prev => ({ ...prev, ...initialData }));
     }
-  }, [job]);
+  }, [job, initialData]);
 
   const fetchDropdownData = async () => {
     try {

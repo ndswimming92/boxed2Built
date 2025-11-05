@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
+import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
 import {
   Building2,
   Briefcase,
@@ -12,7 +13,9 @@ import {
   CreditCard,
   Share2,
   BarChart3,
-  ArrowRight
+  ArrowRight,
+  Inbox,
+  ExternalLink
 } from 'lucide-react';
 
 interface Stats {
@@ -24,6 +27,9 @@ interface Stats {
   socialMedia: number;
   jobs: number;
   totalRevenue: number;
+  inquiries: number;
+  pendingInquiries: number;
+  conversionRate: number;
 }
 
 export default function DashboardPage() {
@@ -36,10 +42,14 @@ export default function DashboardPage() {
     socialMedia: 0,
     jobs: 0,
     totalRevenue: 0,
+    inquiries: 0,
+    pendingInquiries: 0,
+    conversionRate: 0,
   });
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState('');
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -88,7 +98,9 @@ export default function DashboardPage() {
         { count: paymentMethodsCount },
         { count: socialMediaCount },
         { count: jobsCount },
-        { data: jobsData }
+        { data: jobsData },
+        inquiryStats,
+        recentInquiriesData
       ] = await Promise.all([
         supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('service_areas').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -96,8 +108,12 @@ export default function DashboardPage() {
         supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true),
-        supabase.from('jobs').select('final_price, date_completed').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
+        supabase.from('jobs').select('final_price, date_completed').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null),
+        getInquiryStats(businessInfo.id),
+        getRecentInquiries(businessInfo.id, 5)
       ]);
+
+      setRecentInquiries(recentInquiriesData);
 
       const avgRating = reviewsData && reviewsData.length > 0
         ? reviewsData.reduce((sum, r) => sum + r.rating_value, 0) / reviewsData.length
@@ -116,6 +132,9 @@ export default function DashboardPage() {
         socialMedia: socialMediaCount || 0,
         jobs: jobsCount || 0,
         totalRevenue,
+        inquiries: inquiryStats.total,
+        pendingInquiries: inquiryStats.pending,
+        conversionRate: inquiryStats.conversionRate,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);

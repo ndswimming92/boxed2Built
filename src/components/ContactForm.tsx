@@ -6,6 +6,8 @@ import { trackEvent, trackFormInteraction, trackConversion } from '../utils/anal
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
 import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
+import { supabase } from '../lib/supabase';
+import { createInquiry } from '../services/inquiryService';
 
 const initialValues = {
   name: { value: '', error: '', touched: false },
@@ -301,8 +303,8 @@ const ContactForm: React.FC = () => {
       furniture_type: values.furnitureType,
       number_of_pieces: parseInt(values.pieces) || 0
     });
-    
-    // Create form data for submission
+
+    // Create form data for submission to Formspree
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
@@ -311,6 +313,35 @@ const ContactForm: React.FC = () => {
 
     // Use Formspree's handleSubmit function
     await handleSubmit(formData);
+
+    // Save to Supabase database for admin tracking
+    try {
+      const { data: businessInfo } = await supabase
+        .from('business_info')
+        .select('id')
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (businessInfo) {
+        await createInquiry({
+          business_id: businessInfo.id,
+          client_name: values.name,
+          client_email: values.email,
+          client_phone: values.phone || undefined,
+          furniture_type: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          preferred_date: values.preferredDate || undefined,
+          preferred_time_slot: values.preferredTimeSlot || undefined,
+          notes: values.notes || undefined,
+          user_city: userCity || undefined,
+          estimated_price: estimatedPrice || undefined,
+          estimated_time: estimatedTime || undefined,
+          referral_source: 'contact_form',
+        });
+      }
+    } catch (error) {
+      console.error('Error saving inquiry to database:', error);
+    }
   });
 
   const getInputClasses = (fieldName: string) => {

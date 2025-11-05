@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -16,11 +16,17 @@ import {
   X,
   ChevronRight,
   Image,
-  BarChart3
+  BarChart3,
+  Bell,
+  Inbox
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
+import { showNewInquiryNotification, requestNotificationPermission } from '../../utils/notificationService';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
   { name: 'Services', href: '/admin/services', icon: Briefcase },
@@ -36,8 +42,39 @@ const navigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const { unviewedCount, inquiries } = useRealtimeInquiries({ businessId });
+  const [previousInquiryCount, setPreviousInquiryCount] = useState(0);
+
+  useEffect(() => {
+    const fetchBusinessId = async () => {
+      const { data } = await supabase
+        .from('business_info')
+        .select('id')
+        .eq('is_active', true)
+        .maybeSingle();
+      if (data) {
+        setBusinessId(data.id);
+      }
+    };
+    fetchBusinessId();
+  }, []);
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  useEffect(() => {
+    if (inquiries.length > previousInquiryCount && previousInquiryCount > 0) {
+      const newInquiry = inquiries[0];
+      if (newInquiry && !newInquiry.viewed) {
+        showNewInquiryNotification(newInquiry);
+      }
+    }
+    setPreviousInquiryCount(inquiries.length);
+  }, [inquiries, previousInquiryCount]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -134,6 +171,18 @@ export default function AdminLayout() {
               <Menu className="w-6 h-6" />
             </button>
             <div className="flex items-center gap-4 ml-auto">
+              <Link
+                to="/admin/inquiries"
+                className="relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
+                title="View Inquiries"
+              >
+                <Bell className="w-5 h-5" />
+                {unviewedCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full min-w-[20px]">
+                    {unviewedCount > 99 ? '99+' : unviewedCount}
+                  </span>
+                )}
+              </Link>
               <Link
                 to="/"
                 className="text-sm text-slate-600 hover:text-emerald-600 transition-colors"
