@@ -207,6 +207,8 @@ const GalleryPage: React.FC = () => {
   const [businessId, setBusinessId] = useState<string>('');
   const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
 
+  const allMediaItems = [...SAMPLE_MEDIA, ...galleryItems];
+
   useEffect(() => {
     const fetchBusinessId = async () => {
       try {
@@ -305,7 +307,7 @@ const GalleryPage: React.FC = () => {
         ) : error ? (
           <div className="container mx-auto px-4 py-12">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-              <p className="text-red-700">Failed to load gallery. Using sample images.</p>
+              <p className="text-red-700">Failed to load gallery items from database. Showing available images.</p>
             </div>
             <MediaGallery
               items={SAMPLE_MEDIA}
@@ -316,7 +318,7 @@ const GalleryPage: React.FC = () => {
           </div>
         ) : (
           <MediaGallery
-            items={galleryItems.length > 0 ? galleryItems : SAMPLE_MEDIA}
+            items={allMediaItems}
             title="Our Work"
             description=""
             className="bg-white"
