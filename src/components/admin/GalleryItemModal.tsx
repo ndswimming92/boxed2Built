@@ -5,6 +5,7 @@ import type { GalleryItem } from '../../services/galleryService';
 import { optimizeImage, validateImageFile } from '../../utils/imageOptimizationUpload';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
+import FocusAreaSelector from './FocusAreaSelector';
 
 interface GalleryItemModalProps {
   businessId: string;
@@ -27,6 +28,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     youtubeUrl: item?.type === 'video' ? item.src : '',
     width: item?.width || undefined,
     height: item?.height || undefined,
+    focusX: item?.focus_x || 50,
+    focusY: item?.focus_y || 50,
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -118,6 +121,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           amazon_link: formData.amazonLink || undefined,
           width,
           height,
+          focus_x: formData.focusX,
+          focus_y: formData.focusY,
         };
 
         if (type === 'image' && selectedFile) {
@@ -144,6 +149,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           platform: type === 'video' ? 'youtube' : undefined,
           display_order: maxDisplayOrder + 1,
           is_active: true,
+          focus_x: formData.focusX,
+          focus_y: formData.focusY,
         };
 
         await GalleryService.createGalleryItem(createData);
@@ -324,6 +331,18 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                 placeholder="https://amzn.to/..."
               />
             </FormField>
+
+            {type === 'image' && previewUrl && (
+              <FocusAreaSelector
+                imageUrl={previewUrl}
+                initialFocusX={formData.focusX}
+                initialFocusY={formData.focusY}
+                onFocusChange={(x, y) => {
+                  setFormData({ ...formData, focusX: x, focusY: y });
+                }}
+                className="mt-4"
+              />
+            )}
           </div>
         </div>
 

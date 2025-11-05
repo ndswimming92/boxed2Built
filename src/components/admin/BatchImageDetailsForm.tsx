@@ -4,6 +4,7 @@ import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { GalleryService, CreateGalleryItemInput } from '../../services/galleryService';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
+import FocusAreaSelector from './FocusAreaSelector';
 
 interface ImageDetail {
   optimizedImage: OptimizedImage;
@@ -14,6 +15,8 @@ interface ImageDetail {
   date: string;
   location: string;
   amazonLink: string;
+  focusX: number;
+  focusY: number;
 }
 
 interface BatchImageDetailsFormProps {
@@ -39,6 +42,8 @@ export default function BatchImageDetailsForm({
       date: new Date().toISOString().split('T')[0],
       location: 'Spring Hill, TN',
       amazonLink: '',
+      focusX: 50,
+      focusY: 50,
     }))
   );
 
@@ -107,6 +112,8 @@ export default function BatchImageDetailsForm({
           amazon_link: detail.amazonLink || undefined,
           display_order: maxDisplayOrder + i + 1,
           is_active: true,
+          focus_x: detail.focusX,
+          focus_y: detail.focusY,
         });
       }
 
@@ -314,6 +321,21 @@ export default function BatchImageDetailsForm({
                           placeholder="https://amzn.to/..."
                         />
                       </FormField>
+                    </div>
+
+                    <div className="mt-4">
+                      <FocusAreaSelector
+                        imageUrl={detail.optimizedImage.dataUrl}
+                        initialFocusX={detail.focusX}
+                        initialFocusY={detail.focusY}
+                        onFocusChange={(x, y) => {
+                          setImageDetails((prev) =>
+                            prev.map((d, i) =>
+                              i === index ? { ...d, focusX: x, focusY: y } : d
+                            )
+                          );
+                        }}
+                      />
                     </div>
                   </div>
                 )}

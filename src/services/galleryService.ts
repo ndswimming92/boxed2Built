@@ -19,6 +19,8 @@ export interface GalleryItem {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order: number;
   is_active: boolean;
+  focus_x?: number;
+  focus_y?: number;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +42,8 @@ export interface CreateGalleryItemInput {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
+  focus_x?: number;
+  focus_y?: number;
 }
 
 export interface UpdateGalleryItemInput {
@@ -56,6 +60,8 @@ export interface UpdateGalleryItemInput {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
+  focus_x?: number;
+  focus_y?: number;
 }
 
 export class GalleryService {

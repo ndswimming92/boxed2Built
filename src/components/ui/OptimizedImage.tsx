@@ -15,6 +15,8 @@ interface OptimizedImageProps {
   quality?: number;
   imageType?: 'hero' | 'thumbnail' | 'gallery' | 'icon';
   enableAvif?: boolean;
+  focusX?: number;
+  focusY?: number;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -29,6 +31,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   quality,
   imageType = 'gallery',
   enableAvif = true,
+  focusX = 50,
+  focusY = 50,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -109,8 +113,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={handleLoad}
         onError={handleError}
-        style={{ 
-          aspectRatio: width && height ? `${width}/${height}` : undefined
+        style={{
+          aspectRatio: width && height ? `${width}/${height}` : undefined,
+          objectPosition: `${focusX}% ${focusY}%`
         }}
       />
         </picture>

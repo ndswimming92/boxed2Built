@@ -19,6 +19,8 @@ export interface MediaItem {
   width?: number;
   height?: number;
   amazonLink?: string;
+  focusX?: number;
+  focusY?: number;
 }
 
 interface MediaGalleryProps {
@@ -142,6 +144,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     imageType="thumbnail"
                     quality={75}
                     enableAvif={true}
+                    focusX={item.focusX}
+                    focusY={item.focusY}
                   />
                 </div>
               ) : (
@@ -250,6 +254,8 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                       imageType="gallery"
                       quality={90}
                       enableAvif={true}
+                      focusX={lightboxItem.focusX}
+                      focusY={lightboxItem.focusY}
                     />
                   ) : (
                     <VideoPlayer

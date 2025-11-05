@@ -59,6 +59,8 @@ export function convertGalleryItemToMediaItem(item: GalleryItem): MediaItem {
     height: item.height || undefined,
     amazonLink: item.amazon_link || undefined,
     platform: item.platform || undefined,
+    focusX: item.focus_x || 50,
+    focusY: item.focus_y || 50,
   };
 }
 
