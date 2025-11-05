@@ -272,9 +272,30 @@ export default function GalleryPage() {
                 <h3 className="font-semibold text-slate-900 text-sm mb-1 line-clamp-2">
                   {item.title}
                 </h3>
-                <p className="text-xs text-slate-500 mb-2 capitalize">
+                <p className="text-xs text-slate-500 mb-1 capitalize">
                   {item.category.replace('-', ' ')}
                 </p>
+                {item.description && (
+                  <p className="text-xs text-slate-600 mb-2 line-clamp-2">
+                    {item.description.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
+                      if (part.match(/^https?:\/\//)) {
+                        return (
+                          <a
+                            key={index}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {part.length > 30 ? part.substring(0, 30) + '...' : part}
+                          </a>
+                        );
+                      }
+                      return <span key={index}>{part}</span>;
+                    })}
+                  </p>
+                )}
 
                 <div className="flex items-center gap-1">
                   <button
