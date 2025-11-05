@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
-import { showNewInquiryNotification, requestNotificationPermission } from '../../utils/notificationService';
+import { requestNotificationPermission } from '../../utils/notificationService';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -45,8 +45,10 @@ export default function AdminLayout() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const { unviewedCount, inquiries } = useRealtimeInquiries({ businessId });
-  const [previousInquiryCount, setPreviousInquiryCount] = useState(0);
+  const { unviewedCount } = useRealtimeInquiries({
+    businessId,
+    enableNotifications: true
+  });
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -65,16 +67,6 @@ export default function AdminLayout() {
   useEffect(() => {
     requestNotificationPermission();
   }, []);
-
-  useEffect(() => {
-    if (inquiries.length > previousInquiryCount && previousInquiryCount > 0) {
-      const newInquiry = inquiries[0];
-      if (newInquiry && !newInquiry.viewed) {
-        showNewInquiryNotification(newInquiry);
-      }
-    }
-    setPreviousInquiryCount(inquiries.length);
-  }, [inquiries, previousInquiryCount]);
 
   const handleSignOut = async () => {
     await signOut();

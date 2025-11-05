@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase, FormInquiry } from '../lib/supabase';
 import { getInquiries, getUnviewedCount } from '../services/inquiryService';
+import { showNewInquiryNotification } from '../utils/notificationService';
 
 interface UseRealtimeInquiriesOptions {
   businessId: string | null;
   autoRefresh?: boolean;
+  enableNotifications?: boolean;
 }
 
 interface UseRealtimeInquiriesResult {
@@ -18,6 +20,7 @@ interface UseRealtimeInquiriesResult {
 export function useRealtimeInquiries({
   businessId,
   autoRefresh = true,
+  enableNotifications = false,
 }: UseRealtimeInquiriesOptions): UseRealtimeInquiriesResult {
   const [inquiries, setInquiries] = useState<FormInquiry[]>([]);
   const [unviewedCount, setUnviewedCount] = useState(0);
@@ -84,6 +87,11 @@ export function useRealtimeInquiries({
             const newInquiry = payload.new as FormInquiry;
             setInquiries((prev) => [newInquiry, ...prev]);
             setUnviewedCount((prev) => prev + 1);
+
+            if (enableNotifications) {
+              console.log('Triggering notification for new inquiry:', newInquiry);
+              showNewInquiryNotification(newInquiry);
+            }
           } else if (payload.eventType === 'UPDATE') {
             const updatedInquiry = payload.new as FormInquiry;
             setInquiries((prev) =>
@@ -105,7 +113,7 @@ export function useRealtimeInquiries({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [businessId, autoRefresh]);
+  }, [businessId, autoRefresh, enableNotifications]);
 
   return {
     inquiries,
