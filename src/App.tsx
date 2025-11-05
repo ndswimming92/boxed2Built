@@ -31,6 +31,7 @@ import GalleryAdminPage from './pages/admin/GalleryPage';
 import JobsAdminPage from './pages/admin/JobsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import InquiriesPage from './pages/admin/InquiriesPage';
+import ForecastingPage from './pages/admin/ForecastingPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -206,6 +207,7 @@ function App() {
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="forecasting" element={<ForecastingPage />} />
                   <Route path="business-info" element={<BusinessInfoPage />} />
                   <Route path="services" element={<ServicesAdminPage />} />
                   <Route path="service-areas" element={<ServiceAreasPage />} />
