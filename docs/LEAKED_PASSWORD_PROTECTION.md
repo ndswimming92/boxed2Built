@@ -37,11 +37,50 @@ The HaveIBeenPwned integration uses k-anonymity:
 
 ## Implementation Status
 
-✅ **Database security fixed** - All indexes and functions secured
+✅ **Database security fixed** - All unused indexes removed, function search paths secured
 ⚠️ **Leaked password protection** - Must be enabled in Supabase Dashboard (cannot be set via SQL)
+
+## Security Fixes Applied
+
+### Database Optimization and Security (Applied via Migration)
+
+1. **Removed Unused Indexes** - Dropped 17 unused indexes to reduce overhead:
+   - Business-related table indexes (address, attributes, reviews, gallery, etc.)
+   - Form inquiry indexes (status, viewed, submission_date)
+   - Revenue forecasting indexes (business_id, forecast_date, composite)
+
+2. **Fixed Function Search Paths** - All trigger functions now use immutable search paths:
+   - `update_revenue_forecasts_updated_at`
+   - `update_forecast_settings_updated_at`
+   - `update_jobs_updated_at`
+   - `update_gallery_items_updated_at`
+   - `update_form_inquiries_updated_at`
+
+These functions now include:
+- `SECURITY DEFINER` for controlled execution context
+- `SET search_path = public` to prevent search path manipulation attacks
+
+### Manual Configuration Required
+
+**Leaked Password Protection** must be enabled through Supabase Dashboard:
+
+1. Navigate to: **Project Settings → Authentication → Policies**
+2. Find: **"Breached Password Protection"** section
+3. Enable: **"Check passwords against HaveIBeenPwned database"**
+4. Save changes
+
+This setting cannot be configured via SQL migrations and requires dashboard access.
+
+## Security Impact
+
+- **Reduced Attack Surface**: Removed unnecessary indexes that could be exploited
+- **Function Security**: Protected trigger functions from search path manipulation
+- **Password Security**: When enabled, prevents use of compromised passwords
+- **Performance**: Reduced index maintenance overhead
 
 ## Additional Resources
 
 - [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
 - [HaveIBeenPwned API](https://haveibeenpwned.com/API/v3)
 - [Password Security Best Practices](https://supabase.com/docs/guides/auth/passwords)
+- [PostgreSQL Function Security](https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY)
