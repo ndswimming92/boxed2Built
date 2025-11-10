@@ -125,7 +125,7 @@ const Hero: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Dining Chairs</div>
-                  <div className="text-xl font-bold text-blue-700">$45+</div>
+                  <div className="text-xl font-bold text-blue-700">$85+</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-1">Office Desks</div>
