@@ -353,7 +353,7 @@ const ContactPage: React.FC = () => {
                     How much does furniture assembly cost?
                   </h3>
                   <p className="text-gray-600">
-                    Our prices start at $45 for small items like chairs. We provide transparent, upfront 
+                    Our prices start at $85 for small items like chairs. We provide transparent, upfront 
                     pricing based on the complexity and size of your furniture. Free quotes available.
                   </p>
                 </div>
