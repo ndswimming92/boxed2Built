@@ -22,7 +22,7 @@
 - ✅ **Beds & Bed Frames** - Starting at $153
 - ✅ **Dressers & Storage** - Starting at $166  
 - ✅ **Desks & Tables** - Starting at $96
-- ✅ **Chairs & Small Furniture** - Starting at $45
+- ✅ **Chairs & Small Furniture** - Starting at $85
 - ✅ **Bookshelves & Storage** - Starting at $116
 - ✅ **Media Consoles & TV Stands**
 - ✅ **Office Furniture**
