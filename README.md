@@ -47,7 +47,7 @@
 
 | Furniture Type | Starting Price | Price Range |
 |----------------|----------------|-------------|
-| Small Furniture (Chairs, Nightstands) | $45 | $45-$108 |
+| Small Furniture (Chairs, Nightstands) | $85 | $85-$108 |
 | Storage & Shelving | $116 | $116-$172 |
 | Tables & Desks | $96 | $96-$209 |
 | Dressers & Storage | $166 | $166-$204 |
