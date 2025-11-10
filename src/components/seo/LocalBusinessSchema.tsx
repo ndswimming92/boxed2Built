@@ -136,7 +136,7 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
           "name": service.name,
           "description": service.description
         },
-        "price": service.price || "45",
+        "price": service.price || "85",
         "priceCurrency": "USD"
       }))
     },
