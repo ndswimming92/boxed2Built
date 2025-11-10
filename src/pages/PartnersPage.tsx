@@ -148,7 +148,7 @@ const PartnersPage: React.FC = () => {
 
     // Pricing
     addSection('TRANSPARENT PRICING (Updated 2025)', [
-      'Small Furniture (Chairs, Nightstands): $45-$108',
+      'Small Furniture (Chairs, Nightstands): $85-$108',
       'Storage & Shelving (Bookshelves, Units): $116-$172',
       'Tables & Desks (Coffee Tables, Desks): $96-$209',
       'Dressers & Storage (Multi-drawer): $166-$204',
