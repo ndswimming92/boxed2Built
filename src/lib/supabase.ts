@@ -227,6 +227,30 @@ export type FormInquiry = {
   updated_at: string;
 };
 
+export type SavedRequest = {
+  id: string;
+  business_id: string;
+  inquiry_id: string | null;
+  confirmation_code: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  furniture_type: string;
+  pieces: number;
+  preferred_date: string | null;
+  preferred_time_slot: string | null;
+  notes: string | null;
+  user_city: string | null;
+  estimated_price: string | null;
+  estimated_time: string | null;
+  submission_date: string;
+  last_accessed: string | null;
+  access_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;

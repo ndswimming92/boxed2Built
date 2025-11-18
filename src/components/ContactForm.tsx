@@ -8,6 +8,8 @@ import ValidationMessage from './ui/ValidationMessage';
 import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
+import { createSavedRequest } from '../services/savedRequestService';
+import ConfirmationModal from './ConfirmationModal';
 
 const initialValues = {
   name: { value: '', error: '', touched: false },
@@ -119,6 +121,8 @@ const ContactForm: React.FC = () => {
   const [userCity, setUserCity] = useState('');
   const [isIOS, setIsIOS] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<any>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Use enhanced form validation
@@ -229,40 +233,6 @@ const ContactForm: React.FC = () => {
     }
   }, [fields.furnitureType?.value, fields.pieces?.value]);
 
-  // Handle successful submission
-  useEffect(() => {
-    if (state.succeeded) {
-      setSubmitSuccess(true);
-      reset();
-      
-      // Auto-hide success message after 5 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 5000);
-    }
-  }, [state.succeeded, reset]);
-
-  if (state.succeeded || submitSuccess) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center animate-fadeIn">
-        <div className="animate-bounce mb-4">
-          <CheckCircle size={48} className="text-green-600 mx-auto" />
-        </div>
-        <h3 className="text-2xl font-bold text-green-800 mb-3">Thank You!</h3>
-        <p className="text-green-700 text-lg mb-4">
-          Your request has been submitted successfully. We'll get back to you within 24 hours with a detailed quote.
-        </p>
-        <div className="bg-white p-4 rounded-lg border border-green-200 inline-block">
-          <p className="text-sm text-gray-600">
-            <strong>What's next?</strong><br />
-            • We'll review your project details<br />
-            • Prepare a customized quote<br />
-            • Contact you to schedule service
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const toggleOptionalFields = () => {
     setShowOptionalFields(!showOptionalFields);
@@ -314,7 +284,7 @@ const ContactForm: React.FC = () => {
     // Use Formspree's handleSubmit function
     await handleSubmit(formData);
 
-    // Save to Supabase database for admin tracking
+    // Save to Supabase database for admin tracking and create saved request
     try {
       const { data: businessInfo } = await supabase
         .from('business_info')
@@ -323,7 +293,7 @@ const ContactForm: React.FC = () => {
         .maybeSingle();
 
       if (businessInfo) {
-        await createInquiry({
+        const inquiry = await createInquiry({
           business_id: businessInfo.id,
           client_name: values.name,
           client_email: values.email,
@@ -338,9 +308,49 @@ const ContactForm: React.FC = () => {
           estimated_time: estimatedTime || undefined,
           referral_source: 'contact_form',
         });
+
+        const savedRequest = await createSavedRequest({
+          business_id: businessInfo.id,
+          inquiry_id: inquiry.id,
+          client_name: values.name,
+          client_email: values.email,
+          client_phone: values.phone || undefined,
+          furniture_type: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          preferred_date: values.preferredDate || undefined,
+          preferred_time_slot: values.preferredTimeSlot || undefined,
+          notes: values.notes || undefined,
+          user_city: userCity || undefined,
+          estimated_price: estimatedPrice || undefined,
+          estimated_time: estimatedTime || undefined,
+        });
+
+        setConfirmationData({
+          confirmationCode: savedRequest.confirmation_code,
+          clientName: values.name,
+          clientEmail: values.email,
+          clientPhone: values.phone || undefined,
+          furnitureType: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          preferredDate: values.preferredDate || undefined,
+          preferredTimeSlot: values.preferredTimeSlot || undefined,
+          notes: values.notes || undefined,
+          userCity: userCity || undefined,
+          estimatedPrice: estimatedPrice || undefined,
+          estimatedTime: estimatedTime || undefined,
+          submissionDate: savedRequest.submission_date,
+        });
+
+        setShowConfirmationModal(true);
+        reset();
       }
     } catch (error) {
       console.error('Error saving inquiry to database:', error);
+      setSubmitSuccess(true);
+      reset();
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 5000);
     }
   });
 
@@ -363,8 +373,42 @@ const ContactForm: React.FC = () => {
     return `${baseClasses} border-gray-300`;
   };
 
+  if (submitSuccess) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center animate-fadeIn">
+        <div className="animate-bounce mb-4">
+          <CheckCircle size={48} className="text-green-600 mx-auto" />
+        </div>
+        <h3 className="text-2xl font-bold text-green-800 mb-3">Thank You!</h3>
+        <p className="text-green-700 text-lg mb-4">
+          Your request has been submitted successfully. We'll get back to you within 24 hours with a detailed quote.
+        </p>
+        <div className="bg-white p-4 rounded-lg border border-green-200 inline-block">
+          <p className="text-sm text-gray-600">
+            <strong>What's next?</strong><br />
+            • We'll review your project details<br />
+            • Prepare a customized quote<br />
+            • Contact you to schedule service
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded shadow p-6">
+    <>
+      {confirmationData && (
+        <ConfirmationModal
+          isOpen={showConfirmationModal}
+          onClose={() => {
+            setShowConfirmationModal(false);
+            setConfirmationData(null);
+          }}
+          confirmationCode={confirmationData.confirmationCode}
+          requestData={confirmationData}
+        />
+      )}
+      <div className="bg-white rounded shadow p-6">
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-2">Get Your Free Quote</h3>
         <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
@@ -742,6 +786,7 @@ const ContactForm: React.FC = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 

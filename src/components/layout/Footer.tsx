@@ -150,6 +150,7 @@ const Footer: React.FC = () => {
                 <li><InternalLink href="/partners" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Partners</InternalLink></li>
                 <li><InternalLink href="/gallery" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Gallery</InternalLink></li>
                 <li><InternalLink href="/contact" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Contact</InternalLink></li>
+                <li><InternalLink href="/lookup-request" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Look Up Request</InternalLink></li>
                 <li><InternalLink href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Privacy Policy</InternalLink></li>
                 <li><InternalLink href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors" trackingCategory="footer_nav">Terms of Service</InternalLink></li>
               </ul>

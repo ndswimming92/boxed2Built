@@ -9,6 +9,7 @@ import GalleryPage from './pages/GalleryPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import PartnersPage from './pages/PartnersPage';
+import RequestLookupPage from './pages/RequestLookupPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
@@ -201,6 +202,7 @@ function App() {
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="/lookup-request" element={<RequestLookupPage />} />
 
                 <Route path="/admin/login" element={<LoginPage />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
