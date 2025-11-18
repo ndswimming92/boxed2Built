@@ -247,107 +247,121 @@ const ContactForm: React.FC = () => {
   };
 
   const onSubmit = handleValidatedSubmit(async (values) => {
-    // Track form completion with detailed parameters
-    trackFormInteraction('contact_form', 'complete', {
-      page_section: 'contact_form',
-      furniture_type: values.furnitureType,
-      number_of_pieces: parseInt(values.pieces) || 0,
-      estimated_value: estimatedPrice,
-      form_step: 'submit'
-    });
-
-    // Track conversion with enhanced parameters
-    trackConversion('form_submission', 1, 'USD', {
-      page_section: 'contact_form',
-      conversion_type: 'lead',
-      furniture_type: values.furnitureType,
-      number_of_pieces: parseInt(values.pieces) || 0
-    });
-
-    trackEvent('contact-form-submit', 'contact_form', {
-      event_category: 'conversion',
-      value: 1,
-      user_engagement: 'form_submission',
-      element_type: 'form',
-      action_type: 'submit',
-      furniture_type: values.furnitureType,
-      number_of_pieces: parseInt(values.pieces) || 0
-    });
-
-    // Create form data for submission to Formspree
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    formData.append('user_city', userCity);
-
-    // Use Formspree's handleSubmit function
-    await handleSubmit(formData);
-
-    // Save to Supabase database for admin tracking and create saved request
     try {
+      // Track form completion with detailed parameters
+      trackFormInteraction('contact_form', 'complete', {
+        page_section: 'contact_form',
+        furniture_type: values.furnitureType,
+        number_of_pieces: parseInt(values.pieces) || 0,
+        estimated_value: estimatedPrice,
+        form_step: 'submit'
+      });
+
+      // Track conversion with enhanced parameters
+      trackConversion('form_submission', 1, 'USD', {
+        page_section: 'contact_form',
+        conversion_type: 'lead',
+        furniture_type: values.furnitureType,
+        number_of_pieces: parseInt(values.pieces) || 0
+      });
+
+      trackEvent('contact-form-submit', 'contact_form', {
+        event_category: 'conversion',
+        value: 1,
+        user_engagement: 'form_submission',
+        element_type: 'form',
+        action_type: 'submit',
+        furniture_type: values.furnitureType,
+        number_of_pieces: parseInt(values.pieces) || 0
+      });
+
+      // Create form data for submission to Formspree
+      const formData = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      formData.append('user_city', userCity);
+
+      // Submit to Formspree (fire and forget - don't block on this)
+      handleSubmit(formData).catch((error) => {
+        console.error('Formspree submission error:', error);
+      });
+
+      // Save to Supabase database for admin tracking and create saved request
       const { data: businessInfo } = await supabase
         .from('business_info')
         .select('id')
         .eq('is_active', true)
         .maybeSingle();
 
-      if (businessInfo) {
-        const inquiry = await createInquiry({
-          business_id: businessInfo.id,
-          client_name: values.name,
-          client_email: values.email,
-          client_phone: values.phone || undefined,
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
-          preferred_date: values.preferredDate || undefined,
-          preferred_time_slot: values.preferredTimeSlot || undefined,
-          notes: values.notes || undefined,
-          user_city: userCity || undefined,
-          estimated_price: estimatedPrice || undefined,
-          estimated_time: estimatedTime || undefined,
-          referral_source: 'contact_form',
-        });
-
-        const savedRequest = await createSavedRequest({
-          business_id: businessInfo.id,
-          inquiry_id: inquiry.id,
-          client_name: values.name,
-          client_email: values.email,
-          client_phone: values.phone || undefined,
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
-          preferred_date: values.preferredDate || undefined,
-          preferred_time_slot: values.preferredTimeSlot || undefined,
-          notes: values.notes || undefined,
-          user_city: userCity || undefined,
-          estimated_price: estimatedPrice || undefined,
-          estimated_time: estimatedTime || undefined,
-        });
-
-        setConfirmationData({
-          confirmationCode: savedRequest.confirmation_code,
-          clientName: values.name,
-          clientEmail: values.email,
-          clientPhone: values.phone || undefined,
-          furnitureType: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
-          preferredDate: values.preferredDate || undefined,
-          preferredTimeSlot: values.preferredTimeSlot || undefined,
-          notes: values.notes || undefined,
-          userCity: userCity || undefined,
-          estimatedPrice: estimatedPrice || undefined,
-          estimatedTime: estimatedTime || undefined,
-          submissionDate: savedRequest.submission_date,
-        });
-
-        setShowConfirmationModal(true);
-        reset();
+      if (!businessInfo) {
+        throw new Error('Business information not found');
       }
+
+      const inquiry = await createInquiry({
+        business_id: businessInfo.id,
+        client_name: values.name,
+        client_email: values.email,
+        client_phone: values.phone || undefined,
+        furniture_type: values.furnitureType,
+        pieces: parseInt(values.pieces) || 1,
+        preferred_date: values.preferredDate || undefined,
+        preferred_time_slot: values.preferredTimeSlot || undefined,
+        notes: values.notes || undefined,
+        user_city: userCity || undefined,
+        estimated_price: estimatedPrice || undefined,
+        estimated_time: estimatedTime || undefined,
+        referral_source: 'contact_form',
+      });
+
+      const savedRequest = await createSavedRequest({
+        business_id: businessInfo.id,
+        inquiry_id: inquiry.id,
+        client_name: values.name,
+        client_email: values.email,
+        client_phone: values.phone || undefined,
+        furniture_type: values.furnitureType,
+        pieces: parseInt(values.pieces) || 1,
+        preferred_date: values.preferredDate || undefined,
+        preferred_time_slot: values.preferredTimeSlot || undefined,
+        notes: values.notes || undefined,
+        user_city: userCity || undefined,
+        estimated_price: estimatedPrice || undefined,
+        estimated_time: estimatedTime || undefined,
+      });
+
+      // Set confirmation data and show modal
+      setConfirmationData({
+        confirmationCode: savedRequest.confirmation_code,
+        clientName: values.name,
+        clientEmail: values.email,
+        clientPhone: values.phone || undefined,
+        furnitureType: values.furnitureType,
+        pieces: parseInt(values.pieces) || 1,
+        preferredDate: values.preferredDate || undefined,
+        preferredTimeSlot: values.preferredTimeSlot || undefined,
+        notes: values.notes || undefined,
+        userCity: userCity || undefined,
+        estimatedPrice: estimatedPrice || undefined,
+        estimatedTime: estimatedTime || undefined,
+        submissionDate: savedRequest.submission_date,
+      });
+
+      // Reset form first, then show modal
+      reset();
+
+      // Use setTimeout to ensure state updates are processed
+      setTimeout(() => {
+        setShowConfirmationModal(true);
+      }, 100);
+
     } catch (error) {
       console.error('Error saving inquiry to database:', error);
+
+      // Show fallback success message if database save fails
       setSubmitSuccess(true);
       reset();
+
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 5000);
