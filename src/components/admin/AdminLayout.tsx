@@ -19,7 +19,8 @@ import {
   BarChart3,
   Bell,
   Inbox,
-  TrendingUp
+  TrendingUp,
+  Megaphone
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
+  { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
   { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
   { name: 'Services', href: '/admin/services', icon: Briefcase },
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },

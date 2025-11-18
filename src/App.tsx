@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Suspense } from 'react';
 import HomePage from './pages/HomePage';
@@ -18,6 +18,9 @@ import { initializeFontOptimization } from './utils/fontOptimization';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import AdminLayout from './components/admin/AdminLayout';
+import NotificationBar from './components/NotificationBar';
+import { useNotificationBar } from './hooks/useNotificationBar';
+import { supabase } from './lib/supabase';
 import LoginPage from './pages/admin/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import BusinessInfoPage from './pages/admin/BusinessInfoPage';
@@ -33,6 +36,7 @@ import JobsAdminPage from './pages/admin/JobsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import InquiriesPage from './pages/admin/InquiriesPage';
 import ForecastingPage from './pages/admin/ForecastingPage';
+import NotificationBarPage from './pages/admin/NotificationBarPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -169,13 +173,39 @@ function HashHandler() {
   return null;
 }
 
+function NotificationBarWrapper() {
+  const [businessId, setBusinessId] = useState<string | null>(null);
+  const { notification } = useNotificationBar(businessId);
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchBusinessId = async () => {
+      const { data } = await supabase
+        .from('business_info')
+        .select('id')
+        .eq('is_active', true)
+        .maybeSingle();
+      if (data) {
+        setBusinessId(data.id);
+      }
+    };
+    fetchBusinessId();
+  }, []);
+
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
+  return notification ? <NotificationBar notification={notification} /> : null;
+}
+
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
-    
+
     // Initialize font optimization
     initializeFontOptimization();
-    
+
     // Track app initialization
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'app_initialized', {
@@ -189,6 +219,7 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="min-h-screen">
+          <NotificationBarWrapper />
           <Analytics />
           <HashHandler />
           <Suspense fallback={<PageLoader message="Loading application..." />}>
@@ -210,6 +241,7 @@ function App() {
                   <Route path="inquiries" element={<InquiriesPage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
                   <Route path="forecasting" element={<ForecastingPage />} />
+                  <Route path="notification-bar" element={<NotificationBarPage />} />
                   <Route path="business-info" element={<BusinessInfoPage />} />
                   <Route path="services" element={<ServicesAdminPage />} />
                   <Route path="service-areas" element={<ServiceAreasPage />} />

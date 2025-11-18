@@ -251,6 +251,17 @@ export type SavedRequest = {
   updated_at: string;
 };
 
+export type NotificationBar = {
+  id: string;
+  business_id: string;
+  message: string;
+  background_color: string;
+  text_color: string;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;
@@ -385,6 +396,17 @@ const zBusinessAttribute = z.object({
   created_at: z.string(),
 });
 
+const zNotificationBar = z.object({
+  id: z.string(),
+  business_id: z.string(),
+  message: z.string(),
+  background_color: z.string(),
+  text_color: z.string(),
+  is_enabled: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
 /** ────────────────────────────────────────────────────────────────────────────
  *  Table & Column helpers (centralize names + narrow selects)
  *  -------------------------------------------------------------------------- */
@@ -398,6 +420,7 @@ const T = {
   social_media: 'social_media',
   customer_reviews: 'customer_reviews',
   business_attributes: 'business_attributes',
+  notification_bar: 'notification_bar',
 } as const;
 
 const COLS = {
@@ -419,6 +442,8 @@ const COLS = {
     'id,business_id,author_name,review_body,rating_value,date_published,is_featured,is_verified,is_active,created_at,updated_at',
   attribute:
     'id,business_id,attribute_name,attribute_value,created_at',
+  notificationBar:
+    'id,business_id,message,background_color,text_color,is_enabled,created_at,updated_at',
 } as const;
 
 /** ────────────────────────────────────────────────────────────────────────────
@@ -525,4 +550,45 @@ export async function searchServices(q: string): Promise<Service[]> {
 /** Clear in-memory cache — call after admin edits or when forcing refresh */
 export function invalidateBusinessCache() {
   _cache = null;
+}
+
+/** Fetch the active notification bar for a business */
+export async function getNotificationBar(businessId: string): Promise<NotificationBar | null> {
+  const { data, error } = await supabase
+    .from(T.notification_bar)
+    .select(COLS.notificationBar)
+    .eq('business_id', businessId)
+    .eq('is_enabled', true)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching notification bar:', error);
+    return null;
+  }
+
+  if (data) {
+    zNotificationBar.parse(data);
+  }
+
+  return data;
+}
+
+/** Fetch notification bar settings for admin (regardless of enabled status) */
+export async function getNotificationBarSettings(businessId: string): Promise<NotificationBar | null> {
+  const { data, error } = await supabase
+    .from(T.notification_bar)
+    .select(COLS.notificationBar)
+    .eq('business_id', businessId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching notification bar settings:', error);
+    return null;
+  }
+
+  if (data) {
+    zNotificationBar.parse(data);
+  }
+
+  return data;
 }
