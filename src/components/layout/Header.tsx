@@ -6,12 +6,14 @@ import { useLocation } from 'react-router-dom';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
 import CallButton from '../ui/CallButton';
 import { BUSINESS_INFO, ADDRESS_INFO, SERVICE_AREAS } from '../../constants/localSEO';
+import { useNotificationBarContext } from '../../contexts/NotificationBarContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { isVisible: notificationBarVisible, notificationHeight } = useNotificationBarContext();
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -105,11 +107,12 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-lg py-1' : 'bg-white/98 backdrop-blur-sm shadow-sm py-2'
       }`}
       ref={menuRef}
       style={{
+        top: notificationBarVisible ? `${notificationHeight}px` : '0',
         boxShadow: isScrolled
           ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
           : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'

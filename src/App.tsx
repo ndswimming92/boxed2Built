@@ -16,6 +16,7 @@ import PageLoader from './components/ui/PageLoader';
 import { usePageLoading } from './hooks/usePageLoading';
 import { initializeFontOptimization } from './utils/fontOptimization';
 import { AuthProvider } from './contexts/AuthContext';
+import { NotificationBarProvider } from './contexts/NotificationBarContext';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import AdminLayout from './components/admin/AdminLayout';
 import NotificationBar from './components/NotificationBar';
@@ -218,46 +219,48 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen">
-          <NotificationBarWrapper />
-          <Analytics />
-          <HashHandler />
-          <Suspense fallback={<PageLoader message="Loading application..." />}>
-            <PageLoadingWrapper>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/partners" element={<PartnersPage />} />
-                <Route path="/gallery" element={<GalleryPage />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                <Route path="/lookup-request" element={<RequestLookupPage />} />
+        <NotificationBarProvider>
+          <div className="min-h-screen">
+            <NotificationBarWrapper />
+            <Analytics />
+            <HashHandler />
+            <Suspense fallback={<PageLoader message="Loading application..." />}>
+              <PageLoadingWrapper>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/services" element={<ServicesPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/partners" element={<PartnersPage />} />
+                  <Route path="/gallery" element={<GalleryPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/lookup-request" element={<RequestLookupPage />} />
 
-                <Route path="/admin/login" element={<LoginPage />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="inquiries" element={<InquiriesPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
-                  <Route path="forecasting" element={<ForecastingPage />} />
-                  <Route path="notification-bar" element={<NotificationBarPage />} />
-                  <Route path="business-info" element={<BusinessInfoPage />} />
-                  <Route path="services" element={<ServicesAdminPage />} />
-                  <Route path="service-areas" element={<ServiceAreasPage />} />
-                  <Route path="reviews" element={<ReviewsPage />} />
-                  <Route path="gallery" element={<GalleryAdminPage />} />
-                  <Route path="jobs" element={<JobsAdminPage />} />
-                  <Route path="business-hours" element={<BusinessHoursPage />} />
-                  <Route path="payment-methods" element={<PaymentMethodsPage />} />
-                  <Route path="social-media" element={<SocialMediaPage />} />
-                  <Route path="attributes" element={<AttributesPage />} />
-                </Route>
-              </Routes>
-            </PageLoadingWrapper>
-          </Suspense>
-          <ScrollToTop />
-        </div>
+                  <Route path="/admin/login" element={<LoginPage />} />
+                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="inquiries" element={<InquiriesPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="forecasting" element={<ForecastingPage />} />
+                    <Route path="notification-bar" element={<NotificationBarPage />} />
+                    <Route path="business-info" element={<BusinessInfoPage />} />
+                    <Route path="services" element={<ServicesAdminPage />} />
+                    <Route path="service-areas" element={<ServiceAreasPage />} />
+                    <Route path="reviews" element={<ReviewsPage />} />
+                    <Route path="gallery" element={<GalleryAdminPage />} />
+                    <Route path="jobs" element={<JobsAdminPage />} />
+                    <Route path="business-hours" element={<BusinessHoursPage />} />
+                    <Route path="payment-methods" element={<PaymentMethodsPage />} />
+                    <Route path="social-media" element={<SocialMediaPage />} />
+                    <Route path="attributes" element={<AttributesPage />} />
+                  </Route>
+                </Routes>
+              </PageLoadingWrapper>
+            </Suspense>
+            <ScrollToTop />
+          </div>
+        </NotificationBarProvider>
       </AuthProvider>
     </Router>
   );

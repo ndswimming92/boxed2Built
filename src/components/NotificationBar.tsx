@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { NotificationBar as NotificationBarType } from '../lib/supabase';
+import { useNotificationBarContext } from '../contexts/NotificationBarContext';
 
 interface NotificationBarProps {
   notification: NotificationBarType;
@@ -11,6 +12,8 @@ const STORAGE_KEY_PREFIX = 'notification_bar_dismissed_';
 export default function NotificationBar({ notification }: NotificationBarProps) {
   const [isDismissed, setIsDismissed] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const { setIsVisible: setContextVisible, setNotificationHeight } = useNotificationBarContext();
+  const barRef = useRef<HTMLDivElement>(null);
 
   const storageKey = `${STORAGE_KEY_PREFIX}${notification.id}`;
 
@@ -18,16 +21,40 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
     const dismissed = localStorage.getItem(storageKey);
     if (dismissed === 'true') {
       setIsDismissed(true);
+      setContextVisible(false);
+      setNotificationHeight(0);
     } else {
-      setTimeout(() => setIsVisible(true), 100);
+      setTimeout(() => {
+        setIsVisible(true);
+        setContextVisible(true);
+        if (barRef.current) {
+          setNotificationHeight(barRef.current.offsetHeight);
+        }
+      }, 100);
     }
-  }, [storageKey]);
+  }, [storageKey, setContextVisible, setNotificationHeight]);
+
+  useEffect(() => {
+    if (isVisible && barRef.current) {
+      const updateHeight = () => {
+        if (barRef.current) {
+          setNotificationHeight(barRef.current.offsetHeight);
+        }
+      };
+
+      updateHeight();
+      window.addEventListener('resize', updateHeight);
+      return () => window.removeEventListener('resize', updateHeight);
+    }
+  }, [isVisible, setNotificationHeight]);
 
   const handleDismiss = () => {
     setIsVisible(false);
+    setContextVisible(false);
     setTimeout(() => {
       setIsDismissed(true);
       localStorage.setItem(storageKey, 'true');
+      setNotificationHeight(0);
     }, 300);
   };
 
@@ -37,7 +64,8 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 transform ${
+      ref={barRef}
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 transform ${
         isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
       style={{
