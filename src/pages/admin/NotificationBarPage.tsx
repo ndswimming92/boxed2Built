@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, NotificationBar, getNotificationBarSettings } from '../../lib/supabase';
-import { Save, AlertCircle, CheckCircle, Bell, Eye, EyeOff } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle, Bell, Eye, EyeOff, Zap } from 'lucide-react';
 
 export default function NotificationBarPage() {
   const [loading, setLoading] = useState(true);
@@ -13,6 +13,8 @@ export default function NotificationBarPage() {
     background_color: '#3B82F6',
     text_color: '#FFFFFF',
     is_enabled: false,
+    enable_scroll_animation: false,
+    scroll_speed: 'medium',
   });
 
   useEffect(() => {
@@ -66,6 +68,8 @@ export default function NotificationBarPage() {
             background_color: settings.background_color,
             text_color: settings.text_color,
             is_enabled: settings.is_enabled,
+            enable_scroll_animation: settings.enable_scroll_animation,
+            scroll_speed: settings.scroll_speed,
           })
           .eq('id', settings.id);
 
@@ -79,6 +83,8 @@ export default function NotificationBarPage() {
             background_color: settings.background_color,
             text_color: settings.text_color,
             is_enabled: settings.is_enabled,
+            enable_scroll_animation: settings.enable_scroll_animation,
+            scroll_speed: settings.scroll_speed,
           }])
           .select()
           .single();
@@ -234,8 +240,70 @@ export default function NotificationBarPage() {
           </div>
 
           <div className="pt-6 border-t border-slate-200">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">Animation Settings</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.enable_scroll_animation || false}
+                    onChange={(e) => setSettings({ ...settings, enable_scroll_animation: e.target.checked })}
+                    className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-amber-600" />
+                    <span className="text-sm font-medium text-slate-700">
+                      Enable Scrolling Animation
+                    </span>
+                  </div>
+                </label>
+                <p className="text-sm text-slate-500 mt-2 ml-8">
+                  Creates a continuous scrolling effect to catch visitors' attention
+                </p>
+              </div>
+
+              {settings.enable_scroll_animation && (
+                <div className="ml-8">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Animation Speed
+                  </label>
+                  <div className="flex gap-4">
+                    {(['slow', 'medium', 'fast'] as const).map((speed) => (
+                      <label key={speed} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="scroll_speed"
+                          value={speed}
+                          checked={settings.scroll_speed === speed}
+                          onChange={(e) => setSettings({ ...settings, scroll_speed: e.target.value as 'slow' | 'medium' | 'fast' })}
+                          className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <span className="text-sm text-slate-700 capitalize">{speed}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Slow: 20s per cycle | Medium: 12s per cycle | Fast: 8s per cycle
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-200">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">Preview</h3>
             <div className="border-2 border-slate-200 rounded-lg overflow-hidden">
+              <style>
+                {`
+                  @keyframes preview-scroll {
+                    0% { transform: translateX(100%); }
+                    100% { transform: translateX(-100%); }
+                  }
+                  .preview-scroll-slow { animation: preview-scroll 20s linear infinite; }
+                  .preview-scroll-medium { animation: preview-scroll 12s linear infinite; }
+                  .preview-scroll-fast { animation: preview-scroll 8s linear infinite; }
+                `}
+              </style>
               <div
                 className="px-4 py-3 flex items-center justify-between"
                 style={{
@@ -243,11 +311,21 @@ export default function NotificationBarPage() {
                   color: settings.text_color || '#FFFFFF',
                 }}
               >
-                <p className="text-sm sm:text-base font-medium">
-                  {settings.message || 'Your notification message will appear here...'}
-                </p>
+                <div className="flex-1 relative overflow-hidden">
+                  {settings.enable_scroll_animation ? (
+                    <div className="flex justify-start">
+                      <p className={`text-sm sm:text-base font-medium whitespace-nowrap preview-scroll-${settings.scroll_speed || 'medium'}`}>
+                        {settings.message || 'Your notification message will appear here...'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm sm:text-base font-medium text-center">
+                      {settings.message || 'Your notification message will appear here...'}
+                    </p>
+                  )}
+                </div>
                 <button
-                  className="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors"
+                  className="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors ml-4"
                   disabled
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -258,6 +258,8 @@ export type NotificationBar = {
   background_color: string;
   text_color: string;
   is_enabled: boolean;
+  enable_scroll_animation: boolean;
+  scroll_speed: 'slow' | 'medium' | 'fast';
   created_at: string;
   updated_at: string;
 };
@@ -403,6 +405,8 @@ const zNotificationBar = z.object({
   background_color: z.string(),
   text_color: z.string(),
   is_enabled: z.boolean(),
+  enable_scroll_animation: z.boolean(),
+  scroll_speed: z.enum(['slow', 'medium', 'fast']),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -443,7 +447,7 @@ const COLS = {
   attribute:
     'id,business_id,attribute_name,attribute_value,created_at',
   notificationBar:
-    'id,business_id,message,background_color,text_color,is_enabled,created_at,updated_at',
+    'id,business_id,message,background_color,text_color,is_enabled,enable_scroll_animation,scroll_speed,created_at,updated_at',
 } as const;
 
 /** ────────────────────────────────────────────────────────────────────────────
