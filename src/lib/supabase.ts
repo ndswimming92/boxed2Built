@@ -17,8 +17,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+    persistSession: true,
+    autoRefreshToken: true,
     detectSessionInUrl: false,
   },
   // db: { schema: 'public' }, // uncomment if you use a non-default schema
