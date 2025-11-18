@@ -1,13 +1,12 @@
 import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { ProfitabilityJob } from '../../services/analyticsService';
 
 interface ProfitabilityLeaderboardProps {
   topJobs: ProfitabilityJob[];
-  bottomJobs: ProfitabilityJob[];
 }
 
-export default function ProfitabilityLeaderboard({ topJobs, bottomJobs }: ProfitabilityLeaderboardProps) {
+export default function ProfitabilityLeaderboard({ topJobs }: ProfitabilityLeaderboardProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -26,7 +25,7 @@ export default function ProfitabilityLeaderboard({ topJobs, bottomJobs }: Profit
     });
   };
 
-  const renderJobRow = (job: ProfitabilityJob, index: number, isTop: boolean) => (
+  const renderJobRow = (job: ProfitabilityJob, index: number) => (
     <tr key={job.id} className="border-b border-slate-200 last:border-b-0">
       <td className="py-3 px-4 text-sm text-slate-600">{index + 1}</td>
       <td className="py-3 px-4">
@@ -41,12 +40,8 @@ export default function ProfitabilityLeaderboard({ topJobs, bottomJobs }: Profit
       <td className="py-3 px-4 text-sm text-slate-600">{job.hours_worked.toFixed(1)} hrs</td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
-          {isTop ? (
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
-          ) : (
-            <TrendingDown className="w-4 h-4 text-red-600" />
-          )}
-          <span className={`text-sm font-semibold ${isTop ? 'text-emerald-600' : 'text-red-600'}`}>
+          <TrendingUp className="w-4 h-4 text-emerald-600" />
+          <span className="text-sm font-semibold text-emerald-600">
             {formatCurrency(job.netProfit)}
           </span>
         </div>
@@ -71,125 +66,63 @@ export default function ProfitabilityLeaderboard({ topJobs, bottomJobs }: Profit
   );
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 sm:p-6 border-b border-emerald-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Top Profitable Jobs</h3>
-              <p className="text-sm text-slate-600">Your most successful projects</p>
-            </div>
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 sm:p-6 border-b border-emerald-200">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100 rounded-lg">
+            <TrendingUp className="w-5 h-5 text-emerald-600" />
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Rank
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Client / Job Type
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Revenue
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Materials
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Hours
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Net Profit
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Margin
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Rate
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {topJobs.length > 0 ? (
-                topJobs.map((job, index) => renderJobRow(job, index, true))
-              ) : (
-                <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-500">
-                    No jobs data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Most Profitable Jobs</h3>
+            <p className="text-sm text-slate-600">Your most successful projects</p>
+          </div>
         </div>
       </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 border-b border-red-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <TrendingDown className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Least Profitable Jobs</h3>
-              <p className="text-sm text-slate-600">Opportunities for improvement</p>
-            </div>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Rank
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Client / Job Type
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Revenue
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Materials
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Hours
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Net Profit
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Margin
+              </th>
+              <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Rate
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {topJobs.length > 0 ? (
+              topJobs.map((job, index) => renderJobRow(job, index))
+            ) : (
               <tr>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Rank
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Client / Job Type
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Revenue
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Materials
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Hours
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Net Profit
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Margin
-                </th>
-                <th className="py-3 px-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Rate
-                </th>
+                <td colSpan={9} className="py-8 text-center text-slate-500">
+                  No jobs data available
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {bottomJobs.length > 0 ? (
-                bottomJobs.map((job, index) => renderJobRow(job, index, false))
-              ) : (
-                <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-500">
-                    No jobs data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

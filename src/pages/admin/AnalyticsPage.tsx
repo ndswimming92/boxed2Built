@@ -643,7 +643,6 @@ export default function AnalyticsPage() {
             <div className="mb-8">
               <ProfitabilityLeaderboard
                 topJobs={profitabilityLeaderboard.topJobs}
-                bottomJobs={profitabilityLeaderboard.bottomJobs}
               />
             </div>
           </div>
