@@ -84,6 +84,9 @@ export type Service = {
   description: string;
   category: string | null;
   base_price: number;
+  min_price: number | null;
+  max_price: number | null;
+  price_range_description: string | null;
   price_currency: string;
   duration_minutes: number | null;
   is_featured: boolean;
@@ -337,6 +340,9 @@ const zService = z.object({
   description: z.string(),
   category: z.string().nullable(),
   base_price: z.number(),
+  min_price: z.number().nullable(),
+  max_price: z.number().nullable(),
+  price_range_description: z.string().nullable(),
   price_currency: z.string(),
   duration_minutes: z.number().nullable(),
   is_featured: z.boolean(),
@@ -435,7 +441,7 @@ const COLS = {
   serviceArea:
     'id,business_id,city_name,region,country,postal_codes,latitude,longitude,radius_miles,priority,is_active,created_at,updated_at',
   service:
-    'id,business_id,name,description,category,base_price,price_currency,duration_minutes,is_featured,display_order,is_active,created_at,updated_at',
+    'id,business_id,name,description,category,base_price,min_price,max_price,price_range_description,price_currency,duration_minutes,is_featured,display_order,is_active,created_at,updated_at',
   hours:
     'id,business_id,day_of_week,opens,closes,is_closed,created_at,updated_at',
   payment:
