@@ -372,7 +372,8 @@ export default function InvoiceFormModal({
       }, 1000);
     } catch (error) {
       console.error('Error saving invoice:', error);
-      setMessage({ type: 'error', text: 'Failed to save invoice. Please try again.' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save invoice. Please try again.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setSaving(false);
     }
