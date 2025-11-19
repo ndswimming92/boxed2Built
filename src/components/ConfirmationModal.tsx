@@ -34,6 +34,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
+  console.log('[ConfirmationModal] Rendered with:', {
+    isOpen,
+    confirmationCode,
+    hasRequestData: !!requestData,
+  });
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(confirmationCode);
     setCopied(true);

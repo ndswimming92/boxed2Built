@@ -330,8 +330,8 @@ const ContactForm: React.FC = () => {
         estimated_time: estimatedTime || undefined,
       });
 
-      // Set confirmation data and show modal
-      setConfirmationData({
+      // Set confirmation data
+      const confirmData = {
         confirmationCode: savedRequest.confirmation_code,
         clientName: values.name,
         clientEmail: values.email,
@@ -345,15 +345,17 @@ const ContactForm: React.FC = () => {
         estimatedPrice: estimatedPrice || undefined,
         estimatedTime: estimatedTime || undefined,
         submissionDate: savedRequest.submission_date,
-      });
+      };
 
-      // Reset form first, then show modal
+      console.log('[ContactForm] Setting confirmation data:', confirmData);
+      setConfirmationData(confirmData);
+
+      console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
+      setShowConfirmationModal(true);
+
+      // Reset form AFTER showing modal
+      console.log('[ContactForm] Resetting form');
       reset();
-
-      // Use setTimeout to ensure state updates are processed
-      setTimeout(() => {
-        setShowConfirmationModal(true);
-      }, 100);
 
     } catch (error) {
       console.error('Error saving inquiry to database:', error);
@@ -409,12 +411,18 @@ const ContactForm: React.FC = () => {
     );
   }
 
+  console.log('[ContactForm] Render state:', {
+    showConfirmationModal,
+    hasConfirmationData: !!confirmationData,
+  });
+
   return (
     <>
-      {confirmationData && (
+      {confirmationData && showConfirmationModal && (
         <ConfirmationModal
           isOpen={showConfirmationModal}
           onClose={() => {
+            console.log('[ContactForm] Modal close requested');
             setShowConfirmationModal(false);
             setConfirmationData(null);
           }}

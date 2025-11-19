@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,20 +10,19 @@ interface ModalProps {
   description?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  children, 
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  children,
   triggerRef,
   title,
-  description 
+  description
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
-  if (!isOpen) return null;
-
   useEffect(() => {
+    console.log('[Modal] isOpen changed:', isOpen);
     if (!isOpen) return;
 
     // Store the currently focused element
@@ -91,40 +91,51 @@ const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  if (!isOpen) {
+    console.log('[Modal] Rendering null - isOpen is false');
+    return null;
+  }
+
+  console.log('[Modal] Rendering modal content');
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4"
       onClick={handleBackdropClick}
       role="presentation"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
-      <div 
+      <div
         ref={modalRef}
-        className="bg-white rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-[90vh] mx-4 focus:outline-none"
+        className="bg-white rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-[90vh] shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
         aria-describedby={description ? "modal-description" : undefined}
         tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
       >
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Close modal"
         >
           &times;
         </button>
-        
+
         {title && (
           <h2 id="modal-title" className="sr-only">{title}</h2>
         )}
         {description && (
           <p id="modal-description" className="sr-only">{description}</p>
         )}
-        
+
         {children}
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;
