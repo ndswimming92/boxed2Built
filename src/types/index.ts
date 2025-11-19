@@ -5,7 +5,6 @@ export interface ServiceItem {
   type: string;
   description: string;
   startingPrice: string;
-  priceRange?: string;
   includedItems: string[];
 }
 

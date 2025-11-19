@@ -15,7 +15,6 @@ const Services: React.FC = () => {
     type: service.name,
     description: service.description,
     startingPrice: `$${service.base_price.toFixed(0)}`,
-    priceRange: service.category || '',
     minPrice: service.min_price,
     maxPrice: service.max_price,
     includedItems: service.included_items || []

@@ -13,7 +13,6 @@ export default function ServicesPage() {
   const emptyService: Partial<Service> = {
     name: '',
     description: '',
-    category: '',
     base_price: 0,
     min_price: null,
     max_price: null,
@@ -202,31 +201,17 @@ export default function ServicesPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Service Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={formData.category || ''}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Service Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name || ''}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                required
+              />
             </div>
 
             <div>
@@ -484,7 +469,6 @@ export default function ServicesPage() {
                       <span className="font-semibold text-emerald-600">
                         Base: ${service.base_price.toFixed(2)}
                       </span>
-                      {service.category && <span>Category: {service.category}</span>}
                       {service.duration_minutes && <span>{service.duration_minutes} min</span>}
                     </div>
                     {(service.min_price !== null || service.max_price !== null) && (
