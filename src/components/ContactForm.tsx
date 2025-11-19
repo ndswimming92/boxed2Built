@@ -120,9 +120,9 @@ const ContactForm: React.FC = () => {
   const [estimatedPrice, setEstimatedPrice] = useState('');
   const [userCity, setUserCity] = useState('');
   const [isIOS, setIsIOS] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Use enhanced form validation
@@ -358,15 +358,25 @@ const ContactForm: React.FC = () => {
       reset();
 
     } catch (error) {
-      console.error('Error saving inquiry to database:', error);
+      console.error('[ContactForm] Error during form submission:', error);
 
-      // Show fallback success message if database save fails
-      setSubmitSuccess(true);
-      reset();
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('[ContactForm] Error message:', error.message);
+        console.error('[ContactForm] Error stack:', error.stack);
+      }
 
+      // Show error message to user
+      const errorMessage = error instanceof Error
+        ? `Submission failed: ${error.message}`
+        : 'An unexpected error occurred. Please try again or contact us directly.';
+
+      setSubmissionError(errorMessage);
+
+      // Clear error after 10 seconds
       setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 5000);
+        setSubmissionError(null);
+      }, 10000);
     }
   });
 
@@ -389,27 +399,6 @@ const ContactForm: React.FC = () => {
     return `${baseClasses} border-gray-300`;
   };
 
-  if (submitSuccess) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center animate-fadeIn">
-        <div className="animate-bounce mb-4">
-          <CheckCircle size={48} className="text-green-600 mx-auto" />
-        </div>
-        <h3 className="text-2xl font-bold text-green-800 mb-3">Thank You!</h3>
-        <p className="text-green-700 text-lg mb-4">
-          Your request has been submitted successfully. We'll get back to you within 24 hours with a detailed quote.
-        </p>
-        <div className="bg-white p-4 rounded-lg border border-green-200 inline-block">
-          <p className="text-sm text-gray-600">
-            <strong>What's next?</strong><br />
-            • We'll review your project details<br />
-            • Prepare a customized quote<br />
-            • Contact you to schedule service
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   console.log('[ContactForm] Render state:', {
     showConfirmationModal,
@@ -441,6 +430,34 @@ const ContactForm: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Submission error message */}
+      {submissionError && (
+        <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle size={24} className="text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-red-900 font-bold mb-1">Submission Error</h4>
+              <p className="text-red-800 text-sm mb-3">{submissionError}</p>
+              <div className="text-xs text-red-700">
+                <p className="mb-1">You can:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Try submitting again</li>
+                  <li>Call us at (615) 403-4538</li>
+                  <li>Email us at boxed2builtco@gmail.com</li>
+                </ul>
+              </div>
+            </div>
+            <button
+              onClick={() => setSubmissionError(null)}
+              className="text-red-600 hover:text-red-800"
+              aria-label="Dismiss error"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Form validation summary */}
       {submitAttempted && hasErrors && (
