@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2 } from 'lucide-react';
-import { FormInquiry } from '../../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus } from 'lucide-react';
+import { FormInquiry, Invoice } from '../../lib/supabase';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
+import { getInvoicesByInquiry } from '../../services/invoiceService';
+import InvoiceFormModal from './InvoiceFormModal';
 
 interface InquiryDetailModalProps {
   inquiry: FormInquiry;
@@ -26,6 +28,21 @@ export default function InquiryDetailModal({
   const [customEmailSubject, setCustomEmailSubject] = useState('');
   const [customEmailBody, setCustomEmailBody] = useState('');
   const [customSMSMessage, setCustomSMSMessage] = useState('');
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  useEffect(() => {
+    loadInvoices();
+  }, [inquiry.id]);
+
+  const loadInvoices = async () => {
+    try {
+      const data = await getInvoicesByInquiry(inquiry.id);
+      setInvoices(data);
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+    }
+  };
 
   const handleSendEmail = async (templateKey?: keyof typeof EMAIL_TEMPLATES) => {
     let subject = '';
@@ -235,6 +252,68 @@ export default function InquiryDetailModal({
             </div>
           )}
 
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Invoices
+              </h3>
+              <button
+                onClick={() => setShowInvoiceModal(true)}
+                className="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-medium hover:bg-emerald-700 transition-colors flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" />
+                Create Invoice
+              </button>
+            </div>
+
+            {invoices.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-4">No invoices yet</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between bg-white p-3 rounded border border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{invoice.invoice_number}</p>
+                        <p className="text-xs text-slate-500 capitalize">{invoice.invoice_type}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-slate-900">${invoice.total_amount.toFixed(2)}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded ${
+                          invoice.status === 'paid' ? 'bg-green-100 text-green-700' :
+                          invoice.status === 'partially_paid' ? 'bg-orange-100 text-orange-700' :
+                          invoice.status === 'sent' ? 'bg-blue-100 text-blue-700' :
+                          invoice.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {invoice.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-slate-200 mt-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Total Invoiced:</span>
+                    <span className="font-semibold">${invoices.reduce((sum, inv) => sum + inv.total_amount, 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Total Paid:</span>
+                    <span className="font-semibold text-green-600">${invoices.reduce((sum, inv) => sum + inv.amount_paid, 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Balance Due:</span>
+                    <span className="font-semibold text-blue-600">${invoices.reduce((sum, inv) => sum + inv.amount_due, 0).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="border-t border-slate-200 pt-6">
             <h3 className="text-sm font-semibold text-slate-700 mb-4">Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,6 +417,24 @@ export default function InquiryDetailModal({
           </button>
         </div>
       </div>
+
+      {showInvoiceModal && (
+        <InvoiceFormModal
+          businessId={inquiry.business_id}
+          inquiryId={inquiry.id}
+          initialData={{
+            client_name: inquiry.client_name,
+            client_email: inquiry.client_email,
+            client_phone: inquiry.client_phone || undefined,
+          }}
+          onClose={() => setShowInvoiceModal(false)}
+          onSaved={() => {
+            setShowInvoiceModal(false);
+            loadInvoices();
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 }

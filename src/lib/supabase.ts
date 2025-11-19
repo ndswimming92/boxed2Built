@@ -289,6 +289,88 @@ export type TaxSettings = {
   updated_at: string;
 };
 
+export type InvoiceSettings = {
+  id: string;
+  business_id: string;
+  invoice_prefix: string;
+  next_invoice_number: number;
+  default_payment_terms: string;
+  default_due_days: number;
+  default_tax_rate: number;
+  enable_late_fees: boolean;
+  late_fee_grace_days: number;
+  late_fee_type: 'fixed' | 'percentage';
+  late_fee_amount: number;
+  invoice_notes_template: string | null;
+  invoice_footer: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Invoice = {
+  id: string;
+  business_id: string;
+  inquiry_id: string | null;
+  job_id: string | null;
+  invoice_number: string;
+  invoice_type: 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  client_address: string | null;
+  invoice_date: string;
+  due_date: string;
+  payment_terms: string;
+  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  tax_override: boolean;
+  total_amount: number;
+  amount_paid: number;
+  amount_due: number;
+  notes: string | null;
+  internal_notes: string | null;
+  payment_terms_description: string | null;
+  late_fee_enabled: boolean;
+  late_fee_type: 'fixed' | 'percentage' | null;
+  late_fee_amount: number | null;
+  late_fee_grace_days: number | null;
+  late_fee_charged: number;
+  sent_at: string | null;
+  paid_at: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoiceLineItem = {
+  id: string;
+  invoice_id: string;
+  item_type: 'labor' | 'material' | 'other';
+  description: string;
+  quantity: number;
+  unit_price: number;
+  is_taxable: boolean;
+  total: number;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoicePayment = {
+  id: string;
+  invoice_id: string;
+  payment_date: string;
+  payment_amount: number;
+  payment_method: string;
+  payment_reference: string | null;
+  notes: string | null;
+  recorded_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type QuarterlyTaxPayment = {
   id: string;
   business_id: string;
