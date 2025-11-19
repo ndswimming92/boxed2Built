@@ -155,77 +155,98 @@ const Header: React.FC = () => {
                 <a
                   href="/"
                   onClick={() => handleNavClick('home', '/')}
-                  className={`${getNavLinkClasses('/')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Go to home page"
+                  aria-current={isActivePage('/') ? 'page' : undefined}
                 >
                   Home
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/about"
                   onClick={() => handleNavClick('about', '/about')}
-                  className={`${getNavLinkClasses('/about')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/about')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Learn about Boxed2Built"
+                  aria-current={isActivePage('/about') ? 'page' : undefined}
                 >
                   About
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/about') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/services"
                   onClick={() => handleNavClick('services', '/services')}
-                  className={`${getNavLinkClasses('/services')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/services')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our services and pricing"
+                  aria-current={isActivePage('/services') ? 'page' : undefined}
                 >
                   Services
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/services') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/partners"
                   onClick={() => handleNavClick('partners', '/partners')}
-                  className={`${getNavLinkClasses('/partners')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/partners')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our partnership programs"
+                  aria-current={isActivePage('/partners') ? 'page' : undefined}
                 >
                   Partners
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/partners') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/gallery"
                   onClick={() => handleNavClick('gallery', '/gallery')}
-                  className={`${getNavLinkClasses('/gallery')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/gallery')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View our work gallery"
+                  aria-current={isActivePage('/gallery') ? 'page' : undefined}
                 >
                   Gallery
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/gallery') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/faq"
                   onClick={() => handleNavClick('faq', '/faq')}
-                  className={`${getNavLinkClasses('/faq')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/faq')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="View frequently asked questions"
+                  aria-current={isActivePage('/faq') ? 'page' : undefined}
                 >
                   FAQ
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/faq') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
               <li>
                 <a
                   href="/contact"
                   onClick={() => handleNavClick('contact', '/contact')}
-                  className={`${getNavLinkClasses('/contact')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  className={`${getNavLinkClasses('/contact')} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-md px-2 py-1`}
                   aria-label="Contact us for furniture assembly service"
+                  aria-current={isActivePage('/contact') ? 'page' : undefined}
                 >
                   Contact
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                  <span className={`absolute bottom-0 left-0 h-0.5 bg-blue-700 transition-all duration-300 ${
+                    isActivePage('/contact') ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
                 </a>
               </li>
             </ul>
