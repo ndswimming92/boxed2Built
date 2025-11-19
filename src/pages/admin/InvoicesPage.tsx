@@ -15,7 +15,7 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Mail,
+  Trash2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Invoice } from '../../lib/supabase';
@@ -23,12 +23,12 @@ import {
   getAllInvoices,
   getInvoiceStats,
   getInvoice,
+  deleteInvoice,
   InvoiceStats,
 } from '../../services/invoiceService';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
-import { openEmailClientWithInvoice } from '../../services/invoiceEmailService';
 
 export default function InvoicesPage() {
   const navigate = useNavigate();
@@ -138,17 +138,21 @@ export default function InvoicesPage() {
     setOpenMenuId(null);
   };
 
-  const handleSendEmail = async (invoice: Invoice) => {
-    try {
-      const fullInvoice = await getInvoice(invoice.id);
-      if (fullInvoice && businessInfo) {
-        await openEmailClientWithInvoice(fullInvoice, businessInfo);
-      }
-    } catch (error) {
-      console.error('Error opening email:', error);
-      alert('Failed to open email client. Please try again.');
+  const handleDeleteInvoice = async (invoice: Invoice) => {
+    const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?\n\nThis action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
     }
-    setOpenMenuId(null);
+
+    try {
+      await deleteInvoice(invoice.id);
+      alert('Invoice deleted successfully.');
+      loadInvoices();
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      alert('Failed to delete invoice. Please try again.');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -405,11 +409,11 @@ export default function InvoicesPage() {
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleSendEmail(invoice)}
-                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="Send Email"
+                          onClick={() => handleDeleteInvoice(invoice)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Invoice"
                         >
-                          <Mail className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
