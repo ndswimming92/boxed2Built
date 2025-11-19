@@ -208,6 +208,17 @@ const Header: React.FC = () => {
               </li>
               <li>
                 <a
+                  href="/faq"
+                  onClick={() => handleNavClick('faq', '/faq')}
+                  className={`${getNavLinkClasses('/faq')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
+                  aria-label="View frequently asked questions"
+                >
+                  FAQ
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-700 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="/contact"
                   onClick={() => handleNavClick('contact', '/contact')}
                   className={`${getNavLinkClasses('/contact')} focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1`}
@@ -292,8 +303,8 @@ const Header: React.FC = () => {
                 href="/gallery"
                 onClick={() => handleNavClick('gallery', '/gallery')}
                 className={`${getMobileNavLinkClasses('/gallery')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
-                  isActivePage('/gallery') 
-                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
+                  isActivePage('/gallery')
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="View our work gallery"
@@ -301,11 +312,23 @@ const Header: React.FC = () => {
                 Gallery
               </a>
               <a
+                href="/faq"
+                onClick={() => handleNavClick('faq', '/faq')}
+                className={`${getMobileNavLinkClasses('/faq')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                  isActivePage('/faq')
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                    : 'hover:bg-gray-50'
+                }`}
+                aria-label="View frequently asked questions"
+              >
+                FAQ
+              </a>
+              <a
                 href="/contact"
                 onClick={() => handleNavClick('contact', '/contact')}
                 className={`${getMobileNavLinkClasses('/contact')} px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
-                  isActivePage('/contact') 
-                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm' 
+                  isActivePage('/contact')
+                    ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
                     : 'hover:bg-gray-50'
                 }`}
                 aria-label="Contact us for furniture assembly service"

@@ -10,6 +10,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
 import PartnersPage from './pages/PartnersPage';
 import RequestLookupPage from './pages/RequestLookupPage';
+import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
@@ -233,6 +234,7 @@ function App() {
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/partners" element={<PartnersPage />} />
                   <Route path="/gallery" element={<GalleryPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                   <Route path="/lookup-request" element={<RequestLookupPage />} />
