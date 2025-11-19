@@ -20,6 +20,7 @@ export interface ForecastSettings {
   seasonalityEnabled: boolean;
   modelPreference: 'auto' | 'linear' | 'exponential' | 'seasonal' | 'ensemble';
   confidenceLevel: number;
+  maxMonthlyJobCapacity?: number;
   lastGeneratedAt?: Date;
 }
 
@@ -36,6 +37,9 @@ export interface ForecastResult {
   trend: 'increasing' | 'decreasing' | 'stable';
   seasonalityDetected: boolean;
 }
+
+const MAX_GROWTH_RATE = 2.0;
+const MIN_GROWTH_RATE = -0.5;
 
 function getMonthlyHistoricalData(jobs: Job[]): MonthlyStats[] {
   const completedJobs = jobs.filter(job => job.date_completed);
@@ -115,9 +119,9 @@ function calculateTrend(monthlyData: MonthlyStats[]): 'increasing' | 'decreasing
   return 'stable';
 }
 
-function linearRegression(monthlyData: MonthlyStats[]): { slope: number; intercept: number } {
+function linearRegression(monthlyData: MonthlyStats[]): { slope: number; intercept: number; xMean: number; sumXSquaredDev: number } {
   const n = monthlyData.length;
-  if (n === 0) return { slope: 0, intercept: 0 };
+  if (n === 0) return { slope: 0, intercept: 0, xMean: 0, sumXSquaredDev: 1 };
 
   let sumX = 0;
   let sumY = 0;
@@ -133,10 +137,27 @@ function linearRegression(monthlyData: MonthlyStats[]): { slope: number; interce
     sumXX += x * x;
   });
 
+  const xMean = sumX / n;
   const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
   const intercept = (sumY - slope * sumX) / n;
 
-  return { slope, intercept };
+  const sumXSquaredDev = monthlyData.reduce((sum, _, index) => {
+    return sum + Math.pow(index - xMean, 2);
+  }, 0);
+
+  return { slope, intercept, xMean, sumXSquaredDev: Math.max(sumXSquaredDev, 1) };
+}
+
+function getZScoreForConfidence(confidenceLevel: number): number {
+  const confidenceMap: Record<number, number> = {
+    80: 1.28,
+    85: 1.44,
+    90: 1.645,
+    95: 1.96,
+    99: 2.576,
+  };
+
+  return confidenceMap[confidenceLevel] || 1.96;
 }
 
 function calculateSeasonalIndices(monthlyData: MonthlyStats[]): Map<number, number> {
@@ -174,7 +195,53 @@ function calculateSeasonalIndices(monthlyData: MonthlyStats[]): Map<number, numb
     }
   }
 
+  let sumIndices = 0;
+  for (let month = 0; month < 12; month++) {
+    sumIndices += indices.get(month) || 1.0;
+  }
+
+  const normalizationFactor = sumIndices > 0 ? 12 / sumIndices : 1.0;
+
+  for (let month = 0; month < 12; month++) {
+    const currentIndex = indices.get(month) || 1.0;
+    indices.set(month, currentIndex * normalizationFactor);
+  }
+
   return indices;
+}
+
+function calculateGrowthRate(monthlyData: MonthlyStats[], growthRateOverride: number | null): number {
+  if (growthRateOverride !== null) {
+    const rate = growthRateOverride / 100;
+    return Math.max(MIN_GROWTH_RATE, Math.min(MAX_GROWTH_RATE, rate));
+  }
+
+  if (monthlyData.length < 2) return 0;
+
+  const firstHalf = monthlyData.slice(0, Math.floor(monthlyData.length / 2));
+  const secondHalf = monthlyData.slice(Math.floor(monthlyData.length / 2));
+
+  if (firstHalf.length === 0 || secondHalf.length === 0) return 0;
+
+  const firstAvg = firstHalf.reduce((sum, m) => sum + m.revenue, 0) / firstHalf.length;
+  const secondAvg = secondHalf.reduce((sum, m) => sum + m.revenue, 0) / secondHalf.length;
+
+  if (firstAvg === 0) return 0;
+
+  const totalGrowth = (secondAvg - firstAvg) / firstAvg;
+  const periodsCount = secondHalf.length;
+  const monthlyGrowthRate = totalGrowth / periodsCount;
+
+  return Math.max(MIN_GROWTH_RATE, Math.min(MAX_GROWTH_RATE, monthlyGrowthRate));
+}
+
+function calculateAverageRevenuePerJob(monthlyData: MonthlyStats[]): number {
+  if (monthlyData.length === 0) return 0;
+
+  const totalRevenue = monthlyData.reduce((sum, m) => sum + m.revenue, 0);
+  const totalJobs = monthlyData.reduce((sum, m) => sum + m.jobCount, 0);
+
+  return totalJobs > 0 ? totalRevenue / totalJobs : 0;
 }
 
 function generateLinearForecast(
@@ -182,43 +249,54 @@ function generateLinearForecast(
   forecastMonths: number,
   settings: ForecastSettings
 ): ForecastDataPoint[] {
-  const { slope, intercept } = linearRegression(monthlyData);
+  if (monthlyData.length === 0) {
+    return [];
+  }
+
+  const { slope, intercept, xMean, sumXSquaredDev } = linearRegression(monthlyData);
   const forecasts: ForecastDataPoint[] = [];
 
-  const lastDate = monthlyData.length > 0
-    ? new Date(monthlyData[monthlyData.length - 1].month)
-    : new Date();
-
-  const avgJobCount = monthlyData.length > 0
-    ? monthlyData.reduce((sum, m) => sum + m.jobCount, 0) / monthlyData.length
-    : 0;
-
-  const growthRate = settings.growthRateOverride !== null
-    ? settings.growthRateOverride / 100
-    : (slope / (intercept || 1));
+  const lastDate = new Date(monthlyData[monthlyData.length - 1].month);
+  const growthRate = calculateGrowthRate(monthlyData, settings.growthRateOverride);
+  const avgRevenuePerJob = calculateAverageRevenuePerJob(monthlyData);
+  const zScore = getZScoreForConfidence(settings.confidenceLevel);
 
   for (let i = 1; i <= forecastMonths; i++) {
     const forecastDate = new Date(lastDate);
     forecastDate.setMonth(forecastDate.getMonth() + i);
 
     const baseIndex = monthlyData.length + i - 1;
-    let predictedRevenue = slope * baseIndex + intercept;
+    let predictedRevenue: number;
 
     if (settings.growthRateOverride !== null && monthlyData.length > 0) {
       const lastRevenue = monthlyData[monthlyData.length - 1].revenue;
       predictedRevenue = lastRevenue * Math.pow(1 + growthRate, i);
+    } else {
+      predictedRevenue = slope * baseIndex + intercept;
     }
 
     predictedRevenue = Math.max(0, predictedRevenue);
 
     const standardError = calculateStandardError(monthlyData, slope, intercept);
-    const zScore = settings.confidenceLevel === 95 ? 1.96 : 1.645;
-    const margin = zScore * standardError;
+
+    const predictionVarianceFactor = 1 + (1 / monthlyData.length) +
+      Math.pow(baseIndex - xMean, 2) / sumXSquaredDev;
+
+    const adjustedStandardError = standardError * Math.sqrt(predictionVarianceFactor);
+    const margin = zScore * adjustedStandardError * Math.sqrt(i);
+
+    const predictedJobCount = avgRevenuePerJob > 0
+      ? Math.round(predictedRevenue / avgRevenuePerJob)
+      : 0;
+
+    const cappedJobCount = settings.maxMonthlyJobCapacity
+      ? Math.min(predictedJobCount, settings.maxMonthlyJobCapacity)
+      : predictedJobCount;
 
     forecasts.push({
       date: forecastDate,
       predictedRevenue,
-      predictedJobCount: Math.round(avgJobCount * (1 + growthRate) ** i),
+      predictedJobCount: Math.max(0, cappedJobCount),
       confidenceLower: Math.max(0, predictedRevenue - margin),
       confidenceUpper: predictedRevenue + margin,
     });
@@ -255,14 +333,25 @@ function generateSeasonalForecast(
   }
 
   const seasonalIndices = calculateSeasonalIndices(monthlyData);
+  const avgRevenuePerJob = calculateAverageRevenuePerJob(monthlyData);
 
   return linearForecasts.map(forecast => {
     const month = forecast.date.getMonth();
     const seasonalIndex = seasonalIndices.get(month) || 1.0;
 
+    const adjustedRevenue = forecast.predictedRevenue * seasonalIndex;
+    const adjustedJobCount = avgRevenuePerJob > 0
+      ? Math.round(adjustedRevenue / avgRevenuePerJob)
+      : forecast.predictedJobCount;
+
+    const cappedJobCount = settings.maxMonthlyJobCapacity
+      ? Math.min(adjustedJobCount, settings.maxMonthlyJobCapacity)
+      : adjustedJobCount;
+
     return {
       ...forecast,
-      predictedRevenue: forecast.predictedRevenue * seasonalIndex,
+      predictedRevenue: adjustedRevenue,
+      predictedJobCount: Math.max(0, cappedJobCount),
       confidenceLower: forecast.confidenceLower * seasonalIndex,
       confidenceUpper: forecast.confidenceUpper * seasonalIndex,
     };
@@ -279,37 +368,61 @@ function generateExponentialForecast(
   }
 
   const alpha = 0.3;
-  let smoothedValue = monthlyData[0].revenue;
-  const smoothedValues: number[] = [smoothedValue];
+  const beta = 0.1;
+
+  let level = monthlyData[0].revenue;
+  let trend = monthlyData.length > 1
+    ? monthlyData[1].revenue - monthlyData[0].revenue
+    : 0;
+
+  const levelHistory: number[] = [level];
+  const trendHistory: number[] = [trend];
 
   for (let i = 1; i < monthlyData.length; i++) {
-    smoothedValue = alpha * monthlyData[i].revenue + (1 - alpha) * smoothedValue;
-    smoothedValues.push(smoothedValue);
-  }
+    const prevLevel = level;
+    const prevTrend = trend;
 
-  const trend = smoothedValues.length > 1
-    ? (smoothedValues[smoothedValues.length - 1] - smoothedValues[0]) /
-      (smoothedValues.length - 1)
-    : 0;
+    level = alpha * monthlyData[i].revenue + (1 - alpha) * (prevLevel + prevTrend);
+    trend = beta * (level - prevLevel) + (1 - beta) * prevTrend;
+
+    levelHistory.push(level);
+    trendHistory.push(trend);
+  }
 
   const forecasts: ForecastDataPoint[] = [];
   const lastDate = new Date(monthlyData[monthlyData.length - 1].month);
-  const lastSmoothed = smoothedValues[smoothedValues.length - 1];
+  const avgRevenuePerJob = calculateAverageRevenuePerJob(monthlyData);
+  const zScore = getZScoreForConfidence(settings.confidenceLevel);
 
-  const avgJobCount =
-    monthlyData.reduce((sum, m) => sum + m.jobCount, 0) / monthlyData.length;
+  const residuals = monthlyData.map((stat, index) => {
+    if (index === 0) return 0;
+    const fitted = levelHistory[index - 1] + trendHistory[index - 1];
+    return stat.revenue - fitted;
+  });
+
+  const mse = residuals.reduce((sum, r) => sum + r * r, 0) / Math.max(residuals.length - 1, 1);
+  const standardError = Math.sqrt(mse);
 
   for (let i = 1; i <= forecastMonths; i++) {
     const forecastDate = new Date(lastDate);
     forecastDate.setMonth(forecastDate.getMonth() + i);
 
-    const predictedRevenue = Math.max(0, lastSmoothed + trend * i);
-    const margin = predictedRevenue * 0.2;
+    const predictedRevenue = Math.max(0, level + trend * i);
+
+    const margin = zScore * standardError * Math.sqrt(i);
+
+    const predictedJobCount = avgRevenuePerJob > 0
+      ? Math.round(predictedRevenue / avgRevenuePerJob)
+      : 0;
+
+    const cappedJobCount = settings.maxMonthlyJobCapacity
+      ? Math.min(predictedJobCount, settings.maxMonthlyJobCapacity)
+      : predictedJobCount;
 
     forecasts.push({
       date: forecastDate,
       predictedRevenue,
-      predictedJobCount: Math.round(avgJobCount),
+      predictedJobCount: Math.max(0, cappedJobCount),
       confidenceLower: Math.max(0, predictedRevenue - margin),
       confidenceUpper: predictedRevenue + margin,
     });
@@ -355,10 +468,14 @@ function generateEnsembleForecast(
         exponential.predictedJobCount * weights.exponential
     );
 
+    const cappedJobCount = settings.maxMonthlyJobCapacity
+      ? Math.min(predictedJobCount, settings.maxMonthlyJobCapacity)
+      : predictedJobCount;
+
     return {
       date: linear.date,
       predictedRevenue,
-      predictedJobCount,
+      predictedJobCount: Math.max(0, cappedJobCount),
       confidenceLower,
       confidenceUpper,
     };
