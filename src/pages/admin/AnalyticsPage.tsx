@@ -16,6 +16,16 @@ import {
   getMaterialsCostAnalysis,
   TimePeriod,
 } from '../../services/analyticsService';
+import {
+  getTaxSettings,
+  getQuarterlyPayments,
+  calculateTaxes,
+  getNextQuarterDueDate,
+  TaxSettings as TaxSettingsType,
+  QuarterlyTaxPayment,
+} from '../../services/taxService';
+import TaxOverview from '../../components/analytics/TaxOverview';
+import QuarterlyTaxTracker from '../../components/analytics/QuarterlyTaxTracker';
 import MetricCard from '../../components/analytics/MetricCard';
 import ChartCard from '../../components/analytics/ChartCard';
 import {
@@ -63,11 +73,20 @@ export default function AnalyticsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [targetHourlyRate, setTargetHourlyRate] = useState(50);
+  const [taxSettings, setTaxSettings] = useState<TaxSettingsType | null>(null);
+  const [quarterlyPayments, setQuarterlyPayments] = useState<QuarterlyTaxPayment[]>([]);
+  const [showTaxSection, setShowTaxSection] = useState(true);
   const { jobs, loading, lastUpdated, isConnected } = useRealtimeJobs(businessId);
 
   useEffect(() => {
     fetchBusinessId();
   }, []);
+
+  useEffect(() => {
+    if (businessId) {
+      fetchTaxData();
+    }
+  }, [businessId]);
 
   const fetchBusinessId = async () => {
     const { data } = await supabase
@@ -79,6 +98,16 @@ export default function AnalyticsPage() {
     if (data) {
       setBusinessId(data.id);
     }
+  };
+
+  const fetchTaxData = async () => {
+    if (!businessId) return;
+
+    const settings = await getTaxSettings(businessId);
+    setTaxSettings(settings);
+
+    const payments = await getQuarterlyPayments(businessId);
+    setQuarterlyPayments(payments);
   };
 
   const metrics = useMemo(() => calculateMetrics(jobs, timePeriod), [jobs, timePeriod]);
@@ -97,6 +126,29 @@ export default function AnalyticsPage() {
   );
   const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(jobs, timePeriod), [jobs, timePeriod]);
   const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(jobs, timePeriod), [jobs, timePeriod]);
+
+  const taxCalculation = useMemo(() => {
+    if (!taxSettings) {
+      return null;
+    }
+
+    const filteredJobs = timePeriod === 'current_year'
+      ? jobs.filter(job => {
+          const year = new Date(job.created_at).getFullYear();
+          return year === new Date().getFullYear();
+        })
+      : jobs;
+
+    const grossIncome = filteredJobs.reduce((sum, job) => sum + (job.final_price || 0), 0);
+    const totalExpenses = filteredJobs.reduce((sum, job) => sum + (job.materials_cost || 0), 0) +
+      (taxSettings.estimated_annual_business_expenses || 0);
+
+    const totalPayments = quarterlyPayments.reduce((sum, payment) => sum + payment.payment_amount, 0);
+
+    return calculateTaxes(grossIncome, totalExpenses, taxSettings, totalPayments);
+  }, [jobs, timePeriod, taxSettings, quarterlyPayments]);
+
+  const nextQuarterDueDate = useMemo(() => getNextQuarterDueDate(), []);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -646,6 +698,43 @@ export default function AnalyticsPage() {
               />
             </div>
           </div>
+
+          {taxCalculation && taxSettings && (
+            <div className="mt-12 pt-8 border-t-4 border-slate-200">
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">Tax Planning & Tracking</h2>
+                    <p className="text-slate-600">Comprehensive tax calculations and quarterly payment tracking for your Spring Hill, TN business</p>
+                  </div>
+                  <a
+                    href="/admin/tax-settings"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Tax Settings
+                  </a>
+                </div>
+
+                <TaxOverview
+                  taxCalculation={taxCalculation}
+                  quarterlyPayments={quarterlyPayments}
+                  nextDueDate={nextQuarterDueDate}
+                />
+              </div>
+
+              {businessId && (
+                <div className="mt-8">
+                  <QuarterlyTaxTracker
+                    businessId={businessId}
+                    taxYear={taxSettings.tax_year}
+                    quarterlyEstimate={taxCalculation.quarterlyEstimate}
+                    payments={quarterlyPayments}
+                    onPaymentAdded={fetchTaxData}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 

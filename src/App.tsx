@@ -39,6 +39,7 @@ import AnalyticsPage from './pages/admin/AnalyticsPage';
 import InquiriesPage from './pages/admin/InquiriesPage';
 import ForecastingPage from './pages/admin/ForecastingPage';
 import NotificationBarPage from './pages/admin/NotificationBarPage';
+import TaxSettingsPage from './pages/admin/TaxSettingsPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -245,6 +246,7 @@ function App() {
                     <Route path="inquiries" element={<InquiriesPage />} />
                     <Route path="analytics" element={<AnalyticsPage />} />
                     <Route path="forecasting" element={<ForecastingPage />} />
+                    <Route path="tax-settings" element={<TaxSettingsPage />} />
                     <Route path="notification-bar" element={<NotificationBarPage />} />
                     <Route path="business-info" element={<BusinessInfoPage />} />
                     <Route path="services" element={<ServicesAdminPage />} />

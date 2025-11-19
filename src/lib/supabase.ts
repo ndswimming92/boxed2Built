@@ -267,6 +267,73 @@ export type NotificationBar = {
   updated_at: string;
 };
 
+export type TaxSettings = {
+  id: string;
+  business_id: string;
+  filing_status: 'single' | 'married_joint' | 'married_separate' | 'head_of_household';
+  use_standard_deduction: boolean;
+  estimated_itemized_deductions: number;
+  estimated_annual_business_expenses: number;
+  q1_payment_goal: number;
+  q2_payment_goal: number;
+  q3_payment_goal: number;
+  q4_payment_goal: number;
+  include_health_insurance_deduction: boolean;
+  health_insurance_annual_cost: number;
+  include_retirement_contributions: boolean;
+  retirement_contribution_annual: number;
+  state: string;
+  tax_year: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuarterlyTaxPayment = {
+  id: string;
+  business_id: string;
+  tax_year: number;
+  quarter: number;
+  payment_amount: number;
+  payment_date: string;
+  payment_method: string | null;
+  confirmation_number: string | null;
+  federal_income_tax_amount: number;
+  self_employment_tax_amount: number;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaxCalculation = {
+  id: string;
+  business_id: string;
+  calculation_date: string;
+  tax_year: number;
+  quarter: number | null;
+  gross_income: number;
+  total_expenses: number;
+  net_profit: number;
+  self_employment_tax: number;
+  self_employment_deduction: number;
+  adjusted_gross_income: number;
+  standard_or_itemized_deduction: number;
+  taxable_income: number;
+  federal_income_tax: number;
+  total_tax_liability: number;
+  quarterly_payments_made: number;
+  estimated_tax_remaining: number;
+  effective_tax_rate: number;
+  marginal_tax_bracket: number;
+  recommended_withholding_percentage: number;
+  calculation_type: string;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;
