@@ -537,7 +537,7 @@ export async function createInvoiceFromJob(
 export function calculatePaymentTermsDueDate(invoiceDate: string, paymentTerms: string): string {
   const date = new Date(invoiceDate);
 
-  if (paymentTerms === 'Due on Receipt') {
+  if (paymentTerms === 'Due on Receipt' || paymentTerms === 'Due on Completion') {
     return invoiceDate;
   }
 

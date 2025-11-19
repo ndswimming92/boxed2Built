@@ -41,6 +41,7 @@ interface LineItemForm {
 
 const PAYMENT_TERMS_OPTIONS = [
   { value: 'Due on Receipt', label: 'Due on Receipt' },
+  { value: 'Due on Completion', label: 'Due on Completion' },
   { value: 'Net 15', label: 'Net 15 (15 days)' },
   { value: 'Net 30', label: 'Net 30 (30 days)' },
   { value: 'Net 45', label: 'Net 45 (45 days)' },
@@ -56,6 +57,27 @@ const INVOICE_TYPES = [
 ];
 
 const TN_TAX_RATE = 9.25;
+
+function validatePhoneNumber(phone: string): boolean {
+  const cleaned = phone.replace(/\D/g, '');
+
+  if (cleaned.length !== 10) {
+    return false;
+  }
+
+  const areaCode = parseInt(cleaned.substring(0, 3));
+  const prefix = parseInt(cleaned.substring(3, 6));
+
+  if (areaCode < 200 || areaCode > 999) {
+    return false;
+  }
+
+  if (prefix < 200 || prefix > 999) {
+    return false;
+  }
+
+  return true;
+}
 
 export default function InvoiceFormModal({
   businessId,
@@ -75,6 +97,7 @@ export default function InvoiceFormModal({
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [clientAddress, setClientAddress] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentTerms, setPaymentTerms] = useState('Net 30');
@@ -218,6 +241,12 @@ export default function InvoiceFormModal({
   const handleSave = async (sendEmail: boolean = false) => {
     if (!clientName || !clientEmail || !dueDate) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
+      return;
+    }
+
+    if (clientPhone && !validatePhoneNumber(clientPhone)) {
+      setMessage({ type: 'error', text: 'Please enter a valid phone number' });
+      setPhoneError('Please enter a valid phone number (e.g., 615-555-1234)');
       return;
     }
 
@@ -512,9 +541,29 @@ export default function InvoiceFormModal({
                   <input
                     type="tel"
                     value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setClientPhone(value);
+
+                      if (value && !validatePhoneNumber(value)) {
+                        setPhoneError('Please enter a valid phone number (e.g., 615-555-1234)');
+                      } else {
+                        setPhoneError('');
+                      }
+                    }}
+                    onBlur={() => {
+                      if (clientPhone && !validatePhoneNumber(clientPhone)) {
+                        setPhoneError('Please enter a valid phone number (e.g., 615-555-1234)');
+                      }
+                    }}
+                    placeholder="615-555-1234"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                      phoneError ? 'border-red-500' : 'border-slate-300'
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                  )}
                 </div>
 
                 <div>
