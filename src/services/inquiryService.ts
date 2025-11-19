@@ -182,6 +182,18 @@ export async function archiveInquiry(id: string): Promise<void> {
   }
 }
 
+export async function deleteInquiry(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('form_inquiries')
+    .update({ is_active: false })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting inquiry:', error);
+    throw new Error(`Failed to delete inquiry: ${error.message}`);
+  }
+}
+
 export async function convertToJob(
   id: string,
   jobId: string

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle } from 'lucide-react';
+import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2 } from 'lucide-react';
 import { FormInquiry } from '../../lib/supabase';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
-import { archiveInquiry, logCommunication } from '../../services/inquiryService';
+import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
 
 interface InquiryDetailModalProps {
   inquiry: FormInquiry;
   onClose: () => void;
   onArchive?: () => void;
+  onDelete?: () => void;
   onConvertToJob?: (inquiry: FormInquiry) => void;
   onRefresh?: () => void;
 }
@@ -16,6 +17,7 @@ export default function InquiryDetailModal({
   inquiry,
   onClose,
   onArchive,
+  onDelete,
   onConvertToJob,
   onRefresh,
 }: InquiryDetailModalProps) {
@@ -83,6 +85,17 @@ export default function InquiryDetailModal({
       onClose();
     } catch (error) {
       console.error('Error archiving:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete inquiry from ${inquiry.client_name}? This action cannot be undone and will remove this inquiry from all metrics.`)) return;
+    try {
+      await deleteInquiry(inquiry.id);
+      if (onDelete) onDelete();
+      onClose();
+    } catch (error) {
+      console.error('Error deleting:', error);
     }
   };
 
@@ -304,6 +317,14 @@ export default function InquiryDetailModal({
                   Archive
                 </button>
               )}
+
+              <button
+                onClick={handleDelete}
+                className="px-4 py-3 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete
+              </button>
             </div>
           </div>
         </div>

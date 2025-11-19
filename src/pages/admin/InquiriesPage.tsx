@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Eye, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink } from 'lucide-react';
-import { getInquiries, markAsViewed, archiveInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
+import { Inbox, Search, Filter, Eye, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2 } from 'lucide-react';
+import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
@@ -119,10 +119,26 @@ export default function InquiriesPage() {
       await archiveInquiry(id);
       setMessage({ type: 'success', text: 'Inquiry archived successfully!' });
       await refresh();
+      await fetchStats();
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error('Error archiving inquiry:', error);
       setMessage({ type: 'error', text: 'Failed to archive inquiry' });
+    }
+  };
+
+  const handleDelete = async (id: string, clientName: string) => {
+    if (!confirm(`Delete inquiry from ${clientName}? This action cannot be undone and will remove this inquiry from all metrics.`)) return;
+
+    try {
+      await deleteInquiry(id);
+      setMessage({ type: 'success', text: 'Inquiry deleted successfully!' });
+      await refresh();
+      await fetchStats();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error deleting inquiry:', error);
+      setMessage({ type: 'error', text: 'Failed to delete inquiry' });
     }
   };
 
@@ -407,6 +423,16 @@ export default function InquiriesPage() {
                       <Archive className="w-5 h-5" />
                     </button>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(inquiry.id, inquiry.client_name);
+                    }}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
@@ -452,6 +478,10 @@ export default function InquiriesPage() {
             setSelectedInquiry(null);
           }}
           onArchive={async () => {
+            await refresh();
+            await fetchStats();
+          }}
+          onDelete={async () => {
             await refresh();
             await fetchStats();
           }}

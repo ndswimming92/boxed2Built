@@ -94,11 +94,16 @@ export function useRealtimeInquiries({
             }
           } else if (payload.eventType === 'UPDATE') {
             const updatedInquiry = payload.new as FormInquiry;
-            setInquiries((prev) =>
-              prev.map((inquiry) =>
-                inquiry.id === updatedInquiry.id ? updatedInquiry : inquiry
-              )
-            );
+
+            if (!updatedInquiry.is_active) {
+              setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== updatedInquiry.id));
+            } else {
+              setInquiries((prev) =>
+                prev.map((inquiry) =>
+                  inquiry.id === updatedInquiry.id ? updatedInquiry : inquiry
+                )
+              );
+            }
 
             fetchUnviewedCount();
           } else if (payload.eventType === 'DELETE') {
