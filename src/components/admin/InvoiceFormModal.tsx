@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download } from 'lucide-react';
 import { Invoice, InvoiceLineItem } from '../../lib/supabase';
 import {
   createInvoice,
@@ -12,6 +12,8 @@ import {
   calculatePaymentTermsDueDate,
   getInvoiceSettings,
 } from '../../services/invoiceService';
+import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
+import { BusinessService } from '../../services/businessService';
 
 interface InvoiceFormModalProps {
   businessId: string;
@@ -66,6 +68,7 @@ export default function InvoiceFormModal({
 }: InvoiceFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>('general');
@@ -325,6 +328,48 @@ export default function InvoiceFormModal({
       setMessage({ type: 'error', text: 'Failed to save invoice. Please try again.' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!invoice) {
+      setMessage({ type: 'error', text: 'Please save the invoice before downloading PDF.' });
+      return;
+    }
+
+    setDownloading(true);
+    try {
+      const fullInvoice = await getInvoice(invoice.id);
+      if (!fullInvoice) {
+        throw new Error('Invoice not found');
+      }
+
+      const businessInfo = await BusinessService.getBusinessInfo();
+      if (!businessInfo) {
+        throw new Error('Business information not found');
+      }
+
+      await downloadInvoicePDF(
+        {
+          ...fullInvoice,
+          lineItems: fullInvoice.lineItems || [],
+          payments: fullInvoice.payments || [],
+        },
+        {
+          name: businessInfo.name,
+          address: businessInfo.address,
+          phone: businessInfo.phone,
+          email: businessInfo.email,
+          website: businessInfo.website,
+        }
+      );
+
+      setMessage({ type: 'success', text: 'PDF downloaded successfully!' });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      setMessage({ type: 'error', text: 'Failed to download PDF. Please try again.' });
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -748,42 +793,57 @@ export default function InvoiceFormModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
-            disabled={saving}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave(false)}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={saving}
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Save as Draft
-              </>
+        <div className="flex items-center justify-between p-6 border-t border-slate-200">
+          <div>
+            {invoice && (
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="px-6 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={downloading || saving}
+              >
+                {downloading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    Download PDF
+                  </>
+                )}
+              </button>
             )}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={saving}
-          >
-            <Send className="w-5 h-5" />
-            Save & Send
-          </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
+              disabled={saving || downloading}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSave(false)}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={saving || downloading}
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  {invoice ? 'Save Changes' : 'Save Invoice'}
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
