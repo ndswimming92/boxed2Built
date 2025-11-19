@@ -58,6 +58,24 @@ const INVOICE_TYPES = [
 
 const TN_TAX_RATE = 9.25;
 
+function formatPhoneNumber(value: string): string {
+  const cleaned = value.replace(/\D/g, '');
+
+  if (cleaned.length === 0) {
+    return '';
+  }
+
+  if (cleaned.length <= 3) {
+    return cleaned;
+  }
+
+  if (cleaned.length <= 6) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+  }
+
+  return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+}
+
 function validatePhoneNumber(phone: string): boolean {
   const cleaned = phone.replace(/\D/g, '');
 
@@ -542,10 +560,10 @@ export default function InvoiceFormModal({
                     type="tel"
                     value={clientPhone}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      setClientPhone(value);
+                      const formatted = formatPhoneNumber(e.target.value);
+                      setClientPhone(formatted);
 
-                      if (value && !validatePhoneNumber(value)) {
+                      if (formatted && !validatePhoneNumber(formatted)) {
                         setPhoneError('Please enter a valid phone number (e.g., 615-555-1234)');
                       } else {
                         setPhoneError('');
@@ -557,6 +575,7 @@ export default function InvoiceFormModal({
                       }
                     }}
                     placeholder="615-555-1234"
+                    maxLength={12}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
                       phoneError ? 'border-red-500' : 'border-slate-300'
                     }`}
