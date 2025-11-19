@@ -110,10 +110,6 @@ const Services: React.FC = () => {
                   )}
                 </div>
 
-                <div className="text-sm text-gray-600 mb-4">
-                  <p>{service.description}</p>
-                </div>
-
                 {service.includedItems && service.includedItems.length > 0 && (
                   <div className="bg-white rounded-lg p-4 border border-gray-200">
                     <p className="text-sm font-semibold text-gray-900 mb-2">What's Included:</p>
