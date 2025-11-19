@@ -498,6 +498,24 @@ export default function InvoiceFormModal({
               </button>
             </div>
 
+            {lineItems.length > 0 && (
+              <div className="grid grid-cols-12 gap-3 px-4 pb-2 mb-2">
+                <div className="col-span-2">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type</label>
+                </div>
+                <div className="col-span-5">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Description</label>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Quantity</label>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Unit Price</label>
+                </div>
+                <div className="col-span-1"></div>
+              </div>
+            )}
+
             <div className="space-y-3">
               {lineItems.map((item, index) => (
                 <div key={index} className="bg-slate-50 p-4 rounded-lg space-y-3">
@@ -518,7 +536,7 @@ export default function InvoiceFormModal({
                         type="text"
                         value={item.description}
                         onChange={(e) => updateLineItemField(index, 'description', e.target.value)}
-                        placeholder="Description"
+                        placeholder="e.g., 5-piece bedroom set assembly"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                       />
                     </div>
@@ -527,28 +545,32 @@ export default function InvoiceFormModal({
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateLineItemField(index, 'quantity', parseFloat(e.target.value) || 0)}
-                        placeholder="Qty"
+                        placeholder="1"
                         min="0"
                         step="0.01"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={(e) => updateLineItemField(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                        placeholder="Price"
-                        min="0"
-                        step="0.01"
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">$</span>
+                        <input
+                          type="number"
+                          value={item.unit_price}
+                          onChange={(e) => updateLineItemField(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                          placeholder="0.00"
+                          min="0"
+                          step="0.01"
+                          className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                        />
+                      </div>
                     </div>
                     <div className="col-span-1 flex items-center justify-center">
                       <button
                         type="button"
                         onClick={() => removeLineItem(index)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove line item"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -564,8 +586,8 @@ export default function InvoiceFormModal({
                       />
                       <span className="text-slate-700">Taxable (TN materials only)</span>
                     </label>
-                    <span className="text-slate-600">
-                      Total: ${(item.quantity * item.unit_price).toFixed(2)}
+                    <span className="text-slate-600 font-medium">
+                      Line Total: ${(item.quantity * item.unit_price).toFixed(2)}
                     </span>
                   </div>
                 </div>
