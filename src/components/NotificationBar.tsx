@@ -74,25 +74,34 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
     <>
       <style>
         {`
-          @keyframes scroll-notification {
+          @keyframes scroll-notification-wrap {
             0% {
-              transform: translateX(100%);
+              transform: translateX(0);
             }
             100% {
-              transform: translateX(-100%);
+              transform: translateX(-50%);
             }
           }
 
           @media (prefers-reduced-motion: reduce) {
-            .notification-scroll {
+            .notification-scroll-wrapper {
               animation: none !important;
+            }
+            .notification-scroll-wrapper .notification-scroll-content:nth-child(2) {
+              display: none;
             }
           }
 
-          .notification-scroll {
+          .notification-scroll-wrapper {
+            display: flex;
+            animation: scroll-notification-wrap ${animationDuration} linear infinite;
+            will-change: transform;
+          }
+
+          .notification-scroll-content {
             display: inline-block;
             white-space: nowrap;
-            animation: scroll-notification ${animationDuration} linear infinite;
+            padding-right: 4rem;
           }
         `}
       </style>
@@ -110,10 +119,13 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
           <div className="flex items-center justify-between py-3 gap-4">
             <div className="flex-1 relative overflow-hidden">
               {notification.enable_scroll_animation ? (
-                <div className="flex justify-start">
-                  <p className="notification-scroll text-sm sm:text-base font-medium leading-relaxed">
+                <div className="notification-scroll-wrapper">
+                  <span className="notification-scroll-content text-sm sm:text-base font-medium leading-relaxed">
                     {notification.message}
-                  </p>
+                  </span>
+                  <span className="notification-scroll-content text-sm sm:text-base font-medium leading-relaxed" aria-hidden="true">
+                    {notification.message}
+                  </span>
                 </div>
               ) : (
                 <p className="text-sm sm:text-base font-medium leading-relaxed text-center">
