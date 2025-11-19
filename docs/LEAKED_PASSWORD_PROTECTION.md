@@ -37,28 +37,47 @@ The HaveIBeenPwned integration uses k-anonymity:
 
 ## Implementation Status
 
-✅ **Database security fixed** - All unused indexes removed, function search paths secured
+✅ **Foreign key indexes optimized** - Added required index for saved_requests.business_id
+✅ **RLS policies optimized** - Using subqueries to prevent per-row function evaluation
+✅ **Unused indexes removed** - Dropped truly unused indexes to reduce overhead
+✅ **Function search paths secured** - All functions use immutable search paths
 ⚠️ **Leaked password protection** - Must be enabled in Supabase Dashboard (cannot be set via SQL)
 
 ## Security Fixes Applied
 
 ### Database Optimization and Security (Applied via Migration)
 
-1. **Removed Unused Indexes** - Dropped 17 unused indexes to reduce overhead:
-   - Business-related table indexes (address, attributes, reviews, gallery, etc.)
-   - Form inquiry indexes (status, viewed, submission_date)
-   - Revenue forecasting indexes (business_id, forecast_date, composite)
+1. **Added Missing Foreign Key Index**:
+   - `idx_saved_requests_business_id_fk` on `saved_requests(business_id)`
+   - This was incorrectly identified as unused in previous migration
+   - Required for optimal foreign key constraint performance
 
-2. **Fixed Function Search Paths** - All trigger functions now use immutable search paths:
-   - `update_revenue_forecasts_updated_at`
-   - `update_forecast_settings_updated_at`
-   - `update_jobs_updated_at`
-   - `update_gallery_items_updated_at`
-   - `update_form_inquiries_updated_at`
+2. **Optimized RLS Policies** - Using subqueries to cache auth function results:
+   - `notification_bar`: Changed `auth.uid()` to `(select auth.uid())`
+   - `saved_requests`: Changed `auth.uid()` to `(select auth.uid())`
+   - This prevents re-evaluation of auth functions for each row, improving query performance at scale
+
+3. **Removed Truly Unused Indexes** - Dropped 10 indexes with zero query usage:
+   - `idx_gallery_items_business_id`
+   - `idx_payment_methods_business_id`
+   - `idx_saved_requests_inquiry_id`
+   - `idx_service_areas_business_id`
+   - `idx_services_business_id`
+   - `idx_social_media_business_id`
+   - `idx_business_attributes_business_id`
+   - `idx_customer_reviews_business_id`
+   - `idx_forecast_accuracy_business_id`
+   - `idx_business_address_business_id`
+
+4. **Fixed Function Search Paths** - All trigger functions use immutable search paths:
+   - `update_saved_requests_updated_at`
+   - `track_saved_request_access`
+   - `update_notification_bar_updated_at`
+   - Plus all previously fixed functions
 
 These functions now include:
 - `SECURITY DEFINER` for controlled execution context
-- `SET search_path = public` to prevent search path manipulation attacks
+- `SET search_path = public, pg_temp` to prevent search path manipulation attacks
 
 ### Manual Configuration Required
 
@@ -73,10 +92,11 @@ This setting cannot be configured via SQL migrations and requires dashboard acce
 
 ## Security Impact
 
-- **Reduced Attack Surface**: Removed unnecessary indexes that could be exploited
-- **Function Security**: Protected trigger functions from search path manipulation
+- **Query Performance**: Added required foreign key index for optimal query execution
+- **RLS Performance**: Optimized policies to cache auth function calls instead of per-row evaluation
+- **Reduced Overhead**: Removed 10 truly unused indexes to reduce maintenance overhead
+- **Function Security**: Protected all trigger functions from search path manipulation attacks
 - **Password Security**: When enabled, prevents use of compromised passwords
-- **Performance**: Reduced index maintenance overhead
 
 ## Additional Resources
 
