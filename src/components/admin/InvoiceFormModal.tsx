@@ -658,34 +658,67 @@ export default function InvoiceFormModal({
                   <span className="text-slate-700 font-medium">Enable Late Fees</span>
                 </label>
                 {lateFeesEnabled && (
-                  <div className="space-y-2 ml-6">
-                    <div className="flex gap-2">
-                      <select
-                        value={lateFeeType}
-                        onChange={(e) => setLateFeeType(e.target.value as 'fixed' | 'percentage')}
-                        className="px-3 py-1 border border-slate-300 rounded text-sm"
-                      >
-                        <option value="fixed">Fixed</option>
-                        <option value="percentage">Percentage</option>
-                      </select>
+                  <div className="space-y-3 ml-6">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Late Fee Type & Amount
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={lateFeeType}
+                          onChange={(e) => setLateFeeType(e.target.value as 'fixed' | 'percentage')}
+                          className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                          <option value="fixed">Fixed Amount ($)</option>
+                          <option value="percentage">Percentage (%)</option>
+                        </select>
+                        <div className="flex-1 relative">
+                          {lateFeeType === 'fixed' && (
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
+                              $
+                            </span>
+                          )}
+                          <input
+                            type="number"
+                            value={lateFeeAmount}
+                            onChange={(e) => setLateFeeAmount(parseFloat(e.target.value) || 0)}
+                            placeholder={lateFeeType === 'fixed' ? '25.00' : '5.0'}
+                            min="0"
+                            step="0.01"
+                            className={`w-full ${
+                              lateFeeType === 'fixed' ? 'pl-7' : 'pl-3'
+                            } pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500`}
+                          />
+                          {lateFeeType === 'percentage' && (
+                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">
+                              %
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {lateFeeType === 'fixed'
+                          ? 'A fixed dollar amount will be added to overdue invoices'
+                          : 'A percentage of the total invoice amount will be added'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                        Grace Period (Days After Due Date)
+                      </label>
                       <input
                         type="number"
-                        value={lateFeeAmount}
-                        onChange={(e) => setLateFeeAmount(parseFloat(e.target.value) || 0)}
-                        placeholder="Amount"
+                        value={lateFeeGraceDays}
+                        onChange={(e) => setLateFeeGraceDays(parseInt(e.target.value) || 0)}
+                        placeholder="5"
                         min="0"
-                        step="0.01"
-                        className="flex-1 px-3 py-1 border border-slate-300 rounded text-sm"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       />
+                      <p className="text-xs text-slate-500 mt-1">
+                        Late fee applies {lateFeeGraceDays} day{lateFeeGraceDays !== 1 ? 's' : ''} after the
+                        due date
+                      </p>
                     </div>
-                    <input
-                      type="number"
-                      value={lateFeeGraceDays}
-                      onChange={(e) => setLateFeeGraceDays(parseInt(e.target.value) || 0)}
-                      placeholder="Grace period (days)"
-                      min="0"
-                      className="w-full px-3 py-1 border border-slate-300 rounded text-sm"
-                    />
                   </div>
                 )}
               </div>
