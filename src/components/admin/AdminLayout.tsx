@@ -21,7 +21,8 @@ import {
   Inbox,
   TrendingUp,
   Megaphone,
-  Receipt
+  Receipt,
+  FileText
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -30,16 +31,18 @@ import { requestNotificationPermission } from '../../utils/notificationService';
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
+  { name: 'Invoices', href: '/admin/invoices', icon: FileText },
+  { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
   { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
+  { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },
   { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
   { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
   { name: 'Services', href: '/admin/services', icon: Briefcase },
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
   { name: 'Reviews', href: '/admin/reviews', icon: Star },
   { name: 'Gallery', href: '/admin/gallery', icon: Image },
-  { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
   { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
   { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
   { name: 'Social Media', href: '/admin/social-media', icon: Share2 },

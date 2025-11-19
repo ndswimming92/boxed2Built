@@ -37,6 +37,8 @@ import GalleryAdminPage from './pages/admin/GalleryPage';
 import JobsAdminPage from './pages/admin/JobsPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import InquiriesPage from './pages/admin/InquiriesPage';
+import InvoicesPage from './pages/admin/InvoicesPage';
+import InvoiceSettingsPage from './pages/admin/InvoiceSettingsPage';
 import ForecastingPage from './pages/admin/ForecastingPage';
 import NotificationBarPage from './pages/admin/NotificationBarPage';
 import TaxSettingsPage from './pages/admin/TaxSettingsPage';
@@ -244,6 +246,8 @@ function App() {
                   <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="inquiries" element={<InquiriesPage />} />
+                    <Route path="invoices" element={<InvoicesPage />} />
+                    <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
                     <Route path="analytics" element={<AnalyticsPage />} />
                     <Route path="forecasting" element={<ForecastingPage />} />
                     <Route path="tax-settings" element={<TaxSettingsPage />} />
