@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { supabase, CustomerReview } from '../../lib/supabase';
 import { Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Star } from 'lucide-react';
 
+function formatDateWithoutTimezone(dateString: string): string {
+  const [year, month, day] = dateString.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+}
+
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -232,7 +238,7 @@ export default function ReviewsPage() {
                     ))}
                   </div>
                   <p className="text-slate-600 mb-2">{review.review_body}</p>
-                  <p className="text-sm text-slate-500">{new Date(review.date_published).toLocaleDateString()}</p>
+                  <p className="text-sm text-slate-500">{formatDateWithoutTimezone(review.date_published)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => { setEditingId(review.id); setFormData(review); }} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
