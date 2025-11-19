@@ -76,6 +76,7 @@ export interface InvoiceStats {
   paid: number;
   overdue: number;
   totalOutstanding: number;
+  totalDraft: number;
   totalPaid: number;
   avgInvoiceAmount: number;
 }
@@ -442,6 +443,10 @@ export async function getInvoiceStats(businessId: string): Promise<InvoiceStats>
     .filter((i) => ['sent', 'partially_paid', 'overdue'].includes(i.status))
     .reduce((sum, i) => sum + i.amount_due, 0);
 
+  const totalDraft = invoices
+    .filter((i) => i.status === 'draft')
+    .reduce((sum, i) => sum + i.total_amount, 0);
+
   const totalPaid = invoices.reduce((sum, i) => sum + i.amount_paid, 0);
 
   const avgInvoiceAmount = total > 0 ? invoices.reduce((sum, i) => sum + i.total_amount, 0) / total : 0;
@@ -454,6 +459,7 @@ export async function getInvoiceStats(businessId: string): Promise<InvoiceStats>
     paid,
     overdue,
     totalOutstanding: Math.round(totalOutstanding * 100) / 100,
+    totalDraft: Math.round(totalDraft * 100) / 100,
     totalPaid: Math.round(totalPaid * 100) / 100,
     avgInvoiceAmount: Math.round(avgInvoiceAmount * 100) / 100,
   };

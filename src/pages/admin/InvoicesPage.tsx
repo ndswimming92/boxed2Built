@@ -229,10 +229,26 @@ export default function InvoicesPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
+                <p className="text-sm text-slate-600 mb-1">Draft Total</p>
+                <p className="text-2xl font-bold text-slate-600">${stats.totalDraft.toFixed(2)}</p>
+                <p className="text-xs text-slate-500 mt-1">{stats.draft} unsent invoices</p>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg">
+                <FileText className="w-6 h-6 text-slate-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-sm text-slate-600 mb-1">Outstanding</p>
                 <p className="text-2xl font-bold text-orange-600">${stats.totalOutstanding.toFixed(2)}</p>
                 <p className="text-xs text-slate-500 mt-1">
                   {stats.sent + stats.partiallyPaid + stats.overdue} invoices
+                  {stats.overdue > 0 && (
+                    <span className="text-red-600 font-medium ml-1">• {stats.overdue} overdue</span>
+                  )}
                 </p>
               </div>
               <div className="p-3 bg-orange-50 rounded-lg">
@@ -250,19 +266,6 @@ export default function InvoicesPage() {
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
                 <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
-                <p className="text-xs text-slate-500 mt-1">Needs attention</p>
-              </div>
-              <div className="p-3 bg-red-50 rounded-lg">
-                <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
             </div>
           </div>
