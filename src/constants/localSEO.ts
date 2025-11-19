@@ -178,10 +178,6 @@ export const FAQ_CONTENT = [
       {
         question: "What furniture brands do you assemble?",
         answer: "We assemble furniture from all major brands including IKEA, Target, Walmart, Wayfair, Amazon, Ashley Furniture, Sauder, and more. If it comes in a box with assembly instructions, we can build it! Our team is experienced with various furniture styles and complexity levels."
-      },
-      {
-        question: "Are you insured and licensed?",
-        answer: "Yes, Boxed2Built is a fully insured professional service. We take the safety and security of your home seriously and maintain proper insurance coverage for all our assembly work. Your furniture and property are protected during our service."
       }
     ]
   },
