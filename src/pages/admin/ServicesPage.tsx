@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Service } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Briefcase } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Briefcase, Minus } from 'lucide-react';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -18,6 +18,7 @@ export default function ServicesPage() {
     min_price: null,
     max_price: null,
     price_range_description: '',
+    included_items: [],
     price_currency: 'USD',
     duration_minutes: null,
     is_featured: false,
@@ -242,6 +243,62 @@ export default function ServicesPage() {
             </div>
 
             <div className="border-t border-slate-200 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">What's Included</h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Add bullet points describing what's included in this service (e.g., "Full assembly", "Debris cleanup", "Placement in room")
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const items = formData.included_items || [];
+                    setFormData({ ...formData, included_items: [...items, ''] });
+                  }}
+                  className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Item
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {(formData.included_items || []).map((item, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={item}
+                      onChange={(e) => {
+                        const items = [...(formData.included_items || [])];
+                        items[index] = e.target.value;
+                        setFormData({ ...formData, included_items: items });
+                      }}
+                      placeholder="e.g., Full assembly, Debris cleanup, etc."
+                      className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const items = [...(formData.included_items || [])];
+                        items.splice(index, 1);
+                        setFormData({ ...formData, included_items: items });
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Minus className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                {(!formData.included_items || formData.included_items.length === 0) && (
+                  <p className="text-sm text-slate-500 italic py-2">
+                    No items added yet. Click "Add Item" to start.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
               <h3 className="text-sm font-semibold text-slate-900 mb-3">Typical Price Range</h3>
               <p className="text-xs text-slate-600 mb-4">
                 Specify the typical price range for this service to help customers understand potential cost variations based on complexity, materials, or other factors.
@@ -409,6 +466,19 @@ export default function ServicesPage() {
                     )}
                   </div>
                   <p className="text-slate-600 mb-3">{service.description}</p>
+                  {service.included_items && service.included_items.length > 0 && (
+                    <div className="mb-3 bg-slate-50 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-slate-700 mb-2">What's Included:</p>
+                      <ul className="text-sm text-slate-600 space-y-1">
+                        {service.included_items.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-emerald-600 mt-0.5">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2 text-sm">
                     <div className="flex items-center gap-4 text-slate-500">
                       <span className="font-semibold text-emerald-600">

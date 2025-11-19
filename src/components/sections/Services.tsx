@@ -16,7 +16,9 @@ const Services: React.FC = () => {
     description: service.description,
     startingPrice: `$${service.base_price.toFixed(0)}`,
     priceRange: service.category || '',
-    includedItems: service.description.split('. ')
+    minPrice: service.min_price,
+    maxPrice: service.max_price,
+    includedItems: service.included_items || []
   })) || [];
 
   const handlePhoneClick = () => {
@@ -93,18 +95,38 @@ const Services: React.FC = () => {
                     <span className="block text-sm text-gray-500">Starting at</span>
                     <span className="text-2xl font-bold text-blue-700">{service.startingPrice}</span>
                   </div>
-                  
-                  {service.priceRange && (
+
+                  {(service.minPrice !== null || service.maxPrice !== null) && (
                     <div className="mt-2 sm:mt-0">
                       <span className="block text-sm text-gray-500">Typical Range</span>
-                      <span className="font-medium text-gray-700">{service.priceRange}</span>
+                      <span className="font-medium text-gray-700">
+                        {service.minPrice !== null && service.maxPrice !== null
+                          ? `$${service.minPrice.toFixed(0)} - $${service.maxPrice.toFixed(0)}`
+                          : service.minPrice !== null
+                          ? `From $${service.minPrice.toFixed(0)}`
+                          : `Up to $${service.maxPrice!.toFixed(0)}`}
+                      </span>
                     </div>
                   )}
                 </div>
-                
-                <div className="text-sm text-gray-600">
+
+                <div className="text-sm text-gray-600 mb-4">
                   <p>{service.description}</p>
                 </div>
+
+                {service.includedItems && service.includedItems.length > 0 && (
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-2">What's Included:</p>
+                    <ul className="text-sm text-gray-700 space-y-1.5">
+                      {service.includedItems.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-0.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
             ))
