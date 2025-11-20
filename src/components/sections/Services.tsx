@@ -122,6 +122,12 @@ const Services: React.FC = () => {
                     </ul>
                   </div>
                 )}
+
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 italic">
+                    Labor-only service. Not subject to Tennessee sales tax (SUT-115).
+                  </p>
+                </div>
               </div>
             </div>
             ))
