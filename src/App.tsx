@@ -14,7 +14,6 @@ import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
-import { usePageLoading } from './hooks/usePageLoading';
 import { initializeFontOptimization } from './utils/fontOptimization';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
@@ -142,16 +141,6 @@ function Analytics() {
   return null;
 }
 
-function PageLoadingWrapper({ children }: { children: React.ReactNode }) {
-  const isLoading = usePageLoading(500); // 500ms loading delay
-
-  if (isLoading) {
-    return <PageLoader message="Loading page..." />;
-  }
-
-  return <>{children}</>;
-}
-
 function HashHandler() {
   const location = useLocation();
 
@@ -230,43 +219,41 @@ function App() {
             <Analytics />
             <HashHandler />
             <Suspense fallback={<PageLoader message="Loading application..." />}>
-              <PageLoadingWrapper>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/services" element={<ServicesPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/partners" element={<PartnersPage />} />
-                  <Route path="/gallery" element={<GalleryPage />} />
-                  <Route path="/faq" element={<FAQPage />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                  <Route path="/lookup-request" element={<RequestLookupPage />} />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/partners" element={<PartnersPage />} />
+                <Route path="/gallery" element={<GalleryPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="/lookup-request" element={<RequestLookupPage />} />
 
-                  <Route path="/admin/login" element={<LoginPage />} />
-                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                    <Route path="dashboard" element={<DashboardPage />} />
-                    <Route path="goals" element={<GoalsPage />} />
-                    <Route path="inquiries" element={<InquiriesPage />} />
-                    <Route path="invoices" element={<InvoicesPage />} />
-                    <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
-                    <Route path="analytics" element={<AnalyticsPage />} />
-                    <Route path="forecasting" element={<ForecastingPage />} />
-                    <Route path="tax-settings" element={<TaxSettingsPage />} />
-                    <Route path="notification-bar" element={<NotificationBarPage />} />
-                    <Route path="business-info" element={<BusinessInfoPage />} />
-                    <Route path="services" element={<ServicesAdminPage />} />
-                    <Route path="service-areas" element={<ServiceAreasPage />} />
-                    <Route path="reviews" element={<ReviewsPage />} />
-                    <Route path="gallery" element={<GalleryAdminPage />} />
-                    <Route path="jobs" element={<JobsAdminPage />} />
-                    <Route path="business-hours" element={<BusinessHoursPage />} />
-                    <Route path="payment-methods" element={<PaymentMethodsPage />} />
-                    <Route path="social-media" element={<SocialMediaPage />} />
-                    <Route path="attributes" element={<AttributesPage />} />
-                  </Route>
-                </Routes>
-              </PageLoadingWrapper>
+                <Route path="/admin/login" element={<LoginPage />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="goals" element={<GoalsPage />} />
+                  <Route path="inquiries" element={<InquiriesPage />} />
+                  <Route path="invoices" element={<InvoicesPage />} />
+                  <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="forecasting" element={<ForecastingPage />} />
+                  <Route path="tax-settings" element={<TaxSettingsPage />} />
+                  <Route path="notification-bar" element={<NotificationBarPage />} />
+                  <Route path="business-info" element={<BusinessInfoPage />} />
+                  <Route path="services" element={<ServicesAdminPage />} />
+                  <Route path="service-areas" element={<ServiceAreasPage />} />
+                  <Route path="reviews" element={<ReviewsPage />} />
+                  <Route path="gallery" element={<GalleryAdminPage />} />
+                  <Route path="jobs" element={<JobsAdminPage />} />
+                  <Route path="business-hours" element={<BusinessHoursPage />} />
+                  <Route path="payment-methods" element={<PaymentMethodsPage />} />
+                  <Route path="social-media" element={<SocialMediaPage />} />
+                  <Route path="attributes" element={<AttributesPage />} />
+                </Route>
+              </Routes>
             </Suspense>
             <ScrollToTop />
           </div>
