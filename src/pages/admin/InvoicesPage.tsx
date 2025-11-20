@@ -28,7 +28,6 @@ import {
 } from '../../services/invoiceService';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
-import LateFeeManagementModal from '../../components/admin/LateFeeManagementModal';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 
 export default function InvoicesPage() {
@@ -43,7 +42,6 @@ export default function InvoicesPage() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showLateFeeModal, setShowLateFeeModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [businessInfo, setBusinessInfo] = useState<any>(null);
 
@@ -137,12 +135,6 @@ export default function InvoicesPage() {
       console.error('Error downloading PDF:', error);
       alert('Failed to download PDF. Please try again.');
     }
-    setOpenMenuId(null);
-  };
-
-  const handleManageLateFee = (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-    setShowLateFeeModal(true);
     setOpenMenuId(null);
   };
 
@@ -412,15 +404,6 @@ export default function InvoicesPage() {
                             <CreditCard className="w-4 h-4" />
                           </button>
                         )}
-                        {invoice.late_fee_enabled && invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-                          <button
-                            onClick={() => handleManageLateFee(invoice)}
-                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                            title="Manage Late Fee"
-                          >
-                            <DollarSign className="w-4 h-4" />
-                          </button>
-                        )}
                         <button
                           onClick={() => handleDownloadPDF(invoice)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -470,22 +453,6 @@ export default function InvoicesPage() {
           }}
           onPaymentRecorded={() => {
             setShowPaymentModal(false);
-            setSelectedInvoice(null);
-            fetchData();
-          }}
-        />
-      )}
-
-      {showLateFeeModal && selectedInvoice && (
-        <LateFeeManagementModal
-          isOpen={showLateFeeModal}
-          invoice={selectedInvoice}
-          onClose={() => {
-            setShowLateFeeModal(false);
-            setSelectedInvoice(null);
-          }}
-          onSuccess={() => {
-            setShowLateFeeModal(false);
             setSelectedInvoice(null);
             fetchData();
           }}
