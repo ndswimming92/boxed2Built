@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
+import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
+import type { Goal } from '../../lib/supabase';
 import {
   Building2,
   Briefcase,
@@ -18,7 +20,9 @@ import {
   ExternalLink,
   Mail,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  Target,
+  CheckCircle2
 } from 'lucide-react';
 
 interface Stats {
@@ -53,6 +57,8 @@ export default function DashboardPage() {
   const [businessName, setBusinessName] = useState('');
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
+  const [goalStats, setGoalStats] = useState({ totalGoals: 0, completedGoals: 0, overdueGoals: 0, completionRate: 0 });
+  const [upcomingGoals, setUpcomingGoals] = useState<Goal[]>([]);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -103,7 +109,9 @@ export default function DashboardPage() {
         { count: jobsCount },
         { data: jobsData },
         inquiryStats,
-        recentInquiriesData
+        recentInquiriesData,
+        goalStatsData,
+        upcomingGoalsData
       ] = await Promise.all([
         supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('service_areas').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -113,10 +121,14 @@ export default function DashboardPage() {
         supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true),
         supabase.from('jobs').select('final_price, date_completed').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null),
         getInquiryStats(businessInfo.id),
-        getRecentInquiries(businessInfo.id, 5)
+        getRecentInquiries(businessInfo.id, 5),
+        getGoalStats(businessInfo.id),
+        getUpcomingGoals(businessInfo.id, 3)
       ]);
 
       setRecentInquiries(recentInquiriesData);
+      setGoalStats(goalStatsData);
+      setUpcomingGoals(upcomingGoalsData);
 
       const avgRating = reviewsData && reviewsData.length > 0
         ? reviewsData.reduce((sum, r) => sum + r.rating_value, 0) / reviewsData.length
@@ -384,6 +396,109 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && upcomingGoals.length > 0 && (
+        <div className="mt-12">
+          <div className="bg-white rounded-xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Target className="w-5 h-5 text-emerald-600" />
+                Active Goals
+              </h2>
+              <Link
+                to="/admin/goals"
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+              >
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="p-4 bg-slate-50 rounded-lg">
+                <p className="text-sm text-slate-600 mb-1">Total Goals</p>
+                <p className="text-2xl font-bold text-slate-900">{goalStats.totalGoals}</p>
+              </div>
+              <div className="p-4 bg-emerald-50 rounded-lg">
+                <p className="text-sm text-emerald-700 mb-1">Completed</p>
+                <p className="text-2xl font-bold text-emerald-900">{goalStats.completedGoals}</p>
+                <p className="text-xs text-emerald-600 mt-1">{goalStats.completionRate}% rate</p>
+              </div>
+              {goalStats.overdueGoals > 0 && (
+                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-sm text-red-700 mb-1">Overdue</p>
+                  <p className="text-2xl font-bold text-red-900">{goalStats.overdueGoals}</p>
+                  <p className="text-xs text-red-600 mt-1">Need attention</p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {upcomingGoals.map((goal) => {
+                const getPriorityColor = (priority: string) => {
+                  switch (priority) {
+                    case 'high': return 'bg-red-100 text-red-800';
+                    case 'medium': return 'bg-yellow-100 text-yellow-800';
+                    case 'low': return 'bg-green-100 text-green-800';
+                    default: return 'bg-slate-100 text-slate-800';
+                  }
+                };
+
+                const getDaysRemaining = (dueDate: string | null) => {
+                  if (!dueDate) return null;
+                  const today = new Date();
+                  const due = new Date(dueDate);
+                  const diffTime = due.getTime() - today.getTime();
+                  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                };
+
+                const daysRemaining = getDaysRemaining(goal.due_date);
+
+                return (
+                  <div
+                    key={goal.id}
+                    className="p-4 border border-slate-200 rounded-lg hover:border-emerald-300 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-slate-900">{goal.title}</h3>
+                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getPriorityColor(goal.priority)}`}>
+                            {goal.priority.toUpperCase()}
+                          </span>
+                        </div>
+                        {goal.due_date && (
+                          <p className="text-sm text-slate-600">
+                            Due {new Date(goal.due_date).toLocaleDateString()}
+                            {daysRemaining !== null && daysRemaining >= 0 && (
+                              <span className={daysRemaining <= 7 ? 'text-red-600 font-medium ml-1' : 'ml-1'}>
+                                ({daysRemaining} days left)
+                              </span>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-slate-900">
+                        {Math.round(goal.progress_percentage)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          goal.progress_percentage >= 75 ? 'bg-emerald-500' :
+                          goal.progress_percentage >= 50 ? 'bg-blue-500' :
+                          goal.progress_percentage >= 25 ? 'bg-yellow-500' : 'bg-orange-500'
+                        }`}
+                        style={{ width: `${Math.min(goal.progress_percentage, 100)}%` }}
+                      />
+                    </div>
+                  </div>
                 );
               })}
             </div>

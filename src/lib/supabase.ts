@@ -388,6 +388,28 @@ export type QuarterlyTaxPayment = {
   updated_at: string;
 };
 
+export type Goal = {
+  id: string;
+  business_id: string;
+  title: string;
+  description: string;
+  category: 'financial' | 'operational' | 'growth' | 'customer_satisfaction' | 'custom';
+  priority: 'high' | 'medium' | 'low';
+  status: 'not_started' | 'in_progress' | 'completed' | 'cancelled' | 'overdue';
+  target_value: number;
+  current_value: number;
+  unit_type: 'revenue' | 'jobs' | 'hours' | 'percentage' | 'custom';
+  unit_label: string | null;
+  start_date: string | null;
+  due_date: string | null;
+  completion_date: string | null;
+  progress_percentage: number;
+  is_archived: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type TaxCalculation = {
   id: string;
   business_id: string;

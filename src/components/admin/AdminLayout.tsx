@@ -22,7 +22,8 @@ import {
   TrendingUp,
   Megaphone,
   Receipt,
-  FileText
+  FileText,
+  Target
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -30,6 +31,7 @@ import { requestNotificationPermission } from '../../utils/notificationService';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Goals', href: '/admin/goals', icon: Target },
   { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
   { name: 'Invoices', href: '/admin/invoices', icon: FileText },
   { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
