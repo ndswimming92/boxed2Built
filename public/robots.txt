@@ -11,6 +11,7 @@ Disallow: /*.pdf$
 Disallow: /api/
 
 # Explicitly allow all important pages for SEO
+Allow: /
 Allow: /services
 Allow: /services/
 Allow: /contact
@@ -21,6 +22,10 @@ Allow: /gallery
 Allow: /gallery/
 Allow: /partners
 Allow: /partners/
+Allow: /faq
+Allow: /faq/
+Allow: /lookup-request
+Allow: /lookup-request/
 Allow: /privacy-policy
 Allow: /privacy-policy/
 Allow: /terms-of-service
