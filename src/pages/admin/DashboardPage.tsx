@@ -15,7 +15,10 @@ import {
   BarChart3,
   ArrowRight,
   Inbox,
-  ExternalLink
+  ExternalLink,
+  Mail,
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react';
 
 interface Stats {
@@ -195,6 +198,21 @@ export default function DashboardPage() {
       link: '/admin/reviews',
       color: 'bg-yellow-500'
     },
+    {
+      name: 'Pending Inquiries',
+      value: stats.pendingInquiries,
+      icon: AlertCircle,
+      link: '/admin/inquiries',
+      color: 'bg-orange-500',
+      highlight: stats.pendingInquiries > 0
+    },
+    {
+      name: 'Total Inquiries',
+      value: stats.inquiries,
+      icon: Inbox,
+      link: '/admin/inquiries',
+      color: 'bg-cyan-500'
+    },
   ];
 
   return (
@@ -209,8 +227,8 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl p-6 border border-slate-200 animate-pulse">
               <div className="h-12 w-12 bg-slate-200 rounded-lg mb-4"></div>
               <div className="h-4 bg-slate-200 rounded w-24 mb-2"></div>
@@ -219,19 +237,29 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card) => {
             const Icon = card.icon;
+            const isHighlighted = 'highlight' in card && card.highlight;
             return (
               <Link
                 key={card.name}
                 to={card.link}
-                className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-lg hover:border-emerald-300 transition-all group"
+                className={`bg-white rounded-xl p-6 border transition-all group ${
+                  isHighlighted
+                    ? 'border-orange-300 shadow-md hover:shadow-lg'
+                    : 'border-slate-200 hover:shadow-lg hover:border-emerald-300'
+                }`}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className={`p-3 ${card.color} rounded-lg`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
+                  {isHighlighted && (
+                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                      Action Needed
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm font-medium text-slate-600 mb-1">{card.name}</p>
                 <p className="text-3xl font-bold text-slate-900">{card.value}</p>
@@ -241,6 +269,125 @@ export default function DashboardPage() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {!loading && recentInquiries.length > 0 && (
+        <div className="mt-12">
+          <div className="bg-white rounded-xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-emerald-600" />
+                Recent Inquiries
+              </h2>
+              <Link
+                to="/admin/inquiries"
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+              >
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {recentInquiries.map((inquiry) => {
+                const formatDate = (dateString: string) => {
+                  const date = new Date(dateString);
+                  const now = new Date();
+                  const diffInMs = now.getTime() - date.getTime();
+                  const diffInHours = diffInMs / (1000 * 60 * 60);
+
+                  if (diffInHours < 24) {
+                    const hours = Math.floor(diffInHours);
+                    if (hours < 1) {
+                      const minutes = Math.floor(diffInMs / (1000 * 60));
+                      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+                    }
+                    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+                  }
+
+                  return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+                  });
+                };
+
+                const getStatusColor = (status: string) => {
+                  switch (status) {
+                    case 'pending':
+                      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                    case 'converted_to_job':
+                      return 'bg-green-100 text-green-800 border-green-200';
+                    case 'archived':
+                      return 'bg-gray-100 text-gray-800 border-gray-200';
+                    default:
+                      return 'bg-gray-100 text-gray-800 border-gray-200';
+                  }
+                };
+
+                const getStatusLabel = (status: string) => {
+                  switch (status) {
+                    case 'pending':
+                      return 'Pending';
+                    case 'converted_to_job':
+                      return 'Converted';
+                    case 'archived':
+                      return 'Archived';
+                    default:
+                      return status;
+                  }
+                };
+
+                return (
+                  <Link
+                    key={inquiry.id}
+                    to="/admin/inquiries"
+                    className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
+                      !inquiry.viewed ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {!inquiry.viewed && (
+                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-600 text-white">
+                              NEW
+                            </span>
+                          )}
+                          <p className="font-semibold text-slate-900 truncate">{inquiry.client_name}</p>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600 mb-2">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {inquiry.client_email}
+                          </span>
+                          <span className="text-slate-400">•</span>
+                          <span>{formatDate(inquiry.submission_date)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-slate-700">{inquiry.furniture_type}</span>
+                          {inquiry.pieces && (
+                            <>
+                              <span className="text-slate-400">•</span>
+                              <span className="text-slate-600">{inquiry.pieces} {inquiry.pieces === 1 ? 'piece' : 'pieces'}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getStatusColor(inquiry.status)}`}>
+                          {getStatusLabel(inquiry.status)}
+                        </span>
+                        {inquiry.estimated_price && (
+                          <span className="text-sm font-semibold text-emerald-600">{inquiry.estimated_price}</span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
