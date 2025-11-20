@@ -57,7 +57,7 @@ export async function generateInvoicePDF(
   yPosition = 58;
 
   doc.setFillColor(248, 250, 252);
-  doc.rect(margin, yPosition, 75, 40, 'F');
+  doc.rect(margin, yPosition, 75, 46, 'F');
 
   yPosition += 8;
   doc.setFontSize(9);
@@ -72,6 +72,12 @@ export async function generateInvoicePDF(
   doc.text('Invoice #:', margin + 3, yPosition);
   doc.setFont('helvetica', 'normal');
   doc.text(invoice.invoice_number, margin + 30, yPosition);
+
+  yPosition += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Type:', margin + 3, yPosition);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatInvoiceType(invoice.invoice_type), margin + 30, yPosition);
 
   yPosition += 6;
   doc.setFont('helvetica', 'bold');
@@ -104,7 +110,7 @@ export async function generateInvoicePDF(
   yPosition = 58;
 
   doc.setFillColor(248, 250, 252);
-  doc.rect(pageWidth - margin - 80, yPosition, 80, 40, 'F');
+  doc.rect(pageWidth - margin - 80, yPosition, 80, 46, 'F');
 
   yPosition += 8;
   doc.setFontSize(9);
@@ -134,7 +140,7 @@ export async function generateInvoicePDF(
     doc.text(addressLines, pageWidth - margin - 77, yPosition);
   }
 
-  yPosition = 110;
+  yPosition = 116;
 
   doc.setFillColor(16, 185, 129);
   doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
@@ -357,4 +363,15 @@ function formatDate(dateString: string): string {
     month: 'long',
     day: 'numeric',
   });
+}
+
+function formatInvoiceType(type: string): string {
+  const typeMap: { [key: string]: string } = {
+    estimate: 'Estimate',
+    deposit: 'Deposit',
+    progress: 'Progress',
+    final: 'Final',
+    general: 'General',
+  };
+  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
 }
