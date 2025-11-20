@@ -185,6 +185,7 @@ export default function InvoiceSettingsPage() {
                 onChange={(e) => setDefaultPaymentTerms(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               >
+                <option value="Due Upon Completion">Due Upon Completion</option>
                 <option value="Due on Receipt">Due on Receipt</option>
                 <option value="Net 15">Net 15 (15 days)</option>
                 <option value="Net 30">Net 30 (30 days)</option>

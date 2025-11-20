@@ -40,8 +40,8 @@ interface LineItemForm {
 }
 
 const PAYMENT_TERMS_OPTIONS = [
+  { value: 'Due Upon Completion', label: 'Due Upon Completion' },
   { value: 'Due on Receipt', label: 'Due on Receipt' },
-  { value: 'Due on Completion', label: 'Due on Completion' },
   { value: 'Net 15', label: 'Net 15 (15 days)' },
   { value: 'Net 30', label: 'Net 30 (30 days)' },
   { value: 'Net 45', label: 'Net 45 (45 days)' },
