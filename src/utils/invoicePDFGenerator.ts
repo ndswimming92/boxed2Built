@@ -174,7 +174,7 @@ export async function generateInvoicePDF(
 
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);
-    doc.text(item.item_type.toUpperCase().substring(0, 3), margin + 2, yPosition + 3);
+    doc.text(formatItemType(item.item_type), margin + 2, yPosition + 3);
 
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
@@ -372,6 +372,15 @@ function formatInvoiceType(type: string): string {
     progress: 'Progress',
     final: 'Final',
     general: 'General',
+  };
+  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function formatItemType(type: string): string {
+  const typeMap: { [key: string]: string } = {
+    labor: 'Labor',
+    material: 'Material',
+    other: 'Other',
   };
   return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
 }
