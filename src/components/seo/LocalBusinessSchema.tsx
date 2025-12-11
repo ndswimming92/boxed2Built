@@ -59,7 +59,7 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
 }) => {
   const schemaData = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": ["LocalBusiness", "HomeAndConstructionBusiness", "ProfessionalService"],
     "@id": `${website}/#business`,
     "name": businessName,
     "alternateName": `${businessName} Furniture Assembly`,
