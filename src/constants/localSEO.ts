@@ -163,8 +163,29 @@ export const LOCAL_SEO_CONTENT = {
     title: "Furniture Assembly FAQ | Spring Hill, TN | Boxed2Built",
     description:
       "Find answers to common questions about furniture assembly, pricing, scheduling, and service areas. Boxed2Built helps Spring Hill families build with confidence."
+  },
+  partners: {
+    title: "Local Partnerships in Spring Hill, TN | Boxed2Built",
+    description:
+      "Discover how Boxed2Built partners with realtors, movers, and local businesses to support families in Spring Hill, TN with reliable assembly and setup services."
+  },
+  gallery: {
+    title: "Furniture Assembly Gallery | Boxed2Built Projects",
+    description:
+      "Browse recent Boxed2Built projects, including TV mounting, furniture assembly, nurseries, patios, and more. Real builds from homes across Spring Hill, TN."
+  },
+  privacyPolicy: {
+    title: "Privacy Policy | Boxed2Built Furniture Assembly",
+    description:
+      "Learn how Boxed2Built protects your personal information when you request quotes, schedule services, or use our website. Clear, transparent privacy practices."
+  },
+  termsOfService: {
+    title: "Terms of Service | Boxed2Built Furniture Assembly",
+    description:
+      "Review the Terms of Service for Boxed2Built, covering scheduling, communication, payment policies, and service expectations for our Spring Hill, TN clients."
   }
 };
+
 
 // Comprehensive FAQ content for FAQ page
 export const FAQ_CONTENT = [
