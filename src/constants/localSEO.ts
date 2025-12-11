@@ -138,27 +138,31 @@ export const CUSTOMER_REVIEWS = [
   }
 ];
 
-// Local SEO page titles and descriptions
 export const LOCAL_SEO_CONTENT = {
   homepage: {
-    title: "Furniture Assembly Spring Hill TN | Handyman Near Me | Boxed2Built",
-    description: "Professional furniture assembly Spring Hill TN. Local handyman near me specializing in IKEA, Target, Walmart assembly. Expert handyman services in Spring Hill, Franklin, Columbia TN. Free quotes (615) 403-4538."
+    title: "Furniture Assembly in Spring Hill, TN | Boxed2Built",
+    description:
+      "Boxed2Built provides fast, reliable furniture assembly in Spring Hill, TN. Expert help for IKEA, Target, and Walmart builds. Friendly service and free quotes."
   },
   services: {
-    title: "Furniture Assembly Services Spring Hill TN | IKEA Target Walmart | Boxed2Built",
-    description: "Professional furniture assembly services in Spring Hill TN. Expert IKEA, Target, Walmart assembly. Transparent pricing, weekend service. Serving Franklin, Columbia, Thompson's Station."
+    title: "Furniture Assembly Services in Spring Hill, TN | Boxed2Built",
+    description:
+      "Explore expert furniture assembly services in Spring Hill, TN. From IKEA to Target builds, Boxed2Built offers clear pricing and dependable support for every room."
   },
   about: {
-    title: "About Boxed2Built | Spring Hill TN Furniture Assembly Expert | Local Handyman",
-    description: "Meet Nicholas Davidson, Spring Hill TN furniture assembly expert. Local handyman specializing in IKEA, Target, Walmart assembly. Professional service, community focused."
+    title: "About Boxed2Built | Spring Hill’s Furniture Assembly Pro",
+    description:
+      "Learn about Boxed2Built and owner Nicholas Davidson. We provide trusted, family-focused furniture assembly services for Spring Hill and surrounding communities."
   },
   contact: {
-    title: "Contact Boxed2Built | Spring Hill TN Furniture Assembly | (615) 403-4538",
-    description: "Contact Boxed2Built for furniture assembly in Spring Hill TN. Call (615) 403-4538 or email boxed2builtco@gmail.com. Serving Franklin, Columbia, Thompson's Station."
+    title: "Contact Boxed2Built | Spring Hill Furniture Assembly",
+    description:
+      "Contact Boxed2Built for fast, reliable furniture assembly in Spring Hill, TN. Call (615) 403-4538 or email us to schedule your build. Serving nearby communities."
   },
   faq: {
-    title: "FAQ - Furniture Assembly Questions | Spring Hill TN | Boxed2Built",
-    description: "Frequently asked questions about furniture assembly services in Spring Hill TN. Get answers about IKEA assembly, pricing, scheduling, service areas, and more from Boxed2Built."
+    title: "Furniture Assembly FAQ | Spring Hill, TN | Boxed2Built",
+    description:
+      "Find answers to common questions about furniture assembly, pricing, scheduling, and service areas. Boxed2Built helps Spring Hill families build with confidence."
   }
 };
 
