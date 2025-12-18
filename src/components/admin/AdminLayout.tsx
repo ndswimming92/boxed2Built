@@ -23,7 +23,8 @@ import {
   Megaphone,
   Receipt,
   FileText,
-  Target
+  Target,
+  ScrollText
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -40,6 +41,7 @@ const navigation = [
   { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
   { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },
   { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
+  { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
   { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
   { name: 'Services', href: '/admin/services', icon: Briefcase },
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },

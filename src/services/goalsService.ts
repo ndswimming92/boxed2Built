@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Goal } from '../lib/supabase';
+import { logAction } from './auditLogService';
 
 export interface GoalStats {
   totalGoals: number;
@@ -88,14 +89,32 @@ export async function createGoal(businessId: string, goalData: Partial<Goal>): P
     .single();
 
   if (error) {
+    await logAction({
+      actionType: 'CREATE',
+      tableName: 'business_goals',
+      recordIdentifier: goalData.title || 'Untitled Goal',
+      status: 'error',
+      errorMessage: error.message,
+    });
     console.error('Error creating goal:', error);
     throw error;
   }
+
+  await logAction({
+    actionType: 'CREATE',
+    tableName: 'business_goals',
+    recordId: data.id,
+    recordIdentifier: data.title,
+    newValues: data,
+    status: 'success',
+  });
 
   return data;
 }
 
 export async function updateGoal(id: string, goalData: Partial<Goal>): Promise<Goal> {
+  const oldGoal = await getGoalById(id);
+
   const updateData: any = {
     updated_at: new Date().toISOString(),
   };
@@ -122,38 +141,95 @@ export async function updateGoal(id: string, goalData: Partial<Goal>): Promise<G
     .single();
 
   if (error) {
+    await logAction({
+      actionType: 'UPDATE',
+      tableName: 'business_goals',
+      recordId: id,
+      recordIdentifier: oldGoal?.title || 'Unknown Goal',
+      status: 'error',
+      errorMessage: error.message,
+    });
     console.error('Error updating goal:', error);
     throw error;
   }
+
+  await logAction({
+    actionType: 'UPDATE',
+    tableName: 'business_goals',
+    recordId: data.id,
+    recordIdentifier: data.title,
+    oldValues: oldGoal || undefined,
+    newValues: updateData,
+    status: 'success',
+  });
 
   return data;
 }
 
 export async function deleteGoal(id: string): Promise<void> {
+  const oldGoal = await getGoalById(id);
+
   const { error } = await supabase
     .from('business_goals')
     .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq('id', id);
 
   if (error) {
+    await logAction({
+      actionType: 'DELETE',
+      tableName: 'business_goals',
+      recordId: id,
+      recordIdentifier: oldGoal?.title || 'Unknown Goal',
+      status: 'error',
+      errorMessage: error.message,
+    });
     console.error('Error deleting goal:', error);
     throw error;
   }
+
+  await logAction({
+    actionType: 'DELETE',
+    tableName: 'business_goals',
+    recordId: id,
+    recordIdentifier: oldGoal?.title || 'Unknown Goal',
+    oldValues: oldGoal || undefined,
+    status: 'success',
+  });
 }
 
 export async function archiveGoal(id: string): Promise<void> {
+  const oldGoal = await getGoalById(id);
+
   const { error } = await supabase
     .from('business_goals')
     .update({ is_archived: true, updated_at: new Date().toISOString() })
     .eq('id', id);
 
   if (error) {
+    await logAction({
+      actionType: 'ARCHIVE',
+      tableName: 'business_goals',
+      recordId: id,
+      recordIdentifier: oldGoal?.title || 'Unknown Goal',
+      status: 'error',
+      errorMessage: error.message,
+    });
     console.error('Error archiving goal:', error);
     throw error;
   }
+
+  await logAction({
+    actionType: 'ARCHIVE',
+    tableName: 'business_goals',
+    recordId: id,
+    recordIdentifier: oldGoal?.title || 'Unknown Goal',
+    status: 'success',
+  });
 }
 
 export async function completeGoal(id: string): Promise<Goal> {
+  const oldGoal = await getGoalById(id);
+
   const { data, error } = await supabase
     .from('business_goals')
     .update({
@@ -166,9 +242,29 @@ export async function completeGoal(id: string): Promise<Goal> {
     .single();
 
   if (error) {
+    await logAction({
+      actionType: 'UPDATE',
+      tableName: 'business_goals',
+      recordId: id,
+      recordIdentifier: oldGoal?.title || 'Unknown Goal',
+      status: 'error',
+      errorMessage: error.message,
+      metadata: { action: 'complete' },
+    });
     console.error('Error completing goal:', error);
     throw error;
   }
+
+  await logAction({
+    actionType: 'UPDATE',
+    tableName: 'business_goals',
+    recordId: data.id,
+    recordIdentifier: data.title,
+    oldValues: oldGoal || undefined,
+    newValues: { status: 'completed', completion_date: data.completion_date },
+    status: 'success',
+    metadata: { action: 'complete' },
+  });
 
   return data;
 }
