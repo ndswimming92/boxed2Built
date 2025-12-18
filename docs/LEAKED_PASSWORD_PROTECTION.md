@@ -37,45 +37,52 @@ The HaveIBeenPwned integration uses k-anonymity:
 
 ## Implementation Status
 
-✅ **Foreign key indexes optimized** - Added required index for saved_requests.business_id
-✅ **RLS policies optimized** - Using subqueries to prevent per-row function evaluation
-✅ **Unused indexes removed** - Dropped truly unused indexes to reduce overhead
-✅ **Function search paths secured** - All functions use immutable search paths
+✅ **Foreign key indexes optimized** - All 15 foreign key indexes added for optimal performance
+✅ **Function search paths secured** - All functions use immutable search paths (Dec 2024)
+✅ **Security definer view removed** - Removed insecure recent_audit_logs view
+✅ **Secure audit log function** - Added get_recent_audit_logs function with proper security
 ⚠️ **Leaked password protection** - Must be enabled in Supabase Dashboard (cannot be set via SQL)
 
 ## Security Fixes Applied
 
-### Database Optimization and Security (Applied via Migration)
+### Database Optimization and Security (Latest Migration: Dec 2024)
 
-1. **Added Missing Foreign Key Index**:
-   - `idx_saved_requests_business_id_fk` on `saved_requests(business_id)`
-   - This was incorrectly identified as unused in previous migration
-   - Required for optimal foreign key constraint performance
+1. **Added All Missing Foreign Key Indexes** (15 total):
+   - `idx_business_address_business_id` on `business_address(business_id)`
+   - `idx_business_attributes_business_id` on `business_attributes(business_id)`
+   - `idx_customer_reviews_business_id` on `customer_reviews(business_id)`
+   - `idx_forecast_accuracy_business_id` on `forecast_accuracy(business_id)`
+   - `idx_gallery_items_business_id` on `gallery_items(business_id)`
+   - `idx_invoices_inquiry_id` on `invoices(inquiry_id)`
+   - `idx_invoices_job_id` on `invoices(job_id)`
+   - `idx_payment_methods_business_id` on `payment_methods(business_id)`
+   - `idx_quarterly_tax_payments_business_id` on `quarterly_tax_payments(business_id)`
+   - `idx_saved_requests_business_id` on `saved_requests(business_id)`
+   - `idx_saved_requests_inquiry_id` on `saved_requests(inquiry_id)`
+   - `idx_service_areas_business_id` on `service_areas(business_id)`
+   - `idx_services_business_id` on `services(business_id)`
+   - `idx_social_media_business_id` on `social_media(business_id)`
+   - `idx_tax_calculations_business_id` on `tax_calculations(business_id)`
 
-2. **Optimized RLS Policies** - Using subqueries to cache auth function results:
-   - `notification_bar`: Changed `auth.uid()` to `(select auth.uid())`
-   - `saved_requests`: Changed `auth.uid()` to `(select auth.uid())`
-   - This prevents re-evaluation of auth functions for each row, improving query performance at scale
+2. **Removed Insecure Security Definer View**:
+   - Dropped `recent_audit_logs` view that exposed `auth.users` data
+   - Replaced with secure function `get_recent_audit_logs()` that doesn't expose auth schema
 
-3. **Removed Truly Unused Indexes** - Dropped 10 indexes with zero query usage:
-   - `idx_gallery_items_business_id`
-   - `idx_payment_methods_business_id`
-   - `idx_saved_requests_inquiry_id`
-   - `idx_service_areas_business_id`
-   - `idx_services_business_id`
-   - `idx_social_media_business_id`
-   - `idx_business_attributes_business_id`
-   - `idx_customer_reviews_business_id`
-   - `idx_forecast_accuracy_business_id`
-   - `idx_business_address_business_id`
+3. **Fixed All Function Search Paths** - All functions now use immutable search paths:
+   - `log_auth_event`
+   - `calculate_goal_progress`
+   - `update_overdue_goals`
+   - `update_business_goals_updated_at`
+   - `calculate_line_item_total`
+   - Plus all previously fixed trigger functions
 
-4. **Fixed Function Search Paths** - All trigger functions use immutable search paths:
-   - `update_saved_requests_updated_at`
-   - `track_saved_request_access`
-   - `update_notification_bar_updated_at`
-   - Plus all previously fixed functions
+4. **Added Secure Audit Log Function**:
+   - `get_recent_audit_logs(days_back integer)` - Secure function to retrieve audit logs
+   - Uses `SECURITY DEFINER` with explicit `search_path = public, pg_temp`
+   - Only accessible to authenticated users
+   - Does not expose auth.users table data
 
-These functions now include:
+All functions now include:
 - `SECURITY DEFINER` for controlled execution context
 - `SET search_path = public, pg_temp` to prevent search path manipulation attacks
 
