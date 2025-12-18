@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Mail, Phone, Instagram, Star, Youtube } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, Star, Youtube, Clock } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
@@ -7,6 +7,14 @@ import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/ut
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
+
+const formatTime = (time: string): string => {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${displayHour}:${minutes} ${ampm}`;
+};
 
 const Footer: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -21,6 +29,7 @@ const Footer: React.FC = () => {
   const serviceAreas = businessData?.serviceAreas.map(area => `${area.city_name}, ${area.region}`) || [];
   const paymentMethods = businessData?.paymentMethods.map(pm => pm.method_name) || [];
   const socialMedia = businessData?.socialMedia || [];
+  const businessHours = businessData?.businessHours || [];
   const handleSocialClick = (platform: string) => {
     trackEvent('social_click', 'footer', {
       event_category: 'social_media',
@@ -110,8 +119,8 @@ const Footer: React.FC = () => {
         <meta itemProp="paymentAccepted" content={paymentMethods.join(', ')} />
 
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+
             {/* Company Info */}
             <div className="md:col-span-1">
               <div className="flex items-center justify-center md:justify-start mb-4">
@@ -170,6 +179,37 @@ const Footer: React.FC = () => {
                 <li className="text-gray-300">Desk & Table Assembly</li>
                 <li className="text-gray-300">Bookshelf Assembly</li>
                 <li className="text-gray-300">Professional Service</li>
+              </ul>
+            </div>
+
+            {/* Business Hours */}
+            <div className="md:col-span-1">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <Clock size={18} className="text-emerald-400" />
+                Business Hours
+              </h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                {businessHours.length > 0 ? (
+                  businessHours
+                    .filter(hour => !hour.is_closed)
+                    .map((hour, index) => (
+                      <li key={index} className="text-gray-300">
+                        <span className="font-medium text-white">{hour.day_of_week}:</span>{' '}
+                        {hour.opens && hour.closes
+                          ? `${formatTime(hour.opens)} - ${formatTime(hour.closes)}`
+                          : 'Closed'}
+                      </li>
+                    ))
+                ) : (
+                  <li className="text-gray-300">
+                    <span className="font-medium text-white">Mon-Fri:</span> 8:00 AM - 6:00 PM
+                  </li>
+                )}
+                {businessHours.some(hour => hour.is_closed) && (
+                  <li className="text-gray-400 italic text-xs mt-2">
+                    Closed: {businessHours.filter(h => h.is_closed).map(h => h.day_of_week).join(', ')}
+                  </li>
+                )}
               </ul>
             </div>
 
