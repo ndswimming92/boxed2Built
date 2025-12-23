@@ -63,13 +63,18 @@ const HomeHero: React.FC = () => {
             <div className="lg:w-3/5">
               <div className="animate-fadeIn">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
-                  Skip The Frustration.
-                  <span className="block text-blue-600 mt-2">We Build It For You.</span>
-                </h1>
+  Furniture Assembly in Spring Hill, TN
+  <span className="block text-blue-600 mt-2">
+    IKEA, Walmart & Flat-Pack Furniture Built for You
+  </span>
+</h1>
 
-                <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-                  Professional furniture assembly in {locality}, {region}. From IKEA to Walmart, we handle the hassle so you don't have to.
-                </p>
+<p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+  Professional in-home furniture assembly for beds, desks, TV stands,
+  shelving, and more. Fast, reliable service for busy families in Spring Hill
+  and surrounding areas.
+</p>
+
 
                 <div className="flex flex-wrap items-center gap-4 mb-10">
                   <div className="flex items-center text-gray-700">
