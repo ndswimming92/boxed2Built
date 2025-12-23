@@ -25,10 +25,29 @@ const HomeHero: React.FC = () => {
       page_section: 'hero',
       conversion_type: 'form_intent'
     });
+
     const formSection = document.getElementById('contact-form-section');
     if (formSection) {
       formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  const handleTextPhotoClick = () => {
+    trackEvent('cta_click', 'hero', {
+      event_category: 'conversion',
+      event_label: 'text_photo_hero',
+      value: 1,
+      user_engagement: 'sms_intent',
+      element_type: 'link',
+      element_location: 'hero',
+      page_section: 'hero',
+      action_type: 'sms',
+      conversion_type: 'sms_intent'
+    });
+    trackConversion('cta_click', 1, 'USD', {
+      page_section: 'hero',
+      conversion_type: 'sms_intent'
+    });
   };
 
   if (loading) {
@@ -46,9 +65,14 @@ const HomeHero: React.FC = () => {
   }
 
   const businessName = businessData?.info?.name || 'Boxed2Built';
-  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
+  const slogan =
+    businessData?.info?.slogan ||
+    'We turn boxes into comfort so families can focus on what matters most';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
+
+  // Prefer a clean, consistent phone format for "sms:" links: +1XXXXXXXXXX
+  const smsNumber = '+16154034538';
 
   return (
     <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
@@ -63,38 +87,36 @@ const HomeHero: React.FC = () => {
             <div className="lg:w-3/5">
               <div className="animate-fadeIn">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
-  Furniture Assembly in Spring Hill, TN
-  <span className="block text-blue-600 mt-2">
-    IKEA, Walmart & Flat-Pack Furniture Built for You
-  </span>
-</h1>
+                  Furniture Assembly in Spring Hill, TN
+                  <span className="block text-blue-600 mt-2">
+                    IKEA, Walmart & Flat-Pack Furniture Built for You
+                  </span>
+                </h1>
 
-<p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
-  Professional in-home furniture assembly for beds, desks, TV stands,
-  shelving, and more. Fast, reliable service for busy families in Spring Hill
-  and surrounding areas.
-</p>
+                <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+                  Professional in-home furniture assembly for beds, desks, TV stands, shelving,
+                  and more. Fast, reliable service for busy families in Spring Hill and surrounding
+                  areas.
+                </p>
 
+                <div className="flex flex-wrap items-center gap-6 mb-10">
+                  <div className="flex items-center text-gray-700">
+                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+                    <span className="font-medium">Free, No-Obligation Quotes</span>
+                  </div>
 
-               <div className="flex flex-wrap items-center gap-6 mb-10">
-  <div className="flex items-center text-gray-700">
-    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-    <span className="font-medium">Free, No-Obligation Quotes</span>
-  </div>
+                  <div className="flex items-center text-gray-700">
+                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+                    <span className="font-medium">Same-Day Furniture Assembly Available</span>
+                  </div>
 
-  <div className="flex items-center text-gray-700">
-    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-    <span className="font-medium">Same-Day Furniture Assembly Available</span>
-  </div>
+                  <div className="flex items-center text-gray-700">
+                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+                    <span className="font-medium">Locally Owned & Satisfaction Guaranteed</span>
+                  </div>
+                </div>
 
-  <div className="flex items-center text-gray-700">
-    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-    <span className="font-medium">Locally Owned & Satisfaction Guaranteed</span>
-  </div>
-</div>
-
-
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row gap-4 mb-3">
                   <Button
                     variant="primary"
                     size="lg"
@@ -102,16 +124,38 @@ const HomeHero: React.FC = () => {
                     className="group text-lg px-8 py-4 shadow-xl hover:shadow-2xl"
                     trackingLabel="get_free_quote_hero"
                     pageSection="hero"
+                    aria-label="Get a free furniture assembly quote in Spring Hill TN"
                   >
-                    Get Your Free Quote
-                    <ArrowRight size={24} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                    Get a Free Quote in Spring Hill
+                    <ArrowRight
+                      size={24}
+                      className="ml-2 group-hover:translate-x-1 transition-transform"
+                    />
                   </Button>
+
+                  <a
+                    href={`sms:${smsNumber}`}
+                    onClick={handleTextPhotoClick}
+                    className="inline-flex items-center justify-center text-lg px-8 py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
+                    aria-label="Text a photo for a fast furniture assembly quote"
+                  >
+                    Text a Photo
+                  </a>
                 </div>
 
+                <p className="text-sm text-gray-500 mb-8">
+                  Send photos + item links for the fastest quote.
+                </p>
+
                 <div className="flex items-center gap-2 text-gray-600">
-                  <span className="text-sm">Or call us:</span>
+                  <span className="text-sm">Prefer a call?</span>
                   <CallButton size="md" pageSection="hero" />
                 </div>
+
+                {/* Keeping these in case you use them elsewhere in the component later */}
+                <span className="sr-only">
+                  {businessName} — {slogan} — Serving {locality}, {region}
+                </span>
               </div>
             </div>
 
