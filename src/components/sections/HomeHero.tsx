@@ -76,20 +76,23 @@ const HomeHero: React.FC = () => {
 </p>
 
 
-                <div className="flex flex-wrap items-center gap-4 mb-10">
-                  <div className="flex items-center text-gray-700">
-                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-                    <span className="font-medium">Free Quotes</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-                    <span className="font-medium">Same-Day Service Available</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-                    <span className="font-medium">100% Satisfaction Guaranteed</span>
-                  </div>
-                </div>
+               <div className="flex flex-wrap items-center gap-6 mb-10">
+  <div className="flex items-center text-gray-700">
+    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+    <span className="font-medium">Free, No-Obligation Quotes</span>
+  </div>
+
+  <div className="flex items-center text-gray-700">
+    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+    <span className="font-medium">Same-Day Furniture Assembly Available</span>
+  </div>
+
+  <div className="flex items-center text-gray-700">
+    <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
+    <span className="font-medium">Locally Owned & Satisfaction Guaranteed</span>
+  </div>
+</div>
+
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
                   <Button
