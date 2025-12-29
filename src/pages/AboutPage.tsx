@@ -84,11 +84,11 @@ const AboutPage: React.FC = () => {
               />
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                About Your Spring Hill Handyman Services – Furniture Assembly Specialists
+                About Boxed2Built – Furniture Assembly in Spring Hill, TN
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Your trusted Spring Hill handyman services team, dedicated to making your life easier 
-                with professional furniture assembly for IKEA, Target, Walmart, and all major brands.
+                Locally owned and trusted for professional furniture assembly in Spring Hill, TN,
+  serving nearby communities like Thompson’s Station, Franklin, and Columbia.
               </p>
             </div>
           </div>
