@@ -46,7 +46,7 @@ H1: Professional Furniture Assembly Services
 
 #### **About Page Structure:**
 ```
-H1: About Your Spring Hill Handyman Services – Furniture Assembly Specialists
+H1: About Boxed2Built – Furniture Assembly in Spring Hill, TN
 ├── H2: Meet the Owner
 ├── H2: Our Mission
 ├── H2: Why We Exist
