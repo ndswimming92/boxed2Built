@@ -11,6 +11,7 @@ import {
 } from '../../services/qrCodeService';
 import QRCodeScheduleManager from './QRCodeScheduleManager';
 import QRCodePreviewDownload from './QRCodePreviewDownload';
+import { URLSelector } from '../ui/URLSelector';
 
 type Props = {
   isOpen: boolean;
@@ -92,8 +93,8 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
       return;
     }
 
-    if (!formData.default_destination_url.startsWith('http://') && !formData.default_destination_url.startsWith('https://')) {
-      alert('Please enter a valid URL starting with http:// or https://');
+    if (!formData.default_destination_url) {
+      alert('Please select or enter a destination URL');
       return;
     }
 
@@ -225,15 +226,10 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Default Destination URL *
-                </label>
-                <input
-                  type="url"
+                <URLSelector
                   value={formData.default_destination_url}
-                  onChange={(e) => setFormData({ ...formData, default_destination_url: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="https://example.com/page"
+                  onChange={(url) => setFormData({ ...formData, default_destination_url: url })}
+                  label="Default Destination URL"
                   required
                 />
                 <p className="text-sm text-gray-500 mt-1">
