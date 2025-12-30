@@ -126,7 +126,13 @@ export class BusinessService {
         .eq('business_id', businessId);
 
       if (error) throw error;
-      return data || [];
+
+      const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const sortedData = (data || []).sort((a, b) => {
+        return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
+      });
+
+      return sortedData;
     } catch (error) {
       console.error('Error fetching business hours:', error);
       return [];

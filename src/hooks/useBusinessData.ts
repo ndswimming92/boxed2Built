@@ -65,8 +65,7 @@ export const useBusinessData = (forceRefresh?: number) => {
           supabase
             .from('business_hours')
             .select('*')
-            .eq('business_id', businessInfo.id)
-            .order('day_of_week', { ascending: false }),
+            .eq('business_id', businessInfo.id),
           supabase
             .from('payment_methods')
             .select('*')
@@ -91,12 +90,17 @@ export const useBusinessData = (forceRefresh?: number) => {
             .eq('business_id', businessInfo.id)
         ]);
 
+        const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const sortedBusinessHours = (businessHours || []).sort((a, b) => {
+          return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
+        });
+
         const completeData: CompleteBusinessData = {
           info: businessInfo,
           address: address || null,
           serviceAreas: serviceAreas || [],
           services: services || [],
-          businessHours: businessHours || [],
+          businessHours: sortedBusinessHours,
           paymentMethods: paymentMethods || [],
           socialMedia: socialMedia || [],
           reviews: reviews || [],
