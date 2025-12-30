@@ -15,6 +15,7 @@ import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { initializeFontOptimization } from './utils/fontOptimization';
+import { initPostHog } from './lib/posthog';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
 import ProtectedRoute from './components/admin/ProtectedRoute';
@@ -201,6 +202,9 @@ function NotificationBarWrapper() {
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
+
+    // Initialize PostHog
+    initPostHog();
 
     // Initialize font optimization
     initializeFontOptimization();

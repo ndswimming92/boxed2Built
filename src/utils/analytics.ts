@@ -1,4 +1,5 @@
-// Google Analytics utility function
+import { posthog } from '../lib/posthog';
+
 declare global {
   interface Window {
     gtag: (command: string, targetId: string, config?: any) => void;
@@ -69,7 +70,6 @@ export const getPageContext = (): { page_name: string; page_path: string } => {
   };
 }
 
-// Google Analytics event tracking with automatic page context
 export const trackGAEvent = (eventName: string, parameters?: GAEventParams) => {
   if (typeof window !== 'undefined' && window.gtag) {
     const pageContext = getPageContext();
@@ -84,9 +84,14 @@ export const trackGAEvent = (eventName: string, parameters?: GAEventParams) => {
       ...parameters
     });
   }
+
+  posthog.capture(eventName, {
+    category: parameters?.event_category || 'engagement',
+    label: parameters?.event_label || eventName,
+    ...parameters
+  });
 };
 
-// Enhanced conversion tracking with page context
 export const trackConversion = (action: string, value?: number, currency: string = 'USD', additionalParams?: GAEventParams) => {
   if (typeof window !== 'undefined' && window.gtag) {
     const pageContext = getPageContext();
@@ -106,6 +111,13 @@ export const trackConversion = (action: string, value?: number, currency: string
       ...additionalParams
     });
   }
+
+  posthog.capture('conversion', {
+    action,
+    value,
+    currency,
+    ...additionalParams
+  });
 };
 
 // Track form interactions with enhanced parameters
@@ -201,7 +213,6 @@ export const trackEngagementMilestone = (milestone: string, value?: number) => {
   });
 };
 
-// Google Analytics page view tracking
 export const trackGAPageView = (path: string, title?: string) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('config', 'G-ZY3PG1S68G', {
@@ -211,6 +222,12 @@ export const trackGAPageView = (path: string, title?: string) => {
       send_page_view: true
     });
   }
+
+  posthog.capture('$pageview', {
+    $current_url: window.location.href,
+    page_path: path,
+    page_title: title || document.title
+  });
 };
 
 // Enhanced event tracking with automatic page context
