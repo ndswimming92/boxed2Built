@@ -108,6 +108,12 @@ const HomePage: React.FC = () => {
                 <span className="inline-block mx-4">•</span>
                 <span className="inline-block mr-2">✓</span> Serving Spring Hill, Columbia, Franklin & surrounding areas
               </p>
+
+              <div className="text-center mt-6">
+                <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium text-base">
+                  Learn about our assembly process and what to expect on build day →
+                </a>
+              </div>
             </div>
           </div>
         </section>

@@ -261,6 +261,35 @@ export const FAQ_CONTENT = [
     ]
   },
   {
+    category: "What to Expect on Build Day",
+    questions: [
+      {
+        question: "What is your arrival window and how will I be notified?",
+        answer: "We respect your time and keep you informed every step of the way. You'll receive a 30-minute courtesy call before we arrive at your scheduled appointment time. This advance notice gives you time to prepare and ensures you're ready when we get there. We also send text or call notifications to keep you updated. Punctuality and clear communication are priorities for us, so you can plan your day with confidence knowing exactly when to expect us."
+      },
+      {
+        question: "What tools and equipment should I have ready?",
+        answer: "You don't need to provide anything at all! We bring all the professional tools and equipment needed for your furniture assembly, including power drills, screwdrivers, Allen keys, hammers, levels, and more. We also carefully organize and check all hardware that comes with your furniture to make sure everything is present and correct before we begin. Our goal is to make this completely hassle-free for you, so you can relax knowing we have everything covered from start to finish."
+      },
+      {
+        question: "What happens when you arrive?",
+        answer: "When we arrive, we'll start with a friendly greeting and a quick walkthrough of your furniture assembly project. We'll assess all the items that need to be assembled and discuss your preferred placement locations for each piece. We'll also provide you with an estimated timeframe for completion based on the complexity and number of items. This initial conversation sets clear expectations and ensures we're on the same page before we begin working. We want you to feel comfortable and informed throughout the entire process."
+      },
+      {
+        question: "How long will the assembly take?",
+        answer: "Assembly time depends on the type and complexity of your furniture. Small items like chairs or nightstands typically take 30-60 minutes, medium items like desks and bookshelves usually take 1-2 hours, and larger pieces like bed frames and dressers can take 2-3 hours to complete. Multiple items or particularly complex furniture may take longer. We're committed to working efficiently without ever rushing or compromising on quality. For longer jobs, we'll provide progress updates so you always know how things are going and when we expect to finish."
+      },
+      {
+        question: "What is your cleanup process?",
+        answer: "Our thorough cleanup is one of the things customers appreciate most about our service. We remove and dispose of all boxes, packaging materials, cardboard, styrofoam, plastic wrap, and packing materials from your home. We'll place everything in your recycling or trash bins as appropriate, or load it into your vehicle if you prefer to handle disposal yourself. We believe in leaving your space cleaner and more organized than we found it. You'll be left with beautifully assembled furniture in a tidy space, ready to enjoy immediately without any mess to deal with."
+      },
+      {
+        question: "What happens during the final walkthrough and payment?",
+        answer: "Before we consider the job complete, we perform a comprehensive quality inspection of every assembled piece. We check for stability, proper hardware installation, and overall functionality to ensure everything meets our high standards. Then we'll walk through each item with you, demonstrating that it's secure and properly placed. This is your opportunity to ask questions, request minor adjustments to placement, or point out any concerns. We only request payment after you've confirmed you're completely satisfied with the work. We accept cash, credit cards, debit cards, Apple Pay, Venmo, Zelle, and Square contactless payments for your convenience. Your satisfaction is our priority, and we're not done until you're happy with every detail."
+      }
+    ]
+  },
+  {
     category: "Service Areas",
     questions: [
       {

@@ -173,6 +173,13 @@ const AboutPage: React.FC = () => {
               {/* What You Can Expect */}
               <div className="mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">What You Can Expect</h2>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  We believe transparency builds trust. From the moment you book to the final walkthrough, we keep you informed and comfortable.{' '}
+                  <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                    Learn about our assembly day process
+                  </a>{' '}
+                  to see exactly how we work with families in Spring Hill.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-600">
                     <div className="flex items-center mb-3">

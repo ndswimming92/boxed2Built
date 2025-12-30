@@ -165,8 +165,13 @@ const ServicesPage: React.FC = () => {
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
                   <p className="text-gray-700 mb-4">
-                    Our experienced team specializes in furniture assembly for all major brands including IKEA, Target, 
-                    Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Read more{' '}
+                    Our experienced team specializes in furniture assembly for all major brands including IKEA, Target,
+                    Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Curious about
+                    our process?{' '}
+                    <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      See what to expect on assembly day
+                    </a>.{' '}
+                    Read more{' '}
                     <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
                       about our expertise
                     </a>{' '}

@@ -174,7 +174,11 @@ const FAQPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               {FAQ_CONTENT.map((category, categoryIndex) => (
-                <div key={categoryIndex} className="mb-12">
+                <div
+                  key={categoryIndex}
+                  className="mb-12"
+                  id={category.category === "What to Expect on Build Day" ? "build-day-process" : undefined}
+                >
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-600">
                     {category.category}
                   </h2>
