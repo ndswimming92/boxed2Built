@@ -252,6 +252,13 @@ export async function getActiveScheduleForQRCode(qrCodeId: string): Promise<QRCo
 }
 
 export async function getQRCodeStats(businessId: string): Promise<QRCodeStats> {
+  const { data: qrCodeIds } = await supabase
+    .from('qr_codes')
+    .select('id')
+    .eq('business_id', businessId);
+
+  const qrIds = qrCodeIds?.map(qr => qr.id) || [];
+
   const [
     totalCodesResult,
     activeCodesResult,
@@ -272,22 +279,19 @@ export async function getQRCodeStats(businessId: string): Promise<QRCodeStats> {
       .select('*', { count: 'exact', head: true })
       .eq('business_id', businessId)
       .eq('status', 'inactive'),
-    supabase
-      .from('qr_scans')
-      .select('qr_code_id', { count: 'exact', head: true })
-      .in('qr_code_id',
-        supabase
-          .from('qr_codes')
-          .select('id')
-          .eq('business_id', businessId)
-      )
+    qrIds.length > 0
+      ? supabase
+          .from('qr_scans')
+          .select('qr_code_id', { count: 'exact', head: true })
+          .in('qr_code_id', qrIds)
+      : { count: 0 }
   ]);
 
   return {
     total_codes: totalCodesResult.count || 0,
     active_codes: activeCodesResult.count || 0,
     inactive_codes: inactiveCodesResult.count || 0,
-    total_scans: totalScansResult.count || 0
+    total_scans: typeof totalScansResult === 'object' && 'count' in totalScansResult ? totalScansResult.count || 0 : 0
   };
 }
 
