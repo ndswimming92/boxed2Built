@@ -39,7 +39,7 @@ export default function QRRedirectPage() {
         const referrer = document.referrer;
         const fullURL = window.location.href;
 
-        logScan(qrCode.id, userAgent, referrer, fullURL);
+        await logScan(qrCode.id, userAgent, referrer, fullURL);
 
         window.location.href = destinationURL;
       } catch (err) {
