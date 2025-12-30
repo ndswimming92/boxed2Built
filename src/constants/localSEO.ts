@@ -281,7 +281,7 @@ export const FAQ_CONTENT = [
       },
       {
         question: "What is your cleanup process?",
-        answer: "Our thorough cleanup is one of the things customers appreciate most about our service. We remove and dispose of all boxes, packaging materials, cardboard, styrofoam, plastic wrap, and packing materials from your home. We'll place everything in your recycling or trash bins as appropriate, or load it into your vehicle if you prefer to handle disposal yourself. We believe in leaving your space cleaner and more organized than we found it. You'll be left with beautifully assembled furniture in a tidy space, ready to enjoy immediately without any mess to deal with."
+        answer: "Our thorough cleanup is one of the things customers appreciate most about our service. We handle 100% of the cleanup and disposal - you don't need to do anything. We remove all boxes, packaging materials, cardboard, styrofoam, plastic wrap, and packing materials from your home and take everything with us. We personally dispose of all materials after we leave, so you never have to worry about handling trash or recycling. We believe in leaving your space cleaner and more organized than we found it. You'll be left with beautifully assembled furniture in a perfectly tidy space, ready to enjoy immediately without any mess to deal with."
       },
       {
         question: "What happens during the final walkthrough and payment?",
@@ -331,7 +331,7 @@ export const FAQ_CONTENT = [
       },
       {
         question: "What do you do with the packaging materials?",
-        answer: "As part of our service, we remove all packaging materials, including cardboard boxes, plastic wrap, styrofoam, and packing materials. We'll place these items in your recycling or trash bins, or we can load them into your vehicle if you prefer to handle disposal yourself."
+        answer: "As part of our full-service approach, we remove all packaging materials, including cardboard boxes, plastic wrap, styrofoam, and packing materials. We take everything with us and personally handle all disposal. You won't need to deal with any trash or recycling - we handle it all from start to finish so you can simply enjoy your newly assembled furniture."
       },
       {
         question: "Can you disassemble old furniture?",
