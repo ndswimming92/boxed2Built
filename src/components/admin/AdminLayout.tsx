@@ -25,11 +25,13 @@ import {
   FileText,
   Target,
   ScrollText,
-  QrCode
+  QrCode,
+  Search
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
+import CommandPalette from './CommandPalette';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -57,6 +59,7 @@ const navigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
   const location = useLocation();
@@ -83,12 +86,30 @@ export default function AdminLayout() {
     requestNotificationPermission();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        navigation={navigation}
+      />
+
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -177,6 +198,18 @@ export default function AdminLayout() {
             >
               <Menu className="w-6 h-6" />
             </button>
+
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors lg:ml-0"
+            >
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden lg:inline-block px-2 py-0.5 text-xs bg-white border border-slate-300 rounded text-slate-700 font-mono">
+                {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}K
+              </kbd>
+            </button>
+
             <div className="flex items-center gap-4 ml-auto">
               <Link
                 to="/admin/inquiries"
