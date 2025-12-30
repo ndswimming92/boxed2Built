@@ -15,15 +15,36 @@ const CUSTOM_URL_VALUE = '__custom__';
 export function URLSelector({ value, onChange, error, label = 'Destination URL', required = true }: URLSelectorProps) {
   const [pages, setPages] = useState<SitePage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [customUrl, setCustomUrl] = useState('');
 
   useEffect(() => {
+    console.log('[URLSelector] Component mounted, loading pages...');
     loadPages();
   }, []);
 
   useEffect(() => {
-    if (pages.length === 0 || !value) return;
+    console.log('[URLSelector] Value or pages changed:', { value, pagesCount: pages.length });
+
+    if (isLoading) {
+      console.log('[URLSelector] Still loading, skipping value sync');
+      return;
+    }
+
+    if (!value) {
+      console.log('[URLSelector] No value provided, resetting to empty');
+      setSelectedOption('');
+      setCustomUrl('');
+      return;
+    }
+
+    if (pages.length === 0) {
+      console.log('[URLSelector] No pages available, treating as custom URL');
+      setSelectedOption(CUSTOM_URL_VALUE);
+      setCustomUrl(value);
+      return;
+    }
 
     const matchingPage = pages.find(page => {
       const fullUrl = buildFullUrl(page.url_path);
@@ -31,21 +52,29 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
     });
 
     if (matchingPage) {
+      console.log('[URLSelector] Found matching page:', matchingPage.title);
       setSelectedOption(matchingPage.id);
       setCustomUrl('');
     } else {
+      console.log('[URLSelector] No matching page, using custom URL');
       setSelectedOption(CUSTOM_URL_VALUE);
       setCustomUrl(value);
     }
-  }, [value, pages]);
+  }, [value, pages, isLoading]);
 
   const loadPages = async () => {
     try {
       setIsLoading(true);
+      setLoadError(null);
+      console.log('[URLSelector] Fetching site pages...');
       const data = await getActiveSitePages();
+      console.log('[URLSelector] Loaded pages:', data.length);
       setPages(data);
     } catch (err) {
-      console.error('Failed to load site pages:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[URLSelector] Failed to load site pages:', err);
+      setLoadError(errorMsg);
+      setPages([]);
     } finally {
       setIsLoading(false);
     }
@@ -95,14 +124,22 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
+      {loadError && (
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            Could not load site pages. You can still enter a custom URL below.
+          </p>
+        </div>
+      )}
+
       <select
         value={selectedOption}
         onChange={handleOptionChange}
         disabled={isLoading}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-wait"
         required={required}
       >
-        <option value="">Select a page...</option>
+        <option value="">{isLoading ? 'Loading pages...' : 'Select a page...'}</option>
         {pages.map((page) => (
           <option key={page.id} value={page.id}>
             {page.title}

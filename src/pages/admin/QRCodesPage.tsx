@@ -126,8 +126,12 @@ export default function QRCodesPage() {
   };
 
   const handleCreate = () => {
+    console.log('[QRCodesPage] Create button clicked');
+    console.log('[QRCodesPage] Current businessId:', businessId);
+    console.log('[QRCodesPage] Current showFormModal:', showFormModal);
     setSelectedQRCode(null);
     setShowFormModal(true);
+    console.log('[QRCodesPage] showFormModal set to true');
   };
 
   const handleViewDetails = (qrCodeId: string) => {
@@ -398,7 +402,7 @@ export default function QRCodesPage() {
         </div>
       )}
 
-      {businessId && (
+      {businessId ? (
         <QRCodeFormModal
           isOpen={showFormModal}
           onClose={() => {
@@ -409,7 +413,22 @@ export default function QRCodesPage() {
           businessId={businessId}
           onSuccess={fetchData}
         />
-      )}
+      ) : showFormModal ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Business Setup Required</h3>
+            <p className="text-gray-600 mb-4">
+              You need to set up your business information before creating QR codes.
+            </p>
+            <button
+              onClick={() => setShowFormModal(false)}
+              className="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
