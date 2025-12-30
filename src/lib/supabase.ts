@@ -410,6 +410,47 @@ export type Goal = {
   updated_at: string;
 };
 
+export type QRCode = {
+  id: string;
+  business_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  default_destination_url: string;
+  status: 'active' | 'inactive';
+  created_at: string;
+  updated_at: string;
+};
+
+export type QRCodeSchedule = {
+  id: string;
+  qr_code_id: string;
+  destination_url: string;
+  start_datetime: string;
+  end_datetime: string;
+  priority: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QRScan = {
+  id: string;
+  qr_code_id: string;
+  scanned_at: string;
+  user_agent: string;
+  device_type: string;
+  browser: string;
+  os: string;
+  referrer: string;
+  ip_address: string;
+  country: string;
+  city: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+};
+
 export type TaxCalculation = {
   id: string;
   business_id: string;

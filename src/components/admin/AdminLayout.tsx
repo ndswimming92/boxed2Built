@@ -24,7 +24,8 @@ import {
   Receipt,
   FileText,
   Target,
-  ScrollText
+  ScrollText,
+  QrCode
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -47,6 +48,7 @@ const navigation = [
   { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
   { name: 'Reviews', href: '/admin/reviews', icon: Star },
   { name: 'Gallery', href: '/admin/gallery', icon: Image },
+  { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
   { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
   { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
   { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
