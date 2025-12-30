@@ -1,0 +1,18 @@
+{
+  "name": "Boxed2Built - Furniture Assembly Spring Hill TN",
+  "short_name": "Boxed2Built",
+  "description": "Professional furniture assembly and handyman services in Spring Hill, TN",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0066cc",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Modern Minimalist Logo for Boxed2Built.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
