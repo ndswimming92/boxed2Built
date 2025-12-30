@@ -107,12 +107,12 @@ const HomeHero: React.FC = () => {
 
                   <div className="flex items-center text-gray-700 text-sm md:text-base">
                     <CheckCircle className="text-green-600 mr-2 flex-shrink-0 w-4 h-4 md:w-5 md:h-5" />
-                    <span className="font-medium">Same-Day Assembly Available</span>
+                    <span className="font-medium">Locally Owned & Operated</span>
                   </div>
 
                   <div className="hidden md:flex items-center text-gray-700">
                     <CheckCircle size={20} className="text-green-600 mr-2 flex-shrink-0" />
-                    <span className="font-medium">Locally Owned & Satisfaction Guaranteed</span>
+                    <span className="font-medium">Same-Day Furniture Assembly Available</span>
                   </div>
                 </div>
 
