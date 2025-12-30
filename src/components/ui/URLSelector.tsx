@@ -20,27 +20,21 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
   const [customUrl, setCustomUrl] = useState('');
 
   useEffect(() => {
-    console.log('[URLSelector] Component mounted, loading pages...');
     loadPages();
   }, []);
 
   useEffect(() => {
-    console.log('[URLSelector] Value or pages changed:', { value, pagesCount: pages.length });
-
     if (isLoading) {
-      console.log('[URLSelector] Still loading, skipping value sync');
       return;
     }
 
     if (!value) {
-      console.log('[URLSelector] No value provided, resetting to empty');
       setSelectedOption('');
       setCustomUrl('');
       return;
     }
 
     if (pages.length === 0) {
-      console.log('[URLSelector] No pages available, treating as custom URL');
       setSelectedOption(CUSTOM_URL_VALUE);
       setCustomUrl(value);
       return;
@@ -52,11 +46,9 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
     });
 
     if (matchingPage) {
-      console.log('[URLSelector] Found matching page:', matchingPage.title);
       setSelectedOption(matchingPage.id);
       setCustomUrl('');
     } else {
-      console.log('[URLSelector] No matching page, using custom URL');
       setSelectedOption(CUSTOM_URL_VALUE);
       setCustomUrl(value);
     }
@@ -66,13 +58,11 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
     try {
       setIsLoading(true);
       setLoadError(null);
-      console.log('[URLSelector] Fetching site pages...');
       const data = await getActiveSitePages();
-      console.log('[URLSelector] Loaded pages:', data.length);
       setPages(data);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-      console.error('[URLSelector] Failed to load site pages:', err);
+      console.error('Failed to load site pages:', err);
       setLoadError(errorMsg);
       setPages([]);
     } finally {

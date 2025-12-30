@@ -126,12 +126,8 @@ export default function QRCodesPage() {
   };
 
   const handleCreate = () => {
-    console.log('[QRCodesPage] Create button clicked');
-    console.log('[QRCodesPage] Current businessId:', businessId);
-    console.log('[QRCodesPage] Current showFormModal:', showFormModal);
     setSelectedQRCode(null);
     setShowFormModal(true);
-    console.log('[QRCodesPage] showFormModal set to true');
   };
 
   const handleViewDetails = (qrCodeId: string) => {

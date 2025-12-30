@@ -22,7 +22,6 @@ const Modal: React.FC<ModalProps> = ({
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    console.log('[Modal] isOpen changed:', isOpen);
     if (!isOpen) return;
 
     // Store the currently focused element
@@ -92,11 +91,8 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   if (!isOpen) {
-    console.log('[Modal] Rendering null - isOpen is false');
     return null;
   }
-
-  console.log('[Modal] Rendering modal content');
 
   const modalContent = (
     <div

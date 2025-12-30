@@ -24,7 +24,7 @@ export async function getAllQRCodes(businessId: string): Promise<QRCodeWithSched
 
   const qrCodesWithData = await Promise.all(
     qrCodes.map(async (qr) => {
-      const [{ data: schedules }, { count: scanCount }] = await Promise.all([
+      const [schedulesResult, scanCountResult] = await Promise.all([
         supabase
           .from('qr_code_schedules')
           .select('*')
@@ -38,8 +38,8 @@ export async function getAllQRCodes(businessId: string): Promise<QRCodeWithSched
 
       return {
         ...qr,
-        schedules: schedules || [],
-        scan_count: scanCount || 0
+        schedules: schedulesResult.data || [],
+        scan_count: scanCountResult.count || 0
       };
     })
   );
@@ -57,7 +57,7 @@ export async function getQRCode(id: string): Promise<QRCodeWithSchedules | null>
   if (qrError) throw qrError;
   if (!qrCode) return null;
 
-  const [{ data: schedules }, { count: scanCount }] = await Promise.all([
+  const [schedulesResult, scanCountResult] = await Promise.all([
     supabase
       .from('qr_code_schedules')
       .select('*')
@@ -71,8 +71,8 @@ export async function getQRCode(id: string): Promise<QRCodeWithSchedules | null>
 
   return {
     ...qrCode,
-    schedules: schedules || [],
-    scan_count: scanCount || 0
+    schedules: schedulesResult.data || [],
+    scan_count: scanCountResult.count || 0
   };
 }
 
@@ -253,10 +253,10 @@ export async function getActiveScheduleForQRCode(qrCodeId: string): Promise<QRCo
 
 export async function getQRCodeStats(businessId: string): Promise<QRCodeStats> {
   const [
-    { count: totalCodes },
-    { count: activeCodes },
-    { count: inactiveCodes },
-    { count: totalScans }
+    totalCodesResult,
+    activeCodesResult,
+    inactiveCodesResult,
+    totalScansResult
   ] = await Promise.all([
     supabase
       .from('qr_codes')
@@ -284,10 +284,10 @@ export async function getQRCodeStats(businessId: string): Promise<QRCodeStats> {
   ]);
 
   return {
-    total_codes: totalCodes || 0,
-    active_codes: activeCodes || 0,
-    inactive_codes: inactiveCodes || 0,
-    total_scans: totalScans || 0
+    total_codes: totalCodesResult.count || 0,
+    active_codes: activeCodesResult.count || 0,
+    inactive_codes: inactiveCodesResult.count || 0,
+    total_scans: totalScansResult.count || 0
   };
 }
 

@@ -22,8 +22,6 @@ type Props = {
 };
 
 export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, onSuccess }: Props) {
-  console.log('[QRCodeFormModal] Render:', { isOpen, qrCode: qrCode?.id || 'new', businessId });
-
   const [activeTab, setActiveTab] = useState<'basic' | 'schedules' | 'preview'>('basic');
   const [loading, setLoading] = useState(false);
   const [slugChecking, setSlugChecking] = useState(false);
