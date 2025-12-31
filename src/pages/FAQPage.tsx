@@ -147,11 +147,15 @@ const FAQPage: React.FC = () => {
               />
 
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Frequently Asked Questions
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Get answers to common questions about our furniture assembly services in Spring Hill, TN and surrounding areas.
-              </p>
+  Furniture Assembly FAQs in Spring Hill, TN
+</h1>
+
+<p className="text-xl text-gray-600 mb-8">
+  Find answers to common questions about professional furniture assembly, wall mounting, and handyman services in Spring Hill, TN.
+  Learn what to expect when hiring Boxed2Built for IKEA, Target, and Walmart furniture assembly in nearby areas like Franklin,
+  Thompson’s Station, and Columbia.
+</p>
+
             </div>
           </div>
         </section>
