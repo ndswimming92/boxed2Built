@@ -108,7 +108,7 @@ const Header: React.FC = () => {
   return (
     <header
       className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-lg py-1' : 'bg-white/98 backdrop-blur-sm shadow-sm py-2'
+        isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-lg py-2' : 'bg-white/98 backdrop-blur-sm shadow-sm py-3'
       }`}
       ref={menuRef}
       style={{
@@ -119,7 +119,7 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20 md:h-24">
           <div className="flex items-center mr-6">
             <a
               href="/"
@@ -138,9 +138,11 @@ const Header: React.FC = () => {
                 loading="lazy"
                 alt="Boxed2Built - Professional Furniture Assembly"
                 title="Boxed2Built - Professional Furniture Assembly"
-                className="h-14 w-auto object-contain"
-                width="160"
-                height="56"
+                className={`w-auto object-contain transition-all duration-300 ${
+                  isScrolled ? 'h-16 md:h-20' : 'h-16 md:h-22'
+                }`}
+                width="251"
+                height="88"
                 style={{ aspectRatio: '160/56' }}
                 decoding="async"
                 fetchpriority="high"
