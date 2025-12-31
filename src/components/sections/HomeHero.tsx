@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
 import Button from '../ui/Button';
 import CallButton from '../ui/CallButton';
 import { trackEvent, trackConversion } from '../../utils/analytics';
@@ -141,8 +141,13 @@ const HomeHero: React.FC = () => {
                   </a>
                 </div>
 
-                <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-8">
+                <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-6">
                   Send photos + item links for the fastest quote.
+                </p>
+
+                <p className="flex items-center gap-1 text-xs text-gray-600 mb-3 md:mb-8">
+                  <Lock size={12} />
+                  <span>We respect your privacy. Your information is never shared or sold.</span>
                 </p>
 
                 <div className="flex items-center gap-2 text-gray-600 text-sm">

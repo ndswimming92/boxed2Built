@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle, Phone } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Phone, Lock } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { getCalendlyUrl } from '../../utils/utm';
@@ -187,15 +187,20 @@ const Booking: React.FC = () => {
               >
                 <Phone size={24} className="mr-3" />
                 <span className="mr-2">Call</span>
-                <img 
-                  src="/images/contact/phone-number.svg" 
-                  alt="(615) 403-4538" 
-                  width="120" 
+                <img
+                  src="/images/contact/phone-number.svg"
+                  alt="(615) 403-4538"
+                  width="120"
                   height="18"
                   className="inline-block"
                 />
               </a>
             </div>
+
+            <p className="flex items-center justify-center gap-1 text-xs text-gray-600 mb-4">
+              <Lock size={12} />
+              <span>We respect your privacy. Your information is never shared or sold.</span>
+            </p>
 
             <p className="text-xs text-gray-600 mt-4">
               By submitting, you agree to our Terms of Service • Weekend service available • 

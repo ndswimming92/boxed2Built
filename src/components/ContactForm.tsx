@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock, Loader2 } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock, Loader2, Lock } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -780,6 +780,11 @@ const ContactForm: React.FC = () => {
                 </>
               )}
             </button>
+
+            <p className="flex items-center justify-center gap-1 text-xs text-gray-600 mt-3">
+              <Lock size={12} />
+              <span>We respect your privacy. Your information is never shared or sold.</span>
+            </p>
 
             {/* Form status messages */}
             {submitAttempted && !isFormValid && (
