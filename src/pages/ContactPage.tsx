@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import LocalBusinessSchema from '../components/seo/LocalBusinessSchema';
+import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import NAPConsistency from '../components/seo/NAPConsistency';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
@@ -111,15 +111,13 @@ const ContactPage: React.FC = () => {
 
   return (
     <>
-      <LocalBusinessSchema
-        phone={BUSINESS_INFO.phone}
-        email={BUSINESS_INFO.email}
-        website={BUSINESS_INFO.website}
-        serviceAreas={SERVICE_AREAS}
-        services={PRIMARY_SERVICES}
-        socialMediaUrls={SOCIAL_MEDIA_URLS}
-        includeReviews={false}
-      />
+      {businessData && (
+        <EnhancedLocalBusinessSchema
+          businessData={businessData}
+          includeReviews={false}
+          pageType="contact"
+        />
+      )}
       <Header />
       <main className="pt-20">
         {/* Page Header */}
