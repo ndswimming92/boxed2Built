@@ -21,11 +21,24 @@ export default function LoginPage() {
   useEffect(() => {
     const errorDescription = searchParams.get('error_description');
     const errorCode = searchParams.get('error_code');
+    const error = searchParams.get('error');
 
     if (errorDescription) {
-      setError(errorDescription);
+      setError(decodeURIComponent(errorDescription));
+    } else if (error) {
+      setError(`Authentication error: ${error}${errorCode ? ` (${errorCode})` : ''}`);
     } else if (errorCode) {
       setError('Authentication failed. Please try again.');
+    }
+
+    // Log all URL parameters for debugging
+    if (errorDescription || error || errorCode) {
+      console.error('OAuth Error Details:', {
+        error,
+        errorCode,
+        errorDescription,
+        allParams: Object.fromEntries(searchParams.entries())
+      });
     }
   }, [searchParams]);
 

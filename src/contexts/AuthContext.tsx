@@ -29,11 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       (async () => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
 
         if (event === 'SIGNED_IN' && session?.user) {
           const provider = session.user.app_metadata?.provider;
+          console.log('User signed in with provider:', provider);
           if (provider === 'google') {
             await logAction({
               actionType: 'LOGIN',
@@ -43,6 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               metadata: { provider: 'google' },
             });
           }
+        }
+
+        if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
         }
       })();
     });
