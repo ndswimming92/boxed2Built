@@ -112,7 +112,7 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <div className="flex items-center justify-center md:justify-start mb-4">
                 <img
-                  src="/black_boxed2built_logo.png"
+                  src="/white_boxed2built_logo.png"
                   alt={`${businessName} - Professional Furniture Assembly Service in ${locality} ${region}`}
                   loading="lazy"
                   className="h-14 w-auto object-contain"
