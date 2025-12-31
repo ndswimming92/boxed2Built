@@ -59,6 +59,7 @@ const navigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
@@ -120,18 +121,18 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full bg-white border-r border-slate-200 transform transition-all duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'} w-64`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200">
-            <Link to="/admin/dashboard" className="flex items-center gap-2">
+          <div className={`flex items-center border-b border-slate-200 p-6 ${sidebarCollapsed ? 'lg:justify-center' : 'justify-between'}`}>
+            <Link to="/admin/dashboard" className={`flex items-center ${sidebarCollapsed ? 'lg:justify-center' : 'gap-2'}`}>
               <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl text-slate-900">Admin</span>
+              <span className={`font-bold text-xl text-slate-900 transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>Admin</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -152,15 +153,26 @@ export default function AdminLayout() {
                     <Link
                       to={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      className={`flex items-center gap-3 rounded-lg transition-colors relative group ${
+                        sidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-3' : 'px-4 py-3'
+                      } ${
                         isActive
                           ? 'bg-emerald-50 text-emerald-700'
                           : 'text-slate-700 hover:bg-slate-50'
                       }`}
+                      title={sidebarCollapsed ? item.name : undefined}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{item.name}</span>
-                      {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
+                      {isActive && !sidebarCollapsed && <ChevronRight className="w-4 h-4 ml-auto" />}
+
+                      {/* Tooltip for collapsed state */}
+                      {sidebarCollapsed && (
+                        <div className="hidden lg:block absolute left-full ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50">
+                          {item.name}
+                          <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                        </div>
+                      )}
                     </Link>
                   </li>
                 );
@@ -168,27 +180,54 @@ export default function AdminLayout() {
             </ul>
           </nav>
 
-          {/* User info and logout */}
-          <div className="p-4 border-t border-slate-200">
-            <div className="mb-3 px-4 py-2 bg-slate-50 rounded-lg">
+          {/* Toggle button and logout */}
+          <div className="p-4 border-t border-slate-200 space-y-2">
+            {/* Toggle collapse button - desktop only */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`hidden lg:flex w-full items-center gap-3 rounded-lg transition-colors px-4 py-3 text-slate-700 hover:bg-slate-50 ${
+                sidebarCollapsed ? 'justify-center' : ''
+              }`}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <Menu className="w-5 h-5 flex-shrink-0" />
+              <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
+                {sidebarCollapsed ? 'Expand' : 'Collapse'}
+              </span>
+            </button>
+
+            {/* User info - hidden when collapsed */}
+            <div className={`px-4 py-2 bg-slate-50 rounded-lg transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
               <p className="text-xs text-slate-500 mb-1">Signed in as</p>
               <p className="text-sm font-medium text-slate-900 truncate">
                 {user?.email}
               </p>
             </div>
+
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              className={`w-full flex items-center gap-3 text-red-700 hover:bg-red-50 rounded-lg transition-colors relative group ${
+                sidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-3' : 'px-4 py-3'
+              }`}
+              title={sidebarCollapsed ? 'Sign Out' : undefined}
             >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sign Out</span>
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>Sign Out</span>
+
+              {/* Tooltip for collapsed state */}
+              {sidebarCollapsed && (
+                <div className="hidden lg:block absolute left-full ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50">
+                  Sign Out
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                </div>
+              )}
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
           <div className="flex items-center justify-between px-4 lg:px-8 py-4">
