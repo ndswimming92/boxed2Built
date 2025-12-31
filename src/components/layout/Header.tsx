@@ -119,8 +119,8 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-20 md:h-24">
-          <div className="flex items-center mr-6">
+        <div className="relative flex justify-center md:justify-between items-center h-20 md:h-24">
+          <div className="flex items-center md:mr-6">
             <a
               href="/"
               className="flex items-center"
@@ -262,7 +262,7 @@ const Header: React.FC = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden text-gray-800 hover:text-blue-700 focus:outline-none transition-colors duration-200"
+            className="absolute right-0 md:hidden text-gray-800 hover:text-blue-700 focus:outline-none transition-colors duration-200"
             aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={isMenuOpen}
           >
