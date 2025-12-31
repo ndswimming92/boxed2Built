@@ -134,14 +134,14 @@ const Header: React.FC = () => {
               aria-label="Boxed2Built - Home"
             >
               <img
-                src="/Modern Minimalist Logo for Boxed2Built.png"
+                src="/black_boxed2built_logo.png"
                 loading="lazy"
                 alt="Boxed2Built - Professional Furniture Assembly"
                 title="Boxed2Built - Professional Furniture Assembly"
-                className="h-12 w-auto object-contain"
-                width="120"
-                height="48"
-                style={{ aspectRatio: '120/48' }}
+                className="h-14 w-auto object-contain"
+                width="160"
+                height="56"
+                style={{ aspectRatio: '160/56' }}
                 decoding="async"
                 fetchpriority="high"
               />

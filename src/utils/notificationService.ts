@@ -38,8 +38,8 @@ export function showNewInquiryNotification(inquiry: FormInquiry): void {
 
   const options: NotificationOptions = {
     body,
-    icon: '/Modern Minimalist Logo for Boxed2Built.png',
-    badge: '/Modern Minimalist Logo for Boxed2Built.png',
+    icon: '/black_boxed2built_logo.png',
+    badge: '/black_boxed2built_logo.png',
     tag: `inquiry-${inquiry.id}`,
     requireInteraction: true,
     data: {

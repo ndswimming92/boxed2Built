@@ -112,13 +112,13 @@ const Footer: React.FC = () => {
             <div className="md:col-span-1">
               <div className="flex items-center justify-center md:justify-start mb-4">
                 <img
-                  src="/Modern Minimalist Logo for Boxed2Built.png"
+                  src="/black_boxed2built_logo.png"
                   alt={`${businessName} - Professional Furniture Assembly Service in ${locality} ${region}`}
                   loading="lazy"
-                  className="h-12 w-auto object-contain"
-                  width="120"
-                  height="48"
-                  style={{ aspectRatio: '120/48' }}
+                  className="h-14 w-auto object-contain"
+                  width="160"
+                  height="56"
+                  style={{ aspectRatio: '160/56' }}
                   decoding="async"
                 />
               </div>

@@ -146,8 +146,8 @@ export const useBusinessDataWithFallback = () => {
         founder_name: BUSINESS_INFO.founder,
         price_range: BUSINESS_INFO.priceRange,
         currencies_accepted: 'USD',
-        logo_url: 'https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png',
-        image_url: 'https://boxed2built.com/Modern Minimalist Logo for Boxed2Built.png',
+        logo_url: 'https://boxed2built.com/black_boxed2built_logo.png',
+        image_url: 'https://boxed2built.com/black_boxed2built_logo.png',
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
