@@ -19,7 +19,7 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: true,
   },
   // db: { schema: 'public' }, // uncomment if you use a non-default schema
 });
