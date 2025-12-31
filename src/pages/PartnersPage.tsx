@@ -3,11 +3,9 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
-import { ChevronRight, Phone, Calendar, CheckCircle, Download, Gift, Users, Tag, Clock, MapPin, HelpCircle } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { ChevronRight, Phone, CheckCircle, Download, Gift, Users, Tag, Clock, MapPin, HelpCircle } from 'lucide-react';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 import jsPDF from 'jspdf';
 
 const PartnersPage: React.FC = () => {
@@ -41,19 +39,6 @@ const PartnersPage: React.FC = () => {
     });
   };
 
-  const handleBookingClick = () => {
-    trackEvent('booking_click', 'partners_page_cta', {
-      event_category: 'conversion',
-      event_label: 'book_consultation_partners',
-      value: 1,
-      element_type: 'button',
-      element_location: 'partners_page_cta',
-      page_section: 'partners_page_cta',
-      action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
-    });
-    window.open(getCalendlyUrl('booking'), '_blank');
-  };
 
   const handleFlyerDownload = () => {
     trackEvent('file_download', 'partners_page_flyer', {
@@ -460,16 +445,7 @@ const PartnersPage: React.FC = () => {
                 Partner with Boxed2Built to give your clients the stress-free move-in experience they deserve.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={handleBookingClick}
-                  variant="white"
-                  size="lg"
-                  trackingLabel="book-consultation-partners-cta"
-                >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
-                </Button>
+              <div className="flex justify-center">
                 <a
                   href="/contact"
                   onClick={handleContactClick}

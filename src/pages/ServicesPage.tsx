@@ -5,11 +5,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
-import { Calendar } from 'lucide-react';
-import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
-import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 import Testimonials from '../components/sections/Testimonials';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
@@ -53,19 +49,6 @@ const ServicesPage: React.FC = () => {
     }
   ];
 
-  const handleBookingClick = () => {
-    trackEvent('booking_click', 'services_page_header', {
-      event_category: 'conversion',
-      event_label: 'book_consultation_services',
-      value: 1,
-      element_type: 'button',
-      element_location: 'services_page_header',
-      page_section: 'services_page_header',
-      action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
-    });
-    window.open(getCalendlyUrl('services'), '_blank');
-  };
 
 
   const handleEmailClick = () => {
@@ -129,19 +112,7 @@ const ServicesPage: React.FC = () => {
                 Professional furniture assembly you can trust.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  onClick={handleBookingClick}
-                  variant="primary"
-                  size="lg"
-                  className="px-8 py-4"
-                  trackingLabel="book_consultation_services_header"
-                  pageSection="services_page_header"
-                >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
-                </Button>
-                
+              <div className="flex justify-center">
                 <CallButton size="lg" pageSection="services_page_header" className="px-8 py-4" />
               </div>
             </div>

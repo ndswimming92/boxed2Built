@@ -3,12 +3,9 @@ import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusiness
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { Calendar, CheckCircle, Users, Clock, Award } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { CheckCircle, Users, Clock, Award } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
-import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
@@ -32,19 +29,6 @@ const AboutPage: React.FC = () => {
     canonicalLink.setAttribute('href', 'https://boxed2built.com/about');
   }, []);
 
-  const handleBookingClick = () => {
-    trackEvent('booking_click', 'about_page_header', {
-      event_category: 'conversion',
-      event_label: 'book_consultation_about',
-      value: 1,
-      element_type: 'button',
-      element_location: 'about_page_header',
-      page_section: 'about_page_header',
-      action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
-    });
-    window.open(getCalendlyUrl('services'), '_blank');
-  };
 
 
   if (loading || !businessData) {
@@ -271,16 +255,7 @@ const AboutPage: React.FC = () => {
                 Let Nicholas and the Boxed2Built team take the stress out of furniture assembly for your Spring Hill area home.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                <Button
-                  onClick={handleBookingClick}
-                  variant="white"
-                  size="lg"
-                  trackingLabel="book-consultation-about-cta"
-                >
-                  <Calendar size={20} className="mr-2" />
-                  Book Free Consultation
-                </Button>
+              <div className="flex justify-center mb-6">
                 <CallButton size="lg" pageSection="about_page_cta" />
               </div>
               

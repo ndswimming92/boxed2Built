@@ -3,7 +3,7 @@ import { Facebook, Mail, Phone, Instagram, Star, Youtube, Clock } from 'lucide-r
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
-import { getCalendlyUrl, getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
+import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
@@ -58,19 +58,6 @@ const Footer: React.FC = () => {
     trackExternalLink(getGoogleReviewUrl(), 'Google Review');
   };
 
-  const handleBookingClick = () => {
-    trackEvent('booking_click', 'footer', {
-      event_category: 'conversion',
-      event_label: 'footer_book_consultation',
-      value: 1,
-      element_type: 'button',
-      element_location: 'footer',
-      page_section: 'footer',
-      action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
-    });
-    window.open(getCalendlyUrl('footer'), '_blank');
-  };
 
   const napData = {
     businessName,
@@ -309,17 +296,6 @@ const Footer: React.FC = () => {
                 </a>
               </div>
 
-              <div className="text-center md:text-right">
-                <button
-                  onClick={handleBookingClick}
-                  className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg"
-                >
-                  Book Free Consultation →
-                </button>
-                <p className="text-xs text-gray-300 mt-2">
-                  By booking, you agree to our Terms of Service
-                </p>
-              </div>
             </div>
           </div>
 

@@ -1,10 +1,8 @@
 import React from 'react';
 import { Check, Phone, Mail, Clock } from 'lucide-react';
-import Button from '../ui/Button';
 import SkeletonCard from '../ui/SkeletonCard';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const Services: React.FC = () => {
@@ -29,10 +27,6 @@ const Services: React.FC = () => {
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Section&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Services%20Section';
   };
 
-  const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-services');
-    window.open(getCalendlyUrl('services'), '_blank');
-  };
 
   return (
     <section id="services" className="py-12 bg-white">
@@ -145,34 +139,22 @@ const Services: React.FC = () => {
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
-            <Button
-              onClick={handleBookingClick}
-              variant="white"
-              size="lg"
-              className="font-semibold px-8 py-4"
-              trackingLabel="book-consultation-services"
+            <a
+              href="tel:+16154034538"
+              className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
+              onClick={handlePhoneClick}
             >
-              Book Free Consultation
-            </Button>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a 
-                href="tel:+16154034538" 
-                className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
-                onClick={handlePhoneClick}
-              >
-                <Phone size={20} className="mr-2" />
-                Call (615) 403-4538
-              </a>
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
-              >
-                <Mail size={20} className="mr-2" />
-                Email Quote
-              </a>
-            </div>
+              <Phone size={20} className="mr-2" />
+              Call (615) 403-4538
+            </a>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
+              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
+            >
+              <Mail size={20} className="mr-2" />
+              Email Quote
+            </a>
           </div>
 
           {/* Terms notice */}

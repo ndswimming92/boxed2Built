@@ -3,11 +3,8 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import MediaGallery from '../components/sections/MediaGallery';
-import { Camera, Video, Clock, CheckCircle } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { Camera, Video, CheckCircle } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
-import { trackEvent } from '../utils/analytics';
-import { getCalendlyUrl } from '../utils/utm';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
 import { supabase } from '../lib/supabase';
 
@@ -48,19 +45,6 @@ const GalleryPage: React.FC = () => {
     canonicalLink.setAttribute('href', 'https://boxed2built.com/gallery');
   }, []);
 
-  const handleBookingClick = () => {
-    trackEvent('booking_click', 'gallery_page_cta', {
-      event_category: 'conversion',
-      event_label: 'book_consultation_gallery',
-      value: 1,
-      element_type: 'button',
-      element_location: 'gallery_page_cta',
-      page_section: 'gallery_page_cta',
-      action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
-    });
-    window.open(getCalendlyUrl('services'), '_blank');
-  };
 
 
   return (
@@ -134,16 +118,7 @@ const GalleryPage: React.FC = () => {
                 Let us handle your furniture assembly project with the same care and expertise you see in our gallery.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                <Button
-                  onClick={handleBookingClick}
-                  variant="white"
-                  size="lg"
-                  trackingLabel="book-consultation-gallery-cta"
-                >
-                  <Clock size={20} className="mr-2" />
-                  Book Free Consultation
-                </Button>
+              <div className="flex justify-center mb-6">
                 <CallButton size="lg" pageSection="gallery_page_cta" />
               </div>
               

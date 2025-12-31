@@ -1,17 +1,10 @@
 import React from 'react';
-import { ArrowRight, ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
-import Button from '../ui/Button';
+import { ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
 import CallButton from '../ui/CallButton';
 import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 
 const Hero: React.FC = () => {
-
-  const handleBookingClick = () => {
-    trackEvent('calendly-booking-click-hero');
-    window.open(getCalendlyUrl('hero'), '_blank');
-  };
 
   const handleEmailClick = () => {
     trackEvent('email-click-hero-cta');
@@ -63,19 +56,6 @@ const Hero: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Button 
-                  variant="primary" 
-                  size="lg"
-                  onClick={handleBookingClick}
-                  className="group"
-                  trackingLabel="book-consultation-hero"
-                >
-                  Book Free Consultation
-                  <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-
               <div className="flex items-center justify-center sm:justify-start mb-8">
                 <CallButton size="lg" pageSection="hero" />
               </div>

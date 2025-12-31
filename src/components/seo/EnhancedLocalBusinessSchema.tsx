@@ -155,21 +155,6 @@ const EnhancedLocalBusinessSchema: React.FC<EnhancedLocalBusinessSchemaProps> = 
 
   schemaData.potentialAction = [
     {
-      "@type": "ReserveAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://calendly.com/boxed2built/30min",
-        "actionPlatform": [
-          "https://schema.org/DesktopWebPlatform",
-          "https://schema.org/MobileWebPlatform"
-        ]
-      },
-      "result": {
-        "@type": "Reservation",
-        "name": "Furniture Assembly Consultation"
-      }
-    },
-    {
       "@type": "CommunicateAction",
       "target": {
         "@type": "EntryPoint",
