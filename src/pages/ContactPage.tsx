@@ -112,12 +112,14 @@ const ContactPage: React.FC = () => {
               />
               
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Contact Spring Hill Handyman Services
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Need Spring Hill handyman services? Ready for professional furniture assembly in Spring Hill, TN? Get in touch for a free consultation 
-                and quote for your IKEA, Target, or Walmart assembly project.
-              </p>
+  Furniture Assembly & Handyman Services in Spring Hill, TN
+</h1>
+
+<p className="text-xl text-gray-600 mb-8">
+  Need help with furniture assembly in Spring Hill, TN? Boxed2Built offers reliable IKEA, Target, and Walmart assembly, plus wall mounting and small handyman services.
+  Reach out for a free quote and scheduling in Spring Hill and nearby areas like Thompson’s Station, Franklin, and Columbia.
+</p>
+
             </div>
           </div>
         </section>
