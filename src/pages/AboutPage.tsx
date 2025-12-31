@@ -232,48 +232,29 @@ const AboutPage: React.FC = () => {
                   a little easier—and your home a lot more comfortable.
                 </p>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-8">
-                  {/* Interactive Service Area Map */}
-                  <div className="w-full">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center lg:text-left">Areas We've Served</h3>
-                    <div className="relative w-full rounded-lg overflow-hidden shadow-lg bg-white" style={{ paddingBottom: '75%' }}>
-                      <iframe
-                        src="https://www.google.com/maps/d/embed?mid=1IwMuRRGd3F0xcQb3qLM53ASy05vWDJ8&ehbc=2E312F"
-                        className="absolute top-0 left-0 w-full h-full border-0"
-                        title="Boxed2Built Service Area Map - Spring Hill TN and surrounding areas"
-                        loading="lazy"
-                        allowFullScreen
-                      />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-3 text-center lg:text-left">
-                      See all the locations where we've helped families with furniture assembly services
-                    </p>
+                {/* Service Areas List */}
+                <div className="max-w-2xl mx-auto">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">Primary Service Areas</h3>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    {[
+                      'Spring Hill, TN',
+                      'Columbia, TN',
+                      'Franklin, TN',
+                      'Thompson\'s Station',
+                      'Brentwood, TN',
+                      'Nashville Metro'
+                    ].map((area, index) => (
+                      <div key={index} className="flex items-center justify-center bg-white p-3 rounded-lg shadow-sm">
+                        <CheckCircle size={16} className="text-green-700 mr-2" />
+                        <span className="text-sm font-medium text-gray-700">{area}</span>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Service Areas List */}
-                  <div className="w-full">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center lg:text-left">Primary Service Areas</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {[
-                        'Spring Hill, TN',
-                        'Columbia, TN',
-                        'Franklin, TN',
-                        'Thompson\'s Station',
-                        'Brentwood, TN',
-                        'Nashville Metro'
-                      ].map((area, index) => (
-                        <div key={index} className="flex items-center justify-center bg-white p-3 rounded-lg shadow-sm">
-                          <CheckCircle size={16} className="text-green-700 mr-2" />
-                          <span className="text-sm font-medium text-gray-700">{area}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
-                      <p className="text-gray-700 leading-relaxed">
-                        <strong className="text-gray-900">Not sure if we serve your area?</strong> We're expanding our service coverage regularly!
-                        Contact us to check if we can help with your furniture assembly project.
-                      </p>
-                    </div>
+                  <div className="p-4 bg-white rounded-lg shadow-sm">
+                    <p className="text-gray-700 leading-relaxed">
+                      <strong className="text-gray-900">Not sure if we serve your area?</strong> We're expanding our service coverage regularly!
+                      Contact us to check if we can help with your furniture assembly project.
+                    </p>
                   </div>
                 </div>
               </div>
