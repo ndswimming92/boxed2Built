@@ -12,6 +12,7 @@ import PartnersPage from './pages/PartnersPage';
 import RequestLookupPage from './pages/RequestLookupPage';
 import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
+import FloatingGetQuote from './components/ui/FloatingGetQuote';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { initPostHog } from './lib/posthog';
@@ -211,6 +212,16 @@ function PostHogInitializer() {
   return null;
 }
 
+function FloatingGetQuoteWrapper() {
+  const location = useLocation();
+
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
+  return <FloatingGetQuote />;
+}
+
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
@@ -275,6 +286,7 @@ function App() {
               </Routes>
             </Suspense>
             <ScrollToTop />
+            <FloatingGetQuoteWrapper />
           </div>
         </NotificationBarProvider>
       </AuthProvider>
