@@ -2,7 +2,6 @@ import React from 'react';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import CallButton from '../ui/CallButton';
-import OptimizedImage from '../ui/OptimizedImage';
 import { trackEvent, trackConversion } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
@@ -83,8 +82,8 @@ const HomeHero: React.FC = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="lg:w-3/5">
+          <div className="flex flex-col items-center">
+            <div className="w-full max-w-4xl">
               <div className="animate-fadeIn">
                 <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-3 md:mb-6">
                   Furniture Assembly in Spring Hill, TN
@@ -155,22 +154,6 @@ const HomeHero: React.FC = () => {
                 <span className="sr-only">
                   {businessName} — {slogan} — Serving {locality}, {region}
                 </span>
-              </div>
-            </div>
-
-            <div className="hidden lg:block lg:w-2/5">
-              <div className="bg-white p-4 rounded-2xl shadow-2xl">
-                <OptimizedImage
-                  src="/images/sauder-executive-desk-front-angle-spring-hill.webp"
-                  alt="Professionally assembled executive desk in Spring Hill Tennessee by Boxed2Built furniture assembly service"
-                  className="w-full h-auto rounded-lg object-cover"
-                  width="600"
-                  height="450"
-                  priority={true}
-                  imageType="hero"
-                  quality={90}
-                  enableAvif={true}
-                />
               </div>
             </div>
           </div>
