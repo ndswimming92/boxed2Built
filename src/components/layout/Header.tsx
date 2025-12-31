@@ -119,7 +119,7 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-28 md:h-36">
+        <div className="flex justify-between items-center h-20 md:h-24">
           <div className="flex items-center mr-6">
             <a
               href="/"
@@ -139,7 +139,7 @@ const Header: React.FC = () => {
                 alt="Boxed2Built - Professional Furniture Assembly"
                 title="Boxed2Built - Professional Furniture Assembly"
                 className={`w-auto object-contain transition-all duration-300 ${
-                  isScrolled ? 'h-20 md:h-28' : 'h-24 md:h-32'
+                  isScrolled ? 'h-14 md:h-18' : 'h-16 md:h-20'
                 }`}
                 width="251"
                 height="88"
