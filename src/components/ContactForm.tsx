@@ -5,6 +5,7 @@ import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock, 
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
+import ProgressBar from './ui/ProgressBar';
 import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
@@ -123,6 +124,7 @@ const ContactForm: React.FC = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [formProgress, setFormProgress] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Use enhanced form validation
@@ -180,11 +182,11 @@ const ContactForm: React.FC = () => {
   useEffect(() => {
     const furnitureType = fields.furnitureType?.value;
     const pieces = parseInt(fields.pieces?.value) || 0;
-    
+
     if (furnitureType && pieces > 0) {
       let baseTime = 0;
       let basePrice = 0;
-      
+
       switch (furnitureType) {
         case 'Chair':
           baseTime = 60;
@@ -218,13 +220,13 @@ const ContactForm: React.FC = () => {
           baseTime = 120;
           basePrice = 185;
       }
-      
+
       const totalTime = baseTime * pieces;
       const totalPrice = basePrice * pieces;
-      
+
       // Apply volume discount for multiple pieces
       const discountedPrice = pieces > 3 ? totalPrice * 0.9 : totalPrice;
-      
+
       setEstimatedTime(`${Math.round(totalTime / 60 * 10) / 10} hours`);
       setEstimatedPrice(`$${Math.round(discountedPrice)}`);
     } else {
@@ -232,6 +234,39 @@ const ContactForm: React.FC = () => {
       setEstimatedPrice('');
     }
   }, [fields.furnitureType?.value, fields.pieces?.value]);
+
+  // Calculate form progress based on required fields
+  useEffect(() => {
+    const isFieldComplete = (fieldName: string) => {
+      const field = fields[fieldName];
+      return field && field.value && field.value.trim() !== '' && field.valid;
+    };
+
+    const requiredFields = ['name', 'email', 'furnitureType', 'pieces'];
+
+    // Add notes as required if furniture type is "Other"
+    const isOtherSelected = fields.furnitureType?.value === 'Other';
+    if (isOtherSelected) {
+      requiredFields.push('notes');
+    }
+
+    const completedFields = requiredFields.filter(isFieldComplete).length;
+    const totalRequired = requiredFields.length;
+    const progress = Math.round((completedFields / totalRequired) * 100);
+
+    setFormProgress(progress);
+  }, [
+    fields.name?.value,
+    fields.name?.valid,
+    fields.email?.value,
+    fields.email?.valid,
+    fields.furnitureType?.value,
+    fields.furnitureType?.valid,
+    fields.pieces?.value,
+    fields.pieces?.valid,
+    fields.notes?.value,
+    fields.notes?.valid
+  ]);
 
 
   const toggleOptionalFields = () => {
@@ -430,6 +465,9 @@ const ContactForm: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Progress Bar */}
+      <ProgressBar progress={formProgress} className="mb-6" />
 
       {/* Submission error message */}
       {submissionError && (
