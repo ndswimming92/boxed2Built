@@ -5,6 +5,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { ChevronDown, ChevronUp, Phone, Mail } from 'lucide-react';
+import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
@@ -225,27 +226,12 @@ const FAQPage: React.FC = () => {
                   Brentwood, and the surrounding Nashville Metro Area.
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <Phone className="mx-auto mb-3 text-blue-600" size={32} />
                     <h3 className="font-semibold text-gray-900 mb-2">Call Us</h3>
                     <p className="text-sm text-gray-600 mb-3">Talk to us directly</p>
                     <CallButton size="md" pageSection="faq_page_bottom" fullWidth={true} />
-                  </div>
-
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Calendar className="mx-auto mb-3 text-green-600" size={32} />
-                    <h3 className="font-semibold text-gray-900 mb-2">Book Online</h3>
-                    <p className="text-sm text-gray-600 mb-3">Schedule at your convenience</p>
-                    <Button
-                      onClick={handleBookingClick}
-                      variant="primary"
-                      size="md"
-                      trackingLabel="book-online-faq-bottom"
-                      className="w-full"
-                    >
-                      Book Now
-                    </Button>
                   </div>
 
                   <div className="text-center p-4 bg-amber-50 rounded-lg">
