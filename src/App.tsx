@@ -14,7 +14,6 @@ import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
-import { initializeFontOptimization } from './utils/fontOptimization';
 import { initPostHog } from './lib/posthog';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
@@ -199,15 +198,22 @@ function NotificationBarWrapper() {
   return notification ? <NotificationBar notification={notification} /> : null;
 }
 
+function PostHogInitializer() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Only initialize PostHog on non-admin routes
+    if (!location.pathname.startsWith('/admin')) {
+      initPostHog();
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
-
-    // Initialize PostHog
-    initPostHog();
-
-    // Initialize font optimization
-    initializeFontOptimization();
 
     // Track app initialization
     if (typeof window !== 'undefined' && window.gtag) {
@@ -224,6 +230,7 @@ function App() {
         <NotificationBarProvider>
           <div className="min-h-screen">
             <NotificationBarWrapper />
+            <PostHogInitializer />
             <Analytics />
             <HashHandler />
             <Suspense fallback={<PageLoader message="Loading application..." />}>
