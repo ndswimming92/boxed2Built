@@ -25,14 +25,21 @@ export default function CompletionsPage() {
         .from('job_completions')
         .select(`
           *,
-          job:jobs(*)
+          jobs (*)
         `)
         .order('completed_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching completions:', error);
+        throw error;
+      }
 
       if (data) {
-        setCompletions(data);
+        const formattedData = data.map(completion => ({
+          ...completion,
+          job: Array.isArray(completion.jobs) ? completion.jobs[0] : completion.jobs
+        }));
+        setCompletions(formattedData);
       }
     } catch (error) {
       console.error('Error fetching completions:', error);

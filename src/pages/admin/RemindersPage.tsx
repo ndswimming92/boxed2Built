@@ -32,15 +32,23 @@ export default function RemindersPage() {
         .from('job_completion_reminders')
         .select(`
           *,
-          job:jobs(*),
-          job_completion:job_completions(*)
+          jobs (*),
+          job_completions (*)
         `)
         .order('scheduled_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reminders:', error);
+        throw error;
+      }
 
       if (data) {
-        setReminders(data);
+        const formattedData = data.map(reminder => ({
+          ...reminder,
+          job: Array.isArray(reminder.jobs) ? reminder.jobs[0] : reminder.jobs,
+          job_completion: Array.isArray(reminder.job_completions) ? reminder.job_completions[0] : reminder.job_completions
+        }));
+        setReminders(formattedData);
       }
     } catch (error) {
       console.error('Error fetching reminders:', error);
