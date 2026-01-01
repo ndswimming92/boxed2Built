@@ -32,8 +32,8 @@ export default function RemindersPage() {
         .from('job_completion_reminders')
         .select(`
           *,
-          jobs (*),
-          job_completions (*)
+          job:jobs!job_id (*),
+          job_completion:job_completions!job_completion_id (*)
         `)
         .order('scheduled_date', { ascending: true });
 
@@ -43,12 +43,7 @@ export default function RemindersPage() {
       }
 
       if (data) {
-        const formattedData = data.map(reminder => ({
-          ...reminder,
-          job: Array.isArray(reminder.jobs) ? reminder.jobs[0] : reminder.jobs,
-          job_completion: Array.isArray(reminder.job_completions) ? reminder.job_completions[0] : reminder.job_completions
-        }));
-        setReminders(formattedData);
+        setReminders(data);
       }
     } catch (error) {
       console.error('Error fetching reminders:', error);

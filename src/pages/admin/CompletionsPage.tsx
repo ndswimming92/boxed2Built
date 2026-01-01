@@ -25,7 +25,7 @@ export default function CompletionsPage() {
         .from('job_completions')
         .select(`
           *,
-          jobs (*)
+          job:jobs!job_id (*)
         `)
         .order('completed_at', { ascending: false });
 
@@ -35,11 +35,7 @@ export default function CompletionsPage() {
       }
 
       if (data) {
-        const formattedData = data.map(completion => ({
-          ...completion,
-          job: Array.isArray(completion.jobs) ? completion.jobs[0] : completion.jobs
-        }));
-        setCompletions(formattedData);
+        setCompletions(data);
       }
     } catch (error) {
       console.error('Error fetching completions:', error);
