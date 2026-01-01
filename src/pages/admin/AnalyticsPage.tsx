@@ -175,20 +175,38 @@ export default function AnalyticsPage() {
 
       case 'last_3_months': {
         const months: string[] = [];
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
         for (let i = 2; i >= 0; i--) {
-          const date = new Date(now);
-          date.setMonth(date.getMonth() - i);
-          months.push(`${monthNames[date.getMonth()]} ${date.getFullYear()}`);
+          let month = currentMonth - i;
+          let year = currentYear;
+
+          while (month < 0) {
+            month += 12;
+            year -= 1;
+          }
+
+          months.push(`${monthNames[month]} ${year}`);
         }
         return months.join(', ');
       }
 
       case 'last_6_months': {
         const months: string[] = [];
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
         for (let i = 5; i >= 0; i--) {
-          const date = new Date(now);
-          date.setMonth(date.getMonth() - i);
-          months.push(`${monthNames[date.getMonth()]} ${date.getFullYear()}`);
+          let month = currentMonth - i;
+          let year = currentYear;
+
+          while (month < 0) {
+            month += 12;
+            year -= 1;
+          }
+
+          months.push(`${monthNames[month]} ${year}`);
         }
         return months.join(', ');
       }
