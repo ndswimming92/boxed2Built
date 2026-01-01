@@ -39,7 +39,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle })
         className="w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
         aria-expanded={isOpen}
       >
-        <span className="text-lg font-semibold text-gray-900 pr-4">{question}</span>
+        <h3 className="text-lg font-semibold text-gray-900 pr-4">{question}</h3>
         <span className="flex-shrink-0 text-blue-600">
           {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
         </span>
