@@ -7,6 +7,7 @@ import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
 import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
+import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
@@ -176,7 +177,7 @@ const ServicesPage: React.FC = () => {
               </div>
 
               <div className="bg-blue-600 text-white p-8 rounded-lg text-center">
-                <h4 className="text-xl font-bold mb-4">Ready to Get Started?</h4>
+                <h3 className="text-xl font-bold mb-4">Ready to Get Started?</h3>
                 <p className="text-blue-50 mb-6">
                   Contact us today for a free consultation and quote for your furniture assembly project.
                 </p>
