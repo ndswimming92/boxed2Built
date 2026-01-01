@@ -163,6 +163,49 @@ export default function AnalyticsPage() {
     return `${value.toFixed(1)}%`;
   };
 
+  const getDateRangeText = (period: TimePeriod): string => {
+    const now = new Date();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    switch (period) {
+      case 'current_month': {
+        return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+      }
+
+      case 'last_3_months': {
+        const months: string[] = [];
+        for (let i = 2; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(date.getMonth() - i);
+          months.push(`${monthNames[date.getMonth()]} ${date.getFullYear()}`);
+        }
+        return months.join(', ');
+      }
+
+      case 'last_6_months': {
+        const months: string[] = [];
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(date.getMonth() - i);
+          months.push(`${monthNames[date.getMonth()]} ${date.getFullYear()}`);
+        }
+        return months.join(', ');
+      }
+
+      case 'current_year': {
+        return `January - December ${now.getFullYear()}`;
+      }
+
+      case 'all_time': {
+        return 'All historical data';
+      }
+
+      default:
+        return '';
+    }
+  };
+
   const handleExportJobs = () => {
     const jobsToExport = timePeriod === 'current_year'
       ? jobs.filter(job => {
@@ -308,6 +351,14 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
+          <div className="bg-white rounded-xl p-4 border border-slate-200 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <span className="text-slate-600">Viewing data for:</span>
+              <span className="font-semibold text-slate-900">{getDateRangeText(timePeriod)}</span>
+            </div>
+          </div>
+
           <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-4 sm:p-6 border border-emerald-200 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
