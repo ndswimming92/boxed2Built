@@ -1,0 +1,378 @@
+import React, { useEffect, useState } from 'react';
+import { supabase, JobCompletion } from '../../lib/supabase';
+import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon } from 'lucide-react';
+
+export default function CompletionsPage() {
+  const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
+  const [filteredCompletions, setFilteredCompletions] = useState<(JobCompletion & { job: any })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [satisfactionFilter, setSatisfactionFilter] = useState<'all' | 'satisfied' | 'unsatisfied'>('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [completions, searchTerm, satisfactionFilter]);
+
+  const fetchData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_completions')
+        .select(`
+          *,
+          job:jobs(*)
+        `)
+        .order('completed_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        setCompletions(data);
+      }
+    } catch (error) {
+      console.error('Error fetching completions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...completions];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(completion =>
+        completion.customer_name?.toLowerCase().includes(term) ||
+        completion.job?.client_phone?.toLowerCase().includes(term)
+      );
+    }
+
+    if (satisfactionFilter === 'satisfied') {
+      filtered = filtered.filter(c => c.is_customer_satisfied);
+    } else if (satisfactionFilter === 'unsatisfied') {
+      filtered = filtered.filter(c => !c.is_customer_satisfied);
+    }
+
+    setFilteredCompletions(filtered);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getCheckedCount = (checklist: any) => {
+    if (!Array.isArray(checklist)) return { checked: 0, total: 0 };
+    return {
+      checked: checklist.filter((item: any) => item.checked).length,
+      total: checklist.length,
+    };
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Job Completions</h1>
+        <p className="text-slate-600">View all completed jobs with customer signatures</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by customer name or phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-4 py-2 border rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              showFilters ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <Filter className="w-5 h-5" />
+            Filters
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="mt-4 pt-4 border-t border-slate-200">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Customer Satisfaction</label>
+            <select
+              value={satisfactionFilter}
+              onChange={(e) => setSatisfactionFilter(e.target.value as any)}
+              className="w-full md:w-64 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="all">All Completions</option>
+              <option value="satisfied">Satisfied Customers</option>
+              <option value="unsatisfied">Unsatisfied Customers</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl p-6 border border-slate-200">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            </div>
+            <p className="text-sm font-medium text-slate-600">Total Completions</p>
+          </div>
+          <p className="text-2xl font-bold text-slate-900">{completions.length}</p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border border-slate-200">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Star className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="text-sm font-medium text-slate-600">Satisfied Customers</p>
+          </div>
+          <p className="text-2xl font-bold text-slate-900">
+            {completions.filter(c => c.is_customer_satisfied).length}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            {completions.length > 0
+              ? `${Math.round((completions.filter(c => c.is_customer_satisfied).length / completions.length) * 100)}%`
+              : '0%'}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border border-slate-200">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <DollarSign className="w-5 h-5 text-blue-600" />
+            </div>
+            <p className="text-sm font-medium text-slate-600">Total Completed Value</p>
+          </div>
+          <p className="text-2xl font-bold text-slate-900">
+            ${completions.reduce((sum, c) => sum + (c.final_price || 0), 0).toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {filteredCompletions.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+            <CheckCircle2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-600">
+              {completions.length === 0 ? 'No completed jobs yet' : 'No completions match your filters'}
+            </p>
+          </div>
+        ) : (
+          filteredCompletions.map((completion) => {
+            const checklist = getCheckedCount(completion.completion_checklist);
+            return (
+              <div
+                key={completion.id}
+                className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedCompletion(completion)}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-semibold text-slate-900">{completion.customer_name}</h3>
+                      {completion.is_customer_satisfied ? (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+                          <Star className="w-3 h-3" />
+                          Satisfied
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-yellow-100 text-yellow-800 border-yellow-200">
+                          Needs Follow-up
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {formatDate(completion.completed_at)}
+                      </div>
+                      {completion.job?.client_phone && (
+                        <span>{completion.job.client_phone}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    View Details
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      ${completion.final_price?.toLocaleString() || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Checklist</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {checklist.checked}/{checklist.total} items
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Photos</p>
+                    <p className="text-sm font-semibold text-slate-900 flex items-center gap-1">
+                      <ImageIcon className="w-4 h-4" />
+                      {completion.completion_photos?.length || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Signature</p>
+                    <p className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Captured
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {selectedCompletion && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">{selectedCompletion.customer_name}</h2>
+                <p className="text-sm text-slate-600 mt-1">Completed on {formatDate(selectedCompletion.completed_at)}</p>
+              </div>
+              <button
+                onClick={() => setSelectedCompletion(null)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="bg-slate-50 rounded-xl p-6">
+                <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                  Completion Summary
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-slate-600">Final Price</p>
+                    <p className="font-semibold text-slate-900">${selectedCompletion.final_price?.toLocaleString() || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Customer Satisfied</p>
+                    <p className={`font-semibold ${selectedCompletion.is_customer_satisfied ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {selectedCompletion.is_customer_satisfied ? 'Yes' : 'No'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Completed By</p>
+                    <p className="font-semibold text-slate-900 flex items-center gap-1">
+                      <User className="w-4 h-4" />
+                      Admin
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Job Type</p>
+                    <p className="font-semibold text-slate-900">{selectedCompletion.job?.job_type || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {Array.isArray(selectedCompletion.completion_checklist) && selectedCompletion.completion_checklist.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    Completion Checklist
+                  </h3>
+                  <div className="space-y-2">
+                    {selectedCompletion.completion_checklist.map((item: any, index: number) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                        <CheckCircle2 className={`w-5 h-5 ${item.checked ? 'text-emerald-600' : 'text-slate-300'}`} />
+                        <span className={`text-sm ${item.checked ? 'text-slate-900' : 'text-slate-500'}`}>
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-3">Customer Signature</h3>
+                <div className="bg-slate-50 rounded-xl p-6 border-2 border-slate-200">
+                  <img
+                    src={selectedCompletion.signature_data}
+                    alt="Customer signature"
+                    className="max-w-full h-48 mx-auto"
+                  />
+                </div>
+              </div>
+
+              {selectedCompletion.completion_photos && selectedCompletion.completion_photos.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-emerald-600" />
+                    Completion Photos ({selectedCompletion.completion_photos.length})
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedCompletion.completion_photos.map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`Completion photo ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg border border-slate-200"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedCompletion.admin_notes && (
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-3">Admin Notes</h3>
+                  <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-lg">
+                    {selectedCompletion.admin_notes}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-slate-200">
+              <button
+                onClick={() => setSelectedCompletion(null)}
+                className="w-full px-6 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

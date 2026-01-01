@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star } from 'lucide-react';
 import {
   determineJobStatus,
   calculateNetProfit,
@@ -13,6 +13,7 @@ import {
 } from '../../utils/jobCalculations';
 import JobFormModal from '../../components/admin/JobFormModal';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
+import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 
 interface JobStats {
@@ -37,6 +38,7 @@ export default function JobsPage() {
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [copyingJob, setCopyingJob] = useState<Partial<Job> | null>(null);
+  const [completingJob, setCompletingJob] = useState<Job | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -362,6 +364,12 @@ export default function JobsPage() {
                           Repeat Client
                         </span>
                       )}
+                      {job.has_signature && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Signed Off
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-600">
                       {job.client_phone && <span>{job.client_phone}</span>}
@@ -369,6 +377,16 @@ export default function JobsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {(job.date_scheduled || job.date_completed) && !job.has_signature && (
+                      <button
+                        onClick={() => setCompletingJob(job)}
+                        className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                        title="Complete job with customer signature"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Complete Job
+                      </button>
+                    )}
                     <button
                       onClick={() => handleCopyJob(job)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -471,6 +489,19 @@ export default function JobsPage() {
           businessId={businessId}
           onClose={() => setShowImportModal(false)}
           onSuccess={handleImportSuccess}
+        />
+      )}
+
+      {completingJob && (
+        <JobCompletionWizard
+          job={completingJob}
+          onClose={() => setCompletingJob(null)}
+          onSuccess={() => {
+            setCompletingJob(null);
+            fetchData();
+            setMessage({ type: 'success', text: 'Job completed successfully!' });
+            setTimeout(() => setMessage(null), 3000);
+          }}
         />
       )}
     </div>

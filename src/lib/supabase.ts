@@ -136,6 +136,9 @@ export type CustomerReview = {
   is_featured: boolean;
   is_verified: boolean;
   is_active: boolean;
+  job_completion_id: string | null;
+  source: string;
+  collected_at_completion: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -193,6 +196,9 @@ export type Job = {
   repeat_client: boolean;
   referral_source: string | null;
   notes: string | null;
+  completion_id: string | null;
+  has_signature: boolean;
+  signed_off_at: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -475,6 +481,42 @@ export type TaxCalculation = {
   calculation_type: string;
   notes: string | null;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type JobCompletion = {
+  id: string;
+  job_id: string;
+  completed_at: string;
+  completed_by: string | null;
+  signature_data: string;
+  signature_url: string | null;
+  completion_checklist: Record<string, any>;
+  completion_photos: string[];
+  admin_notes: string;
+  device_info: Record<string, any>;
+  customer_name: string;
+  final_price: number | null;
+  is_customer_satisfied: boolean;
+  location_captured: Record<string, any> | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type JobCompletionReminder = {
+  id: string;
+  job_completion_id: string | null;
+  job_id: string;
+  reminder_type: 'follow_up_call' | 'warranty_check' | 'repeat_business' | 'custom';
+  scheduled_date: string;
+  status: 'pending' | 'completed' | 'dismissed' | 'snoozed';
+  completed_at: string | null;
+  snoozed_until: string | null;
+  admin_notes: string;
+  outcome_notes: string;
+  created_by: string | null;
+  completed_by: string | null;
   created_at: string;
   updated_at: string;
 };
