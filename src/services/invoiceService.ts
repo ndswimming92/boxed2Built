@@ -271,6 +271,63 @@ export async function getInvoicesByCustomer(businessId: string, email: string): 
   return data || [];
 }
 
+export async function getInvoicesByJob(jobId: string): Promise<Invoice[]> {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('job_id', jobId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching job invoices:', error);
+    throw new Error(`Failed to fetch job invoices: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+export async function attachInvoiceToJob(invoiceId: string, jobId: string): Promise<void> {
+  const { error } = await supabase
+    .from('invoices')
+    .update({ job_id: jobId })
+    .eq('id', invoiceId);
+
+  if (error) {
+    console.error('Error attaching invoice to job:', error);
+    throw new Error(`Failed to attach invoice: ${error.message}`);
+  }
+}
+
+export async function detachInvoiceFromJob(invoiceId: string): Promise<void> {
+  const { error } = await supabase
+    .from('invoices')
+    .update({ job_id: null })
+    .eq('id', invoiceId);
+
+  if (error) {
+    console.error('Error detaching invoice from job:', error);
+    throw new Error(`Failed to detach invoice: ${error.message}`);
+  }
+}
+
+export async function getUnattachedInvoices(businessId: string): Promise<Invoice[]> {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('business_id', businessId)
+    .is('job_id', null)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching unattached invoices:', error);
+    throw new Error(`Failed to fetch unattached invoices: ${error.message}`);
+  }
+
+  return data || [];
+}
+
 export async function updateInvoice(invoiceId: string, updates: UpdateInvoiceData): Promise<Invoice> {
   const { data, error } = await supabase
     .from('invoices')

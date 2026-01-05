@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon } from 'lucide-react';
 import {
   determineJobStatus,
   calculateNetProfit,
@@ -14,6 +14,9 @@ import {
 import JobFormModal from '../../components/admin/JobFormModal';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
 import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
+import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
+import AttachInvoiceModal from '../../components/admin/AttachInvoiceModal';
+import JobInvoicesList from '../../components/admin/JobInvoicesList';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 
 interface JobStats {
@@ -28,6 +31,7 @@ export default function JobsPage() {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [businessInfo, setBusinessInfo] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'All'>('All');
@@ -39,6 +43,8 @@ export default function JobsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [copyingJob, setCopyingJob] = useState<Partial<Job> | null>(null);
   const [completingJob, setCompletingJob] = useState<Job | null>(null);
+  const [creatingInvoiceForJob, setCreatingInvoiceForJob] = useState<Job | null>(null);
+  const [attachingInvoiceToJob, setAttachingInvoiceToJob] = useState<Job | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -50,18 +56,25 @@ export default function JobsPage() {
 
   const fetchData = async () => {
     try {
-      const { data: businessInfo } = await supabase
+      const { data: bizData } = await supabase
         .from('business_info')
-        .select('id')
+        .select('*')
         .eq('is_active', true)
         .maybeSingle();
 
-      if (businessInfo) {
-        setBusinessId(businessInfo.id);
+      if (bizData) {
+        setBusinessId(bizData.id);
+        setBusinessInfo({
+          name: bizData.name || 'Boxed2Built',
+          address: bizData.street_address || '',
+          phone: bizData.phone || '',
+          email: bizData.email || '',
+          website: 'www.boxed2built.com',
+        });
         const { data } = await supabase
           .from('jobs')
           .select('*')
-          .eq('business_id', businessInfo.id)
+          .eq('business_id', bizData.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
@@ -388,8 +401,22 @@ export default function JobsPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleCopyJob(job)}
+                      onClick={() => setCreatingInvoiceForJob(job)}
+                      className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                      title="Create invoice from job"
+                    >
+                      <FileText className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setAttachingInvoiceToJob(job)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Attach existing invoice"
+                    >
+                      <LinkIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleCopyJob(job)}
+                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                       title="Copy job"
                     >
                       <Copy className="w-5 h-5" />
@@ -455,6 +482,14 @@ export default function JobsPage() {
                     <p className="text-sm text-slate-700">{job.job_description}</p>
                   </div>
                 )}
+
+                {businessInfo && (
+                  <JobInvoicesList
+                    jobId={job.id}
+                    businessInfo={businessInfo}
+                    onInvoiceDetached={fetchData}
+                  />
+                )}
               </div>
             );
           })
@@ -500,6 +535,39 @@ export default function JobsPage() {
             setCompletingJob(null);
             fetchData();
             setMessage({ type: 'success', text: 'Job completed successfully!' });
+            setTimeout(() => setMessage(null), 3000);
+          }}
+        />
+      )}
+
+      {creatingInvoiceForJob && businessId && (
+        <InvoiceFormModal
+          businessId={businessId}
+          jobId={creatingInvoiceForJob.id}
+          initialData={{
+            client_name: creatingInvoiceForJob.client_name,
+            client_email: creatingInvoiceForJob.client_email || undefined,
+            client_phone: creatingInvoiceForJob.client_phone || undefined,
+          }}
+          onClose={() => setCreatingInvoiceForJob(null)}
+          onSaved={() => {
+            setCreatingInvoiceForJob(null);
+            fetchData();
+            setMessage({ type: 'success', text: 'Invoice created successfully!' });
+            setTimeout(() => setMessage(null), 3000);
+          }}
+        />
+      )}
+
+      {attachingInvoiceToJob && businessId && (
+        <AttachInvoiceModal
+          job={attachingInvoiceToJob}
+          businessId={businessId}
+          onClose={() => setAttachingInvoiceToJob(null)}
+          onAttached={() => {
+            setAttachingInvoiceToJob(null);
+            fetchData();
+            setMessage({ type: 'success', text: 'Invoice attached successfully!' });
             setTimeout(() => setMessage(null), 3000);
           }}
         />

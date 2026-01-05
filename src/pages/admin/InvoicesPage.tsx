@@ -16,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle,
   Trash2,
+  Briefcase,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Invoice } from '../../lib/supabase';
@@ -44,6 +45,7 @@ export default function InvoicesPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [businessInfo, setBusinessInfo] = useState<any>(null);
+  const [jobsMap, setJobsMap] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     fetchData();
@@ -71,12 +73,21 @@ export default function InvoicesPage() {
           email: bizData.email || '',
           website: 'www.boxed2built.com',
         });
-        const [invoicesData, statsData] = await Promise.all([
+        const [invoicesData, statsData, jobsData] = await Promise.all([
           getAllInvoices(bizData.id),
           getInvoiceStats(bizData.id),
+          supabase.from('jobs').select('*').eq('business_id', bizData.id).eq('is_active', true),
         ]);
         setInvoices(invoicesData);
         setStats(statsData);
+
+        if (jobsData.data) {
+          const map = new Map();
+          jobsData.data.forEach((job: any) => {
+            map.set(job.id, job);
+          });
+          setJobsMap(map);
+        }
       }
     } catch (error) {
       console.error('Error fetching invoices:', error);
@@ -314,6 +325,9 @@ export default function InvoicesPage() {
                   Customer
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Job
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   Date
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -339,7 +353,7 @@ export default function InvoicesPage() {
             <tbody className="divide-y divide-slate-200">
               {filteredInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center">
+                  <td colSpan={10} className="px-6 py-12 text-center">
                     <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                     <p className="text-slate-500">
                       {searchQuery || statusFilter !== 'all'
@@ -363,6 +377,23 @@ export default function InvoicesPage() {
                     <td className="px-6 py-4">
                       <p className="font-medium text-slate-900">{invoice.client_name}</p>
                       <p className="text-sm text-slate-500">{invoice.client_email}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      {invoice.job_id && jobsMap.has(invoice.job_id) ? (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-emerald-600" />
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">
+                              {jobsMap.get(invoice.job_id)?.job_type || 'Job'}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {jobsMap.get(invoice.job_id)?.location_city || ''}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">No job linked</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.invoice_date)}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.due_date)}</td>
