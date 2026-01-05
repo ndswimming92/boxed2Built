@@ -29,7 +29,7 @@ export async function generateInvoicePDF(
   doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('INVOICE', margin, 25);
+  doc.text(getDocumentHeaderText(invoice.invoice_type), margin, 25);
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
@@ -63,13 +63,13 @@ export async function generateInvoicePDF(
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 116, 139);
-  doc.text('INVOICE DETAILS', margin + 3, yPosition);
+  doc.text(getDocumentDetailsLabel(invoice.invoice_type), margin + 3, yPosition);
 
   yPosition += 7;
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.text('Invoice #:', margin + 3, yPosition);
+  doc.text(getDocumentNumberLabel(invoice.invoice_type), margin + 3, yPosition);
   doc.setFont('helvetica', 'normal');
   doc.text(invoice.invoice_number, margin + 30, yPosition);
 
@@ -374,6 +374,39 @@ function formatInvoiceType(type: string): string {
     general: 'General',
   };
   return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function getDocumentHeaderText(type: string): string {
+  const headerMap: { [key: string]: string } = {
+    estimate: 'QUOTE',
+    deposit: 'DEPOSIT INVOICE',
+    progress: 'PROGRESS INVOICE',
+    final: 'FINAL INVOICE',
+    general: 'INVOICE',
+  };
+  return headerMap[type] || 'INVOICE';
+}
+
+function getDocumentDetailsLabel(type: string): string {
+  const labelMap: { [key: string]: string } = {
+    estimate: 'QUOTE DETAILS',
+    deposit: 'DEPOSIT DETAILS',
+    progress: 'PROGRESS DETAILS',
+    final: 'INVOICE DETAILS',
+    general: 'INVOICE DETAILS',
+  };
+  return labelMap[type] || 'INVOICE DETAILS';
+}
+
+function getDocumentNumberLabel(type: string): string {
+  const labelMap: { [key: string]: string } = {
+    estimate: 'Quote #:',
+    deposit: 'Invoice #:',
+    progress: 'Invoice #:',
+    final: 'Invoice #:',
+    general: 'Invoice #:',
+  };
+  return labelMap[type] || 'Invoice #:';
 }
 
 function formatItemType(type: string): string {
