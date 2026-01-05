@@ -23,6 +23,7 @@ export interface CreateInvoiceData {
 }
 
 export interface UpdateInvoiceData {
+  invoice_type?: 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
   client_name?: string;
   client_email?: string;
   client_phone?: string;

@@ -303,6 +303,7 @@ export default function InvoiceFormModal({
         invoiceId = newInvoice.id;
       } else {
         await updateInvoice(invoiceId, {
+          invoice_type: invoiceType,
           client_name: clientName,
           client_email: clientEmail || undefined,
           client_phone: clientPhone || undefined,
