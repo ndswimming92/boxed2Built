@@ -257,7 +257,7 @@ export default function InvoiceFormModal({
   const totals = calculateTotals();
 
   const handleSave = async (sendEmail: boolean = false) => {
-    if (!clientName || !clientEmail || !dueDate) {
+    if (!clientName || !dueDate) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
       return;
     }
@@ -286,7 +286,7 @@ export default function InvoiceFormModal({
           job_id: jobId,
           invoice_type: invoiceType,
           client_name: clientName,
-          client_email: clientEmail,
+          client_email: clientEmail || undefined,
           client_phone: clientPhone || undefined,
           client_address: clientAddress || undefined,
           invoice_date: invoiceDate,
@@ -304,7 +304,7 @@ export default function InvoiceFormModal({
       } else {
         await updateInvoice(invoiceId, {
           client_name: clientName,
-          client_email: clientEmail,
+          client_email: clientEmail || undefined,
           client_phone: clientPhone || undefined,
           client_address: clientAddress || undefined,
           invoice_date: invoiceDate,
@@ -545,13 +545,12 @@ export default function InvoiceFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    required
                   />
                 </div>
 

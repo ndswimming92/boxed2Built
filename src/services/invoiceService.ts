@@ -6,7 +6,7 @@ export interface CreateInvoiceData {
   job_id?: string;
   invoice_type: 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
   client_name: string;
-  client_email: string;
+  client_email?: string;
   client_phone?: string;
   client_address?: string;
   invoice_date: string;
