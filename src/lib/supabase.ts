@@ -521,6 +521,45 @@ export type JobCompletionReminder = {
   updated_at: string;
 };
 
+export type ExpenseCategory = {
+  id: string;
+  business_id: string;
+  name: string;
+  description: string | null;
+  irs_category: string | null;
+  is_tax_deductible: boolean;
+  is_default: boolean;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BusinessExpense = {
+  id: string;
+  business_id: string;
+  category_id: string | null;
+  expense_date: string;
+  vendor_name: string;
+  description: string;
+  amount: number;
+  payment_method: string | null;
+  confirmation_number: string | null;
+  is_tax_deductible: boolean;
+  deductible_amount: number | null;
+  tax_year: number;
+  quarter: number | null;
+  receipt_url: string | null;
+  has_receipt: boolean;
+  is_recurring: boolean;
+  recurrence_pattern: string | null;
+  tags: string[] | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompleteBusinessData = {
   info: BusinessInfo;
   address: BusinessAddress | null;

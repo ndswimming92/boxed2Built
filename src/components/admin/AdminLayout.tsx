@@ -28,7 +28,8 @@ import {
   QrCode,
   Search,
   CheckCircle2,
-  Calendar
+  Calendar,
+  Wallet
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -44,6 +45,7 @@ const navigation = [
   { name: 'Completions', href: '/admin/completions', icon: CheckCircle2 },
   { name: 'Reminders', href: '/admin/reminders', icon: Calendar },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Finances', href: '/admin/finances', icon: Wallet },
   { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
   { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
   { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },

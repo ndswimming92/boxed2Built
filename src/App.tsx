@@ -48,6 +48,7 @@ import QRCodesPage from './pages/admin/QRCodesPage';
 import QRCodeDetailPage from './pages/admin/QRCodeDetailPage';
 import CompletionsPage from './pages/admin/CompletionsPage';
 import RemindersPage from './pages/admin/RemindersPage';
+import FinancesPage from './pages/admin/FinancesPage';
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -257,6 +258,7 @@ function App() {
                   <Route path="invoices" element={<InvoicesPage />} />
                   <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
                   <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="finances" element={<FinancesPage />} />
                   <Route path="forecasting" element={<ForecastingPage />} />
                   <Route path="tax-settings" element={<TaxSettingsPage />} />
                   <Route path="notification-bar" element={<NotificationBarPage />} />

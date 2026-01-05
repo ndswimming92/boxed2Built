@@ -63,6 +63,7 @@ import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../serv
 import ProfitabilityLeaderboard from '../../components/analytics/ProfitabilityLeaderboard';
 import JobTypePerformanceTable from '../../components/analytics/JobTypePerformanceTable';
 import PricingInsightsCard from '../../components/analytics/PricingInsightsCard';
+import { getTotalDeductibleExpenses } from '../../services/expenseService';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
@@ -76,6 +77,7 @@ export default function AnalyticsPage() {
   const [taxSettings, setTaxSettings] = useState<TaxSettingsType | null>(null);
   const [quarterlyPayments, setQuarterlyPayments] = useState<QuarterlyTaxPayment[]>([]);
   const [showTaxSection, setShowTaxSection] = useState(true);
+  const [trackedExpenses, setTrackedExpenses] = useState<number>(0);
   const { jobs, loading, lastUpdated, isConnected } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -108,6 +110,10 @@ export default function AnalyticsPage() {
 
     const payments = await getQuarterlyPayments(businessId);
     setQuarterlyPayments(payments);
+
+    const currentYear = new Date().getFullYear();
+    const expenses = await getTotalDeductibleExpenses(businessId, currentYear);
+    setTrackedExpenses(expenses);
   };
 
   const metrics = useMemo(() => calculateMetrics(jobs, timePeriod), [jobs, timePeriod]);
@@ -140,13 +146,13 @@ export default function AnalyticsPage() {
       : jobs;
 
     const grossIncome = filteredJobs.reduce((sum, job) => sum + (job.final_price || 0), 0);
-    const totalExpenses = filteredJobs.reduce((sum, job) => sum + (job.materials_cost || 0), 0) +
-      (taxSettings.estimated_annual_business_expenses || 0);
+    const materialsCosts = filteredJobs.reduce((sum, job) => sum + (job.materials_cost || 0), 0);
+    const totalExpenses = materialsCosts + trackedExpenses;
 
     const totalPayments = quarterlyPayments.reduce((sum, payment) => sum + payment.payment_amount, 0);
 
     return calculateTaxes(grossIncome, totalExpenses, taxSettings, totalPayments);
-  }, [jobs, timePeriod, taxSettings, quarterlyPayments]);
+  }, [jobs, timePeriod, taxSettings, quarterlyPayments, trackedExpenses]);
 
   const nextQuarterDueDate = useMemo(() => getNextQuarterDueDate(), []);
 
