@@ -117,7 +117,13 @@ export default function InvoiceFormModal({
   const [clientPhone, setClientPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [clientAddress, setClientAddress] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [invoiceDate, setInvoiceDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
   const [paymentTerms, setPaymentTerms] = useState('Net 30');
   const [dueDate, setDueDate] = useState('');
   const [taxRate, setTaxRate] = useState(0);
@@ -492,7 +498,22 @@ export default function InvoiceFormModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Invoice Date</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-slate-700">Invoice Date</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        setInvoiceDate(`${year}-${month}-${day}`);
+                      }}
+                      className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      Set to Today
+                    </button>
+                  </div>
                   <input
                     type="date"
                     value={invoiceDate}
