@@ -231,6 +231,7 @@ export type FormInquiry = {
   utm_medium: string | null;
   utm_campaign: string | null;
   referral_source: string | null;
+  confirmation_code?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

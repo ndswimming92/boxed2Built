@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus } from 'lucide-react';
+import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
@@ -30,6 +30,7 @@ export default function InquiryDetailModal({
   const [customSMSMessage, setCustomSMSMessage] = useState('');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadInvoices();
@@ -140,6 +141,24 @@ export default function InquiryDetailModal({
     }
   };
 
+  const handleCopyCode = async () => {
+    if (!inquiry.confirmation_code) return;
+
+    try {
+      await navigator.clipboard.writeText(inquiry.confirmation_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const handleOpenLookupPage = () => {
+    if (!inquiry.confirmation_code) return;
+    const url = `/lookup-request?code=${encodeURIComponent(inquiry.confirmation_code)}&email=${encodeURIComponent(inquiry.client_email)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl max-w-4xl w-full my-8">
@@ -163,6 +182,51 @@ export default function InquiryDetailModal({
             </span>
             {!inquiry.viewed && <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">NEW</span>}
           </div>
+
+          {inquiry.confirmation_code && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lock className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-sm font-semibold text-slate-700">Client Confirmation Code</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <code className="px-3 py-2 bg-white border border-blue-300 rounded text-lg font-mono font-semibold text-blue-900">
+                      {inquiry.confirmation_code}
+                    </code>
+                    <button
+                      onClick={handleCopyCode}
+                      className="p-2 hover:bg-blue-100 rounded-lg transition-colors group relative"
+                      title="Copy to clipboard"
+                    >
+                      {copied ? (
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <Copy className="w-5 h-5 text-blue-600" />
+                      )}
+                      {copied && (
+                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-xs rounded whitespace-nowrap">
+                          Copied!
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={handleOpenLookupPage}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                  title="Open client lookup page"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View as Client
+                </button>
+              </div>
+              <p className="text-xs text-slate-600 mt-2">
+                Clients can use this code to look up their request details on your website
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-50 p-4 rounded-lg">

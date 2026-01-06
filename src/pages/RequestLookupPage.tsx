@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -11,6 +12,7 @@ import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
 
 const RequestLookupPage: React.FC = () => {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,19 @@ const RequestLookupPage: React.FC = () => {
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/lookup-request');
-  }, []);
+
+    const searchParams = new URLSearchParams(location.search);
+    const codeParam = searchParams.get('code');
+    const emailParam = searchParams.get('email');
+
+    if (codeParam) {
+      setConfirmationCode(codeParam.toUpperCase());
+    }
+
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

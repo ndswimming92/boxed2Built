@@ -134,7 +134,8 @@ export default function InquiriesPage() {
           inquiry.client_name?.toLowerCase().includes(term) ||
           inquiry.client_email?.toLowerCase().includes(term) ||
           inquiry.client_phone?.toLowerCase().includes(term) ||
-          inquiry.furniture_type?.toLowerCase().includes(term)
+          inquiry.furniture_type?.toLowerCase().includes(term) ||
+          inquiry.confirmation_code?.toLowerCase().includes(term)
       );
     }
 
@@ -397,7 +398,7 @@ export default function InquiriesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, email, phone, or furniture type..."
+              placeholder="Search by name, email, phone, furniture type, or confirmation code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -500,6 +501,11 @@ export default function InquiriesPage() {
                       </span>
                     )}
                     <span className="text-slate-500">{formatDate(inquiry.submission_date)}</span>
+                    {inquiry.confirmation_code && (
+                      <span className="px-2 py-0.5 text-xs font-mono bg-slate-100 text-slate-600 rounded border border-slate-200">
+                        {inquiry.confirmation_code}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

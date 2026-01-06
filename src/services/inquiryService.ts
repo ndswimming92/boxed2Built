@@ -81,7 +81,10 @@ export async function getInquiries(
 ): Promise<FormInquiry[]> {
   let query = supabase
     .from('form_inquiries')
-    .select('*')
+    .select(`
+      *,
+      saved_requests!left(confirmation_code)
+    `)
     .eq('business_id', businessId)
     .eq('is_active', true);
 
@@ -121,13 +124,22 @@ export async function getInquiries(
     throw new Error(`Failed to fetch inquiries: ${error.message}`);
   }
 
-  return (data || []) as FormInquiry[];
+  const inquiries = (data || []).map((item: any) => ({
+    ...item,
+    confirmation_code: item.saved_requests?.[0]?.confirmation_code || null,
+    saved_requests: undefined,
+  }));
+
+  return inquiries as FormInquiry[];
 }
 
 export async function getInquiryById(id: string): Promise<FormInquiry | null> {
   const { data, error } = await supabase
     .from('form_inquiries')
-    .select('*')
+    .select(`
+      *,
+      saved_requests!left(confirmation_code)
+    `)
     .eq('id', id)
     .maybeSingle();
 
@@ -136,7 +148,15 @@ export async function getInquiryById(id: string): Promise<FormInquiry | null> {
     throw new Error(`Failed to fetch inquiry: ${error.message}`);
   }
 
-  return data as FormInquiry | null;
+  if (!data) return null;
+
+  const inquiry = {
+    ...data,
+    confirmation_code: data.saved_requests?.[0]?.confirmation_code || null,
+    saved_requests: undefined,
+  };
+
+  return inquiry as FormInquiry;
 }
 
 export async function updateInquiry(
@@ -308,7 +328,10 @@ export async function getRecentInquiries(
 ): Promise<FormInquiry[]> {
   const { data, error } = await supabase
     .from('form_inquiries')
-    .select('*')
+    .select(`
+      *,
+      saved_requests!left(confirmation_code)
+    `)
     .eq('business_id', businessId)
     .eq('is_active', true)
     .order('submission_date', { ascending: false })
@@ -319,5 +342,11 @@ export async function getRecentInquiries(
     return [];
   }
 
-  return (data || []) as FormInquiry[];
+  const inquiries = (data || []).map((item: any) => ({
+    ...item,
+    confirmation_code: item.saved_requests?.[0]?.confirmation_code || null,
+    saved_requests: undefined,
+  }));
+
+  return inquiries as FormInquiry[];
 }
