@@ -199,6 +199,8 @@ export type Job = {
   completion_id: string | null;
   has_signature: boolean;
   signed_off_at: string | null;
+  total_mileage: number | null;
+  mileage_deduction: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -559,6 +561,61 @@ export type BusinessExpense = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type GPSCoordinate = {
+  lat: number;
+  lng: number;
+  accuracy?: number;
+  timestamp?: number;
+};
+
+export type LocationData = {
+  lat: number;
+  lng: number;
+  address?: string;
+  accuracy?: number;
+};
+
+export type MileageRecord = {
+  id: string;
+  business_id: string;
+  job_id: string;
+  trip_date: string;
+  start_time: string;
+  end_time: string | null;
+  start_location: LocationData | null;
+  end_location: LocationData | null;
+  waypoints: GPSCoordinate[];
+  distance_miles: number;
+  is_manual_entry: boolean;
+  purpose: string | null;
+  irs_rate_per_mile: number;
+  deduction_amount: number;
+  expense_id: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MileageSettings = {
+  id: string;
+  business_id: string;
+  effective_date: string;
+  rate_per_mile: number;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TrackingState = {
+  isTracking: boolean;
+  startTime: Date | null;
+  currentDistance: number;
+  waypoints: GPSCoordinate[];
+  watchId: number | null;
 };
 
 export type CompleteBusinessData = {

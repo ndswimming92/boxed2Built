@@ -41,6 +41,7 @@ import InvoiceSettingsPage from './pages/admin/InvoiceSettingsPage';
 import ForecastingPage from './pages/admin/ForecastingPage';
 import NotificationBarPage from './pages/admin/NotificationBarPage';
 import TaxSettingsPage from './pages/admin/TaxSettingsPage';
+import MileageSettingsPage from './pages/admin/MileageSettingsPage';
 import GoalsPage from './pages/admin/GoalsPage';
 import ActivityLogsPage from './pages/admin/ActivityLogsPage';
 import QRRedirectPage from './pages/QRRedirectPage';
@@ -261,6 +262,7 @@ function App() {
                   <Route path="finances" element={<FinancesPage />} />
                   <Route path="forecasting" element={<ForecastingPage />} />
                   <Route path="tax-settings" element={<TaxSettingsPage />} />
+                  <Route path="mileage-settings" element={<MileageSettingsPage />} />
                   <Route path="notification-bar" element={<NotificationBarPage />} />
                   <Route path="activity-logs" element={<ActivityLogsPage />} />
                   <Route path="business-info" element={<BusinessInfoPage />} />

@@ -29,7 +29,8 @@ import {
   Search,
   CheckCircle2,
   Calendar,
-  Wallet
+  Wallet,
+  Navigation
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -48,6 +49,7 @@ const navigation = [
   { name: 'Finances', href: '/admin/finances', icon: Wallet },
   { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
   { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
+  { name: 'Mileage Settings', href: '/admin/mileage-settings', icon: Navigation },
   { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },
   { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
   { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },

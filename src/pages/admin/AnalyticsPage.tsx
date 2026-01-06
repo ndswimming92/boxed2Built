@@ -147,7 +147,8 @@ export default function AnalyticsPage() {
 
     const grossIncome = filteredJobs.reduce((sum, job) => sum + (job.final_price || 0), 0);
     const materialsCosts = filteredJobs.reduce((sum, job) => sum + (job.materials_cost || 0), 0);
-    const totalExpenses = materialsCosts + trackedExpenses;
+    const mileageDeductions = filteredJobs.reduce((sum, job) => sum + (job.mileage_deduction || 0), 0);
+    const totalExpenses = materialsCosts + trackedExpenses + mileageDeductions;
 
     const totalPayments = quarterlyPayments.reduce((sum, payment) => sum + payment.payment_amount, 0);
 

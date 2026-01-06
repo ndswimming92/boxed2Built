@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation } from 'lucide-react';
 import {
   determineJobStatus,
   calculateNetProfit,
@@ -17,6 +17,8 @@ import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import AttachInvoiceModal from '../../components/admin/AttachInvoiceModal';
 import JobInvoicesList from '../../components/admin/JobInvoicesList';
+import MileageTrackerButton from '../../components/admin/MileageTrackerButton';
+import MileageRecordsList from '../../components/admin/MileageRecordsList';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 
 interface JobStats {
@@ -457,7 +459,7 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(job.final_price)}</p>
@@ -474,6 +476,16 @@ export default function JobsPage() {
                     <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
                     <p className="text-lg font-bold text-emerald-600">{formatCurrency(hourlyRate)}/hr</p>
                   </div>
+                  {job.total_mileage && job.total_mileage > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
+                        <Navigation className="w-3 h-3" />
+                        Mileage Deduction
+                      </p>
+                      <p className="text-lg font-bold text-blue-600">{formatCurrency(job.mileage_deduction)}</p>
+                      <p className="text-xs text-slate-500">{job.total_mileage?.toFixed(1)} mi</p>
+                    </div>
+                  )}
                 </div>
 
                 {job.job_description && (
@@ -490,6 +502,29 @@ export default function JobsPage() {
                     onInvoiceDetached={fetchData}
                   />
                 )}
+
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="lg:col-span-1">
+                      {businessId && (
+                        <MileageTrackerButton
+                          job={job}
+                          businessId={businessId}
+                          onTrackingComplete={fetchData}
+                        />
+                      )}
+                    </div>
+                    <div className="lg:col-span-2">
+                      {businessId && (
+                        <MileageRecordsList
+                          jobId={job.id}
+                          businessId={businessId}
+                          onUpdate={fetchData}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })
