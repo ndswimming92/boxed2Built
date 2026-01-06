@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Eye, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2 } from 'lucide-react';
+import { Inbox, Search, Filter, Eye, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw } from 'lucide-react';
 import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
@@ -28,8 +28,10 @@ export default function InquiriesPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [jobFormData, setJobFormData] = useState<Partial<Job> | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  const { inquiries, refresh } = useRealtimeInquiries({ businessId });
+  const { inquiries, unviewedCount, refresh } = useRealtimeInquiries({ businessId });
 
   useEffect(() => {
     fetchBusinessId();
@@ -70,6 +72,55 @@ export default function InquiriesPage() {
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    const previousCount = inquiries.length;
+
+    try {
+      await refresh();
+      await fetchStats();
+      setLastUpdated(new Date());
+
+      const newCount = inquiries.length;
+      const newSubmissions = newCount - previousCount;
+
+      if (newSubmissions > 0) {
+        setMessage({
+          type: 'success',
+          text: `Found ${newSubmissions} new submission${newSubmissions !== 1 ? 's' : ''}!`
+        });
+      } else {
+        setMessage({
+          type: 'success',
+          text: 'All caught up! No new submissions.'
+        });
+      }
+
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error refreshing inquiries:', error);
+      setMessage({ type: 'error', text: 'Failed to refresh inquiries' });
+      setTimeout(() => setMessage(null), 3000);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const formatLastUpdated = () => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - lastUpdated.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    } else {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
     }
   };
 
@@ -248,10 +299,38 @@ export default function InquiriesPage() {
 
   return (
     <div className="max-w-7xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Form Inquiries</h1>
-          <p className="text-slate-600">Manage customer inquiries from your website contact form</p>
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Form Inquiries</h1>
+            <p className="text-slate-600">Manage customer inquiries from your website contact form</p>
+          </div>
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className={`relative px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              isRefreshing
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow-md'
+            }`}
+            title="Check for new form submissions"
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Check for New</span>
+            {unviewedCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
+                {unviewedCount}
+              </span>
+            )}
+          </button>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <span>Last updated: {formatLastUpdated()}</span>
+          <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Auto-refresh active
+          </span>
         </div>
       </div>
 
@@ -373,8 +452,21 @@ export default function InquiriesPage() {
         {filteredInquiries.length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
             <Inbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 mb-4">{inquiries.length === 0 ? 'No inquiries yet' : 'No inquiries match your filters'}</p>
-            <p className="text-sm text-slate-500">Inquiries from your contact form will appear here</p>
+            <p className="text-slate-600 mb-2 text-lg font-medium">
+              {inquiries.length === 0 ? 'No inquiries yet' : 'No inquiries match your filters'}
+            </p>
+            {inquiries.length === 0 ? (
+              <div className="text-sm text-slate-500 space-y-2">
+                <p>Inquiries from your contact form will appear here automatically</p>
+                <p className="flex items-center justify-center gap-2 mt-4">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>Real-time updates enabled</span>
+                </p>
+                <p className="mt-2">Or click the "Check for New" button to manually refresh</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Try adjusting your filters to see more results</p>
+            )}
           </div>
         ) : (
           filteredInquiries.map((inquiry) => (
