@@ -1,4 +1,3 @@
-```tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, Save } from 'lucide-react';
 import { mileageTracker } from '../../services/mileageTrackingService';
@@ -253,7 +252,7 @@ export default function MileageRecordModal({
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-700">IRS Rate:</span>
               <span className="font-semibold text-gray-900">
-                {loadingRate && !record ? 'Loading…' : `$${irsRate.toFixed(3)}/mile`}
+                {loadingRate && !record ? 'Loading…' : '$' + irsRate.toFixed(3) + '/mile'}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -288,4 +287,3 @@ export default function MileageRecordModal({
     </div>
   );
 }
-```
