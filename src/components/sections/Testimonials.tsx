@@ -1,60 +1,131 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ReviewCard from '../ReviewCard';
 import StarRating from '../ui/StarRating';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
 
+const AUTOSCROLL_MS = 5000;
+const RESUME_AFTER_MS = 10000;
+
 const Testimonials: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
 
-  const REVIEWS = businessData?.reviews.map(review => ({
-    id: review.id,
-    author: review.author_name,
-    text: review.review_body,
-    rating: review.rating_value,
-    datePublished: review.date_published,
-    source: review.is_verified ? 'Google' : 'Customer',
-    googleReviewUrl: review.is_verified ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z' : undefined
-  })) || [];
+  // Avoid stacking timeouts when user clicks multiple times
+  const resumeTimeoutRef = useRef<number | null>(null);
+
+  // Respect "reduced motion" without changing other files
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  const REVIEWS =
+    businessData?.reviews.map((review) => ({
+      id: review.id,
+      author: review.author_name,
+      text: review.review_body,
+      rating: review.rating_value,
+      datePublished: review.date_published,
+      source: review.is_verified ? 'Google' : 'Customer',
+      // NOTE: You have a hard-coded URL here. Leaving it as-is because you said “no other files”.
+      // If you have a real Google review link in your data later, swap to that.
+      googleReviewUrl: review.is_verified
+        ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z'
+        : undefined,
+    })) || [];
 
   const ratingStats = useMemo(() => {
     if (!businessData?.reviews) return null;
     return calculateRatingStats(businessData.reviews);
   }, [businessData?.reviews]);
 
-  // Auto-scroll functionality
+  // If reviews length changes, keep index valid
   useEffect(() => {
+    if (currentIndex >= REVIEWS.length && REVIEWS.length > 0) {
+      setCurrentIndex(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [REVIEWS.length]);
+
+  // Pause auto-scroll when tab hidden (prevents surprise jumps)
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        setIsAutoScrolling(false);
+      } else if (!prefersReducedMotion) {
+        // Resume when returning
+        setIsAutoScrolling(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [prefersReducedMotion]);
+
+  // Auto-scroll (disabled for reduced motion)
+  useEffect(() => {
+    if (prefersReducedMotion) return;
     if (!isAutoScrolling || REVIEWS.length === 0) return;
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) =>
-        prevIndex === REVIEWS.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000);
+    const interval = window.setInterval(() => {
+      setCurrentIndex((prev) => (prev === REVIEWS.length - 1 ? 0 : prev + 1));
+    }, AUTOSCROLL_MS);
 
-    return () => clearInterval(interval);
-  }, [isAutoScrolling, REVIEWS.length]);
+    return () => window.clearInterval(interval);
+  }, [isAutoScrolling, REVIEWS.length, prefersReducedMotion]);
 
-  // Pause auto-scroll when user interacts
+  // Keyboard navigation (great accessibility win)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (REVIEWS.length <= 1) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToPrevious();
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goToNext();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, REVIEWS.length]);
+
+  const clearResumeTimeout = () => {
+    if (resumeTimeoutRef.current) {
+      window.clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
+  };
+
+  // Pause auto-scroll when user interacts; resume after inactivity (without stacking timers)
   const handleManualNavigation = (newIndex: number) => {
     setCurrentIndex(newIndex);
-    setIsAutoScrolling(false);
-    
-    // Resume auto-scroll after 10 seconds of inactivity
-    setTimeout(() => {
-      setIsAutoScrolling(true);
-    }, 10000);
+
+    if (!prefersReducedMotion) {
+      setIsAutoScrolling(false);
+      clearResumeTimeout();
+      resumeTimeoutRef.current = window.setTimeout(() => {
+        setIsAutoScrolling(true);
+      }, RESUME_AFTER_MS);
+    }
   };
 
   const goToPrevious = () => {
+    if (REVIEWS.length === 0) return;
     const newIndex = currentIndex === 0 ? REVIEWS.length - 1 : currentIndex - 1;
     handleManualNavigation(newIndex);
   };
 
   const goToNext = () => {
+    if (REVIEWS.length === 0) return;
     const newIndex = currentIndex === REVIEWS.length - 1 ? 0 : currentIndex + 1;
     handleManualNavigation(newIndex);
   };
@@ -62,6 +133,10 @@ const Testimonials: React.FC = () => {
   const goToSlide = (index: number) => {
     handleManualNavigation(index);
   };
+
+  const firstGoogleUrl = useMemo(() => {
+    return REVIEWS.find((r) => r.googleReviewUrl)?.googleReviewUrl;
+  }, [REVIEWS]);
 
   if (loading) {
     return (
@@ -76,98 +151,125 @@ const Testimonials: React.FC = () => {
     );
   }
 
-  if (REVIEWS.length === 0) {
-    return null;
-  }
+  if (REVIEWS.length === 0) return null;
+
+  const showNav = REVIEWS.length > 1;
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-12 bg-gray-50" aria-labelledby="testimonials-heading">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            What Our Customers Say
+        <div className="text-center mb-8 md:mb-10">
+          <h2 id="testimonials-heading" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            Customer Reviews
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Real reviews from satisfied customers in Spring Hill, TN and surrounding areas.
+          <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+            Real feedback from families in Spring Hill, TN and nearby areas — including verified Google reviews.
           </p>
 
           {ratingStats && ratingStats.totalReviews > 0 && (
-            <div className="flex items-center justify-center mt-6">
-              <StarRating
-                rating={ratingStats.averageRating}
-                size={24}
-                allowPartialStars={true}
-              />
-              <span className="ml-3 text-xl font-semibold text-gray-900">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mt-5">
+              <StarRating rating={ratingStats.averageRating} size={22} allowPartialStars={true} />
+              <span className="text-lg font-semibold text-gray-900">
                 {ratingStats.averageRating.toFixed(1)}
               </span>
-              <span className="ml-2 text-gray-600">
+              <span className="text-gray-600">
                 ({ratingStats.totalReviews} {ratingStats.totalReviews === 1 ? 'review' : 'reviews'})
               </span>
+
+              {firstGoogleUrl && (
+                <a
+                  href={firstGoogleUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 hover:text-blue-800 underline font-medium text-sm"
+                  aria-label="Read more reviews on Google"
+                >
+                  Read more on Google
+                </a>
+              )}
             </div>
           )}
         </div>
 
         {/* Carousel Container */}
         <div className="relative max-w-4xl mx-auto">
-          {/* Navigation Buttons */}
-          <button
-            onClick={goToPrevious}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:bg-gray-50"
-            aria-label="Previous review"
-          >
-            <ChevronLeft size={24} className="text-gray-600" />
-          </button>
+          {/* Navigation Buttons (kept inside on mobile so they’re tappable) */}
+          {showNav && (
+            <>
+              <button
+                onClick={goToPrevious}
+                className="absolute left-2 md:left-0 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                aria-label="Previous review"
+                type="button"
+              >
+                <ChevronLeft size={22} className="text-gray-700" />
+              </button>
 
-          <button
-            onClick={goToNext}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:bg-gray-50"
-            aria-label="Next review"
-          >
-            <ChevronRight size={24} className="text-gray-600" />
-          </button>
+              <button
+                onClick={goToNext}
+                className="absolute right-2 md:right-0 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                aria-label="Next review"
+                type="button"
+              >
+                <ChevronRight size={22} className="text-gray-700" />
+              </button>
+            </>
+          )}
 
           {/* Review Cards */}
           <div className="overflow-hidden rounded-lg">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            <div
+              className="flex"
+              style={{
+                transform: `translateX(-${currentIndex * 100}%)`,
+                transition: prefersReducedMotion ? 'none' : 'transform 500ms ease-in-out',
+              }}
+              aria-live={isAutoScrolling ? 'off' : 'polite'}
             >
-              {REVIEWS.map((review, index) => (
-                <div key={review.id} className="w-full flex-shrink-0 px-4">
+              {REVIEWS.map((review) => (
+                <div key={review.id} className="w-full flex-shrink-0 px-2 sm:px-4">
                   <ReviewCard review={review} />
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center mt-6 space-x-2">
-            {REVIEWS.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentIndex
-                    ? 'bg-blue-600 scale-110'
-                    : 'bg-gray-300 hover:bg-gray-400'
-                }`}
-                aria-label={`Go to review ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Auto-scroll indicator */}
-          <div className="flex justify-center mt-4">
-            <div className="flex items-center text-sm text-gray-500">
-              <div className={`w-2 h-2 rounded-full mr-2 ${isAutoScrolling ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-              {isAutoScrolling ? 'Auto-scrolling' : 'Paused'}
+          {/* Dots */}
+          {showNav && (
+            <div className="flex justify-center mt-5 space-x-2">
+              {REVIEWS.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`h-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                    index === currentIndex ? 'w-6 bg-blue-600' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to review ${index + 1}`}
+                  aria-current={index === currentIndex ? 'true' : undefined}
+                  type="button"
+                />
+              ))}
             </div>
-          </div>
+          )}
+
+          {/* Auto-scroll indicator (hide if reduced motion) */}
+          {!prefersReducedMotion && showNav && (
+            <div className="flex justify-center mt-3">
+              <div className="flex items-center text-xs text-gray-500">
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    isAutoScrolling ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                  }`}
+                />
+                {isAutoScrolling ? 'Auto-scrolling' : 'Paused'}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="text-center mt-10">
-          <p className="text-gray-600 mb-4">
+        {/* CTA */}
+        <div className="text-center mt-9 md:mt-10">
+          <p className="text-gray-700 mb-4 text-sm md:text-base">
             Ready to join our satisfied customers?
           </p>
           <button
@@ -177,7 +279,8 @@ const Testimonials: React.FC = () => {
                 formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
             }}
-            className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            type="button"
           >
             Get Your Free Quote
           </button>
