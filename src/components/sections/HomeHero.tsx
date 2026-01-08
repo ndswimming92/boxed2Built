@@ -18,11 +18,11 @@ const HomeHero: React.FC = () => {
       element_location: 'hero',
       page_section: 'hero',
       action_type: 'scroll_to_form',
-      conversion_type: 'form_intent'
+      conversion_type: 'form_intent',
     });
     trackConversion('cta_click', 1, 'USD', {
       page_section: 'hero',
-      conversion_type: 'form_intent'
+      conversion_type: 'form_intent',
     });
 
     const formSection = document.getElementById('contact-form-section');
@@ -41,11 +41,11 @@ const HomeHero: React.FC = () => {
       element_location: 'hero',
       page_section: 'hero',
       action_type: 'sms',
-      conversion_type: 'sms_intent'
+      conversion_type: 'sms_intent',
     });
     trackConversion('cta_click', 1, 'USD', {
       page_section: 'hero',
-      conversion_type: 'sms_intent'
+      conversion_type: 'sms_intent',
     });
   };
 
@@ -85,26 +85,26 @@ const HomeHero: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-full max-w-4xl">
               <div className="animate-fadeIn">
-                <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-3 md:mb-6">
+                <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-snug md:leading-tight mb-3 md:mb-6">
                   Furniture Assembly in Spring Hill, TN
-                  <span className="block text-blue-600 mt-1 md:mt-2">
+                  <span className="block text-blue-600 mt-1 md:mt-2 text-xl md:text-4xl lg:text-5xl">
                     IKEA, Walmart & Flat-Pack Furniture Built for You
                   </span>
                 </h1>
 
-                <p className="text-base md:text-2xl text-gray-600 mb-4 md:mb-8 leading-relaxed">
+                <p className="text-sm md:text-lg lg:text-xl text-gray-600 mb-4 md:mb-8 leading-relaxed">
                   Professional in-home furniture assembly for beds, desks, TV stands, shelving,
                   and more. Fast, reliable service for busy families in Spring Hill and surrounding
                   areas.
                 </p>
 
                 <div className="flex flex-col md:flex-row md:flex-wrap items-start md:items-center gap-2 md:gap-6 mb-4 md:mb-10">
-                  <div className="flex items-center text-gray-700 text-sm md:text-base">
+                  <div className="flex items-center text-gray-700 text-xs md:text-base">
                     <CheckCircle className="text-green-600 mr-2 flex-shrink-0 w-4 h-4 md:w-5 md:h-5" />
                     <span className="font-medium">Free, No-Obligation Quotes</span>
                   </div>
 
-                  <div className="flex items-center text-gray-700 text-sm md:text-base">
+                  <div className="flex items-center text-gray-700 text-xs md:text-base">
                     <CheckCircle className="text-green-600 mr-2 flex-shrink-0 w-4 h-4 md:w-5 md:h-5" />
                     <span className="font-medium">Locally Owned & Operated</span>
                   </div>
@@ -120,21 +120,19 @@ const HomeHero: React.FC = () => {
                     variant="primary"
                     size="lg"
                     onClick={handleContactFormClick}
-                    className="group text-base md:text-lg px-6 py-3 md:px-8 md:py-4 shadow-xl hover:shadow-2xl"
+                    className="group text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 shadow-xl hover:shadow-2xl"
                     trackingLabel="get_free_quote_hero"
                     pageSection="hero"
                     aria-label="Get a free furniture assembly quote in Spring Hill TN"
                   >
                     Get a Free Quote in Spring Hill
-                    <ArrowRight
-                      className="ml-2 group-hover:translate-x-1 transition-transform w-5 h-5 md:w-6 md:h-6"
-                    />
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform w-5 h-5 md:w-6 md:h-6" />
                   </Button>
 
                   <a
                     href={`sms:${smsNumber}`}
                     onClick={handleTextPhotoClick}
-                    className="inline-flex items-center justify-center text-base md:text-lg px-6 py-3 md:px-8 md:py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
+                    className="inline-flex items-center justify-center text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
                     aria-label="Text a photo for a fast furniture assembly quote"
                   >
                     Text a Photo
