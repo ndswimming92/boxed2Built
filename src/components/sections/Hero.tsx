@@ -31,14 +31,13 @@ const Hero: React.FC = () => {
             <div className="animate-fadeIn">
               {/* Enhanced H1 with more keywords */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4">
-                Professional Furniture Assembly Service
-                <span className="block text-blue-700">Spring Hill, TN</span>
-              </h1>
-              
-              {/* Enhanced subtitle with local keywords */}
-              <p className="text-xl md:text-2xl text-gray-600 mb-6">
-                Expert IKEA, Target & Walmart furniture assembly in Spring Hill, Columbia & Franklin.
-              </p>
+  Furniture Assembly & Handyman Services
+  <span className="block text-blue-700">in Spring Hill, TN</span>
+</h1>
+
+<p className="text-xl md:text-2xl text-gray-600 mb-6">
+  Expert IKEA, Target & Walmart furniture assembly—plus TV mounting and shelving—serving Spring Hill, Thompson’s Station, Franklin & Columbia.
+</p>
 
               {/* Enhanced trust indicators without ratings/licensing */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
