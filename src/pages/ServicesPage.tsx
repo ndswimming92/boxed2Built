@@ -15,13 +15,20 @@ const ServicesPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
   useEffect(() => {
+    // Title + meta description (SPA-friendly)
     document.title = LOCAL_SEO_CONTENT.services.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.setAttribute('name', 'description');
+      newMeta.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
+      document.head.appendChild(newMeta);
     }
 
+    // Canonical URL
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement('link');
@@ -29,28 +36,62 @@ const ServicesPage: React.FC = () => {
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/services');
+
+    // Optional: basic Twitter tags (helps shares; harmless for SEO)
+    const setMeta = (name: string, content: string) => {
+      let tag = document.querySelector(`meta[name="${name}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', LOCAL_SEO_CONTENT.services.title);
+    setMeta('twitter:description', LOCAL_SEO_CONTENT.services.description);
+    // If you have a dedicated social share image, uncomment:
+    // setMeta('twitter:image', 'https://boxed2built.com/og-services.jpg');
   }, []);
 
   const servicesFAQs = [
     {
-      question: "What furniture brands do you assemble?",
-      answer: "We assemble furniture from all major brands including IKEA, Target, Walmart, Wayfair, Amazon, Ashley Furniture, and more. If it comes in a box, we can build it!"
+      question: 'What furniture brands do you assemble?',
+      answer:
+        "We assemble furniture from all major brands including IKEA, Target, Walmart, Wayfair, Amazon, Ashley Furniture, and more. If it comes in a box, we can build it!",
     },
     {
-      question: "How long does furniture assembly take?",
-      answer: "Assembly time varies by item complexity. Small items like chairs take 30-60 minutes, while larger items like bed frames or dressers can take 2-3 hours. We provide time estimates with every quote."
+      question: 'How long does furniture assembly take?',
+      answer:
+        'Assembly time varies by item complexity. Small items like chairs take 30–60 minutes, while larger items like bed frames or dressers can take 2–3 hours. We provide time estimates with every quote.',
     },
     {
-      question: "Do you provide the tools for assembly?",
-      answer: "Yes! We bring all professional tools and equipment needed for assembly. You don't need to provide anything - we handle everything from start to finish."
+      question: 'Do you provide the tools for assembly?',
+      answer:
+        "Yes! We bring all professional tools and equipment needed for assembly. You don't need to provide anything — we handle everything from start to finish.",
     },
     {
       question: "What's included in the assembly price?",
-      answer: "Our prices include complete assembly, hardware installation, placement in your desired location, debris cleanup, and quality inspection. No hidden fees!"
-    }
+      answer:
+        'Our prices include complete assembly, hardware installation, placement in your desired location, debris cleanup, and a quality inspection. No hidden fees!',
+    },
+    {
+      question: 'How much does furniture assembly cost in Spring Hill, TN?',
+      answer:
+        "Pricing depends on the item size and complexity. We offer transparent hourly and flat-rate options, and we’ll provide an upfront estimate before we arrive.",
+    },
+    {
+      question: 'What areas do you serve?',
+      answer:
+        "We’re based in Spring Hill, TN and commonly serve Thompson’s Station, Franklin, and Columbia. If you’re nearby, reach out and we’ll confirm availability.",
+    },
+    {
+      question: 'Do you offer TV mounting and shelving installation?',
+      answer:
+        'Yes. In addition to furniture assembly, we offer light handyman services like TV mounting, shelving, and wall-mounted storage — perfect for move-ins and room setups.',
+    },
   ];
-
-
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'services_page_header', {
@@ -61,9 +102,11 @@ const ServicesPage: React.FC = () => {
       element_location: 'services_page_header',
       page_section: 'services_page_header',
       action_type: 'email_click',
-      conversion_type: 'email_lead'
+      conversion_type: 'email_lead',
     });
-    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Page&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Services%20Page';
+
+    window.location.href =
+      'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Page&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Services%20Page';
   };
 
   if (loading || !businessData) {
@@ -83,39 +126,54 @@ const ServicesPage: React.FC = () => {
 
   return (
     <>
-      <EnhancedLocalBusinessSchema
-        businessData={businessData}
-        includeReviews={false}
-        pageType="services"
-      />
+      <EnhancedLocalBusinessSchema businessData={businessData} includeReviews={false} pageType="services" />
       <FAQSchema faqs={servicesFAQs} />
       <Header />
+
       <main className="pt-20">
         {/* Page Header */}
         <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <Breadcrumbs 
+              <Breadcrumbs
                 items={[
                   { label: 'Home', href: '/' },
-                  { label: 'Services', href: '/services', current: true }
+                  { label: 'Services', href: '/services', current: true },
                 ]}
                 className="mb-6"
               />
-              
+
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Professional Furniture Assembly Services
+                Furniture Assembly Services in Spring Hill, TN
               </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Transparent pricing, professional service, satisfaction guaranteed.
+
+              <p className="text-xl text-gray-600 mb-3">
+                IKEA, Walmart, Target, Wayfair &amp; Amazon furniture assembly—serving Spring Hill, Thompson’s Station,
+                Franklin &amp; Columbia.
               </p>
+
+              <p className="text-sm text-gray-500 mb-8">
+                Searching “furniture assembly near me” in Spring Hill? You’re in the right place.
+              </p>
+
               <p className="text-gray-700 mb-6 font-medium text-lg">
-                Professional furniture assembly you can trust.
+                Beds, dressers, desks, TV stands, shelving, and electric fireplaces assembled in-home—fast, tidy, and
+                done right.
               </p>
-              
+
               <div className="flex justify-center">
                 <CallButton size="lg" pageSection="services_page_header" className="px-8 py-4" />
               </div>
+
+              {/* Optional: keep the email click logic even if you add a visible email link later */}
+              <button
+                type="button"
+                onClick={handleEmailClick}
+                className="sr-only"
+                aria-label="Email Boxed2Built for a quote"
+              >
+                Email
+              </button>
             </div>
           </div>
         </section>
@@ -123,6 +181,7 @@ const ServicesPage: React.FC = () => {
         {/* Services Section */}
         <Services />
 
+        {/* Testimonials */}
         <Testimonials />
 
         {/* Additional Service Information */}
@@ -132,36 +191,38 @@ const ServicesPage: React.FC = () => {
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
                 Why Choose Boxed2Built for Furniture Assembly?
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Assembly Service</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Furniture Assembly</h3>
                   <p className="text-gray-700 mb-4">
-                    Our experienced team specializes in furniture assembly for all major brands including IKEA, Target,
-                    Walmart, and more. We handle everything from simple chairs to complex bedroom sets. Curious about
-                    our process?{' '}
+                    We specialize in assembling furniture from major brands like IKEA, Target, Walmart, Wayfair, and
+                    Amazon. From simple chairs to complex bedroom sets, we handle the full build, placement, and cleanup.
+                    Curious about our process?{' '}
                     <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium">
                       See what to expect on assembly day
-                    </a>.{' '}
-                    Read more{' '}
+                    </a>
+                    . Read more{' '}
                     <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
-                      about our expertise
+                      about Boxed2Built and our approach
                     </a>{' '}
-                    and commitment to quality.
+                    to quality and care.
                   </p>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Professional tools and equipment</li>
-                    <li>• Years of assembly experience</li>
-                    <li>• Attention to detail and quality</li>
+                    <li>• Careful, accurate builds</li>
                     <li>• Clean and efficient service</li>
+                    <li>• Final check and tidy cleanup</li>
                   </ul>
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service Area</h3>
                   <p className="text-gray-700 mb-4">
-                    Based in Spring Hill, TN, we proudly serve the local community and surrounding areas. 
-                    We understand the needs of Tennessee families and provide reliable, professional service. Learn more{' '}
+                    Based in Spring Hill, TN, we proudly serve local families and nearby communities with reliable
+                    furniture assembly and light handyman services. Most of our furniture assembly jobs are in Spring
+                    Hill, Thompson’s Station, Franklin, and Columbia—especially for move-ins, nursery setups, and home
+                    office builds. Learn more{' '}
                     <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
                       about our local commitment
                     </a>{' '}
@@ -169,9 +230,9 @@ const ServicesPage: React.FC = () => {
                   </p>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Spring Hill, Columbia, Franklin</li>
-                    <li>• Thompson's Station, Brentwood</li>
+                    <li>• Thompson&apos;s Station, Brentwood</li>
                     <li>• Flexible scheduling options</li>
-                    <li>• Local community focused</li>
+                    <li>• Community-focused service</li>
                   </ul>
                 </div>
               </div>
@@ -189,6 +250,7 @@ const ServicesPage: React.FC = () => {
           </div>
         </section>
       </main>
+
       <Footer />
     </>
   );
