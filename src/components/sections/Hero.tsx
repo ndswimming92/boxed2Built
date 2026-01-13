@@ -39,6 +39,7 @@ const Hero: React.FC = () => {
   Expert IKEA, Target & Walmart furniture assembly—plus TV mounting and shelving—serving Spring Hill, Thompson’s Station, Franklin & Columbia.
 </p>
 
+
               {/* Enhanced trust indicators without ratings/licensing */}
               <div className="flex flex-wrap items-center gap-6 mb-8 text-sm">
                 <div className="flex items-center text-gray-700">
