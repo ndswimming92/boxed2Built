@@ -147,19 +147,41 @@ const ServicesPage: React.FC = () => {
                 Furniture Assembly Services in Spring Hill, TN
               </h1>
 
-              <p className="text-xl text-gray-600 mb-3">
-                IKEA, Walmart, Target, Wayfair &amp; Amazon furniture assembly—serving Spring Hill, Thompson’s Station,
-                Franklin &amp; Columbia.
-              </p>
+              <div className="space-y-6">
+                <p className="text-lg md:text-xl text-gray-600">
+                  IKEA, Walmart, Target, Wayfair &amp; Amazon furniture assembly—serving Spring Hill, Thompson’s
+                  Station, Franklin &amp; Columbia.
+                </p>
 
-              <p className="text-sm text-gray-500 mb-8">
-                Searching “furniture assembly near me” in Spring Hill? You’re in the right place.
-              </p>
+                <div className="mx-auto max-w-3xl rounded-2xl border border-blue-100 bg-white/80 p-5 text-left shadow-sm">
+                  <p className="text-sm uppercase tracking-wide text-blue-700 font-semibold mb-2">
+                    Popular builds we assemble
+                  </p>
+                  <ul className="grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 text-blue-600">•</span>
+                      Beds, dressers, desks &amp; nightstands
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 text-blue-600">•</span>
+                      TV stands, shelving &amp; bookcases
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 text-blue-600">•</span>
+                      Dining tables, chairs &amp; office setups
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 text-blue-600">•</span>
+                      Electric fireplaces &amp; storage units
+                    </li>
+                  </ul>
+                </div>
 
-              <p className="text-gray-700 mb-6 font-medium text-lg">
-                Beds, dressers, desks, TV stands, shelving, and electric fireplaces assembled in-home—fast, tidy, and
-                done right.
-              </p>
+                <p className="text-sm text-gray-600 md:text-base">
+                  Searching “furniture assembly near me” in Spring Hill? You’re in the right place for fast, tidy,
+                  and done-right installs.
+                </p>
+              </div>
 
               <div className="flex justify-center">
                 <CallButton size="lg" pageSection="services_page_header" className="px-8 py-4" />
