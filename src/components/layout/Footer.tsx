@@ -32,8 +32,6 @@ const Footer: React.FC = () => {
   const phoneTel = toTelHref(phoneRaw);
   const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
-  const priceRange = businessData?.info?.price_range || '$85-$610';
-
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
 
@@ -110,14 +108,6 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-gray-900 text-white pt-10 pb-6">
-      {/* Keep these lightweight meta tags if you want, but avoid itemScope duplication with NAPSchema/JSON-LD */}
-      <meta itemProp="name" content={businessName} />
-      <meta itemProp="telephone" content={phoneRaw} />
-      <meta itemProp="email" content={email} />
-      <meta itemProp="url" content={website} />
-      <meta itemProp="priceRange" content={priceRange} />
-      {paymentMethods.length > 0 && <meta itemProp="paymentAccepted" content={paymentMethods.join(', ')} />}
-
       <div className="container mx-auto px-4">
         {/* Top Grid (mobile-first, tight) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-8">
@@ -213,24 +203,6 @@ const Footer: React.FC = () => {
                   Look Up Request
                 </InternalLink>
               </li>
-              <li className="pt-2">
-                <InternalLink
-                  href="/privacy-policy"
-                  className="hover:text-white transition-colors"
-                  trackingCategory="footer_nav"
-                >
-                  Privacy Policy
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink
-                  href="/terms-of-service"
-                  className="hover:text-white transition-colors"
-                  trackingCategory="footer_nav"
-                >
-                  Terms of Service
-                </InternalLink>
-              </li>
             </ul>
           </nav>
 
@@ -290,48 +262,51 @@ const Footer: React.FC = () => {
         {/* Social + Contact Row */}
         <div className="border-t border-gray-800 pt-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <div className="flex items-center justify-center md:justify-start gap-4">
-              {socialMedia.map((social) => {
-                const platform = social.platform.toLowerCase();
-                const label = social.platform;
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 sm:gap-4">
+              <span className="text-sm text-gray-300 font-medium">Connect with us</span>
+              <div className="flex items-center gap-4">
+                {socialMedia.map((social) => {
+                  const platform = social.platform.toLowerCase();
+                  const label = social.platform;
 
-                let Icon = Mail;
-                if (platform.includes('facebook')) Icon = Facebook;
-                else if (platform.includes('instagram')) Icon = Instagram;
-                else if (platform.includes('youtube')) Icon = Youtube;
+                  let Icon = Mail;
+                  if (platform.includes('facebook')) Icon = Facebook;
+                  else if (platform.includes('instagram')) Icon = Instagram;
+                  else if (platform.includes('youtube')) Icon = Youtube;
 
-                return (
-                  <a
-                    key={social.id}
-                    href={getSocialUrl(platform, social.profile_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors"
-                    aria-label={label}
-                    onClick={() => handleSocialClick(platform)}
-                  >
-                    <Icon size={22} title={label} />
-                  </a>
-                );
-              })}
+                  return (
+                    <a
+                      key={social.id}
+                      href={getSocialUrl(platform, social.profile_url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-white transition-colors"
+                      aria-label={label}
+                      onClick={() => handleSocialClick(platform)}
+                    >
+                      <Icon size={22} title={label} />
+                    </a>
+                  );
+                })}
 
-              <a
-                href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
-                className="text-gray-300 hover:text-white transition-colors"
-                aria-label="Email Boxed2Built"
-                onClick={() => handleSocialClick('email')}
-              >
-                <Mail size={22} title="Email" />
-              </a>
+                <a
+                  href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
+                  className="text-gray-300 hover:text-white transition-colors"
+                  aria-label="Email Boxed2Built"
+                  onClick={() => handleSocialClick('email')}
+                >
+                  <Mail size={22} title="Email" />
+                </a>
 
-              <a
-                href={`tel:${phoneTel}`}
-                className="text-gray-300 hover:text-white transition-colors"
-                aria-label="Call Boxed2Built"
-                onClick={() => handleSocialClick('phone')}
-              >
-                <Phone size={22} title="Phone" />
-              </a>
+                <a
+                  href={`tel:${phoneTel}`}
+                  className="text-gray-300 hover:text-white transition-colors"
+                  aria-label="Call Boxed2Built"
+                  onClick={() => handleSocialClick('phone')}
+                >
+                  <Phone size={22} title="Phone" />
+                </a>
+              </div>
             </div>
 
             <p className="text-[11px] text-gray-300 text-center md:text-right leading-relaxed">
@@ -354,7 +329,7 @@ const Footer: React.FC = () => {
               {businessName} is an Amazon Associate and earns from qualifying purchases.
             </div>
 
-            {/* Keep these as simple links; Quick Links already includes them, but this is fine for convenience */}
+            {/* Keep these as simple links for convenience */}
             <div className="text-xs">
               <a
                 href="/privacy-policy"
