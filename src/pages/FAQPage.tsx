@@ -16,9 +16,10 @@ interface FAQItemProps {
   answer: string;
   isOpen: boolean;
   onToggle: () => void;
+  answerId: string;
 }
 
-const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, answerId }) => {
   const handleToggle = () => {
     onToggle();
     trackEvent('faq_item_toggle', 'faq_page', {
@@ -38,6 +39,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle })
         onClick={handleToggle}
         className="w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
         aria-expanded={isOpen}
+        aria-controls={answerId}
       >
         <h3 className="text-lg font-semibold text-gray-900 pr-4">{question}</h3>
         <span className="flex-shrink-0 text-blue-600">
@@ -45,11 +47,15 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle })
         </span>
       </button>
 
-      {isOpen && (
-        <div className="px-6 pb-4 pt-2 text-gray-700 leading-relaxed animate-fadeIn">
-          {answer}
-        </div>
-      )}
+      <div
+        id={answerId}
+        className={`px-6 pb-4 pt-2 text-gray-700 leading-relaxed transition-all duration-200 ease-in-out ${
+          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        } overflow-hidden`}
+        aria-hidden={!isOpen}
+      >
+        {answer}
+      </div>
     </div>
   );
 };
@@ -181,6 +187,7 @@ const FAQPage: React.FC = () => {
                         answer={faq.answer}
                         isOpen={openItems.has(`${category.category}-${faqIndex}`)}
                         onToggle={() => toggleFAQItem(category.category, faqIndex)}
+                        answerId={`faq-answer-${categoryIndex}-${faqIndex}`}
                       />
                     ))}
                   </div>
