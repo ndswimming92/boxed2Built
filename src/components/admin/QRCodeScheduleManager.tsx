@@ -143,7 +143,7 @@ export default function QRCodeScheduleManager({ qrCode, onUpdate }: Props) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Destination URL *
             </label>
-            <input
+            <input name="destination_url"
               type="url"
               value={formData.destination_url}
               onChange={(e) => setFormData({ ...formData, destination_url: e.target.value })}
@@ -158,7 +158,7 @@ export default function QRCodeScheduleManager({ qrCode, onUpdate }: Props) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Start Date & Time *
               </label>
-              <input
+              <input name="start_datetime"
                 type="datetime-local"
                 value={formData.start_datetime}
                 onChange={(e) => setFormData({ ...formData, start_datetime: e.target.value })}
@@ -171,7 +171,7 @@ export default function QRCodeScheduleManager({ qrCode, onUpdate }: Props) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 End Date & Time *
               </label>
-              <input
+              <input name="end_datetime"
                 type="datetime-local"
                 value={formData.end_datetime}
                 onChange={(e) => setFormData({ ...formData, end_datetime: e.target.value })}
@@ -185,7 +185,7 @@ export default function QRCodeScheduleManager({ qrCode, onUpdate }: Props) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Priority
             </label>
-            <input
+            <input name="priority"
               type="number"
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
@@ -199,7 +199,7 @@ export default function QRCodeScheduleManager({ qrCode, onUpdate }: Props) {
 
           <div>
             <label className="flex items-center gap-2">
-              <input
+              <input name="is_active"
                 type="checkbox"
                 checked={formData.is_active}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}

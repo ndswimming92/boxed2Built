@@ -484,7 +484,7 @@ export default function InvoiceFormModal({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Invoice Type</label>
-                  <select
+                  <select name="invoiceType"
                     value={invoiceType}
                     onChange={(e) => setInvoiceType(e.target.value as any)}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -514,7 +514,7 @@ export default function InvoiceFormModal({
                       Set to Today
                     </button>
                   </div>
-                  <input
+                  <input name="invoiceDate"
                     type="date"
                     value={invoiceDate}
                     onChange={(e) => setInvoiceDate(e.target.value)}
@@ -525,7 +525,7 @@ export default function InvoiceFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Payment Terms</label>
-                  <select
+                  <select name="paymentTerms"
                     value={paymentTerms}
                     onChange={(e) => setPaymentTerms(e.target.value)}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -540,7 +540,7 @@ export default function InvoiceFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Due Date</label>
-                  <input
+                  <input name="dueDate"
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
@@ -557,7 +557,7 @@ export default function InvoiceFormModal({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
-                  <input
+                  <input name="clientName"
                     type="text"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
@@ -568,7 +568,7 @@ export default function InvoiceFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                  <input
+                  <input name="clientEmail"
                     type="email"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
@@ -578,7 +578,7 @@ export default function InvoiceFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Phone</label>
-                  <input
+                  <input name="clientPhone"
                     type="tel"
                     value={clientPhone}
                     onChange={(e) => {
@@ -609,7 +609,7 @@ export default function InvoiceFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Billing Address</label>
-                  <textarea
+                  <textarea name="clientAddress"
                     value={clientAddress}
                     onChange={(e) => setClientAddress(e.target.value)}
                     rows={3}
@@ -656,7 +656,7 @@ export default function InvoiceFormModal({
                 <div key={index} className="bg-slate-50 p-4 rounded-lg space-y-3">
                   <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-2">
-                      <select
+                      <select name="item_type"
                         value={item.item_type}
                         onChange={(e) => updateLineItemField(index, 'item_type', e.target.value)}
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
@@ -667,7 +667,7 @@ export default function InvoiceFormModal({
                       </select>
                     </div>
                     <div className="col-span-5">
-                      <input
+                      <input name="description"
                         type="text"
                         value={item.description}
                         onChange={(e) => updateLineItemField(index, 'description', e.target.value)}
@@ -676,7 +676,7 @@ export default function InvoiceFormModal({
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
+                      <input name="quantity"
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateLineItemField(index, 'quantity', parseFloat(e.target.value) || 0)}
@@ -689,7 +689,7 @@ export default function InvoiceFormModal({
                     <div className="col-span-2">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm">$</span>
-                        <input
+                        <input name="unit_price"
                           type="number"
                           value={item.unit_price}
                           onChange={(e) => updateLineItemField(index, 'unit_price', parseFloat(e.target.value) || 0)}
@@ -713,7 +713,7 @@ export default function InvoiceFormModal({
                   </div>
                   <div className="flex items-center gap-4 text-sm">
                     <label className="flex items-center gap-2">
-                      <input
+                      <input name="is_taxable"
                         type="checkbox"
                         checked={item.is_taxable}
                         onChange={(e) => updateLineItemField(index, 'is_taxable', e.target.checked)}
@@ -734,7 +734,7 @@ export default function InvoiceFormModal({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Notes (customer-facing)</label>
-                <textarea
+                <textarea name="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
@@ -745,7 +745,7 @@ export default function InvoiceFormModal({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Internal Notes (admin only)</label>
-                <textarea
+                <textarea name="internalNotes"
                   value={internalNotes}
                   onChange={(e) => setInternalNotes(e.target.value)}
                   rows={3}
@@ -782,7 +782,7 @@ export default function InvoiceFormModal({
 
                 <div className="mt-4 pt-4 border-t border-slate-300">
                   <label className="flex items-center gap-2 text-sm">
-                    <input
+                    <input name="taxOverride"
                       type="checkbox"
                       checked={taxOverride}
                       onChange={(e) => setTaxOverride(e.target.checked)}
@@ -791,7 +791,7 @@ export default function InvoiceFormModal({
                     <span className="text-slate-700">Override Tax Amount</span>
                   </label>
                   {taxOverride && (
-                    <input
+                    <input name="manualTaxAmount"
                       type="number"
                       value={manualTaxAmount}
                       onChange={(e) => setManualTaxAmount(parseFloat(e.target.value) || 0)}
@@ -806,7 +806,7 @@ export default function InvoiceFormModal({
 
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <label className="flex items-center gap-2 text-sm mb-3">
-                  <input
+                  <input name="lateFeesEnabled"
                     type="checkbox"
                     checked={lateFeesEnabled}
                     onChange={(e) => setLateFeesEnabled(e.target.checked)}
@@ -821,7 +821,7 @@ export default function InvoiceFormModal({
                         Late Fee Type & Amount
                       </label>
                       <div className="flex gap-2">
-                        <select
+                        <select name="lateFeeType"
                           value={lateFeeType}
                           onChange={(e) => setLateFeeType(e.target.value as 'fixed' | 'percentage')}
                           className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -835,7 +835,7 @@ export default function InvoiceFormModal({
                               $
                             </span>
                           )}
-                          <input
+                          <input name="lateFeeAmount"
                             type="number"
                             value={lateFeeAmount}
                             onChange={(e) => setLateFeeAmount(parseFloat(e.target.value) || 0)}
@@ -863,7 +863,7 @@ export default function InvoiceFormModal({
                       <label className="block text-xs font-medium text-slate-600 mb-1">
                         Grace Period (Days After Due Date)
                       </label>
-                      <input
+                      <input name="lateFeeGraceDays"
                         type="number"
                         value={lateFeeGraceDays}
                         onChange={(e) => setLateFeeGraceDays(parseInt(e.target.value) || 0)}

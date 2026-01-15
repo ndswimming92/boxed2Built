@@ -151,30 +151,30 @@ export default function ServiceAreasPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">City Name *</label>
-                <input type="text" value={formData.city_name || ''} onChange={(e) => setFormData({ ...formData, city_name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+                <input name="city_name" type="text" value={formData.city_name || ''} onChange={(e) => setFormData({ ...formData, city_name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Region *</label>
-                <input type="text" value={formData.region || ''} onChange={(e) => setFormData({ ...formData, region: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="TN" required />
+                <input name="region" type="text" value={formData.region || ''} onChange={(e) => setFormData({ ...formData, region: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="TN" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Country *</label>
-                <input type="text" value={formData.country || ''} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="US" required />
+                <input name="country" type="text" value={formData.country || ''} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="US" required />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Radius (miles)</label>
-                <input type="number" value={formData.radius_miles || ''} onChange={(e) => setFormData({ ...formData, radius_miles: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
+                <input name="radius_miles" type="number" value={formData.radius_miles || ''} onChange={(e) => setFormData({ ...formData, radius_miles: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Priority</label>
-                <input type="number" value={formData.priority || ''} onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
+                <input name="priority" type="number" value={formData.priority || ''} onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
               </div>
               <div className="flex items-end">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={formData.is_active !== false} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
+                  <input name="is_active" type="checkbox" checked={formData.is_active !== false} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
                   <span className="text-sm font-medium text-slate-700">Active</span>
                 </label>
               </div>

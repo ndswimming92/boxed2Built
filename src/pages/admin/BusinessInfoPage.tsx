@@ -171,7 +171,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Business Name *
               </label>
-              <input
+              <input name="name"
                 type="text"
                 value={businessInfo.name || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, name: e.target.value })}
@@ -184,7 +184,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Alternate Name
               </label>
-              <input
+              <input name="alternate_name"
                 type="text"
                 value={businessInfo.alternate_name || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, alternate_name: e.target.value })}
@@ -197,7 +197,7 @@ export default function BusinessInfoPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Description *
             </label>
-            <textarea
+            <textarea name="description"
               value={businessInfo.description || ''}
               onChange={(e) => setBusinessInfo({ ...businessInfo, description: e.target.value })}
               rows={4}
@@ -210,7 +210,7 @@ export default function BusinessInfoPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Slogan
             </label>
-            <input
+            <input name="slogan"
               type="text"
               value={businessInfo.slogan || ''}
               onChange={(e) => setBusinessInfo({ ...businessInfo, slogan: e.target.value })}
@@ -223,7 +223,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Phone *
               </label>
-              <input
+              <input name="phone"
                 type="tel"
                 value={businessInfo.phone || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, phone: e.target.value })}
@@ -236,7 +236,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Email *
               </label>
-              <input
+              <input name="email"
                 type="email"
                 value={businessInfo.email || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, email: e.target.value })}
@@ -251,7 +251,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Website *
               </label>
-              <input
+              <input name="website"
                 type="url"
                 value={businessInfo.website || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, website: e.target.value })}
@@ -264,7 +264,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Founded Year
               </label>
-              <input
+              <input name="founded_year"
                 type="text"
                 value={businessInfo.founded_year || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, founded_year: e.target.value })}
@@ -279,7 +279,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Founder Name
               </label>
-              <input
+              <input name="founder_name"
                 type="text"
                 value={businessInfo.founder_name || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, founder_name: e.target.value })}
@@ -291,7 +291,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Price Range
               </label>
-              <input
+              <input name="price_range"
                 type="text"
                 value={businessInfo.price_range || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, price_range: e.target.value })}
@@ -306,7 +306,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Logo URL
               </label>
-              <input
+              <input name="logo_url"
                 type="url"
                 value={businessInfo.logo_url || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, logo_url: e.target.value })}
@@ -318,7 +318,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Image URL
               </label>
-              <input
+              <input name="image_url"
                 type="url"
                 value={businessInfo.image_url || ''}
                 onChange={(e) => setBusinessInfo({ ...businessInfo, image_url: e.target.value })}
@@ -342,7 +342,7 @@ export default function BusinessInfoPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Street Address
             </label>
-            <input
+            <input name="street_address"
               type="text"
               value={address.street_address || ''}
               onChange={(e) => setAddress({ ...address, street_address: e.target.value })}
@@ -355,7 +355,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 City *
               </label>
-              <input
+              <input name="address_locality"
                 type="text"
                 value={address.address_locality || ''}
                 onChange={(e) => setAddress({ ...address, address_locality: e.target.value })}
@@ -368,7 +368,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 State *
               </label>
-              <input
+              <input name="address_region"
                 type="text"
                 value={address.address_region || ''}
                 onChange={(e) => setAddress({ ...address, address_region: e.target.value })}
@@ -384,7 +384,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 ZIP Code
               </label>
-              <input
+              <input name="postal_code"
                 type="text"
                 value={address.postal_code || ''}
                 onChange={(e) => setAddress({ ...address, postal_code: e.target.value })}
@@ -396,7 +396,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Country *
               </label>
-              <input
+              <input name="address_country"
                 type="text"
                 value={address.address_country || ''}
                 onChange={(e) => setAddress({ ...address, address_country: e.target.value })}
@@ -412,7 +412,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Latitude
               </label>
-              <input
+              <input name="latitude"
                 type="number"
                 step="any"
                 value={address.latitude || ''}
@@ -425,7 +425,7 @@ export default function BusinessInfoPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Longitude
               </label>
-              <input
+              <input name="longitude"
                 type="number"
                 step="any"
                 value={address.longitude || ''}

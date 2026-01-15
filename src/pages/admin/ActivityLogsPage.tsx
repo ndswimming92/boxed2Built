@@ -325,7 +325,7 @@ export default function ActivityLogsPage() {
             <div className="flex-1 flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
+                <input name="searchQuery"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -368,7 +368,7 @@ export default function ActivityLogsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date Range
                 </label>
-                <select
+                <select name="datePreset"
                   value={datePreset}
                   onChange={(e) => handleDatePresetChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -384,7 +384,7 @@ export default function ActivityLogsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Action Type
                 </label>
-                <select
+                <select name="actionType"
                   value={tempFilters.actionType || ''}
                   onChange={(e) =>
                     setTempFilters({
@@ -406,7 +406,7 @@ export default function ActivityLogsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Resource
                 </label>
-                <select
+                <select name="tableName"
                   value={tempFilters.tableName || ''}
                   onChange={(e) =>
                     setTempFilters({
@@ -428,7 +428,7 @@ export default function ActivityLogsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Status
                 </label>
-                <select
+                <select name="status"
                   value={tempFilters.status || ''}
                   onChange={(e) =>
                     setTempFilters({

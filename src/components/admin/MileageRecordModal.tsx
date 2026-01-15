@@ -195,7 +195,7 @@ export default function MileageRecordModal({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Distance (miles) *
             </label>
-            <input
+            <input name="distance_miles"
               type="text"
               inputMode="decimal"
               value={formData.distance_miles}
@@ -213,7 +213,7 @@ export default function MileageRecordModal({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Trip Date *
             </label>
-            <input
+            <input name="trip_date"
               type="date"
               value={formData.trip_date}
               onChange={(e) => updateField('trip_date', e.target.value)}
@@ -226,7 +226,7 @@ export default function MileageRecordModal({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Purpose
             </label>
-            <input
+            <input name="purpose"
               type="text"
               value={formData.purpose}
               onChange={(e) => updateField('purpose', e.target.value)}
@@ -239,7 +239,7 @@ export default function MileageRecordModal({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Notes
             </label>
-            <textarea
+            <textarea name="notes"
               value={formData.notes}
               onChange={(e) => updateField('notes', e.target.value)}
               rows={3}

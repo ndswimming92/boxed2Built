@@ -224,7 +224,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           {type === 'image' && (
             <div className="mb-6">
               <FormField label={isEdit ? 'Change Image (optional)' : 'Image *'} required={!isEdit}>
-                <input
+                <input name="file"
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={handleFileSelect}
@@ -245,7 +245,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
           {type === 'video' && (
             <FormField label="YouTube URL *" required className="mb-6">
-              <input
+              <input name="youtubeUrl"
                 type="url"
                 value={formData.youtubeUrl}
                 onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
@@ -258,7 +258,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
           <div className="space-y-4">
             <FormField label="Title *" required>
-              <input
+              <input name="title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -268,7 +268,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
             </FormField>
 
             <FormField label="Description">
-              <textarea
+              <textarea name="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -278,7 +278,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
             </FormField>
 
             <FormField label="Alt Text">
-              <input
+              <input name="alt"
                 type="text"
                 value={formData.alt}
                 onChange={(e) => setFormData({ ...formData, alt: e.target.value })}
@@ -289,7 +289,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Category *" required>
-                <select
+                <select name="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -303,7 +303,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
               </FormField>
 
               <FormField label="Date">
-                <input
+                <input name="date"
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
@@ -313,7 +313,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
             </div>
 
             <FormField label="Location">
-              <input
+              <input name="location"
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -323,7 +323,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
             </FormField>
 
             <FormField label="Amazon Affiliate Link">
-              <input
+              <input name="amazonLink"
                 type="url"
                 value={formData.amazonLink}
                 onChange={(e) => setFormData({ ...formData, amazonLink: e.target.value })}

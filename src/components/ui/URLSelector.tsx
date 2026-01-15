@@ -122,7 +122,7 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
         </div>
       )}
 
-      <select
+      <select name="selectedOption"
         value={selectedOption}
         onChange={handleOptionChange}
         disabled={isLoading}
@@ -140,7 +140,7 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
 
       {selectedOption === CUSTOM_URL_VALUE && (
         <div>
-          <input
+          <input name="customUrl"
             type="url"
             value={customUrl}
             onChange={handleCustomUrlChange}

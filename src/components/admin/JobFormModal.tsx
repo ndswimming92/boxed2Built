@@ -130,7 +130,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Client Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <input name="client_name"
                   type="text"
                   value={formData.client_name || ''}
                   onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
@@ -140,7 +140,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Phone</label>
-                <input
+                <input name="client_phone"
                   type="tel"
                   value={formData.client_phone || ''}
                   onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
@@ -149,7 +149,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                <input
+                <input name="client_email"
                   type="email"
                   value={formData.client_email || ''}
                   onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
@@ -164,7 +164,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Job Type</label>
-                <input
+                <input name="job_type"
                   type="text"
                   value={formData.job_type || ''}
                   onChange={(e) => setFormData({ ...formData, job_type: e.target.value })}
@@ -174,7 +174,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
-                <select
+                <select name="location_city"
                   value={formData.location_city || ''}
                   onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -190,7 +190,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Job Description</label>
-              <textarea
+              <textarea name="job_description"
                 value={formData.job_description || ''}
                 onChange={(e) => setFormData({ ...formData, job_description: e.target.value })}
                 rows={3}
@@ -204,7 +204,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Date Quoted</label>
-                <input
+                <input name="date_quoted"
                   type="date"
                   value={formData.date_quoted || ''}
                   onChange={(e) => setFormData({ ...formData, date_quoted: e.target.value })}
@@ -213,7 +213,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Date Scheduled</label>
-                <input
+                <input name="date_scheduled"
                   type="date"
                   value={formData.date_scheduled || ''}
                   onChange={(e) => setFormData({ ...formData, date_scheduled: e.target.value })}
@@ -222,7 +222,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Date Completed</label>
-                <input
+                <input name="date_completed"
                   type="date"
                   value={formData.date_completed || ''}
                   onChange={(e) => setFormData({ ...formData, date_completed: e.target.value })}
@@ -237,7 +237,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Hours Worked</label>
-                <input
+                <input name="hours_worked"
                   type="number"
                   step="0.01"
                   min="0"
@@ -248,7 +248,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Quoted Price</label>
-                <input
+                <input name="quoted_price"
                   type="number"
                   step="0.01"
                   min="0"
@@ -259,7 +259,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Final Price</label>
-                <input
+                <input name="final_price"
                   type="number"
                   step="0.01"
                   min="0"
@@ -270,7 +270,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Materials/Extras Cost</label>
-                <input
+                <input name="materials_cost"
                   type="number"
                   step="0.01"
                   min="0"
@@ -304,7 +304,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Payment Method</label>
-                <select
+                <select name="payment_method"
                   value={formData.payment_method || ''}
                   onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -319,7 +319,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Payment Date</label>
-                <input
+                <input name="payment_date"
                   type="date"
                   value={formData.payment_date || ''}
                   onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
@@ -330,7 +330,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Referral Source</label>
-                <select
+                <select name="referral_source"
                   value={formData.referral_source || ''}
                   onChange={(e) => setFormData({ ...formData, referral_source: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -345,7 +345,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               </div>
               <div className="flex items-end gap-4">
                 <label className="flex items-center gap-2">
-                  <input
+                  <input name="repeat_client"
                     type="checkbox"
                     checked={formData.repeat_client || false}
                     onChange={(e) => setFormData({ ...formData, repeat_client: e.target.checked })}
@@ -354,7 +354,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   <span className="text-sm font-medium text-slate-700">Repeat Client</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input
+                  <input name="google_review_link_sent"
                     type="checkbox"
                     checked={formData.google_review_link_sent || false}
                     onChange={(e) => setFormData({ ...formData, google_review_link_sent: e.target.checked })}
@@ -368,7 +368,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Additional Notes</h3>
-            <textarea
+            <textarea name="notes"
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}

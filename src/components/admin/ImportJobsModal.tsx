@@ -161,7 +161,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
         >
           Browse Files
         </button>
-        <input
+        <input name="file"
           ref={fileInputRef}
           type="file"
           accept=".csv"
