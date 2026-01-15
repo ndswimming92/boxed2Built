@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle, Info, Eye, EyeOff } from 'lucide-react';
 
 interface FormFieldProps {
   label: string;
+  inputId?: string;
   required?: boolean;
   error?: string;
   success?: boolean;
@@ -17,6 +18,7 @@ interface FormFieldProps {
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
+  inputId,
   required = false,
   error,
   success = false,
@@ -36,6 +38,11 @@ const FormField: React.FC<FormFieldProps> = ({
   };
 
   const status = getFieldStatus();
+  const resolvedInputId =
+    inputId ??
+    (React.isValidElement(children)
+      ? (children.props as { id?: string }).id
+      : undefined);
 
   const statusColors = {
     error: 'border-red-500 bg-red-50',
@@ -47,7 +54,7 @@ const FormField: React.FC<FormFieldProps> = ({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700" htmlFor={resolvedInputId}>
           {label}
           {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
         </label>
