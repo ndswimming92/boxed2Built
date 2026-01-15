@@ -293,6 +293,8 @@ export default function GoalsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
+              id="goal-search"
+              name="goalSearch"
               placeholder="Search goals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -301,6 +303,8 @@ export default function GoalsPage() {
           </div>
 
           <select
+            id="goal-status-filter"
+            name="goalStatusFilter"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -314,6 +318,8 @@ export default function GoalsPage() {
           </select>
 
           <select
+            id="goal-priority-filter"
+            name="goalPriorityFilter"
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -325,6 +331,8 @@ export default function GoalsPage() {
           </select>
 
           <select
+            id="goal-category-filter"
+            name="goalCategoryFilter"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
