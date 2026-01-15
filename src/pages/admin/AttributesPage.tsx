@@ -107,14 +107,14 @@ export default function AttributesPage() {
           Add Attribute
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <input
+          <input name="newAttrName"
             type="text"
             value={newAttrName}
             onChange={(e) => setNewAttrName(e.target.value)}
             placeholder="Attribute name (e.g., Licenses)"
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
           />
-          <input
+          <input name="newAttrValue"
             type="text"
             value={newAttrValue}
             onChange={(e) => setNewAttrValue(e.target.value)}

@@ -282,7 +282,7 @@ export default function ForecastingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Forecast Period (Months)</label>
-              <input
+              <input name="forecastMonths"
                 type="number"
                 min="1"
                 max="24"
@@ -293,7 +293,7 @@ export default function ForecastingPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Model Preference</label>
-              <select
+              <select name="modelPreference"
                 value={settings.modelPreference}
                 onChange={(e) => setSettings({ ...settings, modelPreference: e.target.value as any })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
@@ -307,7 +307,7 @@ export default function ForecastingPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Growth Rate Override (%)</label>
-              <input
+              <input name="growthRateOverride"
                 type="number"
                 step="0.1"
                 value={settings.growthRateOverride || ''}

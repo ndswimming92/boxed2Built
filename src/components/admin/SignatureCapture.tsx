@@ -125,7 +125,7 @@ export default function SignatureCapture({ onSave, onCancel, initialSignature }:
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-slate-700">Line Width:</label>
-              <select
+              <select name="lineWidth"
                 value={lineWidth}
                 onChange={(e) => setLineWidth(Number(e.target.value))}
                 className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -138,7 +138,7 @@ export default function SignatureCapture({ onSave, onCancel, initialSignature }:
 
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-slate-700">Color:</label>
-              <select
+              <select name="lineColor"
                 value={lineColor}
                 onChange={(e) => setLineColor(e.target.value)}
                 className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"

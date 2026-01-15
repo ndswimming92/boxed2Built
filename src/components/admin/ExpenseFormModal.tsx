@@ -197,7 +197,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="expenseDate"
                   type="date"
                   value={expenseDate}
                   onChange={(e) => setExpenseDate(e.target.value)}
@@ -213,7 +213,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="amount"
                   type="number"
                   step="0.01"
                   min="0"
@@ -230,7 +230,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Vendor / Merchant Name <span className="text-red-500">*</span>
               </label>
-              <input
+              <input name="vendorName"
                 type="text"
                 value={vendorName}
                 onChange={(e) => setVendorName(e.target.value)}
@@ -244,7 +244,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
-              <input
+              <input name="description"
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -256,7 +256,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-              <select
+              <select name="categoryId"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -272,7 +272,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Payment Method</label>
-              <select
+              <select name="paymentMethod"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -293,7 +293,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Confirmation / Transaction Number
               </label>
-              <input
+              <input name="confirmationNumber"
                 type="text"
                 value={confirmationNumber}
                 onChange={(e) => setConfirmationNumber(e.target.value)}
@@ -327,7 +327,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
+                  <input name="deductibleAmount"
                     type="number"
                     step="0.01"
                     min="0"
@@ -351,7 +351,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
                   <span className="text-sm text-slate-600">
                     {receiptFile ? receiptFile.name : 'Upload Receipt (JPG, PNG, PDF)'}
                   </span>
-                  <input
+                  <input name="file"
                     type="file"
                     onChange={handleFileChange}
                     accept="image/*,.pdf"
@@ -380,7 +380,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
                   This is a subscription or recurring payment
                 </p>
                 {isRecurring && (
-                  <select
+                  <select name="recurrencePattern"
                     value={recurrencePattern}
                     onChange={(e) => setRecurrencePattern(e.target.value)}
                     className="mt-2 px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -395,7 +395,7 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-              <textarea
+              <textarea name="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}

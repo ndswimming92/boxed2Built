@@ -107,7 +107,7 @@ export default function PaymentMethodsPage() {
           Add Payment Method
         </h2>
         <div className="flex gap-3">
-          <input
+          <input name="newMethod"
             type="text"
             value={newMethod}
             onChange={(e) => setNewMethod(e.target.value)}

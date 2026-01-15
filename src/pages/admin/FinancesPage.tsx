@@ -238,7 +238,7 @@ export default function FinancesPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <select
+          <select name="selectedYear"
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -443,7 +443,7 @@ export default function FinancesPage() {
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-none">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
+              <input name="searchTerm"
                 type="text"
                 placeholder="Search expenses..."
                 value={searchTerm}
@@ -466,7 +466,7 @@ export default function FinancesPage() {
           <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-              <select
+              <select name="filterCategory"
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -482,7 +482,7 @@ export default function FinancesPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Tax Deductible</label>
-              <select
+              <select name="filterDeductible"
                 value={filterDeductible}
                 onChange={(e) => setFilterDeductible(e.target.value as any)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

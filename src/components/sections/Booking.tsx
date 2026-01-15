@@ -143,7 +143,7 @@ const Booking: React.FC = () => {
             {/* Terms acceptance checkbox - Centered */}
             <div className="mb-6 flex justify-center">
               <label className="flex items-start text-left">
-                <input
+                <input name="acceptTerms"
                   type="checkbox"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}

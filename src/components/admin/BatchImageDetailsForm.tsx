@@ -173,7 +173,7 @@ export default function BatchImageDetailsForm({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
               <FormField label="Category">
-                <select
+                <select name="category"
                   value={commonValues.category}
                   onChange={(e) =>
                     setCommonValues((prev) => ({ ...prev, category: e.target.value as any }))
@@ -189,7 +189,7 @@ export default function BatchImageDetailsForm({
               </FormField>
 
               <FormField label="Date">
-                <input
+                <input name="date"
                   type="date"
                   value={commonValues.date}
                   onChange={(e) =>
@@ -200,7 +200,7 @@ export default function BatchImageDetailsForm({
               </FormField>
 
               <FormField label="Location">
-                <input
+                <input name="location"
                   type="text"
                   value={commonValues.location}
                   onChange={(e) =>
@@ -249,7 +249,7 @@ export default function BatchImageDetailsForm({
                   <div className="px-4 pb-4 border-t border-slate-200 bg-slate-50">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <FormField label="Title *" required>
-                        <input
+                        <input name="title"
                           type="text"
                           value={detail.title}
                           onChange={(e) => updateImageDetail(index, 'title', e.target.value)}
@@ -260,7 +260,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Category *" required>
-                        <select
+                        <select name="category"
                           value={detail.category}
                           onChange={(e) => updateImageDetail(index, 'category', e.target.value)}
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -274,7 +274,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Description" className="md:col-span-2">
-                        <textarea
+                        <textarea name="description"
                           value={detail.description}
                           onChange={(e) => updateImageDetail(index, 'description', e.target.value)}
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -284,7 +284,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Alt Text">
-                        <input
+                        <input name="alt"
                           type="text"
                           value={detail.alt}
                           onChange={(e) => updateImageDetail(index, 'alt', e.target.value)}
@@ -294,7 +294,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Date">
-                        <input
+                        <input name="date"
                           type="date"
                           value={detail.date}
                           onChange={(e) => updateImageDetail(index, 'date', e.target.value)}
@@ -303,7 +303,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Location">
-                        <input
+                        <input name="location"
                           type="text"
                           value={detail.location}
                           onChange={(e) => updateImageDetail(index, 'location', e.target.value)}
@@ -313,7 +313,7 @@ export default function BatchImageDetailsForm({
                       </FormField>
 
                       <FormField label="Amazon Affiliate Link">
-                        <input
+                        <input name="amazonLink"
                           type="url"
                           value={detail.amazonLink}
                           onChange={(e) => updateImageDetail(index, 'amazonLink', e.target.value)}
