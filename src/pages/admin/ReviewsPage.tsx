@@ -155,17 +155,17 @@ export default function ReviewsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Author Name *</label>
-                <input type="text" value={formData.author_name || ''} onChange={(e) => setFormData({ ...formData, author_name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+                <input name="author_name" type="text" value={formData.author_name || ''} onChange={(e) => setFormData({ ...formData, author_name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Date Published *</label>
-                <input type="date" value={formData.date_published || ''} onChange={(e) => setFormData({ ...formData, date_published: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+                <input name="date_published" type="date" value={formData.date_published || ''} onChange={(e) => setFormData({ ...formData, date_published: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Review *</label>
-              <textarea value={formData.review_body || ''} onChange={(e) => setFormData({ ...formData, review_body: e.target.value })} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+              <textarea name="review_body" value={formData.review_body || ''} onChange={(e) => setFormData({ ...formData, review_body: e.target.value })} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
             </div>
 
             <div>
@@ -192,15 +192,15 @@ export default function ReviewsPage() {
 
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={formData.is_featured || false} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
+                <input name="is_featured" type="checkbox" checked={formData.is_featured || false} onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
                 <span className="text-sm font-medium text-slate-700">Featured</span>
               </label>
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={formData.is_verified || false} onChange={(e) => setFormData({ ...formData, is_verified: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
+                <input name="is_verified" type="checkbox" checked={formData.is_verified || false} onChange={(e) => setFormData({ ...formData, is_verified: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
                 <span className="text-sm font-medium text-slate-700">Verified</span>
               </label>
               <label className="flex items-center gap-2">
-                <input type="checkbox" checked={formData.is_active !== false} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
+                <input name="is_active" type="checkbox" checked={formData.is_active !== false} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
                 <span className="text-sm font-medium text-slate-700">Active</span>
               </label>
             </div>

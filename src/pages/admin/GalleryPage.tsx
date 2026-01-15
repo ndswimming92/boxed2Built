@@ -157,7 +157,7 @@ export default function GalleryPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
-            <input
+            <input name="searchTerm"
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -166,7 +166,7 @@ export default function GalleryPage() {
             />
           </div>
 
-          <select
+          <select name="filterCategory"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -179,7 +179,7 @@ export default function GalleryPage() {
             <option value="time-lapse">Time-lapse</option>
           </select>
 
-          <select
+          <select name="filterType"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -189,7 +189,7 @@ export default function GalleryPage() {
             <option value="video">Videos</option>
           </select>
 
-          <select
+          <select name="filterStatus"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

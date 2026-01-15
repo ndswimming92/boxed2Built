@@ -217,7 +217,7 @@ Serving Spring Hill, Columbia, Franklin & Surrounding Areas
                       required
                       helpText="Enter the email you used when submitting your request"
                     >
-                      <input
+                      <input name="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -233,7 +233,7 @@ Serving Spring Hill, Columbia, Franklin & Surrounding Areas
                       required
                       helpText="Enter your confirmation code (e.g., SR-ABC123XYZ)"
                     >
-                      <input
+                      <input name="confirmationCode"
                         type="text"
                         value={confirmationCode}
                         onChange={(e) => setConfirmationCode(e.target.value.toUpperCase())}

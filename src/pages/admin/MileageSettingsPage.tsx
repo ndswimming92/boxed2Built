@@ -318,7 +318,7 @@ export default function MileageSettingsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Effective Date *
                 </label>
-                <input
+                <input name="effective_date"
                   type="date"
                   value={formData.effective_date}
                   onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
@@ -330,7 +330,7 @@ export default function MileageSettingsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Rate per Mile ($) *
                 </label>
-                <input
+                <input name="rate_per_mile"
                   type="number"
                   step="0.001"
                   min="0"
@@ -347,7 +347,7 @@ export default function MileageSettingsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Notes
                 </label>
-                <textarea
+                <textarea name="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={3}

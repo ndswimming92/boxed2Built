@@ -131,7 +131,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
               >
                 Select Files
               </Button>
-              <input
+              <input name="file"
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -157,7 +157,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
                 >
                   Add More
                 </Button>
-                <input
+                <input name="file"
                   ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"

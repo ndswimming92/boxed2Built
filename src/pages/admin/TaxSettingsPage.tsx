@@ -171,7 +171,7 @@ export default function TaxSettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Tax Year</label>
-              <select
+              <select name="taxYear"
                 value={taxYear}
                 onChange={(e) => setTaxYear(parseInt(e.target.value))}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -183,7 +183,7 @@ export default function TaxSettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Filing Status</label>
-              <select
+              <select name="filingStatus"
                 value={filingStatus}
                 onChange={(e) => setFilingStatus(e.target.value as FilingStatus)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -235,7 +235,7 @@ export default function TaxSettingsPage() {
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
+                  <input name="estimatedItemizedDeductions"
                     type="number"
                     value={estimatedItemizedDeductions}
                     onChange={(e) => setEstimatedItemizedDeductions(parseFloat(e.target.value) || 0)}
@@ -254,7 +254,7 @@ export default function TaxSettingsPage() {
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="estimatedAnnualBusinessExpenses"
                   type="number"
                   value={estimatedAnnualBusinessExpenses}
                   onChange={(e) => setEstimatedAnnualBusinessExpenses(parseFloat(e.target.value) || 0)}
@@ -296,7 +296,7 @@ export default function TaxSettingsPage() {
                   </label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
+                    <input name="healthInsuranceAnnualCost"
                       type="number"
                       value={healthInsuranceAnnualCost}
                       onChange={(e) => setHealthInsuranceAnnualCost(parseFloat(e.target.value) || 0)}
@@ -331,7 +331,7 @@ export default function TaxSettingsPage() {
                   </label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
+                    <input name="retirementContributionAnnual"
                       type="number"
                       value={retirementContributionAnnual}
                       onChange={(e) => setRetirementContributionAnnual(parseFloat(e.target.value) || 0)}
@@ -358,7 +358,7 @@ export default function TaxSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Q1 Goal (Due Apr 15)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="q1PaymentGoal"
                   type="number"
                   value={q1PaymentGoal}
                   onChange={(e) => setQ1PaymentGoal(parseFloat(e.target.value) || 0)}
@@ -374,7 +374,7 @@ export default function TaxSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Q2 Goal (Due Jun 15)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="q2PaymentGoal"
                   type="number"
                   value={q2PaymentGoal}
                   onChange={(e) => setQ2PaymentGoal(parseFloat(e.target.value) || 0)}
@@ -390,7 +390,7 @@ export default function TaxSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Q3 Goal (Due Sep 15)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="q3PaymentGoal"
                   type="number"
                   value={q3PaymentGoal}
                   onChange={(e) => setQ3PaymentGoal(parseFloat(e.target.value) || 0)}
@@ -406,7 +406,7 @@ export default function TaxSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Q4 Goal (Due Jan 15)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
+                <input name="q4PaymentGoal"
                   type="number"
                   value={q4PaymentGoal}
                   onChange={(e) => setQ4PaymentGoal(parseFloat(e.target.value) || 0)}
