@@ -578,6 +578,7 @@ const ContactForm: React.FC = () => {
             <div className="mt-4">
               <FormField
                 label="Phone Number (optional - for faster response)"
+                inputId="phone"
                 error={fields.phone?.error}
                 success={fields.phone?.valid && fields.phone?.touched && fields.phone?.value}
                 helpText="10-digit US phone number"
