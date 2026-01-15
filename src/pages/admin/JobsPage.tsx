@@ -367,7 +367,7 @@ export default function JobsPage() {
 
             return (
               <div key={job.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-semibold text-slate-900">{job.client_name}</h3>
@@ -391,7 +391,7 @@ export default function JobsPage() {
                       {job.client_email && <span>{job.client_email}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
                     {(job.date_scheduled || job.date_completed) && !job.has_signature && (
                       <button
                         onClick={() => setCompletingJob(job)}
