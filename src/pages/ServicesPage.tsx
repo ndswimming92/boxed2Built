@@ -158,20 +158,20 @@ const ServicesPage: React.FC = () => {
                     Popular builds we assemble
                   </p>
                   <ul className="grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1 text-blue-600">•</span>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-600">•</span>
                       Beds, dressers, desks &amp; nightstands
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1 text-blue-600">•</span>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-600">•</span>
                       TV stands, shelving &amp; bookcases
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1 text-blue-600">•</span>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-600">•</span>
                       Dining tables, chairs &amp; office setups
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="mt-1 text-blue-600">•</span>
+                    <li className="flex items-center gap-2">
+                      <span className="text-blue-600">•</span>
                       Electric fireplaces &amp; storage units
                     </li>
                   </ul>
