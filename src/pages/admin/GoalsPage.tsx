@@ -380,9 +380,9 @@ export default function GoalsPage() {
                   isOverdue ? 'border-red-300' : 'border-slate-200'
                 }`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <h3 className="text-lg font-semibold text-slate-900">{goal.title}</h3>
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full border ${getPriorityColor(
@@ -419,7 +419,7 @@ export default function GoalsPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     {goal.status !== 'completed' && goal.status !== 'cancelled' && (
                       <button
                         onClick={() => handleCompleteGoal(goal.id)}
