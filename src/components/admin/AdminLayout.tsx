@@ -163,6 +163,7 @@ export default function AdminLayout() {
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-slate-500 hover:text-slate-700"
+              aria-label="Close sidebar"
             >
               <X className="w-6 h-6" />
             </button>
@@ -215,6 +216,7 @@ export default function AdminLayout() {
                 sidebarCollapsed ? 'justify-center' : ''
               }`}
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               <Menu className="w-5 h-5 flex-shrink-0" />
               <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
@@ -260,6 +262,7 @@ export default function AdminLayout() {
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden text-slate-500 hover:text-slate-700"
+              aria-label="Open sidebar"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -267,6 +270,7 @@ export default function AdminLayout() {
             <button
               onClick={() => setCommandPaletteOpen(true)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors lg:ml-0"
+              aria-label="Open search"
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Search</span>
