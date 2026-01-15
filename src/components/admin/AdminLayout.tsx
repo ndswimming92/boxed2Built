@@ -107,6 +107,24 @@ export default function AdminLayout() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handlePageHide = () => {
+      supabase.realtime.disconnect();
+    };
+
+    const handlePageShow = () => {
+      supabase.realtime.connect();
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
   };
