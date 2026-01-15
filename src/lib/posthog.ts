@@ -11,11 +11,15 @@ export const initPostHog = () => {
       capture_pageview: true,
       capture_pageleave: true,
       autocapture: true,
+      capture_dead_clicks: false,
+      capture_performance: false,
       session_recording: {
-        enabled: true,
+        enabled: false,
         recordCrossOriginIframes: false,
       },
-      disable_session_recording: false,
+      disable_session_recording: true,
+      disable_surveys: true,
+      disable_external_dependency_loading: true,
       loaded: (posthog) => {
         if (import.meta.env.DEV) {
           console.log('PostHog loaded successfully');
