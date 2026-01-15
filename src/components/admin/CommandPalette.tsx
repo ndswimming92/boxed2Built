@@ -97,7 +97,7 @@ export default function CommandPalette({ isOpen, onClose, navigation }: CommandP
         >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200">
             <Search className="w-5 h-5 text-slate-400" />
-            <input
+            <input name="query"
               ref={inputRef}
               type="text"
               value={query}

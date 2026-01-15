@@ -227,7 +227,7 @@ export default function QRCodesPage() {
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
+            <input name="searchQuery"
               type="text"
               placeholder="Search by title or slug..."
               value={searchQuery}
@@ -238,7 +238,7 @@ export default function QRCodesPage() {
 
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-gray-400" />
-            <select
+            <select name="statusFilter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

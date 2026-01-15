@@ -269,7 +269,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 key={item.id}
                 className="flex items-start gap-3 p-4 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
               >
-                <input
+                <input name="checked"
                   type="checkbox"
                   checked={item.checked}
                   onChange={(e) => {
@@ -306,7 +306,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
               <label className="block text-sm font-semibold text-slate-900 mb-2">
                 Upload Photos (Optional, max 10)
               </label>
-              <input
+              <input name="file"
                 type="file"
                 accept="image/*"
                 multiple
@@ -399,7 +399,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         return (
           <div className="space-y-6">
             <label className="flex items-center gap-3">
-              <input
+              <input name="createReminder"
                 type="checkbox"
                 checked={createReminder}
                 onChange={(e) => setCreateReminder(e.target.checked)}

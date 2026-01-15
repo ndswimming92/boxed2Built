@@ -166,7 +166,7 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Title *
                 </label>
-                <input
+                <input name="title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -182,7 +182,7 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
                 </label>
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <input
+                    <input name="slug"
                       type="text"
                       value={formData.slug}
                       onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
@@ -241,7 +241,7 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description / Notes
                 </label>
-                <textarea
+                <textarea name="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
@@ -252,7 +252,7 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
 
               <div>
                 <label className="flex items-center gap-2">
-                  <input
+                  <input name="status"
                     type="checkbox"
                     checked={formData.status === 'active'}
                     onChange={(e) => setFormData({ ...formData, status: e.target.checked ? 'active' : 'inactive' })}

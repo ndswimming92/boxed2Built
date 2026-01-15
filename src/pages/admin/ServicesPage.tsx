@@ -205,7 +205,7 @@ export default function ServicesPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Service Name *
               </label>
-              <input
+              <input name="name"
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -218,7 +218,7 @@ export default function ServicesPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Description *
               </label>
-              <textarea
+              <textarea name="description"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
@@ -251,7 +251,7 @@ export default function ServicesPage() {
               <div className="space-y-2">
                 {(formData.included_items || []).map((item, index) => (
                   <div key={index} className="flex gap-2">
-                    <input
+                    <input name="item"
                       type="text"
                       value={item}
                       onChange={(e) => {
@@ -294,7 +294,7 @@ export default function ServicesPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Minimum Price
                   </label>
-                  <input
+                  <input name="min_price"
                     type="number"
                     step="0.01"
                     value={formData.min_price || ''}
@@ -308,7 +308,7 @@ export default function ServicesPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Maximum Price
                   </label>
-                  <input
+                  <input name="max_price"
                     type="number"
                     step="0.01"
                     value={formData.max_price || ''}
@@ -323,7 +323,7 @@ export default function ServicesPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Price Range Notes
                 </label>
-                <textarea
+                <textarea name="price_range_description"
                   value={formData.price_range_description || ''}
                   onChange={(e) => setFormData({ ...formData, price_range_description: e.target.value })}
                   rows={2}
@@ -338,7 +338,7 @@ export default function ServicesPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Base Price *
                 </label>
-                <input
+                <input name="base_price"
                   type="number"
                   step="0.01"
                   value={formData.base_price || ''}
@@ -352,7 +352,7 @@ export default function ServicesPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Duration (minutes)
                 </label>
-                <input
+                <input name="duration_minutes"
                   type="number"
                   value={formData.duration_minutes || ''}
                   onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value ? parseInt(e.target.value) : null })}
@@ -364,7 +364,7 @@ export default function ServicesPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Display Order
                 </label>
-                <input
+                <input name="display_order"
                   type="number"
                   value={formData.display_order || ''}
                   onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
@@ -375,7 +375,7 @@ export default function ServicesPage() {
 
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2">
-                <input
+                <input name="is_featured"
                   type="checkbox"
                   checked={formData.is_featured || false}
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
@@ -385,7 +385,7 @@ export default function ServicesPage() {
               </label>
 
               <label className="flex items-center gap-2">
-                <input
+                <input name="is_active"
                   type="checkbox"
                   checked={formData.is_active !== false}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}

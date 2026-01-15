@@ -156,7 +156,7 @@ export default function NotificationBarPage() {
         <div className="p-6 space-y-6">
           <div>
             <label className="flex items-center gap-3 cursor-pointer">
-              <input
+              <input name="is_enabled"
                 type="checkbox"
                 checked={settings.is_enabled || false}
                 onChange={(e) => setSettings({ ...settings, is_enabled: e.target.checked })}
@@ -182,7 +182,7 @@ export default function NotificationBarPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Message *
             </label>
-            <textarea
+            <textarea name="message"
               value={settings.message || ''}
               onChange={(e) => setSettings({ ...settings, message: e.target.value })}
               rows={3}
@@ -201,13 +201,13 @@ export default function NotificationBarPage() {
                 Background Color
               </label>
               <div className="flex gap-3 items-center">
-                <input
+                <input name="background_color"
                   type="color"
                   value={settings.background_color || '#3B82F6'}
                   onChange={(e) => handleColorChange('background_color', e.target.value)}
                   className="w-16 h-10 border border-slate-300 rounded cursor-pointer"
                 />
-                <input
+                <input name="background_color"
                   type="text"
                   value={settings.background_color || '#3B82F6'}
                   onChange={(e) => handleColorChange('background_color', e.target.value)}
@@ -222,13 +222,13 @@ export default function NotificationBarPage() {
                 Text Color
               </label>
               <div className="flex gap-3 items-center">
-                <input
+                <input name="text_color"
                   type="color"
                   value={settings.text_color || '#FFFFFF'}
                   onChange={(e) => handleColorChange('text_color', e.target.value)}
                   className="w-16 h-10 border border-slate-300 rounded cursor-pointer"
                 />
-                <input
+                <input name="text_color"
                   type="text"
                   value={settings.text_color || '#FFFFFF'}
                   onChange={(e) => handleColorChange('text_color', e.target.value)}
@@ -244,7 +244,7 @@ export default function NotificationBarPage() {
             <div className="space-y-4">
               <div>
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input
+                  <input name="enable_scroll_animation"
                     type="checkbox"
                     checked={settings.enable_scroll_animation || false}
                     onChange={(e) => setSettings({ ...settings, enable_scroll_animation: e.target.checked })}

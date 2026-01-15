@@ -135,7 +135,7 @@ export default function BusinessHoursPage() {
                 <span className="font-medium text-slate-900">{hour.day_of_week}</span>
               </div>
               <div className="flex items-center gap-4 flex-1">
-                <input
+                <input name="opens"
                   type="time"
                   value={hour.opens || ''}
                   onChange={(e) => updateHour(index, 'opens', e.target.value)}
@@ -143,7 +143,7 @@ export default function BusinessHoursPage() {
                   className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
                 />
                 <span className="text-slate-500">to</span>
-                <input
+                <input name="closes"
                   type="time"
                   value={hour.closes || ''}
                   onChange={(e) => updateHour(index, 'closes', e.target.value)}
@@ -151,7 +151,7 @@ export default function BusinessHoursPage() {
                   className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
                 />
                 <label className="flex items-center gap-2 ml-4">
-                  <input
+                  <input name="is_closed"
                     type="checkbox"
                     checked={hour.is_closed}
                     onChange={(e) => updateHour(index, 'is_closed', e.target.checked)}

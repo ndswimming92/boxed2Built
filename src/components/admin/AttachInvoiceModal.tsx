@@ -170,7 +170,7 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
         <div className="p-6 border-b border-slate-200">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
+            <input name="searchQuery"
               type="text"
               placeholder="Search by invoice number, client name, or email..."
               value={searchQuery}

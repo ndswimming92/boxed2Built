@@ -145,12 +145,12 @@ export default function SocialMediaPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Platform *</label>
-              <input type="text" value={formData.platform || ''} onChange={(e) => setFormData({ ...formData, platform: e.target.value })} placeholder="e.g., Facebook, Instagram, YouTube" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+              <input name="platform" type="text" value={formData.platform || ''} onChange={(e) => setFormData({ ...formData, platform: e.target.value })} placeholder="e.g., Facebook, Instagram, YouTube" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Profile URL *</label>
-              <input type="url" value={formData.profile_url || ''} onChange={(e) => setFormData({ ...formData, profile_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+              <input name="profile_url" type="url" value={formData.profile_url || ''} onChange={(e) => setFormData({ ...formData, profile_url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
             </div>
 
             <div className="flex gap-3 pt-4">

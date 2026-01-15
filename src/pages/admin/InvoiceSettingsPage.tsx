@@ -146,7 +146,7 @@ export default function InvoiceSettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Invoice Prefix</label>
-              <input
+              <input name="invoicePrefix"
                 type="text"
                 value={invoicePrefix}
                 onChange={(e) => setInvoicePrefix(e.target.value)}
@@ -160,7 +160,7 @@ export default function InvoiceSettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Next Invoice Number</label>
-              <input
+              <input name="nextInvoiceNumber"
                 type="number"
                 value={nextInvoiceNumber}
                 onChange={(e) => setNextInvoiceNumber(parseInt(e.target.value) || 1)}
@@ -180,7 +180,7 @@ export default function InvoiceSettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Payment Terms</label>
-              <select
+              <select name="defaultPaymentTerms"
                 value={defaultPaymentTerms}
                 onChange={(e) => setDefaultPaymentTerms(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -196,7 +196,7 @@ export default function InvoiceSettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Default Due Days</label>
-              <input
+              <input name="defaultDueDays"
                 type="number"
                 value={defaultDueDays}
                 onChange={(e) => setDefaultDueDays(parseInt(e.target.value) || 30)}
@@ -231,7 +231,7 @@ export default function InvoiceSettingsPage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Default Tax Rate (%)
             </label>
-            <input
+            <input name="defaultTaxRate"
               type="number"
               value={defaultTaxRate}
               onChange={(e) => setDefaultTaxRate(parseFloat(e.target.value) || 0)}
@@ -267,7 +267,7 @@ export default function InvoiceSettingsPage() {
               <div className="ml-8 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Grace Period (days)</label>
-                  <input
+                  <input name="lateFeeGraceDays"
                     type="number"
                     value={lateFeeGraceDays}
                     onChange={(e) => setLateFeeGraceDays(parseInt(e.target.value) || 0)}
@@ -281,7 +281,7 @@ export default function InvoiceSettingsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Late Fee Type</label>
-                  <select
+                  <select name="lateFeeType"
                     value={lateFeeType}
                     onChange={(e) => setLateFeeType(e.target.value as 'fixed' | 'percentage')}
                     className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -299,7 +299,7 @@ export default function InvoiceSettingsPage() {
                     {lateFeeType === 'fixed' && (
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                     )}
-                    <input
+                    <input name="lateFeeAmount"
                       type="number"
                       value={lateFeeAmount}
                       onChange={(e) => setLateFeeAmount(parseFloat(e.target.value) || 0)}
@@ -324,7 +324,7 @@ export default function InvoiceSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Default Invoice Notes
               </label>
-              <textarea
+              <textarea name="invoiceNotesTemplate"
                 value={invoiceNotesTemplate}
                 onChange={(e) => setInvoiceNotesTemplate(e.target.value)}
                 rows={4}
@@ -340,7 +340,7 @@ export default function InvoiceSettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Invoice Footer
               </label>
-              <textarea
+              <textarea name="invoiceFooter"
                 value={invoiceFooter}
                 onChange={(e) => setInvoiceFooter(e.target.value)}
                 rows={3}
