@@ -7,7 +7,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -167,17 +166,7 @@ export default function LoginPage() {
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    disabled={loading}
-                  />
-                  Remember this device
-                </label>
+              <div className="mt-2 flex items-center justify-end text-xs text-slate-500">
                 <a
                   href="mailto:boxed2builtco@gmail.com"
                   className="text-emerald-600 hover:text-emerald-700"
