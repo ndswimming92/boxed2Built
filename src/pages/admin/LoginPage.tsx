@@ -171,7 +171,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-sm text-slate-600 mt-6">
-          Authorized personnel only
+          Authorized builders only
         </p>
       </div>
     </div>
