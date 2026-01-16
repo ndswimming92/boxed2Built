@@ -6,6 +6,8 @@ import { Lock, Mail, AlertCircle } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -82,7 +84,11 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <div
+              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"
+              role="alert"
+              aria-live="polite"
+            >
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
@@ -125,11 +131,13 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                   className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                   placeholder="your@email.com"
                   disabled={loading}
                 />
               </div>
+              <p className="mt-2 text-xs text-slate-500">Use your admin email address.</p>
             </div>
 
             <div>
@@ -139,15 +147,43 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                  autoComplete="current-password"
+                  className="w-full pl-11 pr-20 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                   placeholder="Enter your password"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-emerald-600 hover:text-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded"
+                  aria-pressed={showPassword}
+                  disabled={loading}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={loading}
+                  />
+                  Remember this device
+                </label>
+                <a
+                  href="mailto:support@boxed2built.com"
+                  className="text-emerald-600 hover:text-emerald-700"
+                >
+                  Need help?
+                </a>
               </div>
             </div>
 
