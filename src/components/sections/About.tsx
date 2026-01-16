@@ -10,7 +10,7 @@ const About: React.FC = () => {
   const businessName = businessData?.info?.name || 'Boxed2Built';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
-  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
+  const slogan = businessData?.info?.slogan || 'Turning boxes into comfort, one home at a time.';
   const serviceAreas = businessData?.serviceAreas.slice(0, 6).map(area => `${area.city_name}, ${area.region}`) || [];
 
   if (loading) {

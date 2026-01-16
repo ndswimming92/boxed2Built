@@ -32,6 +32,7 @@ const Footer: React.FC = () => {
   const phoneTel = toTelHref(phoneRaw);
   const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
+  const slogan = businessData?.info?.slogan || 'Turning boxes into comfort, one home at a time.';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
 
@@ -129,6 +130,10 @@ const Footer: React.FC = () => {
             <p className="text-gray-300 text-sm leading-relaxed text-center md:text-left mb-5">
               Professional furniture assembly for IKEA, Target, Walmart & all major brands — serving{' '}
               {locality}, {region} and nearby communities.
+            </p>
+
+            <p className="text-blue-200 text-sm font-semibold italic text-center md:text-left mb-5">
+              {slogan}
             </p>
 
             <div className="text-center md:text-left">

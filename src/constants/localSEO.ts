@@ -8,7 +8,7 @@ export const BUSINESS_INFO = {
   website: "https://boxed2built.com",
   founder: "Nicholas Davidson",
   yearEstablished: "2024",
-  slogan: "We turn boxes into comfort so families can focus on what matters most",
+  slogan: "Turning boxes into comfort, one home at a time.",
   priceRange: "$85-$610"
 };
 
