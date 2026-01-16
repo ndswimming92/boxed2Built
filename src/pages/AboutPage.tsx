@@ -131,7 +131,7 @@ const AboutPage: React.FC = () => {
               <div className="bg-blue-50 p-8 rounded-lg shadow-md mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Our Mission</h2>
                 <p className="text-2xl text-blue-600 font-medium text-center italic mb-6">
-                  We turn boxes into comfort so families can focus on what matters most.
+                  Turning boxes into comfort, one home at a time.
                 </p>
                 <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto">
                   Boxed2Built was born from a simple love of building. As a kid, I was always the first to tear into a new box 

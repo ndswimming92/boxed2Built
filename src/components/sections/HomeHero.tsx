@@ -66,7 +66,7 @@ const HomeHero: React.FC = () => {
   const businessName = businessData?.info?.name || 'Boxed2Built';
   const slogan =
     businessData?.info?.slogan ||
-    'We turn boxes into comfort so families can focus on what matters most';
+    'Turning boxes into comfort, one home at a time.';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
 
@@ -92,11 +92,15 @@ const HomeHero: React.FC = () => {
   </span>
 </h1>
 
-<p className="text-sm md:text-lg lg:text-xl text-gray-600 mb-4 md:mb-8 leading-relaxed">
-  Professional in-home furniture assembly and light handyman services for beds, desks, TV stands,
-  shelving, and more. Fast, reliable service for busy families in Spring Hill, Thompson’s Station,
-  Franklin, and Columbia.
-</p>
+                <p className="text-sm md:text-lg lg:text-xl text-gray-600 mb-4 md:mb-6 leading-relaxed">
+                  Professional in-home furniture assembly and light handyman services for beds, desks, TV stands,
+                  shelving, and more. Fast, reliable service for busy families in Spring Hill, Thompson’s Station,
+                  Franklin, and Columbia.
+                </p>
+
+                <p className="text-base md:text-xl text-blue-700 font-semibold italic mb-5 md:mb-8">
+                  {slogan}
+                </p>
 
 
                 <div className="flex flex-col md:flex-row md:flex-wrap items-start md:items-center gap-2 md:gap-6 mb-4 md:mb-10">
