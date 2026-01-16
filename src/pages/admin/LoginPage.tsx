@@ -179,7 +179,7 @@ export default function LoginPage() {
                   Remember this device
                 </label>
                 <a
-                  href="mailto:support@boxed2built.com"
+                  href="mailto:boxed2builtco@gmail.com"
                   className="text-emerald-600 hover:text-emerald-700"
                 >
                   Need help?
