@@ -8,15 +8,20 @@ import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 const Services: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  const services = businessData?.services.map(service => ({
-    id: service.id,
-    type: service.name,
-    description: service.description,
-    startingPrice: `$${service.base_price.toFixed(0)}`,
-    minPrice: service.min_price,
-    maxPrice: service.max_price,
-    includedItems: service.included_items || []
-  })) || [];
+  const services = businessData?.services.map(service => {
+    const startingPrice =
+      typeof service.base_price === 'number' ? `$${service.base_price.toFixed(0)}` : 'Request a quote';
+
+    return {
+      id: service.id,
+      type: service.name,
+      description: service.description,
+      startingPrice,
+      minPrice: typeof service.min_price === 'number' ? service.min_price : null,
+      maxPrice: typeof service.max_price === 'number' ? service.max_price : null,
+      includedItems: service.included_items || []
+    };
+  }) || [];
 
   const handlePhoneClick = () => {
     trackEvent('phone-click-services');
