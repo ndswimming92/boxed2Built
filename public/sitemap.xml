@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   
   <!-- Homepage - Highest Priority -->
   <url>
@@ -86,6 +85,22 @@
       <image:title>Completed Furniture Assembly Projects</image:title>
       <image:caption>Finished furniture assembly projects ready for use in Tennessee homes</image:caption>
     </image:image>
+  </url>
+
+  <!-- Partners Page - Partnership Inquiries -->
+  <url>
+    <loc>https://boxed2built.com/partners</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- FAQ Page - Support Content -->
+  <url>
+    <loc>https://boxed2built.com/faq</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <!-- Legal Pages - Lower Priority but Important for Compliance -->
