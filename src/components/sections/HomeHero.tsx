@@ -54,6 +54,7 @@ const HomeHero: React.FC = () => {
       <section className="relative pt-12 pb-8 md:pt-24 md:pb-16 bg-gradient-to-br from-blue-50 via-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto animate-pulse">
+            <h1 className="sr-only">Furniture Assembly in Spring Hill, TN</h1>
             <div className="h-12 md:h-16 bg-gray-200 rounded w-3/4 mb-3 md:mb-4"></div>
             <div className="h-6 md:h-8 bg-gray-200 rounded w-1/2 mb-4 md:mb-8"></div>
             <div className="h-10 md:h-12 bg-gray-200 rounded w-48"></div>
