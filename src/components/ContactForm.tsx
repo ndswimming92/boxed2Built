@@ -161,17 +161,35 @@ const ContactForm: React.FC = () => {
   // Fetch user's city on component mount
   useEffect(() => {
     const fetchUserLocation = async () => {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        const response = await fetch('https://ipwho.is/', {
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Location request failed: ${response.status}`);
+        }
+
         const data = await response.json();
+        if (!data || data.success === false) {
+          throw new Error('Location lookup unsuccessful');
+        }
+
         if (data.city && data.region) {
           setUserCity(`${data.city}, ${data.region}`);
         } else if (data.city) {
           setUserCity(data.city);
+        } else {
+          setUserCity('Location not detected');
         }
       } catch (error) {
-        console.log('Could not fetch location:', error);
+        console.warn('Could not fetch location:', error);
         setUserCity('Location not detected');
+      } finally {
+        window.clearTimeout(timeoutId);
       }
     };
 
