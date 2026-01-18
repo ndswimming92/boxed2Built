@@ -43,9 +43,10 @@
     });
   </script>
 
-    <!-- Microsoft Clarity (skip admin routes to avoid console noise) -->
+    <!-- Microsoft Clarity (production only; skip admin routes to avoid console noise) -->
     <script type="text/javascript">
-      if (!window.location.pathname.startsWith('/admin')) {
+      const isProductionHost = ['boxed2built.com', 'www.boxed2built.com'].includes(window.location.hostname);
+      if (isProductionHost && !window.location.pathname.startsWith('/admin')) {
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
