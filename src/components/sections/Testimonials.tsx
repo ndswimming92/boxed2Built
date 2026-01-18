@@ -241,13 +241,19 @@ const Testimonials: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`h-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
-                    index === currentIndex ? 'w-6 bg-blue-600' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
-                  }`}
+                  className="group flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                   aria-label={`Go to review ${index + 1}`}
                   aria-current={index === currentIndex ? 'true' : undefined}
                   type="button"
-                />
+                >
+                  <span
+                    className={`h-2.5 rounded-full transition-all duration-200 ${
+                      index === currentIndex
+                        ? 'w-6 bg-blue-600'
+                        : 'w-2.5 bg-gray-300 group-hover:bg-gray-400'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           )}
