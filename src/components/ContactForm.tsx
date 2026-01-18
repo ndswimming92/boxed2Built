@@ -607,7 +607,7 @@ const ContactForm: React.FC = () => {
           {/* Project Details Group */}
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <h4 className="text-sm font-semibold text-green-900 mb-3 flex items-center">
-              <span className="w-5 h-5 bg-green-600 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
+              <span className="w-5 h-5 bg-green-700 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
               Project Details
             </h4>
             
