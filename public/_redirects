@@ -1,5 +1,11 @@
 # Netlify redirects file
-/*    /index.html   200
+"/contact"           /index.html   200
+"/contact/"          /index.html   200
+"/faq"               /index.html   200
+"/faq/"              /index.html   200
+"/lookup-request"    /index.html   200
+"/lookup-request/"   /index.html   200
+/*                   /index.html   200
 
 # Ensure sitemap.xml is served with correct content type
 /sitemap.xml    /sitemap.xml    200
