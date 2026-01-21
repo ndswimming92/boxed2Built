@@ -129,7 +129,7 @@ const Header: React.FC = () => {
   };
 
   // Floating logo sizing tuned to feel more prominent without crowding the nav
-  const logoClass = isScrolled ? 'h-14 sm:h-16 md:h-20 lg:h-24' : 'h-16 sm:h-18 md:h-24 lg:h-28';
+  const logoClass = isScrolled ? 'h-16 sm:h-20 md:h-24 lg:h-28' : 'h-20 sm:h-24 md:h-28 lg:h-32';
 
   return (
     <header
@@ -145,8 +145,8 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
-        {/* Floating logo (decoupled from navbar height) */}
-        <div className="absolute left-4 sm:left-6 top-0 -translate-y-1/4 z-10">
+        {/* Floating logo (positioned above navbar height) */}
+        <div className="absolute left-4 sm:left-6 -top-6 sm:-top-8 md:-top-10 z-10">
           <a
             href="/"
             className="flex items-center"
@@ -175,7 +175,7 @@ const Header: React.FC = () => {
           </a>
         </div>
         {/* slightly shorter header height for mobile */}
-        <div className="relative flex items-center justify-between h-16 sm:h-18 md:h-20 pl-24 sm:pl-28 md:pl-40 lg:pl-48">
+        <div className="relative flex items-center justify-between h-16 sm:h-18 md:h-20 pl-28 sm:pl-36 md:pl-48 lg:pl-56">
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center flex-1 justify-center" role="navigation" aria-label="Main navigation">
