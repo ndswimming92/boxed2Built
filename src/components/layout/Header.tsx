@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     useNotificationBarContext();
 
   /* ----------------------------------------
-     Scroll behavior (shrink header on scroll)
+     Scroll behavior
   ----------------------------------------- */
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -41,24 +41,6 @@ const Header: React.FC = () => {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        headerRef.current &&
-        !headerRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () =>
-      document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -90,8 +72,7 @@ const Header: React.FC = () => {
   const isActivePage = (path: string) => location.pathname === path;
 
   /* ----------------------------------------
-     LOGO SIZING (Option 4)
-     Big on load, compact on scroll
+     Logo sizing (Option 4 behavior)
   ----------------------------------------- */
   const logoClass = isScrolled
     ? 'h-12 sm:h-14 md:h-16'
@@ -109,11 +90,17 @@ const Header: React.FC = () => {
     >
       <div className="container mx-auto px-4">
         {/* ----------------------------------------
-            OPTION 2: Logo-first layout
+            Header Row (relative for mobile centering)
         ----------------------------------------- */}
         <div className="relative flex items-center h-20">
-          {/* Logo (never shrinks) */}
-          <div className="flex-shrink-0 mr-6">
+          {/* Logo — centered on mobile, left on desktop */}
+          <div
+            className="
+              absolute left-1/2 -translate-x-1/2
+              md:static md:translate-x-0
+              flex-shrink-0 md:mr-6
+            "
+          >
             <a
               href="/"
               aria-label="Boxed2Built - Home"
@@ -135,7 +122,7 @@ const Header: React.FC = () => {
             </a>
           </div>
 
-          {/* Desktop Navigation (flexes around logo) */}
+          {/* Desktop Navigation */}
           <nav
             className="hidden md:flex flex-1 justify-center"
             aria-label="Main navigation"
@@ -171,12 +158,12 @@ const Header: React.FC = () => {
             </ul>
           </nav>
 
-          {/* Call Button */}
+          {/* Call Button (desktop) */}
           <div className="hidden md:flex flex-shrink-0">
             <CallButton size="md" pageSection="header" />
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button — RIGHT SIDE */}
           <button
             ref={mobileMenuButtonRef}
             onClick={toggleMenu}
