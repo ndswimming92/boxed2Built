@@ -260,17 +260,17 @@ const PartnersPage: React.FC = () => {
   return (
     <>
       <Header />
-      <main className="pt-16">
-        {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-6 md:py-10">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <Breadcrumbs
-                items={[
-                  { label: 'Home', href: '/' },
-                  { label: 'Partners', href: '/partners', current: true },
-                ]}
-                className="mb-4 md:mb-6"
+    <main className="pt-28">
+      {/* Page Header */}
+      <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <Breadcrumbs
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Partners', href: '/partners', current: true },
+              ]}
+              className="mb-6"
               />
             </div>
           </div>
