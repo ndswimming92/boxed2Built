@@ -273,7 +273,45 @@ const PartnersPage: React.FC = () => {
               className="mb-6"
               />
             </div>
-          </div>
+          </div>import React, { useEffect } from 'react';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import Testimonials from '../components/sections/Testimonials';
+import {
+  Phone,
+  CheckCircle,
+  Download,
+  Gift,
+  Users,
+  Tag,
+  Clock,
+  MapPin,
+  HelpCircle,
+} from 'lucide-react';
+import { trackEvent } from '../utils/analytics';
+import jsPDF from 'jspdf';
+
+const PartnersPage: React.FC = () => {
+  useEffect(() => {
+    document.title = 'Boxed2Built Partnerships | Realtors & Movers in Spring Hill';
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        'content',
+        'Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts.'
+      );
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/partn
+
         </section>
 
         {/* Hero Section */}
