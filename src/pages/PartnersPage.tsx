@@ -260,7 +260,7 @@ const PartnersPage: React.FC = () => {
   return (
     <>
       <Header />
-      <main className="pt-20">
+      <main className="pt-16">
         {/* Page Header */}
         <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-6 md:py-10">
           <div className="container mx-auto px-4">
