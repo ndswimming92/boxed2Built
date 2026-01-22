@@ -128,13 +128,13 @@ const Header: React.FC = () => {
       : `${base} text-gray-900 hover:bg-gray-50`;
   };
 
-  // Logo sizing tuned for mobile (your original mobile logo was pretty tall)
-  const logoClass = isScrolled ? 'h-10 sm:h-11 md:h-14' : 'h-11 sm:h-12 md:h-16';
+  // Floating logo sizing tuned to feel more prominent without crowding the nav
+  const logoClass = isScrolled ? 'h-16 sm:h-20 md:h-24 lg:h-28' : 'h-20 sm:h-24 md:h-28 lg:h-32';
 
   return (
     <header
       ref={headerRef}
-      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 relative ${
         isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-2' : 'bg-white/98 backdrop-blur-sm shadow-sm py-3'
       }`}
       style={{
@@ -145,37 +145,37 @@ const Header: React.FC = () => {
       }}
     >
       <div className="container mx-auto px-4">
+        {/* Floating logo (positioned above navbar height) */}
+        <div className="absolute left-1/2 -translate-x-1/2 sm:left-6 sm:-translate-x-0 -top-6 sm:-top-8 md:-top-10 z-10">
+          <a
+            href="/"
+            className="flex items-center"
+            onClick={() =>
+              trackEvent('logo_click', 'header', {
+                event_category: 'navigation',
+                element_type: 'logo',
+                element_location: 'header',
+                page_section: 'header',
+                action_type: 'click',
+              })
+            }
+            aria-label="Boxed2Built - Home"
+          >
+            <img
+              src="/black_boxed2built_logo.png"
+              loading="lazy"
+              alt="Boxed2Built - Professional Furniture Assembly"
+              title="Boxed2Built - Professional Furniture Assembly"
+              className={`w-auto object-contain transition-all duration-300 drop-shadow-md ${logoClass}`}
+              width="251"
+              height="88"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </a>
+        </div>
         {/* slightly shorter header height for mobile */}
-        <div className="relative flex items-center justify-between h-16 sm:h-18 md:h-20">
-          {/* Logo */}
-          <div className="flex items-center">
-            <a
-              href="/"
-              className="flex items-center"
-              onClick={() =>
-                trackEvent('logo_click', 'header', {
-                  event_category: 'navigation',
-                  element_type: 'logo',
-                  element_location: 'header',
-                  page_section: 'header',
-                  action_type: 'click',
-                })
-              }
-              aria-label="Boxed2Built - Home"
-            >
-              <img
-                src="/black_boxed2built_logo.png"
-                loading="lazy"
-                alt="Boxed2Built - Professional Furniture Assembly"
-                title="Boxed2Built - Professional Furniture Assembly"
-                className={`w-auto object-contain transition-all duration-300 ${logoClass}`}
-                width="251"
-                height="88"
-                decoding="async"
-                fetchpriority="high"
-              />
-            </a>
-          </div>
+        <div className="relative flex items-center justify-end md:justify-between h-16 sm:h-18 md:h-20 pl-0 sm:pl-36 md:pl-48 lg:pl-56">
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center flex-1 justify-center" role="navigation" aria-label="Main navigation">
