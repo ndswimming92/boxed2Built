@@ -13,13 +13,6 @@ type ChecklistItem = {
   required: boolean;
 };
 
-type CompletionPhoto = {
-  id: string;
-  dataUrl: string;
-  fileName: string;
-  savedToCameraRoll: boolean;
-};
-
 type JobCompletionWizardProps = {
   job: Job;
   onClose: () => void;
@@ -40,7 +33,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     { id: '4', label: 'Assembly instructions provided', checked: false, required: false },
     { id: '5', label: 'Tools and materials accounted for', checked: false, required: false },
   ]);
-  const [photos, setPhotos] = useState<CompletionPhoto[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [satisfactionRating, setSatisfactionRating] = useState(5);
   const [satisfactionComment, setSatisfactionComment] = useState('');
   const [signatureData, setSignatureData] = useState('');
@@ -107,44 +100,6 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     }
   };
 
-  const readFileAsDataUrl = (file: File) => (
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Failed to read photo'));
-      reader.readAsDataURL(file);
-    })
-  );
-
-  const savePhotoToCameraRoll = async (file: File) => {
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-        await navigator.share({
-          files: [file],
-          title: 'Job completion photo',
-        });
-        return true;
-      }
-    } catch (shareError) {
-      console.warn('Unable to share photo to camera roll:', shareError);
-    }
-
-    try {
-      const url = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = file.name;
-      link.rel = 'noopener';
-      link.click();
-      URL.revokeObjectURL(url);
-      return true;
-    } catch (downloadError) {
-      console.warn('Unable to download photo for camera roll save:', downloadError);
-    }
-
-    return false;
-  };
-
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -154,20 +109,18 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       return;
     }
 
-    const newPhotos: CompletionPhoto[] = [];
-
-    for (const file of Array.from(files)) {
-      const dataUrl = await readFileAsDataUrl(file);
-      const savedToCameraRoll = await savePhotoToCameraRoll(file);
-      newPhotos.push({
-        id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        dataUrl,
-        fileName: file.name,
-        savedToCameraRoll,
-      });
+    const newPhotos: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPhotos.push(reader.result as string);
+        if (newPhotos.length === files.length) {
+          setPhotos([...photos, ...newPhotos]);
+        }
+      };
+      reader.readAsDataURL(file);
     }
-
-    setPhotos(prevPhotos => [...prevPhotos, ...newPhotos]);
   };
 
   const removePhoto = (index: number) => {
@@ -189,7 +142,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         completed_by: user?.id || null,
         signature_data: signatureData,
         completion_checklist: checklist,
-        completion_photos: photos.map(photo => photo.dataUrl),
+        completion_photos: photos,
         admin_notes: adminNotes,
         device_info: {
           userAgent: navigator.userAgent,
@@ -361,9 +314,6 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 disabled={photos.length >= 10}
                 className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50"
               />
-              <p className="mt-2 text-xs text-slate-500">
-                Photos are saved to your camera roll when supported by your device.
-              </p>
             </div>
 
             {photos.length > 0 && (
@@ -371,13 +321,10 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 {photos.map((photo, index) => (
                   <div key={index} className="relative group">
                     <img
-                      src={photo.dataUrl}
+                      src={photo}
                       alt={`Completion photo ${index + 1}`}
                       className="w-full h-48 object-cover rounded-lg"
                     />
-                    <div className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-slate-700">
-                      {photo.savedToCameraRoll ? 'Saved to camera roll' : 'Not saved'}
-                    </div>
                     <button
                       onClick={() => removePhoto(index)}
                       className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
