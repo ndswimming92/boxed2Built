@@ -130,7 +130,7 @@ const ServicesPage: React.FC = () => {
       <FAQSchema faqs={servicesFAQs} />
       <Header />
 
-      <main className="pt-24 sm:pt-20">
+      <main className="pt-20">
         {/* Page Header */}
         <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
