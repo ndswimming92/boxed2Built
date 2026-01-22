@@ -135,8 +135,7 @@ This website is built with modern web technologies for optimal performance:
 - **Frontend**: React 18 with TypeScript
 - **Styling**: Tailwind CSS
 - **Build Tool**: Vite
-- **Hosting**: Bolt.new
-- **Domain**: Porkbun
+- **Hosting**: Netlify
 - **Analytics**: Google Analytics 4
 - **Forms**: Formspree
 - **Scheduling**: Calendly Integration

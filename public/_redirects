@@ -1,4 +1,4 @@
-# Redirects configuration for SPA routing
+# Netlify redirects file
 "/contact"           /index.html   200
 "/contact/"          /index.html   200
 "/faq"               /index.html   200

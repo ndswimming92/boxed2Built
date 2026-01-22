@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, MapPin, Clock, Loader2, Lock } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -119,6 +119,7 @@ const ContactForm: React.FC = () => {
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
+  const [userCity, setUserCity] = useState('');
   const [isIOS, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
@@ -155,6 +156,26 @@ const ContactForm: React.FC = () => {
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(iOS);
+  }, []);
+
+  // Fetch user's city on component mount
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.city && data.region) {
+          setUserCity(`${data.city}, ${data.region}`);
+        } else if (data.city) {
+          setUserCity(data.city);
+        }
+      } catch (error) {
+        console.log('Could not fetch location:', error);
+        setUserCity('Location not detected');
+      }
+    };
+
+    fetchUserLocation();
   }, []);
 
   // Smart estimation based on furniture type and pieces
@@ -294,6 +315,7 @@ const ContactForm: React.FC = () => {
       Object.entries(values).forEach(([key, value]) => {
         formData.append(key, value);
       });
+      formData.append('user_city', userCity);
 
       // Submit to Formspree (fire and forget - don't block on this)
       handleSubmit(formData).catch((error) => {
@@ -321,6 +343,7 @@ const ContactForm: React.FC = () => {
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
+        user_city: userCity || undefined,
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
@@ -337,6 +360,7 @@ const ContactForm: React.FC = () => {
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
+        user_city: userCity || undefined,
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
       });
@@ -352,6 +376,7 @@ const ContactForm: React.FC = () => {
         preferredDate: values.preferredDate || undefined,
         preferredTimeSlot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
+        userCity: userCity || undefined,
         estimatedPrice: estimatedPrice || undefined,
         estimatedTime: estimatedTime || undefined,
         submissionDate: savedRequest.submission_date,
@@ -433,6 +458,12 @@ const ContactForm: React.FC = () => {
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-2">Get Your Free Quote</h3>
         <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
+        {userCity && (
+          <div className="flex items-center mt-2 text-sm text-blue-700">
+            <MapPin size={14} className="mr-1" />
+            <span>Service available in {userCity}</span>
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
@@ -482,6 +513,13 @@ const ContactForm: React.FC = () => {
         autoComplete="on"
       >
         <div className="space-y-5">
+          {/* Hidden field for user location */}
+          <input
+            type="hidden"
+            name="user_city"
+            value={userCity}
+          />
+
           {/* Essential Information Group */}
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
@@ -569,7 +607,7 @@ const ContactForm: React.FC = () => {
           {/* Project Details Group */}
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <h4 className="text-sm font-semibold text-green-900 mb-3 flex items-center">
-              <span className="w-5 h-5 bg-green-700 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
+              <span className="w-5 h-5 bg-green-600 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
               Project Details
             </h4>
             

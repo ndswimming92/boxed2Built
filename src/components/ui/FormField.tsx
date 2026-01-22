@@ -64,7 +64,7 @@ const FormField: React.FC<FormFieldProps> = ({
               ? currentLength >= maxLength 
                 ? 'text-red-600' 
                 : 'text-yellow-600'
-              : 'text-gray-600'
+              : 'text-gray-500'
           }`}>
             {currentLength}/{maxLength}
           </span>
@@ -90,7 +90,7 @@ const FormField: React.FC<FormFieldProps> = ({
       
       {/* Help text - shown when no error/warning */}
       {helpText && !error && !warning && (
-        <p className="text-xs text-gray-600 flex items-start">
+        <p className="text-xs text-gray-500 flex items-start">
           <Info size={12} className="mr-1 mt-0.5 flex-shrink-0" />
           {helpText}
         </p>
