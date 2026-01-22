@@ -146,7 +146,7 @@ const Header: React.FC = () => {
     >
       <div className="container mx-auto px-4">
         {/* Floating logo (positioned above navbar height) */}
-        <div className="absolute left-4 sm:left-6 -top-6 sm:-top-8 md:-top-10 z-10">
+        <div className="absolute left-1/2 -translate-x-1/2 sm:left-6 sm:-translate-x-0 -top-6 sm:-top-8 md:-top-10 z-10">
           <a
             href="/"
             className="flex items-center"
@@ -175,7 +175,7 @@ const Header: React.FC = () => {
           </a>
         </div>
         {/* slightly shorter header height for mobile */}
-        <div className="relative flex items-center justify-between h-16 sm:h-18 md:h-20 pl-28 sm:pl-36 md:pl-48 lg:pl-56">
+        <div className="relative flex items-center justify-end md:justify-between h-16 sm:h-18 md:h-20 pl-0 sm:pl-36 md:pl-48 lg:pl-56">
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center flex-1 justify-center" role="navigation" aria-label="Main navigation">
