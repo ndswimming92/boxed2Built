@@ -4,6 +4,25 @@
 
 Your website now has a complete admin system that allows you to manage all your business content through a secure web interface.
 
+## IMPORTANT: Authorization Setup
+
+Your admin portal now has enhanced security with email-based authorization. Only specific email addresses listed in your configuration can access the admin portal.
+
+### Configure Authorized Admin Emails
+
+1. **Open the `.env` file** in your project root
+2. **Find the line**: `VITE_AUTHORIZED_ADMIN_EMAILS=`
+3. **Add your admin email(s)**:
+   - Single email: `VITE_AUTHORIZED_ADMIN_EMAILS=your-email@gmail.com`
+   - Multiple emails: `VITE_AUTHORIZED_ADMIN_EMAILS=email1@gmail.com,email2@gmail.com,email3@gmail.com`
+4. **Save the file** and restart your development server or redeploy
+
+**Important**:
+- Email addresses are case-insensitive
+- Use commas to separate multiple emails
+- No spaces needed around commas
+- Users with emails NOT in this list will be denied access and automatically signed out
+
 ## Creating Your Admin Account
 
 To create your admin account, you'll need to use the Supabase Dashboard:
@@ -101,12 +120,15 @@ You'll be redirected to the admin dashboard where you can manage:
 
 ## Security Features
 
-- Secure authentication with Supabase Auth
-- Protected routes (unauthorized users redirected to login)
-- Session management with automatic logout
-- Row Level Security (RLS) on database
+- **Email-Based Authorization**: Only whitelisted email addresses can access admin portal
+- **Secure Authentication**: Supabase Auth with email/password and Google OAuth
+- **Protected Routes**: Unauthorized users are automatically signed out and redirected
+- **Session Management**: Automatic logout for unauthorized access attempts
+- **Row Level Security (RLS)**: Database-level security policies
   - Public users: Read-only access to active content
   - Authenticated users: Full CRUD access
+- **Audit Logging**: All login attempts are logged (successful and failed)
+- **Multi-Layer Security**: Authorization checked at authentication AND route level
 
 ## Tips
 
@@ -118,10 +140,24 @@ You'll be redirected to the admin dashboard where you can manage:
 
 ## Troubleshooting
 
+### Access Denied / Unauthorized
+If you see "Access denied" after logging in:
+1. **Check the `.env` file** - Make sure your email is listed in `VITE_AUTHORIZED_ADMIN_EMAILS`
+2. **Email must match exactly** - Use the same email address you're logging in with
+3. **Case doesn't matter** - Email comparison is case-insensitive
+4. **Restart after changes** - After updating `.env`, restart your dev server or redeploy
+5. **Check for typos** - Make sure there are no extra spaces or typos in the email
+
+Example:
+```
+VITE_AUTHORIZED_ADMIN_EMAILS=youremail@gmail.com
+```
+
 ### Can't Log In
 - Verify your email and password are correct
-- Check if email confirmation is required
-- Reset password if needed (feature to be added)
+- Ensure your email is in the authorized list (see above)
+- Check if email confirmation is required in Supabase settings
+- Make sure your account exists in Supabase Authentication
 
 ### Changes Not Showing
 - Make sure items are marked as "Active"

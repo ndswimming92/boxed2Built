@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { logAction } from '../services/auditLogService';
+import { isUserAuthorized, getAuthorizationError } from '../utils/authorization';
 
 interface AuthContextType {
   user: User | null;
@@ -30,10 +31,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       (async () => {
         console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
 
         if (event === 'SIGNED_IN' && session?.user) {
+          if (!isUserAuthorized(session.user)) {
+            const authError = getAuthorizationError(session.user);
+            console.error('Unauthorized access attempt:', authError);
+            await logAction({
+              actionType: 'LOGIN',
+              tableName: 'auth',
+              recordIdentifier: session.user.email || 'unknown',
+              status: 'error',
+              errorMessage: 'Unauthorized access attempt',
+            });
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            return;
+          }
+
           const provider = session.user.app_metadata?.provider;
           console.log('User signed in with provider:', provider);
           if (provider === 'google') {
@@ -47,6 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        setSession(session);
+        setUser(session?.user ?? null);
+
         if (event === 'SIGNED_OUT') {
           console.log('User signed out');
         }
@@ -58,19 +76,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (!error) {
-        await logAction({
-          actionType: 'LOGIN',
-          tableName: 'auth',
-          recordIdentifier: email,
-          status: 'success',
-        });
-      } else {
+      if (error) {
         await logAction({
           actionType: 'LOGIN',
           tableName: 'auth',
@@ -78,9 +89,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: 'error',
           errorMessage: error.message,
         });
+        return { error };
       }
 
-      return { error };
+      if (data.user && !isUserAuthorized(data.user)) {
+        const authError = getAuthorizationError(data.user);
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: email,
+          status: 'error',
+          errorMessage: 'Unauthorized access attempt',
+        });
+        await supabase.auth.signOut();
+        return { error: new Error(authError) };
+      }
+
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: email,
+        status: 'success',
+      });
+
+      return { error: null };
     } catch (error) {
       await logAction({
         actionType: 'LOGIN',
