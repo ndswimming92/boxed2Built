@@ -3,6 +3,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
+import ErrorBoundary from '../components/ErrorBoundary';
 import {
   Phone,
   CheckCircle,
@@ -36,6 +37,42 @@ const PartnersPage: React.FC = () => {
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/partners');
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Boxed2Built Partnership Program',
+      description: 'Partner with Boxed2Built for realtor closing gifts and mover referrals. Professional furniture assembly services in Spring Hill, TN.',
+      url: 'https://boxed2built.com/partners',
+      mainEntity: {
+        '@type': 'Service',
+        name: 'Partnership Program',
+        provider: {
+          '@type': 'LocalBusiness',
+          name: 'Boxed2Built',
+          telephone: '+16154034538',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Spring Hill',
+            addressRegion: 'TN',
+            addressCountry: 'US'
+          }
+        },
+        areaServed: {
+          '@type': 'State',
+          name: 'Tennessee'
+        }
+      }
+    };
+
+    let scriptTag = document.querySelector('script[data-schema="partners"]');
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.setAttribute('type', 'application/ld+json');
+      scriptTag.setAttribute('data-schema', 'partners');
+      document.head.appendChild(scriptTag);
+    }
+    scriptTag.textContent = JSON.stringify(schema);
   }, []);
 
   const handleContactClick = () => {
@@ -63,6 +100,14 @@ const PartnersPage: React.FC = () => {
   return (
     <>
       <Header />
+
+      <noscript>
+        <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f3f4f6' }}>
+          <h1>Partner with Boxed2Built</h1>
+          <p>Professional furniture assembly partnerships for realtors and movers in Spring Hill, TN.</p>
+          <p>Call us at (615) 403-4538 or visit our contact page.</p>
+        </div>
+      </noscript>
 
       {/* Matches About page header spacing */}
       <main className="pt-20">
@@ -158,7 +203,9 @@ const PartnersPage: React.FC = () => {
 
         {/* TESTIMONIALS */}
         <div className="mt-12">
-          <Testimonials />
+          <ErrorBoundary>
+            <Testimonials />
+          </ErrorBoundary>
         </div>
 
         {/* FINAL CTA */}

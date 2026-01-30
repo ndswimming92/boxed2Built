@@ -5,6 +5,18 @@
 "/faq/"              /index.html   200
 "/lookup-request"    /index.html   200
 "/lookup-request/"   /index.html   200
+"/partners"          /index.html   200
+"/partners/"         /index.html   200
+"/services"          /index.html   200
+"/services/"         /index.html   200
+"/about"             /index.html   200
+"/about/"            /index.html   200
+"/gallery"           /index.html   200
+"/gallery/"          /index.html   200
+"/privacy-policy"    /index.html   200
+"/privacy-policy/"   /index.html   200
+"/terms-of-service"  /index.html   200
+"/terms-of-service/" /index.html   200
 /*                   /index.html   200
 
 # Ensure sitemap.xml is served with correct content type
