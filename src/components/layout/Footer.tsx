@@ -2,6 +2,7 @@ import React from 'react';
 import { Facebook, Mail, Phone, Instagram, Star, Youtube, Clock, MapPin, CreditCard } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
+import QuickContactForm from '../QuickContactForm';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
@@ -326,6 +327,11 @@ const Footer: React.FC = () => {
               </InternalLink>
               .
             </p>
+          </div>
+
+          {/* Quick Contact Form */}
+          <div className="mt-8 max-w-2xl mx-auto">
+            <QuickContactForm />
           </div>
 
           <div className="text-center text-xs text-gray-300 mt-6 space-y-2">
