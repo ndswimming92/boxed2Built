@@ -376,6 +376,34 @@ The remaining indexes are actively used:
 
 ---
 
+## Addressing Security Scanner Warnings
+
+### RLS Policy Always True Warnings
+
+If your security scanner flags policies with `USING (true)` or `WITH CHECK (true)` as warnings:
+
+**This is expected and safe for this application.**
+
+The warnings indicate that RLS policies don't restrict row-level access for authenticated users. This is intentional because:
+
+1. **Single-Admin Model**: All authenticated users are pre-approved administrators
+2. **Email Whitelist**: Real security boundary is at authentication level
+3. **No Multi-Tenancy**: Only one business exists in the database
+4. **Frontend Authorization**: Additional checks in `src/utils/authorization.ts`
+
+**To suppress these warnings:**
+- Document your security model in your security scanner configuration
+- Mark these warnings as "accepted risk" with justification
+- Add comments explaining the single-admin architecture
+
+### Foreign Key Index Recommendations
+
+Security scanners often recommend indexes on all foreign key columns. While we've added these indexes as a best practice:
+
+- They may not be actively used by current queries
+- They're valuable for database integrity and future scalability
+- PostgreSQL automatically maintains them with minimal overhead
+
 ## Questions?
 
 If you have questions about this security architecture, please review:
