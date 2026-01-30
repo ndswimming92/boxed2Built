@@ -125,7 +125,7 @@ const QuickContactForm: React.FC = () => {
         furniture_type: 'General Question',
         pieces: 1,
         notes: formData.message,
-        referral_source: 'footer_quick_contact',
+        source: 'footer_quick_contact',
       });
 
       trackFormInteraction('footer_quick_contact', 'complete', {

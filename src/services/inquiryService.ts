@@ -17,6 +17,7 @@ export interface CreateInquiryData {
   utm_medium?: string;
   utm_campaign?: string;
   referral_source?: string;
+  source?: string;
 }
 
 export interface UpdateInquiryData {
@@ -58,7 +59,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
       utm_medium: data.utm_medium || null,
       utm_campaign: data.utm_campaign || null,
       referral_source: data.referral_source || null,
-      source: 'contact_form',
+      source: data.source || 'contact_form',
       status: 'pending',
       viewed: false,
       response_count: 0,
