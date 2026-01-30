@@ -70,6 +70,15 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
 
   if (error) {
     console.error('Error creating inquiry:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    console.error('Insert data:', JSON.stringify({
+      business_id: data.business_id,
+      client_name: data.client_name,
+      client_email: data.client_email,
+      furniture_type: data.furniture_type,
+      pieces: data.pieces,
+      source: data.source || 'contact_form',
+    }, null, 2));
     throw new Error(`Failed to create inquiry: ${error.message}`);
   }
 

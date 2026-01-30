@@ -108,15 +108,23 @@ const QuickContactForm: React.FC = () => {
         page_section: 'footer',
       });
 
-      const { data: businessInfo } = await supabase
+      const { data: businessInfo, error: businessError } = await supabase
         .from('business_info')
         .select('id')
         .eq('is_active', true)
         .maybeSingle();
 
-      if (!businessInfo) {
-        throw new Error('Business information not found');
+      if (businessError) {
+        console.error('Error fetching business info:', businessError);
+        throw new Error('Unable to submit inquiry. Please try again.');
       }
+
+      if (!businessInfo) {
+        console.error('No active business found');
+        throw new Error('Business information not found. Please try again later.');
+      }
+
+      console.log('Creating inquiry with business_id:', businessInfo.id);
 
       await createInquiry({
         business_id: businessInfo.id,
@@ -127,6 +135,8 @@ const QuickContactForm: React.FC = () => {
         notes: formData.message,
         source: 'footer_quick_contact',
       });
+
+      console.log('Inquiry created successfully');
 
       trackFormInteraction('footer_quick_contact', 'complete', {
         page_section: 'footer',
