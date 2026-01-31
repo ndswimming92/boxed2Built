@@ -189,31 +189,31 @@ const QuickContactForm: React.FC = () => {
   };
 
   const getInputClasses = (fieldName: keyof typeof errors) => {
-    const baseClasses = 'w-full px-3 py-2 bg-gray-800 border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200';
+    const baseClasses = 'w-full px-3 py-2 bg-white/5 backdrop-blur-sm border rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:bg-white/10 transition-all duration-200';
 
     if (!touched[fieldName]) {
-      return `${baseClasses} border-gray-700`;
+      return `${baseClasses} border-white/10`;
     }
 
     if (errors[fieldName]) {
-      return `${baseClasses} border-red-500 bg-red-900/20`;
+      return `${baseClasses} border-red-400/50 bg-red-500/10`;
     }
 
     if (formData[fieldName] && !errors[fieldName]) {
-      return `${baseClasses} border-green-500 bg-green-900/20`;
+      return `${baseClasses} border-green-400/50 bg-green-500/10`;
     }
 
-    return `${baseClasses} border-gray-700`;
+    return `${baseClasses} border-white/10`;
   };
 
   if (submitStatus === 'success') {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 border border-green-500 animate-fadeIn">
+      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-green-400/30 shadow-xl animate-fadeIn">
         <div className="flex items-center justify-center gap-3 text-green-400">
-          <CheckCircle size={24} />
+          <CheckCircle size={24} className="drop-shadow-lg" />
           <div>
-            <h4 className="font-bold text-lg">Message Sent!</h4>
-            <p className="text-sm text-gray-300 mt-1">We'll get back to you within 24 hours.</p>
+            <h4 className="font-bold text-lg drop-shadow-md">Message Sent!</h4>
+            <p className="text-sm text-gray-200 mt-1">We'll get back to you within 24 hours.</p>
           </div>
         </div>
       </div>
@@ -221,16 +221,16 @@ const QuickContactForm: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10 shadow-xl">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-white">Quick Question?</h3>
-        <p className="text-sm text-gray-300 mt-1">Send us a message and we'll respond shortly</p>
+        <h3 className="text-lg font-bold text-white drop-shadow-md">Quick Question?</h3>
+        <p className="text-sm text-gray-200 mt-1">Send us a message and we'll respond shortly</p>
       </div>
 
       {submitStatus === 'error' && errorMessage && (
-        <div className="mb-4 bg-red-900/30 border border-red-500 rounded-md p-3 flex items-start gap-2 animate-fadeIn">
-          <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-300">{errorMessage}</p>
+        <div className="mb-4 bg-red-500/10 backdrop-blur-sm border border-red-400/30 rounded-md p-3 flex items-start gap-2 animate-fadeIn">
+          <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5 drop-shadow-lg" />
+          <p className="text-sm text-red-200">{errorMessage}</p>
         </div>
       )}
 
@@ -250,7 +250,7 @@ const QuickContactForm: React.FC = () => {
             disabled={isSubmitting}
           />
           {touched.name && errors.name && (
-            <p className="text-red-400 text-xs mt-1">{errors.name}</p>
+            <p className="text-red-300 text-xs mt-1 drop-shadow-sm">{errors.name}</p>
           )}
         </div>
 
@@ -269,7 +269,7 @@ const QuickContactForm: React.FC = () => {
             disabled={isSubmitting}
           />
           {touched.email && errors.email && (
-            <p className="text-red-400 text-xs mt-1">{errors.email}</p>
+            <p className="text-red-300 text-xs mt-1 drop-shadow-sm">{errors.email}</p>
           )}
         </div>
 
@@ -289,9 +289,9 @@ const QuickContactForm: React.FC = () => {
           />
           <div className="flex items-center justify-between mt-1">
             {touched.message && errors.message ? (
-              <p className="text-red-400 text-xs">{errors.message}</p>
+              <p className="text-red-300 text-xs drop-shadow-sm">{errors.message}</p>
             ) : (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-300/70">
                 {formData.message.length}/200 characters
               </span>
             )}
@@ -303,8 +303,8 @@ const QuickContactForm: React.FC = () => {
           disabled={isSubmitting}
           className={`w-full py-3 px-4 rounded-md font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             isSubmitting
-              ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+              ? 'bg-white/5 backdrop-blur-sm text-gray-300 cursor-not-allowed border border-white/10'
+              : 'bg-gradient-to-r from-blue-500/80 to-blue-600/80 backdrop-blur-sm text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl border border-blue-400/30 hover:border-blue-400/50'
           }`}
         >
           {isSubmitting ? (
@@ -320,7 +320,7 @@ const QuickContactForm: React.FC = () => {
           )}
         </button>
 
-        <p className="text-xs text-gray-400 text-center">
+        <p className="text-xs text-gray-300/80 text-center">
           All fields required • We typically respond within 24 hours
         </p>
       </form>
