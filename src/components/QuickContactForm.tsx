@@ -103,66 +103,122 @@ const QuickContactForm: React.FC = () => {
     setSubmitStatus('idle');
     setErrorMessage('');
 
+    let formspreeSuccess = false;
+    let supabaseSuccess = false;
+    const errors: string[] = [];
+
     try {
       trackFormInteraction('footer_quick_contact', 'submit', {
         page_section: 'footer',
       });
 
-      const { data: businessInfo, error: businessError } = await supabase
-        .from('business_info')
-        .select('id')
-        .eq('is_active', true)
-        .maybeSingle();
+      // Submit to Formspree for email notifications
+      try {
+        const formspreeResponse = await fetch('https://formspree.io/f/xlgnqeqa', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+            _subject: `Quick Question from ${formData.name}`,
+            _replyto: formData.email,
+          }),
+        });
 
-      if (businessError) {
-        console.error('Error fetching business info:', businessError);
-        throw new Error('Unable to submit inquiry. Please try again.');
+        if (formspreeResponse.ok) {
+          formspreeSuccess = true;
+          console.log('Formspree submission successful');
+        } else {
+          const errorData = await formspreeResponse.json().catch(() => ({}));
+          console.error('Formspree submission failed:', errorData);
+          errors.push('Email notification failed');
+        }
+      } catch (formspreeError) {
+        console.error('Formspree submission error:', formspreeError);
+        errors.push('Email notification unavailable');
       }
 
-      if (!businessInfo) {
-        console.error('No active business found');
-        throw new Error('Business information not found. Please try again later.');
+      // Submit to Supabase for record-keeping
+      try {
+        const { data: businessInfo, error: businessError } = await supabase
+          .from('business_info')
+          .select('id')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (businessError) {
+          console.error('Error fetching business info:', businessError);
+          errors.push('Database save failed');
+        } else if (!businessInfo) {
+          console.error('No active business found');
+          errors.push('Business configuration missing');
+        } else {
+          console.log('Creating inquiry with business_id:', businessInfo.id);
+
+          await createInquiry({
+            business_id: businessInfo.id,
+            client_name: formData.name,
+            client_email: formData.email,
+            furniture_type: 'General Question',
+            pieces: 1,
+            notes: formData.message,
+            source: 'footer_quick_contact',
+          });
+
+          supabaseSuccess = true;
+          console.log('Supabase inquiry created successfully');
+        }
+      } catch (supabaseError) {
+        console.error('Supabase submission error:', supabaseError);
+        errors.push('Database save unavailable');
       }
 
-      console.log('Creating inquiry with business_id:', businessInfo.id);
+      // Show success if at least one submission succeeded
+      if (formspreeSuccess || supabaseSuccess) {
+        trackFormInteraction('footer_quick_contact', 'complete', {
+          page_section: 'footer',
+          formspree_success: formspreeSuccess,
+          supabase_success: supabaseSuccess,
+        });
 
-      await createInquiry({
-        business_id: businessInfo.id,
-        client_name: formData.name,
-        client_email: formData.email,
-        furniture_type: 'General Question',
-        pieces: 1,
-        notes: formData.message,
-        source: 'footer_quick_contact',
-      });
+        trackConversion('quick_contact_submission', 1, 'USD', {
+          page_section: 'footer',
+          conversion_type: 'quick_contact',
+        });
 
-      console.log('Inquiry created successfully');
+        trackEvent('quick-contact-submit', 'footer', {
+          event_category: 'conversion',
+          value: 1,
+          user_engagement: 'form_submission',
+          element_type: 'form',
+          action_type: 'submit',
+        });
 
-      trackFormInteraction('footer_quick_contact', 'complete', {
-        page_section: 'footer',
-      });
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+        setTouched({ name: false, email: false, message: false });
+        setErrors({ name: '', email: '', message: '' });
 
-      trackConversion('quick_contact_submission', 1, 'USD', {
-        page_section: 'footer',
-        conversion_type: 'quick_contact',
-      });
+        setTimeout(() => {
+          setSubmitStatus('idle');
+        }, 5000);
 
-      trackEvent('quick-contact-submit', 'footer', {
-        event_category: 'conversion',
-        value: 1,
-        user_engagement: 'form_submission',
-        element_type: 'form',
-        action_type: 'submit',
-      });
-
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', message: '' });
-      setTouched({ name: false, email: false, message: false });
-      setErrors({ name: '', email: '', message: '' });
-
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 5000);
+        // Log partial failures (one succeeded, one failed)
+        if (errors.length > 0) {
+          console.warn('Partial submission success:', errors);
+        }
+      } else {
+        // Both submissions failed
+        throw new Error(
+          errors.length > 0
+            ? `Submission failed: ${errors.join(', ')}`
+            : 'Unable to send message. Please try again or call us directly.'
+        );
+      }
 
     } catch (error) {
       console.error('Quick contact form submission error:', error);
@@ -177,6 +233,8 @@ const QuickContactForm: React.FC = () => {
       trackEvent('quick-contact-error', 'footer', {
         event_category: 'error',
         error_message: message,
+        formspree_success: formspreeSuccess,
+        supabase_success: supabaseSuccess,
       });
 
       setTimeout(() => {
