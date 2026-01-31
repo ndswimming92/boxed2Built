@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -144,8 +144,6 @@ export default function AdminLayout() {
     enableNotifications: true
   });
 
-  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
   const getInitialExpandedState = (): Record<string, boolean> => {
     const stored = localStorage.getItem('admin-nav-expanded');
     if (stored) {
@@ -168,10 +166,19 @@ export default function AdminLayout() {
   }, [expandedCategories]);
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
+    // If sidebar is collapsed, expand it first, then expand the category
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+      setExpandedCategories(prev => ({
+        ...prev,
+        [categoryId]: true
+      }));
+    } else {
+      setExpandedCategories(prev => ({
+        ...prev,
+        [categoryId]: !prev[categoryId]
+      }));
+    }
   };
 
   const expandAll = () => {
@@ -188,16 +195,6 @@ export default function AdminLayout() {
       return acc;
     }, {} as Record<string, boolean>);
     setExpandedCategories(allCollapsed);
-  };
-
-  const scrollToCategory = (categoryId: string) => {
-    const element = categoryRefs.current[categoryId];
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (!expandedCategories[categoryId]) {
-        toggleCategory(categoryId);
-      }
-    }
   };
 
   useEffect(() => {
@@ -296,28 +293,7 @@ export default function AdminLayout() {
           <nav className="flex-1 overflow-y-auto p-4">
             {/* Quick Actions */}
             {!sidebarCollapsed && (
-              <div className="mb-4 space-y-2">
-                {/* Quick Jump */}
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  Quick Jump
-                </div>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {navigationGroups.map((group) => {
-                    const GroupIcon = group.icon;
-                    return (
-                      <button
-                        key={group.id}
-                        onClick={() => scrollToCategory(group.id)}
-                        className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-                        title={group.name}
-                      >
-                        <GroupIcon className="w-3.5 h-3.5" />
-                        <span className="hidden xl:inline">{group.name.split(' ')[0]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
+              <div className="mb-4">
                 {/* Expand/Collapse All */}
                 <div className="flex gap-2">
                   <button
@@ -348,7 +324,6 @@ export default function AdminLayout() {
                 return (
                   <div
                     key={group.id}
-                    ref={el => categoryRefs.current[group.id] = el}
                     className={groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}
                   >
                     {/* Category Header */}
