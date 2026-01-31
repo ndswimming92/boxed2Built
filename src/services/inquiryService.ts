@@ -2,6 +2,7 @@ import { supabase, FormInquiry } from '../lib/supabase';
 
 export interface CreateInquiryData {
   business_id: string;
+  organization_id: string;
   client_name: string;
   client_email: string;
   client_phone?: string;
@@ -44,6 +45,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     .from('form_inquiries')
     .insert({
       business_id: data.business_id,
+      organization_id: data.organization_id,
       client_name: data.client_name,
       client_email: data.client_email,
       client_phone: data.client_phone || null,
@@ -73,6 +75,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     console.error('Error details:', JSON.stringify(error, null, 2));
     console.error('Insert data:', JSON.stringify({
       business_id: data.business_id,
+      organization_id: data.organization_id,
       client_name: data.client_name,
       client_email: data.client_email,
       furniture_type: data.furniture_type,

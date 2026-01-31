@@ -3,6 +3,7 @@ import { generateConfirmationCode } from '../utils/confirmationCode';
 
 export interface CreateSavedRequestData {
   business_id: string;
+  organization_id: string;
   inquiry_id?: string;
   client_name: string;
   client_email: string;
@@ -46,6 +47,7 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
     .from('saved_requests')
     .insert({
       business_id: data.business_id,
+      organization_id: data.organization_id,
       inquiry_id: data.inquiry_id || null,
       confirmation_code: confirmationCode,
       client_name: data.client_name,

@@ -303,7 +303,7 @@ const ContactForm: React.FC = () => {
       // Save to Supabase database for admin tracking and create saved request
       const { data: businessInfo } = await supabase
         .from('business_info')
-        .select('id')
+        .select('id, organization_id')
         .eq('is_active', true)
         .maybeSingle();
 
@@ -313,6 +313,7 @@ const ContactForm: React.FC = () => {
 
       const inquiry = await createInquiry({
         business_id: businessInfo.id,
+        organization_id: businessInfo.organization_id,
         client_name: values.name,
         client_email: values.email,
         client_phone: values.phone || undefined,
@@ -328,6 +329,7 @@ const ContactForm: React.FC = () => {
 
       const savedRequest = await createSavedRequest({
         business_id: businessInfo.id,
+        organization_id: businessInfo.organization_id,
         inquiry_id: inquiry.id,
         client_name: values.name,
         client_email: values.email,

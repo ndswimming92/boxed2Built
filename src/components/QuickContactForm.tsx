@@ -146,7 +146,7 @@ const QuickContactForm: React.FC = () => {
       try {
         const { data: businessInfo, error: businessError } = await supabase
           .from('business_info')
-          .select('id')
+          .select('id, organization_id')
           .eq('is_active', true)
           .maybeSingle();
 
@@ -157,10 +157,11 @@ const QuickContactForm: React.FC = () => {
           console.error('No active business found');
           errors.push('Business configuration missing');
         } else {
-          console.log('Creating inquiry with business_id:', businessInfo.id);
+          console.log('Creating inquiry with business_id:', businessInfo.id, 'organization_id:', businessInfo.organization_id);
 
           await createInquiry({
             business_id: businessInfo.id,
+            organization_id: businessInfo.organization_id,
             client_name: formData.name,
             client_email: formData.email,
             furniture_type: 'General Question',
