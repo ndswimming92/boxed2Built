@@ -27,13 +27,7 @@ export const organizationService = {
   async getOrganizationMembers(organizationId: string): Promise<OrganizationMember[]> {
     const { data, error } = await supabase
       .from('organization_members')
-      .select(`
-        *,
-        user:user_id (
-          id,
-          email
-        )
-      `)
+      .select('*')
       .eq('organization_id', organizationId)
       .eq('is_active', true)
       .order('joined_at', { ascending: false });
