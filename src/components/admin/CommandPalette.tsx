@@ -2,14 +2,17 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  category?: string;
+}
+
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  navigation: Array<{
-    name: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }>;
+  navigation: NavigationItem[];
 }
 
 export default function CommandPalette({ isOpen, onClose, navigation }: CommandPaletteProps) {
@@ -139,7 +142,12 @@ export default function CommandPalette({ isOpen, onClose, navigation }: CommandP
                       }`}
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="font-medium text-left">{item.name}</span>
+                      <div className="flex-1 flex flex-col items-start">
+                        <span className="font-medium text-left">{item.name}</span>
+                        {item.category && (
+                          <span className="text-xs text-slate-500">{item.category}</span>
+                        )}
+                      </div>
                       {isCurrentPage && (
                         <span className="ml-auto text-xs text-slate-500">Current</span>
                       )}

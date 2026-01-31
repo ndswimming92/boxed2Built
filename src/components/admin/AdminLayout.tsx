@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Image,
   BarChart3,
   Bell,
@@ -30,40 +32,105 @@ import {
   CheckCircle2,
   Calendar,
   Wallet,
-  Navigation
+  Navigation,
+  Maximize2,
+  Minimize2,
+  Zap,
+  DollarSign,
+  Building,
+  TrendingUpIcon,
+  Wrench
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
 
-const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Goals', href: '/admin/goals', icon: Target },
-  { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
-  { name: 'Invoices', href: '/admin/invoices', icon: FileText },
-  { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
-  { name: 'Completions', href: '/admin/completions', icon: CheckCircle2 },
-  { name: 'Reminders', href: '/admin/reminders', icon: Calendar },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Finances', href: '/admin/finances', icon: Wallet },
-  { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
-  { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
-  { name: 'Mileage Settings', href: '/admin/mileage-settings', icon: Navigation },
-  { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },
-  { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
-  { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
-  { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
-  { name: 'Services', href: '/admin/services', icon: Briefcase },
-  { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
-  { name: 'Reviews', href: '/admin/reviews', icon: Star },
-  { name: 'Gallery', href: '/admin/gallery', icon: Image },
-  { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
-  { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
-  { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
-  { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
-  { name: 'Attributes', href: '/admin/attributes', icon: Settings },
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+}
+
+interface NavigationGroup {
+  id: string;
+  name: string;
+  icon: React.ElementType;
+  defaultExpanded: boolean;
+  items: NavigationItem[];
+}
+
+const navigationGroups: NavigationGroup[] = [
+  {
+    id: 'core',
+    name: 'Core Operations',
+    icon: Zap,
+    defaultExpanded: true,
+    items: [
+      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'Goals', href: '/admin/goals', icon: Target },
+      { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
+      { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
+      { name: 'Completions', href: '/admin/completions', icon: CheckCircle2 },
+      { name: 'Reminders', href: '/admin/reminders', icon: Calendar },
+    ],
+  },
+  {
+    id: 'financial',
+    name: 'Financial Management',
+    icon: DollarSign,
+    defaultExpanded: true,
+    items: [
+      { name: 'Invoices', href: '/admin/invoices', icon: FileText },
+      { name: 'Finances', href: '/admin/finances', icon: Wallet },
+      { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
+      { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
+      { name: 'Mileage Settings', href: '/admin/mileage-settings', icon: Navigation },
+      { name: 'Invoice Settings', href: '/admin/invoice-settings', icon: Settings },
+    ],
+  },
+  {
+    id: 'business',
+    name: 'Business Profile',
+    icon: Building,
+    defaultExpanded: false,
+    items: [
+      { name: 'Business Info', href: '/admin/business-info', icon: Building2 },
+      { name: 'Services', href: '/admin/services', icon: Briefcase },
+      { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
+      { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
+      { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
+      { name: 'Gallery', href: '/admin/gallery', icon: Image },
+    ],
+  },
+  {
+    id: 'marketing',
+    name: 'Marketing & Engagement',
+    icon: TrendingUpIcon,
+    defaultExpanded: false,
+    items: [
+      { name: 'Reviews', href: '/admin/reviews', icon: Star },
+      { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
+      { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
+      { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
+    ],
+  },
+  {
+    id: 'system',
+    name: 'System & Tools',
+    icon: Wrench,
+    defaultExpanded: false,
+    items: [
+      { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+      { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
+      { name: 'Attributes', href: '/admin/attributes', icon: Settings },
+    ],
+  },
 ];
+
+const navigation: Array<NavigationItem & { category?: string }> = navigationGroups.flatMap(group =>
+  group.items.map(item => ({ ...item, category: group.name }))
+);
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,6 +143,62 @@ export default function AdminLayout() {
     businessId,
     enableNotifications: true
   });
+
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const getInitialExpandedState = (): Record<string, boolean> => {
+    const stored = localStorage.getItem('admin-nav-expanded');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return {};
+      }
+    }
+    return navigationGroups.reduce((acc, group) => {
+      acc[group.id] = group.defaultExpanded;
+      return acc;
+    }, {} as Record<string, boolean>);
+  };
+
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(getInitialExpandedState);
+
+  useEffect(() => {
+    localStorage.setItem('admin-nav-expanded', JSON.stringify(expandedCategories));
+  }, [expandedCategories]);
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  const expandAll = () => {
+    const allExpanded = navigationGroups.reduce((acc, group) => {
+      acc[group.id] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setExpandedCategories(allExpanded);
+  };
+
+  const collapseAll = () => {
+    const allCollapsed = navigationGroups.reduce((acc, group) => {
+      acc[group.id] = false;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setExpandedCategories(allCollapsed);
+  };
+
+  const scrollToCategory = (categoryId: string) => {
+    const element = categoryRefs.current[categoryId];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!expandedCategories[categoryId]) {
+        toggleCategory(categoryId);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -171,40 +294,169 @@ export default function AdminLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
-            <ul className="space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
+            {/* Quick Actions */}
+            {!sidebarCollapsed && (
+              <div className="mb-4 space-y-2">
+                {/* Quick Jump */}
+                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Quick Jump
+                </div>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {navigationGroups.map((group) => {
+                    const GroupIcon = group.icon;
+                    return (
+                      <button
+                        key={group.id}
+                        onClick={() => scrollToCategory(group.id)}
+                        className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                        title={group.name}
+                      >
+                        <GroupIcon className="w-3.5 h-3.5" />
+                        <span className="hidden xl:inline">{group.name.split(' ')[0]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Expand/Collapse All */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={expandAll}
+                    className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    Expand All
+                  </button>
+                  <button
+                    onClick={collapseAll}
+                    className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
+                  >
+                    <Minimize2 className="w-3.5 h-3.5" />
+                    Collapse All
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Groups */}
+            <div className="space-y-3">
+              {navigationGroups.map((group, groupIndex) => {
+                const isExpanded = expandedCategories[group.id];
+                const GroupIcon = group.icon;
+                const hasActiveItem = group.items.some(item => location.pathname === item.href);
+
                 return (
-                  <li key={item.name}>
-                    <Link
-                      to={item.href}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-3 rounded-lg transition-colors relative group ${
-                        sidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-3' : 'px-4 py-3'
+                  <div
+                    key={group.id}
+                    ref={el => categoryRefs.current[group.id] = el}
+                    className={groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}
+                  >
+                    {/* Category Header */}
+                    <button
+                      onClick={() => toggleCategory(group.id)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors relative group ${
+                        sidebarCollapsed ? 'lg:justify-center' : ''
                       } ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'text-slate-700 hover:bg-slate-50'
+                        hasActiveItem
+                          ? 'text-emerald-700 bg-emerald-50'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                       }`}
-                      title={sidebarCollapsed ? item.name : undefined}
                     >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
-                      {isActive && !sidebarCollapsed && <ChevronRight className="w-4 h-4 ml-auto" />}
+                      <GroupIcon className="w-4 h-4 flex-shrink-0" />
+                      <span className={`flex-1 text-left transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
+                        {group.name}
+                      </span>
+                      {!sidebarCollapsed && (
+                        isExpanded ? (
+                          <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                        ) : (
+                          <ChevronUp className="w-4 h-4 flex-shrink-0" />
+                        )
+                      )}
 
                       {/* Tooltip for collapsed state */}
                       {sidebarCollapsed && (
                         <div className="hidden lg:block absolute left-full ml-2 px-3 py-2 bg-slate-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50">
-                          {item.name}
+                          {group.name}
                           <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
                         </div>
                       )}
-                    </Link>
-                  </li>
+                    </button>
+
+                    {/* Category Items */}
+                    {isExpanded && !sidebarCollapsed && (
+                      <ul className="mt-1 space-y-0.5 ml-1">
+                        {group.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = location.pathname === item.href;
+                          const showBadge = item.name === 'Inquiries' && unviewedCount > 0;
+
+                          return (
+                            <li key={item.name}>
+                              <Link
+                                to={item.href}
+                                onClick={() => setSidebarOpen(false)}
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors relative ${
+                                  isActive
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'text-slate-700 hover:bg-slate-50'
+                                }`}
+                              >
+                                <Icon className="w-4 h-4 flex-shrink-0" />
+                                <span className="font-medium text-sm">{item.name}</span>
+                                {showBadge && (
+                                  <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
+                                    {unviewedCount > 99 ? '99+' : unviewedCount}
+                                  </span>
+                                )}
+                                {isActive && !showBadge && <ChevronRight className="w-4 h-4 ml-auto" />}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {/* Collapsed sidebar submenu on hover */}
+                    {sidebarCollapsed && (
+                      <div className="hidden lg:block absolute left-full top-0 ml-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
+                        <div className="bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[200px]">
+                          <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-600 border-b border-slate-100 mb-1">
+                            {group.name}
+                          </div>
+                          {group.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.href;
+                            const showBadge = item.name === 'Inquiries' && unviewedCount > 0;
+
+                            return (
+                              <Link
+                                key={item.name}
+                                to={item.href}
+                                onClick={() => setSidebarOpen(false)}
+                                className={`flex items-center gap-3 px-3 py-2 transition-colors ${
+                                  isActive
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'text-slate-700 hover:bg-slate-50'
+                                }`}
+                              >
+                                <Icon className="w-4 h-4 flex-shrink-0" />
+                                <span className="font-medium text-sm">{item.name}</span>
+                                {showBadge && (
+                                  <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
+                                    {unviewedCount > 99 ? '99+' : unviewedCount}
+                                  </span>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           </nav>
 
           {/* Toggle button and logout */}
