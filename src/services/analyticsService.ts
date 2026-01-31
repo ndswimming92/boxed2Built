@@ -48,6 +48,42 @@ export interface ClientTypeData {
   percent: number;
 }
 
+export interface ConversionMetrics {
+  totalOpportunities: number;
+  quotedJobs: number;
+  acceptedJobs: number;
+  scheduledJobs: number;
+  inProgressJobs: number;
+  completedJobs: number;
+  lostJobs: number;
+  cancelledJobs: number;
+  quoteToCompleteRate: number;
+  winRate: number;
+  lossRate: number;
+  cancellationRate: number;
+  activePipelineValue: number;
+  lostOpportunityValue: number;
+  avgDaysToComplete: number;
+}
+
+export interface LostDealBreakdown {
+  category: string;
+  count: number;
+  totalValue: number;
+  percentage: number;
+}
+
+export interface JobTypeConversion {
+  jobType: string;
+  totalQuoted: number;
+  completed: number;
+  lost: number;
+  cancelled: number;
+  winRate: number;
+  avgQuoteValue: number;
+  totalRevenue: number;
+}
+
 export type TimePeriod = 'current_month' | 'last_3_months' | 'last_6_months' | 'current_year' | 'all_time';
 
 function calculateNetProfit(finalPrice: number | null, materialsCost: number | null): number {
@@ -542,4 +578,149 @@ export function getMaterialsCostAnalysis(jobs: Job[], period: TimePeriod): Mater
       suggestion,
     };
   }).sort((a, b) => b.avgMaterialsPercent - a.avgMaterialsPercent);
+}
+
+export function calculateConversionMetrics(jobs: Job[], period: TimePeriod): ConversionMetrics {
+  const filteredJobs = period === 'all_time' ? jobs : filterJobsByPeriod(jobs, period);
+
+  const quotedJobs = filteredJobs.filter(j => j.job_status === 'quoted').length;
+  const acceptedJobs = filteredJobs.filter(j => j.job_status === 'accepted').length;
+  const scheduledJobs = filteredJobs.filter(j => j.job_status === 'scheduled').length;
+  const inProgressJobs = filteredJobs.filter(j => j.job_status === 'in_progress').length;
+  const completedJobs = filteredJobs.filter(j => j.job_status === 'completed').length;
+  const lostJobs = filteredJobs.filter(j => j.job_status === 'lost').length;
+  const cancelledJobs = filteredJobs.filter(j => j.job_status === 'cancelled').length;
+
+  const totalOpportunities = filteredJobs.length;
+  const quoteToCompleteRate = totalOpportunities > 0 ? (completedJobs / totalOpportunities) * 100 : 0;
+  const winRate = (completedJobs + lostJobs) > 0 ? (completedJobs / (completedJobs + lostJobs)) * 100 : 0;
+  const lossRate = totalOpportunities > 0 ? (lostJobs / totalOpportunities) * 100 : 0;
+  const cancellationRate = totalOpportunities > 0 ? (cancelledJobs / totalOpportunities) * 100 : 0;
+
+  const activePipelineValue = filteredJobs
+    .filter(j => ['quoted', 'accepted', 'scheduled', 'in_progress'].includes(j.job_status))
+    .reduce((sum, j) => sum + (j.quoted_price || 0), 0);
+
+  const lostOpportunityValue = filteredJobs
+    .filter(j => j.job_status === 'lost')
+    .reduce((sum, j) => sum + (j.quoted_price || 0), 0);
+
+  const completedWithDates = filteredJobs.filter(j =>
+    j.job_status === 'completed' && j.date_quoted && j.date_completed
+  );
+
+  let avgDaysToComplete = 0;
+  if (completedWithDates.length > 0) {
+    const totalDays = completedWithDates.reduce((sum, j) => {
+      const quotedDate = new Date(j.date_quoted!);
+      const completedDate = new Date(j.date_completed!);
+      const days = Math.floor((completedDate.getTime() - quotedDate.getTime()) / (1000 * 60 * 60 * 24));
+      return sum + days;
+    }, 0);
+    avgDaysToComplete = totalDays / completedWithDates.length;
+  }
+
+  return {
+    totalOpportunities,
+    quotedJobs,
+    acceptedJobs,
+    scheduledJobs,
+    inProgressJobs,
+    completedJobs,
+    lostJobs,
+    cancelledJobs,
+    quoteToCompleteRate,
+    winRate,
+    lossRate,
+    cancellationRate,
+    activePipelineValue,
+    lostOpportunityValue,
+    avgDaysToComplete,
+  };
+}
+
+export function getLostDealBreakdown(jobs: Job[], period: TimePeriod): LostDealBreakdown[] {
+  const filteredJobs = period === 'all_time' ? jobs : filterJobsByPeriod(jobs, period);
+  const lostJobs = filteredJobs.filter(j => j.job_status === 'lost');
+
+  const categoryMap = new Map<string, { count: number; totalValue: number }>();
+
+  lostJobs.forEach(job => {
+    const category = job.lost_reason_category || 'Not Specified';
+    const existing = categoryMap.get(category) || { count: 0, totalValue: 0 };
+    categoryMap.set(category, {
+      count: existing.count + 1,
+      totalValue: existing.totalValue + (job.quoted_price || 0),
+    });
+  });
+
+  const total = lostJobs.length;
+
+  return Array.from(categoryMap.entries())
+    .map(([category, data]) => ({
+      category,
+      count: data.count,
+      totalValue: data.totalValue,
+      percentage: total > 0 ? (data.count / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function getJobTypeConversionRates(jobs: Job[], period: TimePeriod): JobTypeConversion[] {
+  const filteredJobs = period === 'all_time' ? jobs : filterJobsByPeriod(jobs, period);
+
+  const jobTypeMap = new Map<string, {
+    quoted: number;
+    completed: number;
+    lost: number;
+    cancelled: number;
+    totalQuoteValue: number;
+    totalRevenue: number;
+  }>();
+
+  filteredJobs.forEach(job => {
+    const type = job.job_type || 'Uncategorized';
+    const existing = jobTypeMap.get(type) || {
+      quoted: 0,
+      completed: 0,
+      lost: 0,
+      cancelled: 0,
+      totalQuoteValue: 0,
+      totalRevenue: 0,
+    };
+
+    if (job.job_status === 'quoted') existing.quoted++;
+    if (job.job_status === 'completed') existing.completed++;
+    if (job.job_status === 'lost') existing.lost++;
+    if (job.job_status === 'cancelled') existing.cancelled++;
+
+    existing.totalQuoteValue += (job.quoted_price || 0);
+    if (job.job_status === 'completed') {
+      existing.totalRevenue += (job.final_price || 0);
+    }
+
+    jobTypeMap.set(type, existing);
+  });
+
+  return Array.from(jobTypeMap.entries())
+    .map(([jobType, data]) => {
+      const totalQuoted = data.quoted + data.completed + data.lost + data.cancelled;
+      const winRate = (data.completed + data.lost) > 0
+        ? (data.completed / (data.completed + data.lost)) * 100
+        : 0;
+      const avgQuoteValue = totalQuoted > 0 ? data.totalQuoteValue / totalQuoted : 0;
+
+      return {
+        jobType,
+        totalQuoted,
+        completed: data.completed,
+        lost: data.lost,
+        cancelled: data.cancelled,
+        winRate,
+        avgQuoteValue,
+        totalRevenue: data.totalRevenue,
+      };
+    })
+    .filter(item => item.totalQuoted > 0)
+    .sort((a, b) => b.totalQuoted - a.totalQuoted);
 }

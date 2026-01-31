@@ -38,6 +38,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     repeat_client: false,
     referral_source: '',
     notes: '',
+    job_status: 'quoted',
   });
 
   useEffect(() => {
@@ -186,6 +187,23 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <select name="job_status"
+                  value={formData.job_status || 'quoted'}
+                  onChange={(e) => setFormData({ ...formData, job_status: e.target.value as any })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="quoted">Quoted</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Use Mark Lost or Cancel buttons from Jobs page for lost/cancelled jobs
+                </p>
               </div>
             </div>
             <div>

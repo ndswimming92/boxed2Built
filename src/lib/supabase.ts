@@ -173,6 +173,18 @@ export type GalleryItem = {
   updated_at: string;
 };
 
+export type JobStatus = 'quoted' | 'accepted' | 'scheduled' | 'in_progress' | 'completed' | 'lost' | 'cancelled';
+
+export type LostReasonCategory =
+  | 'Price too high'
+  | 'Went with competitor'
+  | 'Customer decided not to proceed'
+  | 'Timeline didn\'t work'
+  | 'Customer unresponsive'
+  | 'Out of service area'
+  | 'Project scope mismatch'
+  | 'Other';
+
 export type Job = {
   id: string;
   business_id: string;
@@ -201,6 +213,11 @@ export type Job = {
   signed_off_at: string | null;
   total_mileage: number | null;
   mileage_deduction: number | null;
+  job_status: JobStatus;
+  lost_reason_category: LostReasonCategory | null;
+  lost_reason_notes: string | null;
+  status_changed_at: string | null;
+  status_changed_by: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

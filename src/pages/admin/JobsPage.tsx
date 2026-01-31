@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { supabase, Job } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation } from 'lucide-react';
+import { supabase, Job, JobStatus } from '../../lib/supabase';
+import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info } from 'lucide-react';
 import {
-  determineJobStatus,
   calculateNetProfit,
   calculateHourlyRate,
   formatCurrency,
   formatDate,
   formatHours,
-  getStatusColor,
-  JobStatus
 } from '../../utils/jobCalculations';
 import JobFormModal from '../../components/admin/JobFormModal';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
@@ -19,7 +16,10 @@ import AttachInvoiceModal from '../../components/admin/AttachInvoiceModal';
 import JobInvoicesList from '../../components/admin/JobInvoicesList';
 import MileageTrackerButton from '../../components/admin/MileageTrackerButton';
 import MileageRecordsList from '../../components/admin/MileageRecordsList';
+import MarkJobLostModal from '../../components/admin/MarkJobLostModal';
+import CancelJobModal from '../../components/admin/CancelJobModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
+import { jobStatusService } from '../../services/jobStatusService';
 
 interface JobStats {
   totalJobs: number;
@@ -47,6 +47,9 @@ export default function JobsPage() {
   const [completingJob, setCompletingJob] = useState<Job | null>(null);
   const [creatingInvoiceForJob, setCreatingInvoiceForJob] = useState<Job | null>(null);
   const [attachingInvoiceToJob, setAttachingInvoiceToJob] = useState<Job | null>(null);
+  const [markingJobLost, setMarkingJobLost] = useState<Job | null>(null);
+  const [cancellingJob, setCancellingJob] = useState<Job | null>(null);
+  const [showInactiveJobs, setShowInactiveJobs] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -54,7 +57,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [jobs, searchTerm, statusFilter, locationFilter]);
+  }, [jobs, searchTerm, statusFilter, locationFilter, showInactiveJobs]);
 
   const fetchData = async () => {
     try {
@@ -110,6 +113,12 @@ export default function JobsPage() {
   const applyFilters = () => {
     let filtered = [...jobs];
 
+    if (!showInactiveJobs) {
+      filtered = filtered.filter(job =>
+        job.job_status !== 'lost' && job.job_status !== 'cancelled'
+      );
+    }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(job =>
@@ -121,7 +130,7 @@ export default function JobsPage() {
     }
 
     if (statusFilter !== 'All') {
-      filtered = filtered.filter(job => determineJobStatus(job) === statusFilter);
+      filtered = filtered.filter(job => job.job_status === statusFilter.toLowerCase());
     }
 
     if (locationFilter !== 'All') {
@@ -308,32 +317,54 @@ export default function JobsPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
-              <select name="statusFilter"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as JobStatus | 'All')}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Quoted">Quoted</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="Completed">Completed</option>
-              </select>
+          <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <select name="statusFilter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as JobStatus | 'All')}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Quoted">Quoted</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  {showInactiveJobs && (
+                    <>
+                      <option value="Lost">Lost</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </>
+                  )}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
+                <select name="locationFilter"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="All">All Locations</option>
+                  {uniqueLocations.map(location => (
+                    <option key={location} value={location}>{location}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
-              <select name="locationFilter"
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="All">All Locations</option>
-                {uniqueLocations.map(location => (
-                  <option key={location} value={location}>{location}</option>
-                ))}
-              </select>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="showInactiveJobs"
+                checked={showInactiveJobs}
+                onChange={(e) => setShowInactiveJobs(e.target.checked)}
+                className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+              />
+              <label htmlFor="showInactiveJobs" className="ml-2 text-sm text-slate-700">
+                Show lost and cancelled jobs
+              </label>
             </div>
           </div>
         )}
@@ -361,19 +392,29 @@ export default function JobsPage() {
           </div>
         ) : (
           filteredJobs.map((job) => {
-            const status = determineJobStatus(job);
             const netProfit = calculateNetProfit(job.final_price, job.materials_cost);
             const hourlyRate = calculateHourlyRate(job.final_price, job.materials_cost, job.hours_worked);
+            const statusLabel = jobStatusService.getStatusLabel(job.job_status);
+            const statusColor = jobStatusService.getStatusColor(job.job_status);
+            const isInactive = job.job_status === 'lost' || job.job_status === 'cancelled';
 
             return (
-              <div key={job.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+              <div key={job.id} className={`bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow ${isInactive ? 'opacity-60' : ''}`}>
                 <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-slate-900">{job.client_name}</h3>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(status)}`}>
-                        {status}
+                      <h3 className={`text-xl font-semibold ${isInactive ? 'line-through text-slate-500' : 'text-slate-900'}`}>
+                        {job.client_name}
+                      </h3>
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusColor}`}>
+                        {statusLabel}
                       </span>
+                      {job.job_status === 'lost' && job.lost_reason_category && (
+                        <span className="px-3 py-1 text-xs rounded-full border bg-gray-100 text-gray-700 border-gray-200 flex items-center gap-1" title={job.lost_reason_notes || job.lost_reason_category}>
+                          <Info className="w-3 h-3" />
+                          {job.lost_reason_category}
+                        </span>
+                      )}
                       {job.repeat_client && (
                         <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-indigo-100 text-indigo-800 border-indigo-200">
                           Repeat Client
@@ -392,44 +433,68 @@ export default function JobsPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    {(job.date_scheduled || job.date_completed) && !job.has_signature && (
-                      <button
-                        onClick={() => setCompletingJob(job)}
-                        className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-                        title="Complete job with customer signature"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        Complete Job
-                      </button>
+                    {!isInactive && (
+                      <>
+                        {(job.date_scheduled || job.date_completed) && !job.has_signature && (
+                          <button
+                            onClick={() => setCompletingJob(job)}
+                            className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                            title="Complete job with customer signature"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Complete Job
+                          </button>
+                        )}
+                        {(job.job_status === 'quoted' || job.job_status === 'scheduled') && (
+                          <button
+                            onClick={() => setMarkingJobLost(job)}
+                            className="px-3 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-medium hover:bg-amber-200 transition-colors flex items-center gap-2 text-sm"
+                            title="Mark job as lost"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            Mark Lost
+                          </button>
+                        )}
+                        {(job.job_status === 'accepted' || job.job_status === 'scheduled' || job.job_status === 'in_progress') && (
+                          <button
+                            onClick={() => setCancellingJob(job)}
+                            className="px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2 text-sm"
+                            title="Cancel job"
+                          >
+                            <Ban className="w-4 h-4" />
+                            Cancel
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setCreatingInvoiceForJob(job)}
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="Create invoice from job"
+                        >
+                          <FileText className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setAttachingInvoiceToJob(job)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Attach existing invoice"
+                        >
+                          <LinkIcon className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleCopyJob(job)}
+                          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Copy job"
+                        >
+                          <Copy className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => { setEditingJob(job); setCopyingJob(null); setShowModal(true); }}
+                          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Edit job"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                      </>
                     )}
-                    <button
-                      onClick={() => setCreatingInvoiceForJob(job)}
-                      className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                      title="Create invoice from job"
-                    >
-                      <FileText className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setAttachingInvoiceToJob(job)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Attach existing invoice"
-                    >
-                      <LinkIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleCopyJob(job)}
-                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Copy job"
-                    >
-                      <Copy className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => { setEditingJob(job); setCopyingJob(null); setShowModal(true); }}
-                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Edit job"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
                     <button
                       onClick={() => handleDelete(job.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -603,6 +668,34 @@ export default function JobsPage() {
             setAttachingInvoiceToJob(null);
             fetchData();
             setMessage({ type: 'success', text: 'Invoice attached successfully!' });
+            setTimeout(() => setMessage(null), 3000);
+          }}
+        />
+      )}
+
+      {markingJobLost && (
+        <MarkJobLostModal
+          job={markingJobLost}
+          isOpen={true}
+          onClose={() => setMarkingJobLost(null)}
+          onSuccess={() => {
+            setMarkingJobLost(null);
+            fetchData();
+            setMessage({ type: 'success', text: 'Job marked as lost successfully!' });
+            setTimeout(() => setMessage(null), 3000);
+          }}
+        />
+      )}
+
+      {cancellingJob && (
+        <CancelJobModal
+          job={cancellingJob}
+          isOpen={true}
+          onClose={() => setCancellingJob(null)}
+          onSuccess={() => {
+            setCancellingJob(null);
+            fetchData();
+            setMessage({ type: 'success', text: 'Job cancelled successfully!' });
             setTimeout(() => setMessage(null), 3000);
           }}
         />

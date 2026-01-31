@@ -6,9 +6,13 @@ export interface JobCSVRow {
   'Client Email': string;
   'Job Type': string;
   'Job Description': string;
+  'Status': string;
   'Date Quoted': string;
   'Date Scheduled': string;
   'Date Completed': string;
+  'Lost Reason Category': string;
+  'Lost Reason Notes': string;
+  'Status Changed At': string;
   'Hours Worked': string;
   'Quoted Price': string;
   'Final Price': string;
@@ -32,9 +36,13 @@ const CSV_HEADERS: (keyof JobCSVRow)[] = [
   'Client Email',
   'Job Type',
   'Job Description',
+  'Status',
   'Date Quoted',
   'Date Scheduled',
   'Date Completed',
+  'Lost Reason Category',
+  'Lost Reason Notes',
+  'Status Changed At',
   'Hours Worked',
   'Quoted Price',
   'Final Price',
@@ -90,15 +98,29 @@ function jobToCSVRow(job: Job): JobCSVRow {
   const state = '';
   const cityState = city && state ? `${city}, ${state}` : city;
 
+  const statusLabels: Record<string, string> = {
+    'quoted': 'Quoted',
+    'accepted': 'Accepted',
+    'scheduled': 'Scheduled',
+    'in_progress': 'In Progress',
+    'completed': 'Completed',
+    'lost': 'Lost',
+    'cancelled': 'Cancelled',
+  };
+
   return {
     'Client Name': job.client_name || '',
     'Client Phone': job.client_phone || '',
     'Client Email': job.client_email || '',
     'Job Type': job.job_type || '',
     'Job Description': job.job_description || '',
+    'Status': statusLabels[job.job_status] || job.job_status,
     'Date Quoted': formatDateForExport(job.date_quoted),
     'Date Scheduled': formatDateForExport(job.date_scheduled),
     'Date Completed': formatDateForExport(job.date_completed),
+    'Lost Reason Category': job.lost_reason_category || '',
+    'Lost Reason Notes': job.lost_reason_notes || '',
+    'Status Changed At': formatDateForExport(job.status_changed_at),
     'Hours Worked': formatNumberForExport(job.hours_worked),
     'Quoted Price': formatNumberForExport(job.quoted_price),
     'Final Price': formatNumberForExport(job.final_price),
@@ -125,9 +147,13 @@ export function generateCSVTemplate(): string {
     'Client Email': 'john.smith@example.com',
     'Job Type': 'Furniture Assembly',
     'Job Description': 'Assemble office desk and filing cabinet',
+    'Status': 'Completed',
     'Date Quoted': '1/15/2025',
     'Date Scheduled': '1/20/2025',
     'Date Completed': '1/20/2025',
+    'Lost Reason Category': '',
+    'Lost Reason Notes': '',
+    'Status Changed At': '1/20/2025',
     'Hours Worked': '2.5',
     'Quoted Price': '150',
     'Final Price': '150',
