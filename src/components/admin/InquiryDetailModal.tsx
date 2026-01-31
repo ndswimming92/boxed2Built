@@ -181,6 +181,11 @@ export default function InquiryDetailModal({
               {inquiry.status.replace('_', ' ').toUpperCase()}
             </span>
             {!inquiry.viewed && <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">NEW</span>}
+            {inquiry.source === 'footer_quick_contact' && (
+              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
+                Quick Contact
+              </span>
+            )}
           </div>
 
           {inquiry.confirmation_code && (

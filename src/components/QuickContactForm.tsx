@@ -270,8 +270,8 @@ const QuickContactForm: React.FC = () => {
         <div className="flex items-center justify-center gap-3 text-green-400">
           <CheckCircle size={24} className="drop-shadow-lg" />
           <div>
-            <h4 className="font-bold text-lg drop-shadow-md">Message Sent!</h4>
-            <p className="text-sm text-gray-200 mt-1">We'll get back to you within 24 hours.</p>
+            <h4 className="font-bold text-lg drop-shadow-md">Message Received!</h4>
+            <p className="text-sm text-gray-200 mt-1">Your inquiry has been saved and we'll respond within 24 hours.</p>
           </div>
         </div>
       </div>

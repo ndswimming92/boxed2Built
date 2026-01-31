@@ -21,6 +21,7 @@ export default function InquiriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'converted_to_job' | 'archived'>('all');
   const [furnitureTypeFilter, setFurnitureTypeFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<InquiryStats>({ total: 0, pending: 0, converted: 0, archived: 0, conversionRate: 0 });
   const [filteredInquiries, setFilteredInquiries] = useState<FormInquiry[]>([]);
@@ -45,7 +46,7 @@ export default function InquiriesPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [inquiries, searchTerm, statusFilter, furnitureTypeFilter]);
+  }, [inquiries, searchTerm, statusFilter, furnitureTypeFilter, sourceFilter]);
 
   const fetchBusinessId = async () => {
     try {
@@ -145,6 +146,10 @@ export default function InquiriesPage() {
 
     if (furnitureTypeFilter !== 'all') {
       filtered = filtered.filter((inquiry) => inquiry.furniture_type === furnitureTypeFilter);
+    }
+
+    if (sourceFilter !== 'all') {
+      filtered = filtered.filter((inquiry) => inquiry.source === sourceFilter);
     }
 
     setFilteredInquiries(filtered);
@@ -289,6 +294,7 @@ export default function InquiriesPage() {
   };
 
   const uniqueFurnitureTypes = Array.from(new Set(inquiries.map((i) => i.furniture_type).filter(Boolean)));
+  const uniqueSources = Array.from(new Set(inquiries.map((i) => i.source).filter(Boolean)));
 
   if (loading) {
     return (
@@ -416,7 +422,7 @@ export default function InquiriesPage() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
               <select name="statusFilter"
@@ -441,6 +447,21 @@ export default function InquiriesPage() {
                 {uniqueFurnitureTypes.map((type) => (
                   <option key={type} value={type}>
                     {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Source</label>
+              <select name="sourceFilter"
+                value={sourceFilter}
+                onChange={(e) => setSourceFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">All Sources</option>
+                {uniqueSources.map((source) => (
+                  <option key={source} value={source}>
+                    {source === 'footer_quick_contact' ? 'Footer Quick Contact' : source.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </option>
                 ))}
               </select>
@@ -488,6 +509,11 @@ export default function InquiriesPage() {
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
                       {getStatusLabel(inquiry.status)}
                     </span>
+                    {inquiry.source === 'footer_quick_contact' && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
+                        Quick Contact
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
                     <span className="flex items-center gap-1">
