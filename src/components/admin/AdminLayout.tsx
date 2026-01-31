@@ -39,12 +39,15 @@ import {
   DollarSign,
   Building,
   TrendingUpIcon,
-  Wrench
+  Wrench,
+  Users,
+  Shield
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
+import { OrganizationSwitcher } from './OrganizationSwitcher';
 
 interface NavigationItem {
   name: string;
@@ -124,6 +127,16 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
+    ],
+  },
+  {
+    id: 'access',
+    name: 'Access Control',
+    icon: Shield,
+    defaultExpanded: false,
+    items: [
+      { name: 'Organizations', href: '/admin/organizations', icon: Building2 },
+      { name: 'Team', href: '/admin/team', icon: Users },
     ],
   },
 ];
@@ -507,6 +520,8 @@ export default function AdminLayout() {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
+              <OrganizationSwitcher />
+
               <Link
                 to="/admin/inquiries"
                 className="relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"

@@ -1,5 +1,36 @@
 // Type definitions for the application
 
+export type OrganizationRole = 'viewer' | 'member' | 'admin' | 'owner';
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface OrganizationMember {
+  id: string;
+  user_id: string;
+  organization_id: string;
+  role: OrganizationRole;
+  invited_at: string;
+  joined_at: string;
+  is_active: boolean;
+  user?: {
+    email: string;
+    id: string;
+  };
+}
+
+export interface UserOrganizationContext {
+  organization: Organization;
+  role: OrganizationRole;
+  is_active: boolean;
+}
+
 export interface ServiceItem {
   id: number;
   type: string;
@@ -21,6 +52,7 @@ export interface Review {
 export interface FormInquiry {
   id: string;
   business_id: string;
+  organization_id: string;
   client_name: string;
   client_email: string;
   client_phone: string | null;

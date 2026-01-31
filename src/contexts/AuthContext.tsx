@@ -3,11 +3,19 @@ import { supabase } from '../lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { logAction } from '../services/auditLogService';
 import { isUserAuthorized, getAuthorizationError } from '../utils/authorization';
+import { Organization, OrganizationRole } from '../types';
+import { organizationService } from '../services/organizationService';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  currentOrganization: Organization | null;
+  currentRole: OrganizationRole | null;
+  userOrganizations: Organization[];
+  isPlatformAdmin: boolean;
+  setCurrentOrganization: (org: Organization) => void;
+  refreshOrganizations: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -20,11 +28,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentOrganization, setCurrentOrganizationState] = useState<Organization | null>(null);
+  const [currentRole, setCurrentRole] = useState<OrganizationRole | null>(null);
+  const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  const loadOrganizations = async (userId: string) => {
+    try {
+      const orgs = await organizationService.getUserOrganizations(userId);
+      setUserOrganizations(orgs);
+
+      const storedOrgId = localStorage.getItem('currentOrganizationId');
+      let selectedOrg = orgs.find(org => org.id === storedOrgId) || orgs[0] || null;
+
+      if (selectedOrg) {
+        setCurrentOrganizationState(selectedOrg);
+        const role = await organizationService.getUserRole(userId, selectedOrg.id);
+        setCurrentRole(role);
+      }
+    } catch (error) {
+      console.error('Error loading organizations:', error);
+    }
+  };
+
+  const refreshOrganizations = async () => {
+    if (user) {
+      await loadOrganizations(user.id);
+    }
+  };
+
+  const setCurrentOrganization = (org: Organization) => {
+    setCurrentOrganizationState(org);
+    localStorage.setItem('currentOrganizationId', org.id);
+    if (user) {
+      organizationService.getUserRole(user.id, org.id).then(setCurrentRole);
+    }
+  };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        setIsPlatformAdmin(session.user.app_metadata?.is_platform_admin === true);
+        await loadOrganizations(session.user.id);
+      }
+
       setLoading(false);
     });
 
@@ -62,11 +112,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        if (session?.user && event === 'SIGNED_IN') {
+          setIsPlatformAdmin(session.user.app_metadata?.is_platform_admin === true);
+          await loadOrganizations(session.user.id);
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
 
         if (event === 'SIGNED_OUT') {
           console.log('User signed out');
+          setCurrentOrganizationState(null);
+          setCurrentRole(null);
+          setUserOrganizations([]);
+          setIsPlatformAdmin(false);
+          localStorage.removeItem('currentOrganizationId');
         }
       })();
     });
@@ -187,6 +247,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    currentOrganization,
+    currentRole,
+    userOrganizations,
+    isPlatformAdmin,
+    setCurrentOrganization,
+    refreshOrganizations,
     signIn,
     signInWithGoogle,
     signOut,
