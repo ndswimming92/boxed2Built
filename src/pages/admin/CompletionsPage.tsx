@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
-import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2 } from 'lucide-react';
+import { downloadPhoto, sharePhoto, canShare } from '../../utils/photoDownload';
 
 export default function CompletionsPage() {
   const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
@@ -80,6 +81,38 @@ export default function CompletionsPage() {
       checked: checklist.filter((item: any) => item.checked).length,
       total: checklist.length,
     };
+  };
+
+  const handleDownloadPhoto = (photoUrl: string, completion: JobCompletion & { job: any }, index: number) => {
+    const timestamp = new Date(completion.completed_at).toISOString().split('T')[0];
+    const sanitizedClientName = (completion.customer_name || 'customer').replace(/[^a-zA-Z0-9]/g, '-');
+    const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+    downloadPhoto(photoUrl, filename);
+  };
+
+  const handleSharePhoto = async (photoUrl: string, completion: JobCompletion & { job: any }, index: number) => {
+    const timestamp = new Date(completion.completed_at).toISOString().split('T')[0];
+    const sanitizedClientName = (completion.customer_name || 'customer').replace(/[^a-zA-Z0-9]/g, '-');
+    const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+
+    const shared = await sharePhoto(photoUrl, filename);
+    if (!shared) {
+      downloadPhoto(photoUrl, filename);
+    }
+  };
+
+  const handleDownloadAllPhotos = (completion: JobCompletion & { job: any }) => {
+    if (!completion.completion_photos || completion.completion_photos.length === 0) return;
+
+    const timestamp = new Date(completion.completed_at).toISOString().split('T')[0];
+    const sanitizedClientName = (completion.customer_name || 'customer').replace(/[^a-zA-Z0-9]/g, '-');
+
+    completion.completion_photos.forEach((photo, index) => {
+      const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+      setTimeout(() => {
+        downloadPhoto(photo, filename);
+      }, index * 200);
+    });
   };
 
   if (loading) {
@@ -338,18 +371,46 @@ export default function CompletionsPage() {
 
               {selectedCompletion.completion_photos && selectedCompletion.completion_photos.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-emerald-600" />
-                    Completion Photos ({selectedCompletion.completion_photos.length})
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-emerald-600" />
+                      Completion Photos ({selectedCompletion.completion_photos.length})
+                    </h3>
+                    <button
+                      onClick={() => handleDownloadAllPhotos(selectedCompletion)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Save All
+                    </button>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedCompletion.completion_photos.map((photo, index) => (
-                      <img
-                        key={index}
-                        src={photo}
-                        alt={`Completion photo ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg border border-slate-200"
-                      />
+                      <div key={index} className="relative group">
+                        <img
+                          src={photo}
+                          alt={`Completion photo ${index + 1}`}
+                          className="w-full h-48 object-cover rounded-lg border border-slate-200"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center gap-2">
+                          {canShare() && (
+                            <button
+                              onClick={() => handleSharePhoto(photo, selectedCompletion, index)}
+                              className="opacity-0 group-hover:opacity-100 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
+                              title="Share or Save"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDownloadPhoto(photo, selectedCompletion, index)}
+                            className="opacity-0 group-hover:opacity-100 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

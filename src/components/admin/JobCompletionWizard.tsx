@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2 } from 'lucide-react';
 import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
+import { PhotoFile, downloadPhoto, downloadAllPhotos, sharePhoto, isMobileDevice, canShare } from '../../utils/photoDownload';
 
 type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
 
@@ -33,7 +34,8 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     { id: '4', label: 'Assembly instructions provided', checked: false, required: false },
     { id: '5', label: 'Tools and materials accounted for', checked: false, required: false },
   ]);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<PhotoFile[]>([]);
+  const [downloadingPhotos, setDownloadingPhotos] = useState(false);
   const [satisfactionRating, setSatisfactionRating] = useState(5);
   const [satisfactionComment, setSatisfactionComment] = useState('');
   const [signatureData, setSignatureData] = useState('');
@@ -109,22 +111,57 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       return;
     }
 
-    const newPhotos: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    const newPhotos: PhotoFile[] = [];
+    const fileArray = Array.from(files);
+
+    for (const file of fileArray) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        newPhotos.push(reader.result as string);
-        if (newPhotos.length === files.length) {
-          setPhotos([...photos, ...newPhotos]);
-        }
-      };
-      reader.readAsDataURL(file);
+      const photoPromise = new Promise<PhotoFile>((resolve) => {
+        reader.onloadend = () => {
+          resolve({
+            file,
+            dataUrl: reader.result as string,
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      newPhotos.push(await photoPromise);
+    }
+
+    setPhotos([...photos, ...newPhotos]);
+
+    if (isMobileDevice()) {
+      const timestamp = new Date().toISOString().split('T')[0];
+      const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
+
+      setTimeout(() => {
+        newPhotos.forEach((photo, index) => {
+          const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${photos.length + index + 1}.jpg`;
+          downloadPhoto(photo.dataUrl, filename);
+        });
+      }, 100);
     }
   };
 
   const removePhoto = (index: number) => {
     setPhotos(photos.filter((_, i) => i !== index));
+  };
+
+  const handleDownloadAllPhotos = () => {
+    setDownloadingPhotos(true);
+    downloadAllPhotos(photos, job.client_name);
+    setTimeout(() => setDownloadingPhotos(false), 2000);
+  };
+
+  const handleSharePhoto = async (photo: PhotoFile, index: number) => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
+    const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+
+    const shared = await sharePhoto(photo.dataUrl, filename);
+    if (!shared) {
+      downloadPhoto(photo.dataUrl, filename);
+    }
   };
 
   const handleSubmit = async () => {
@@ -142,7 +179,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         completed_by: user?.id || null,
         signature_data: signatureData,
         completion_checklist: checklist,
-        completion_photos: photos,
+        completion_photos: photos.map(p => p.dataUrl),
         admin_notes: adminNotes,
         device_info: {
           userAgent: navigator.userAgent,
@@ -310,30 +347,84 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 type="file"
                 accept="image/*"
                 multiple
+                capture="environment"
                 onChange={handlePhotoUpload}
                 disabled={photos.length >= 10}
                 className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50"
               />
+              <p className="text-xs text-slate-500 mt-2">
+                {isMobileDevice()
+                  ? 'Photos will be automatically saved to your device'
+                  : 'Click the download button on each photo to save it'}
+              </p>
             </div>
 
             {photos.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
-                {photos.map((photo, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={photo}
-                      alt={`Completion photo ${index + 1}`}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={() => removePhoto(index)}
-                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-slate-700">
+                    {photos.length} photo{photos.length !== 1 ? 's' : ''} added
+                  </p>
+                  <button
+                    onClick={handleDownloadAllPhotos}
+                    disabled={downloadingPhotos}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {downloadingPhotos ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        Save All to Device
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {photos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={photo.dataUrl}
+                        alt={`Completion photo ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center gap-2">
+                        {canShare() && (
+                          <button
+                            onClick={() => handleSharePhoto(photo, index)}
+                            className="opacity-0 group-hover:opacity-100 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
+                            title="Share or Save"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            const timestamp = new Date().toISOString().split('T')[0];
+                            const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
+                            const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+                            downloadPhoto(photo.dataUrl, filename);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all"
+                          title="Download"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => removePhoto(index)}
+                          className="opacity-0 group-hover:opacity-100 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all"
+                          title="Remove"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         );
