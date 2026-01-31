@@ -40,8 +40,7 @@ import {
   Building,
   TrendingUpIcon,
   Wrench,
-  Users,
-  Shield
+  Users
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -127,16 +126,6 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
-    ],
-  },
-  {
-    id: 'access',
-    name: 'Access Control',
-    icon: Shield,
-    defaultExpanded: false,
-    items: [
-      { name: 'Organizations', href: '/admin/organizations', icon: Building2 },
-      { name: 'Team', href: '/admin/team', icon: Users },
     ],
   },
 ];
