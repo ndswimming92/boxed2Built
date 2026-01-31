@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2, ExternalLink } from 'lucide-react';
 import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
-import { PhotoFile, downloadPhoto, downloadAllPhotos, sharePhoto, isMobileDevice, canShare } from '../../utils/photoDownload';
+import { PhotoFile, downloadPhoto, downloadAllPhotos, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
 
 type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
 
@@ -129,18 +129,6 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     }
 
     setPhotos([...photos, ...newPhotos]);
-
-    if (isMobileDevice()) {
-      const timestamp = new Date().toISOString().split('T')[0];
-      const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
-
-      setTimeout(() => {
-        newPhotos.forEach((photo, index) => {
-          const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${photos.length + index + 1}.jpg`;
-          downloadPhoto(photo.dataUrl, filename);
-        });
-      }, 100);
-    }
   };
 
   const removePhoto = (index: number) => {
@@ -352,74 +340,74 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 disabled={photos.length >= 10}
                 className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50"
               />
-              <p className="text-xs text-slate-500 mt-2">
-                {isMobileDevice()
-                  ? 'Photos will be automatically saved to your device'
-                  : 'Click the download button on each photo to save it'}
-              </p>
+              {isIOS() && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-900 font-medium mb-1">iPhone Users:</p>
+                  <p className="text-xs text-blue-800">
+                    After uploading, tap the blue Share button on each photo and select "Save to Photos" from the menu
+                  </p>
+                </div>
+              )}
             </div>
 
             {photos.length > 0 && (
               <>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-700">
-                    {photos.length} photo{photos.length !== 1 ? 's' : ''} added
-                  </p>
-                  <button
-                    onClick={handleDownloadAllPhotos}
-                    disabled={downloadingPhotos}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
-                  >
-                    {downloadingPhotos ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4" />
-                        Save All to Device
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {photos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={photo.dataUrl}
-                        alt={`Completion photo ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center gap-2">
-                        {canShare() && (
-                          <button
-                            onClick={() => handleSharePhoto(photo, index)}
-                            className="opacity-0 group-hover:opacity-100 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
-                            title="Share or Save"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            const timestamp = new Date().toISOString().split('T')[0];
-                            const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
-                            const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
-                            downloadPhoto(photo.dataUrl, filename);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all"
-                          title="Download"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => removePhoto(index)}
-                          className="opacity-0 group-hover:opacity-100 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all"
-                          title="Remove"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                    <div key={index} className="bg-slate-50 rounded-lg p-3">
+                      <div className="flex gap-3">
+                        <img
+                          src={photo.dataUrl}
+                          alt={`Photo ${index + 1}`}
+                          className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                        />
+                        <div className="flex-1 flex flex-col justify-between min-w-0">
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">Photo {index + 1}</p>
+                            <p className="text-xs text-slate-500">{photo.file.name}</p>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            {canShare() && (
+                              <button
+                                onClick={() => handleSharePhoto(photo, index)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
+                              >
+                                <Share2 className="w-3.5 h-3.5" />
+                                {isIOS() ? 'Save to Photos' : 'Share'}
+                              </button>
+                            )}
+                            {isIOS() && (
+                              <button
+                                onClick={() => openPhotoInNewTab(photo.dataUrl)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                Open & Save
+                              </button>
+                            )}
+                            {!isIOS() && (
+                              <button
+                                onClick={() => {
+                                  const timestamp = new Date().toISOString().split('T')[0];
+                                  const sanitizedClientName = job.client_name.replace(/[^a-zA-Z0-9]/g, '-');
+                                  const filename = `job-completion-${sanitizedClientName}-${timestamp}-photo-${index + 1}.jpg`;
+                                  downloadPhoto(photo.dataUrl, filename);
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                Download
+                              </button>
+                            )}
+                            <button
+                              onClick={() => removePhoto(index)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors ml-auto"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              Remove
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}

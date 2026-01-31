@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
-import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2 } from 'lucide-react';
-import { downloadPhoto, sharePhoto, canShare } from '../../utils/photoDownload';
+import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink } from 'lucide-react';
+import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
 
 export default function CompletionsPage() {
   const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
@@ -376,39 +376,59 @@ export default function CompletionsPage() {
                       <ImageIcon className="w-5 h-5 text-emerald-600" />
                       Completion Photos ({selectedCompletion.completion_photos.length})
                     </h3>
-                    <button
-                      onClick={() => handleDownloadAllPhotos(selectedCompletion)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      Save All
-                    </button>
+                    {!isIOS() && (
+                      <button
+                        onClick={() => handleDownloadAllPhotos(selectedCompletion)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <Download className="w-4 h-4" />
+                        Save All
+                      </button>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {isIOS() && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-900 font-medium mb-1">iPhone Users:</p>
+                      <p className="text-xs text-blue-800">
+                        Tap "Save to Photos" on each image or use "Open & Save" to view full size and long-press to save
+                      </p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedCompletion.completion_photos.map((photo, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="bg-slate-50 rounded-lg overflow-hidden">
                         <img
                           src={photo}
                           alt={`Completion photo ${index + 1}`}
-                          className="w-full h-48 object-cover rounded-lg border border-slate-200"
+                          className="w-full h-48 object-cover"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center gap-2">
+                        <div className="p-2 flex gap-2 flex-wrap">
                           {canShare() && (
                             <button
                               onClick={() => handleSharePhoto(photo, selectedCompletion, index)}
-                              className="opacity-0 group-hover:opacity-100 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
-                              title="Share or Save"
+                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors"
                             >
-                              <Share2 className="w-4 h-4" />
+                              <Share2 className="w-3.5 h-3.5" />
+                              {isIOS() ? 'Save to Photos' : 'Share'}
                             </button>
                           )}
-                          <button
-                            onClick={() => handleDownloadPhoto(photo, selectedCompletion, index)}
-                            className="opacity-0 group-hover:opacity-100 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-all"
-                            title="Download"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
+                          {isIOS() ? (
+                            <button
+                              onClick={() => openPhotoInNewTab(photo)}
+                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-600 text-white rounded text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              Open & Save
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleDownloadPhoto(photo, selectedCompletion, index)}
+                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-600 text-white rounded text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              Download
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
