@@ -541,7 +541,7 @@ export default function JobsPage() {
                     <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
                     <p className="text-lg font-bold text-emerald-600">{formatCurrency(hourlyRate)}/hr</p>
                   </div>
-                  {job.total_mileage && job.total_mileage > 0 && (
+                  {(job.total_mileage ?? 0) > 0 && (
                     <div>
                       <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
                         <Navigation className="w-3 h-3" />
