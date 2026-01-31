@@ -14,6 +14,9 @@ import {
   getPricingRecommendations,
   getProfitMarginDistribution,
   getMaterialsCostAnalysis,
+  calculateConversionMetrics,
+  getLostDealBreakdown,
+  getJobTypeConversionRates,
   TimePeriod,
 } from '../../services/analyticsService';
 import {
@@ -63,6 +66,10 @@ import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../serv
 import ProfitabilityLeaderboard from '../../components/analytics/ProfitabilityLeaderboard';
 import JobTypePerformanceTable from '../../components/analytics/JobTypePerformanceTable';
 import PricingInsightsCard from '../../components/analytics/PricingInsightsCard';
+import ConversionFunnelChart from '../../components/analytics/ConversionFunnelChart';
+import LostDealsChart from '../../components/analytics/LostDealsChart';
+import JobTypeConversionTable from '../../components/analytics/JobTypeConversionTable';
+import ConversionMetricsCards from '../../components/analytics/ConversionMetricsCards';
 import { getTotalDeductibleExpenses } from '../../services/expenseService';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
@@ -132,6 +139,10 @@ export default function AnalyticsPage() {
   );
   const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(jobs, timePeriod), [jobs, timePeriod]);
   const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(jobs, timePeriod), [jobs, timePeriod]);
+
+  const conversionMetrics = useMemo(() => calculateConversionMetrics(jobs, timePeriod), [jobs, timePeriod]);
+  const lostDealBreakdown = useMemo(() => getLostDealBreakdown(jobs, timePeriod), [jobs, timePeriod]);
+  const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(jobs, timePeriod), [jobs, timePeriod]);
 
   const taxCalculation = useMemo(() => {
     if (!taxSettings) {
@@ -772,6 +783,26 @@ export default function AnalyticsPage() {
               <ProfitabilityLeaderboard
                 topJobs={profitabilityLeaderboard.topJobs}
               />
+            </div>
+          </div>
+
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t-4 border-slate-200">
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Sales & Conversion Analytics</h2>
+              <p className="text-sm sm:text-base text-slate-600">Track your sales pipeline, win rates, and identify opportunities to improve conversion</p>
+            </div>
+
+            <div className="mb-6 sm:mb-8">
+              <ConversionMetricsCards metrics={conversionMetrics} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <ConversionFunnelChart metrics={conversionMetrics} />
+              <LostDealsChart breakdown={lostDealBreakdown} />
+            </div>
+
+            <div className="mb-8">
+              <JobTypeConversionTable data={jobTypeConversionRates} />
             </div>
           </div>
 
