@@ -328,7 +328,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-start sm:items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <h2 className="text-2xl font-bold text-slate-900">Import Jobs</h2>

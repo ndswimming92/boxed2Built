@@ -160,7 +160,7 @@ export default function InquiryDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl max-w-4xl w-full my-8">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div>
