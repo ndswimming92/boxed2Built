@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Building2, Plus, Edit2, Trash2, Users } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Organization } from '../../types';
@@ -16,6 +16,18 @@ export default function OrganizationsPage() {
   const [formData, setFormData] = useState({ name: '', slug: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleCloseCreateModal = useCallback(() => {
+    setShowCreateModal(false);
+    setFormData({ name: '', slug: '' });
+    setError(null);
+  }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    setEditingOrg(null);
+    setFormData({ name: '', slug: '' });
+    setError(null);
+  }, []);
 
   useEffect(() => {
     loadOrganizations();
@@ -45,8 +57,7 @@ export default function OrganizationsPage() {
       await organizationService.createOrganization(formData.name, formData.slug);
       await refreshOrganizations();
       await loadOrganizations();
-      setShowCreateModal(false);
-      setFormData({ name: '', slug: '' });
+      handleCloseCreateModal();
     } catch (err: any) {
       setError(err.message || 'Failed to create organization');
     } finally {
@@ -63,8 +74,7 @@ export default function OrganizationsPage() {
       await organizationService.updateOrganization(editingOrg.id, formData);
       await refreshOrganizations();
       await loadOrganizations();
-      setEditingOrg(null);
-      setFormData({ name: '', slug: '' });
+      handleCloseEditModal();
     } catch (err: any) {
       setError(err.message || 'Failed to update organization');
     } finally {
@@ -189,11 +199,7 @@ export default function OrganizationsPage() {
       {showCreateModal && (
         <Modal
           isOpen={showCreateModal}
-          onClose={() => {
-            setShowCreateModal(false);
-            setFormData({ name: '', slug: '' });
-            setError(null);
-          }}
+          onClose={handleCloseCreateModal}
           title="Create Organization"
         >
           <div className="space-y-4">
@@ -246,11 +252,7 @@ export default function OrganizationsPage() {
                 {saving ? 'Creating...' : 'Create Organization'}
               </Button>
               <Button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setFormData({ name: '', slug: '' });
-                  setError(null);
-                }}
+                onClick={handleCloseCreateModal}
                 variant="outline"
               >
                 Cancel
@@ -263,11 +265,7 @@ export default function OrganizationsPage() {
       {editingOrg && (
         <Modal
           isOpen={!!editingOrg}
-          onClose={() => {
-            setEditingOrg(null);
-            setFormData({ name: '', slug: '' });
-            setError(null);
-          }}
+          onClose={handleCloseEditModal}
           title="Edit Organization"
         >
           <div className="space-y-4">
@@ -315,11 +313,7 @@ export default function OrganizationsPage() {
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
               <Button
-                onClick={() => {
-                  setEditingOrg(null);
-                  setFormData({ name: '', slug: '' });
-                  setError(null);
-                }}
+                onClick={handleCloseEditModal}
                 variant="outline"
               >
                 Cancel
