@@ -21,6 +21,7 @@ import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
 import { supabase } from './lib/supabase';
 import QRRedirectPage from './pages/QRRedirectPage';
+import { useManifestManager } from './hooks/useManifestManager';
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const LoginPage = lazy(() => import('./pages/admin/LoginPage'));
@@ -215,6 +216,11 @@ function PostHogInitializer() {
   return null;
 }
 
+function ManifestManager() {
+  useManifestManager();
+  return null;
+}
+
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
@@ -235,6 +241,7 @@ function App() {
           <div className="min-h-screen">
             <NotificationBarWrapper />
             <PostHogInitializer />
+            <ManifestManager />
             <Analytics />
             <HashHandler />
             <Suspense fallback={<PageLoader message="Loading application..." />}>

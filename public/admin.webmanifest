@@ -1,0 +1,17 @@
+{
+  "name": "Boxed2Built Admin",
+  "short_name": "B2B Admin",
+  "description": "Boxed2Built Admin Dashboard",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "theme_color": "#60A5FA",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/black_boxed2built_logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
