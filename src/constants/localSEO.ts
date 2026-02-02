@@ -190,6 +190,27 @@ export const LOCAL_SEO_CONTENT = {
 // Comprehensive FAQ content for FAQ page
 export const FAQ_CONTENT = [
   {
+    category: "Common Questions",
+    questions: [
+      {
+        question: "Do Target and Walmart assemble furniture?",
+        answer: "No, Target and Walmart do not offer in-home furniture assembly services for the furniture they sell. While both retailers sell a wide variety of ready-to-assemble furniture, customers are responsible for assembling items themselves after purchase. That's where Boxed2Built comes in! We specialize in assembling furniture purchased from Target, Walmart, IKEA, Wayfair, Amazon, and other major retailers. Based in Spring Hill, TN, we serve families throughout Thompson's Station, Franklin, and Columbia who need professional assembly help. We bring all the tools, handle the entire build process, and even clean up all the packaging materials when we're done. Instead of spending hours frustrated with confusing instructions, let us handle your Target or Walmart furniture assembly quickly and correctly."
+      },
+      {
+        question: "Can I return furniture after it's assembled?",
+        answer: "Return policies for assembled furniture vary by retailer, but most stores like Target, Walmart, IKEA, and Amazon do accept returns on assembled furniture within their standard return windows, though some restrictions may apply. You'll typically need to disassemble the furniture and return it in its original packaging with all parts and hardware included. Keep your receipt and all original packaging materials until you're certain you want to keep the item. If you need to return assembled furniture, Boxed2Built can help with disassembly services to ensure the furniture is carefully taken apart without damage, making it easier to return or transport. We recommend checking the specific return policy of the retailer where you purchased your furniture before assembly. For items purchased from local Spring Hill, TN stores or online retailers, we're happy to discuss the best approach for your situation."
+      },
+      {
+        question: "How long does furniture assembly usually take?",
+        answer: "Furniture assembly time depends on the size, complexity, and number of items you need assembled. Small furniture pieces like nightstands, end tables, or simple chairs typically take 30-60 minutes to assemble. Medium-sized items such as desks, coffee tables, TV stands, and bookshelves usually take 1-2 hours. Larger and more complex pieces like bed frames, dressers, wardrobes, and dining tables can take 2-4 hours depending on the design. Multi-piece projects or room setups (like a complete bedroom or home office) may take a full day. At Boxed2Built, we work efficiently without rushing or compromising quality. We'll provide you with an accurate time estimate when you schedule your furniture assembly service in Spring Hill, TN. Our experience with IKEA, Target, Walmart, and other major brands means we can complete assemblies faster than the average DIY attempt while ensuring everything is built correctly and safely."
+      },
+      {
+        question: "Do you assemble IKEA, Target, and Walmart furniture?",
+        answer: "Yes! We absolutely assemble furniture from IKEA, Target, and Walmart, along with furniture from Wayfair, Amazon, Ashley Furniture, Sauder, and virtually any other brand that comes in a box with assembly instructions. IKEA furniture assembly is one of our specialties - we're experienced with everything from simple IKEA bookcases to complex PAX wardrobe systems and KALLAX storage units. We also regularly assemble Target and Walmart furniture including bedroom sets, office furniture, outdoor patio furniture, storage solutions, and more. Based in Spring Hill, TN, we bring all professional tools and equipment needed for assembly, carefully follow manufacturer instructions, and ensure every piece is stable and secure. Whether you've purchased furniture from a big-box retailer, ordered online, or picked it up locally, Boxed2Built has you covered. We serve Spring Hill, Thompson's Station, Franklin, Columbia, and surrounding areas with reliable furniture assembly services for all major brands."
+      }
+    ]
+  },
+  {
     category: "General Information",
     questions: [
       {

@@ -6,13 +6,15 @@ import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
+import HomeFAQ from '../components/sections/HomeFAQ';
 import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import {
-  LOCAL_SEO_CONTENT
+  LOCAL_SEO_CONTENT,
+  FAQ_CONTENT
 } from '../constants/localSEO';
 
 const HomePage: React.FC = () => {
@@ -35,19 +37,13 @@ const HomePage: React.FC = () => {
     canonicalLink.setAttribute('href', 'https://boxed2built.com/');
   }, []);
 
+  // Get high-value FAQ questions from Common Questions category plus a few popular ones
+  const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
+  const generalQuestions = FAQ_CONTENT.find(cat => cat.category === "General Information")?.questions || [];
+
   const homepageFAQs = [
-    {
-      question: "How do I schedule furniture assembly service?",
-      answer: "You can schedule furniture assembly by calling us at (615) 403-4538 or booking online through our website. We offer flexible scheduling to fit your needs."
-    },
-    {
-      question: "Do you assemble IKEA furniture?",
-      answer: "Yes, we specialize in IKEA furniture assembly as well as furniture from Target, Walmart, and all major furniture brands. We're experienced with all types of furniture assembly instructions."
-    },
-    {
-      question: "What areas do you serve for furniture assembly?",
-      answer: "We serve Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding areas in Tennessee for professional furniture assembly services."
-    },
+    ...commonQuestions, // All 4 high-value SEO questions
+    generalQuestions[0], // What is Boxed2Built?
     {
       question: "How much does furniture assembly cost in Spring Hill, TN?",
       answer: "Our furniture assembly prices start at $85 for small items like chairs, $185 for tables and desks, $220 for storage and shelving, $320 for dressers, and $295 for bed frames. All prices include assembly, cleanup, and placement."
@@ -123,6 +119,13 @@ const HomePage: React.FC = () => {
         <Testimonials />
 
         <Pricing />
+
+        <HomeFAQ
+          faqs={homepageFAQs}
+          title="Frequently Asked Questions"
+          subtitle="Get answers to the most common questions about furniture assembly in Spring Hill, TN"
+          showViewAllLink={true}
+        />
       </main>
       <Footer />
     </>

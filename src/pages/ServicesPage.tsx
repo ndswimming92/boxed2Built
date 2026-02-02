@@ -5,11 +5,12 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
+import HomeFAQ from '../components/sections/HomeFAQ';
 import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
+import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
 
 const ServicesPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -55,42 +56,17 @@ const ServicesPage: React.FC = () => {
     // setMeta('twitter:image', 'https://boxed2built.com/og-services.jpg');
   }, []);
 
+  // Get high-value FAQ questions for services page
+  const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
+  const servicesAndPricing = FAQ_CONTENT.find(cat => cat.category === "Services & Pricing")?.questions || [];
+
   const servicesFAQs = [
-    {
-      question: 'What furniture brands do you assemble?',
-      answer:
-        "We assemble furniture from all major brands including IKEA, Target, Walmart, Wayfair, Amazon, Ashley Furniture, and more. If it comes in a box, we can build it!",
-    },
-    {
-      question: 'How long does furniture assembly take?',
-      answer:
-        'Assembly time varies by item complexity. Small items like chairs take 30–60 minutes, while larger items like bed frames or dressers can take 2–3 hours. We provide time estimates with every quote.',
-    },
-    {
-      question: 'Do you provide the tools for assembly?',
-      answer:
-        "Yes! We bring all professional tools and equipment needed for assembly. You don't need to provide anything — we handle everything from start to finish.",
-    },
-    {
-      question: "What's included in the assembly price?",
-      answer:
-        'Our prices include complete assembly, hardware installation, placement in your desired location, debris cleanup, and a quality inspection. No hidden fees!',
-    },
-    {
-      question: 'How much does furniture assembly cost in Spring Hill, TN?',
-      answer:
-        "Pricing depends on the item size and complexity. We offer transparent hourly and flat-rate options, and we’ll provide an upfront estimate before we arrive.",
-    },
-    {
-      question: 'What areas do you serve?',
-      answer:
-        "We’re based in Spring Hill, TN and commonly serve Thompson’s Station, Franklin, and Columbia. If you’re nearby, reach out and we’ll confirm availability.",
-    },
-    {
-      question: 'Do you offer TV mounting and shelving installation?',
-      answer:
-        'Yes. In addition to furniture assembly, we offer light handyman services like TV mounting, shelving, and wall-mounted storage — perfect for move-ins and room setups.',
-    },
+    commonQuestions[0], // Do Target and Walmart assemble furniture?
+    commonQuestions[3], // Do you assemble IKEA, Target, and Walmart furniture?
+    commonQuestions[2], // How long does furniture assembly usually take?
+    servicesAndPricing[3], // What types of furniture can you assemble?
+    servicesAndPricing[1], // What's included in the assembly price?
+    servicesAndPricing[4], // Do you provide the tools and hardware?
   ];
 
   const handleEmailClick = () => {
@@ -205,6 +181,14 @@ const ServicesPage: React.FC = () => {
 
         {/* Testimonials */}
         <Testimonials />
+
+        {/* FAQ Section */}
+        <HomeFAQ
+          faqs={servicesFAQs}
+          title="Common Questions About Our Services"
+          subtitle="Everything you need to know about furniture assembly in Spring Hill, TN"
+          showViewAllLink={true}
+        />
 
         {/* Additional Service Information */}
         <section className="py-12 bg-gray-50">
