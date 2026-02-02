@@ -75,7 +75,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, a
 
 const FAQPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [openItem, setOpenItem] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.faq.title;
@@ -111,15 +111,7 @@ const FAQPage: React.FC = () => {
 
   const toggleFAQItem = (category: string, index: number) => {
     const key = `${category}-${index}`;
-    setOpenItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
+    setOpenItem(prev => prev === key ? null : key);
   };
 
   const allFAQs = FAQ_CONTENT.flatMap(category =>
@@ -198,7 +190,7 @@ const FAQPage: React.FC = () => {
                         key={faqIndex}
                         question={faq.question}
                         answer={faq.answer}
-                        isOpen={openItems.has(`${category.category}-${faqIndex}`)}
+                        isOpen={openItem === `${category.category}-${faqIndex}`}
                         onToggle={() => toggleFAQItem(category.category, faqIndex)}
                         answerId={`faq-answer-${categoryIndex}-${faqIndex}`}
                       />
