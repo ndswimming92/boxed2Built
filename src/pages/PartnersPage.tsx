@@ -16,9 +16,11 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import jsPDF from 'jspdf';
 
 const PartnersPage: React.FC = () => {
+  const { data: businessData, loading } = useBusinessDataWithFallback();
   useEffect(() => {
     document.title = 'Boxed2Built Partnerships | Realtors & Movers in Spring Hill';
 
@@ -96,6 +98,21 @@ const PartnersPage: React.FC = () => {
     pdf.text('Boxed2Built Realtor Partnership Program', 20, 20);
     pdf.save('Boxed2Built-Realtor-Partnership-Program.pdf');
   };
+
+  if (loading || !businessData) {
+    return (
+      <>
+        <Header />
+        <main className="pt-20 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
