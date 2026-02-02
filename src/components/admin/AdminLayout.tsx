@@ -46,7 +46,6 @@ import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
-import { OrganizationSwitcher } from './OrganizationSwitcher';
 
 interface NavigationItem {
   name: string;
@@ -509,8 +508,6 @@ export default function AdminLayout() {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
-              <OrganizationSwitcher />
-
               <Link
                 to="/admin/inquiries"
                 className="relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
