@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -20,6 +20,15 @@ interface FAQItemProps {
 }
 
 const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, answerId }) => {
+  const [height, setHeight] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(contentRef.current.scrollHeight);
+    }
+  }, [answer]);
+
   const handleToggle = () => {
     onToggle();
     trackEvent('faq_item_toggle', 'faq_page', {
@@ -49,12 +58,16 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, a
 
       <div
         id={answerId}
-        className={`px-6 pb-4 pt-2 text-gray-700 leading-relaxed transition-all duration-200 ease-in-out ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        } overflow-hidden`}
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          height: isOpen ? `${height}px` : '0px',
+          opacity: isOpen ? 1 : 0
+        }}
         aria-hidden={!isOpen}
       >
-        {answer}
+        <div ref={contentRef} className="px-6 pb-4 pt-2 text-gray-700 leading-relaxed">
+          {answer}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import InternalLink from '../ui/InternalLink';
 
@@ -23,6 +23,19 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
   className = ''
 }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [heights, setHeights] = useState<{ [key: number]: number }>({});
+  const contentRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+  useEffect(() => {
+    // Measure all content heights
+    const newHeights: { [key: number]: number } = {};
+    faqs.forEach((_, index) => {
+      if (contentRefs.current[index]) {
+        newHeights[index] = contentRefs.current[index]!.scrollHeight;
+      }
+    });
+    setHeights(newHeights);
+  }, [faqs]);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -72,11 +85,18 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
 
                 <div
                   id={`faq-answer-${index}`}
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openIndex === index ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
-                  }`}
+                  className="overflow-hidden transition-all duration-300 ease-in-out"
+                  style={{
+                    height: openIndex === index ? `${heights[index] || 0}px` : '0px',
+                    opacity: openIndex === index ? 1 : 0
+                  }}
                 >
-                  <div className="px-6 pb-6 text-gray-700 leading-relaxed">
+                  <div
+                    ref={(el) => {
+                      contentRefs.current[index] = el;
+                    }}
+                    className="px-6 pb-6 text-gray-700 leading-relaxed"
+                  >
                     {faq.answer}
                   </div>
                 </div>
