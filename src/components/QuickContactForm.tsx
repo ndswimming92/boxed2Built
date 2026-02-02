@@ -3,6 +3,7 @@ import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
+import { logPublicAction } from '../services/auditLogService';
 
 const QuickContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -199,6 +200,22 @@ const QuickContactForm: React.FC = () => {
           action_type: 'submit',
         });
 
+        // Log successful form submission
+        await logPublicAction({
+          actionType: 'SUBMIT',
+          tableName: 'form_inquiries',
+          recordIdentifier: `${formData.name} - Quick Contact`,
+          userEmail: formData.email,
+          status: 'success',
+          metadata: {
+            form_type: 'quick_contact',
+            message_preview: formData.message.substring(0, 50),
+            formspree_success: formspreeSuccess,
+            supabase_success: supabaseSuccess,
+            partial_failure: errors.length > 0,
+          },
+        });
+
         setSubmitStatus('success');
         setFormData({ name: '', email: '', message: '' });
         setTouched({ name: false, email: false, message: false });
@@ -236,6 +253,23 @@ const QuickContactForm: React.FC = () => {
         error_message: message,
         formspree_success: formspreeSuccess,
         supabase_success: supabaseSuccess,
+      });
+
+      // Log failed form submission
+      await logPublicAction({
+        actionType: 'SUBMIT',
+        tableName: 'form_inquiries',
+        recordIdentifier: `${formData.name} - Quick Contact`,
+        userEmail: formData.email,
+        status: 'error',
+        errorMessage: message,
+        metadata: {
+          form_type: 'quick_contact',
+          formspree_success: formspreeSuccess,
+          supabase_success: supabaseSuccess,
+          error_details: error instanceof Error ? error.stack : String(error),
+          failed_components: errors,
+        },
       });
 
       setTimeout(() => {

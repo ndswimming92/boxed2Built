@@ -10,6 +10,7 @@ import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
 import { createSavedRequest } from '../services/savedRequestService';
+import { logPublicAction } from '../services/auditLogService';
 import ConfirmationModal from './ConfirmationModal';
 
 const initialValues = {
@@ -365,6 +366,23 @@ const ContactForm: React.FC = () => {
       console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
       setShowConfirmationModal(true);
 
+      // Log successful form submission
+      await logPublicAction({
+        actionType: 'SUBMIT',
+        tableName: 'form_inquiries',
+        recordId: inquiry.id,
+        recordIdentifier: `${values.name} - Contact Form`,
+        userEmail: values.email,
+        status: 'success',
+        metadata: {
+          form_type: 'contact_form',
+          furniture_type: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          estimated_price: estimatedPrice,
+          confirmation_code: savedRequest.confirmation_code,
+        },
+      });
+
       // Reset form AFTER showing modal
       console.log('[ContactForm] Resetting form');
       reset();
@@ -384,6 +402,22 @@ const ContactForm: React.FC = () => {
         : 'An unexpected error occurred. Please try again or contact us directly.';
 
       setSubmissionError(errorMessage);
+
+      // Log failed form submission
+      await logPublicAction({
+        actionType: 'SUBMIT',
+        tableName: 'form_inquiries',
+        recordIdentifier: `${values.name} - Contact Form`,
+        userEmail: values.email,
+        status: 'error',
+        errorMessage: errorMessage,
+        metadata: {
+          form_type: 'contact_form',
+          furniture_type: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          error_details: error instanceof Error ? error.stack : String(error),
+        },
+      });
 
       // Clear error after 10 seconds
       setTimeout(() => {

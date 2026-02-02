@@ -15,7 +15,8 @@ export type ActionType =
   | 'DOWNLOAD'
   | 'VIEW'
   | 'APPROVE'
-  | 'REJECT';
+  | 'REJECT'
+  | 'SUBMIT';
 
 export type LogStatus = 'success' | 'error' | 'warning';
 
@@ -122,6 +123,50 @@ export async function logAction(params: LogActionParams): Promise<void> {
   }
 }
 
+export async function logPublicAction(params: LogActionParams & { userEmail: string }): Promise<void> {
+  try {
+    const changesSummary = generateChangesSummary(
+      params.actionType,
+      params.tableName,
+      params.recordIdentifier,
+      params.oldValues,
+      params.newValues
+    );
+
+    const logEntry = {
+      user_id: null,
+      user_email: params.userEmail,
+      action_type: params.actionType,
+      table_name: params.tableName,
+      record_id: params.recordId || null,
+      record_identifier: params.recordIdentifier || null,
+      old_values: params.oldValues || null,
+      new_values: params.newValues || null,
+      changes_summary: changesSummary,
+      ip_address: null,
+      user_agent: navigator?.userAgent || null,
+      status: params.status || 'success',
+      error_message: params.errorMessage || null,
+      metadata: {
+        ...params.metadata,
+        page: window.location.pathname,
+        timestamp: new Date().toISOString(),
+        public_submission: true,
+      },
+    };
+
+    const { error } = await supabase
+      .from('admin_audit_logs')
+      .insert(logEntry);
+
+    if (error) {
+      console.error('Failed to log public action:', error);
+    }
+  } catch (error) {
+    console.error('Error in public audit logging:', error);
+  }
+}
+
 function generateChangesSummary(
   actionType: ActionType,
   tableName: string,
@@ -185,6 +230,9 @@ function generateChangesSummary(
 
     case 'REJECT':
       return `Rejected ${table}: ${resourceName}`;
+
+    case 'SUBMIT':
+      return `Form submitted: ${resourceName}`;
 
     default:
       return `${actionType} ${table}: ${resourceName}`;
