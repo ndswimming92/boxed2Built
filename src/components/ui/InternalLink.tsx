@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { trackEvent } from '../../utils/analytics';
 
 interface InternalLinkProps {
-  href: string;
+  to?: string;
+  href?: string;
   children: React.ReactNode;
   className?: string;
   title?: string;
@@ -12,6 +14,7 @@ interface InternalLinkProps {
 }
 
 const InternalLink: React.FC<InternalLinkProps> = ({
+  to,
   href,
   children,
   className = 'text-blue-700 hover:text-blue-800 underline font-medium transition-colors',
@@ -21,26 +24,27 @@ const InternalLink: React.FC<InternalLinkProps> = ({
   rel,
   ...props
 }) => {
+  const linkPath = to || href || '/';
+
   const handleClick = () => {
-    trackEvent('internal-link-click', href, {
+    trackEvent('internal-link-click', linkPath, {
       event_category: trackingCategory,
-      event_label: href,
+      event_label: linkPath,
       user_engagement: 'internal_navigation'
     });
   };
 
   return (
-    <a
-      href={href}
+    <Link
+      to={linkPath}
       className={className}
       title={title}
       aria-label={ariaLabel}
-      rel={rel}
       onClick={handleClick}
       {...props}
     >
       {children}
-    </a>
+    </Link>
   );
 };
 
