@@ -40,11 +40,13 @@ const CallButton: React.FC<CallButtonProps> = ({
     lg: 20
   };
 
+  const baseClasses = className || 'bg-green-700 hover:bg-green-800 text-white';
+
   return (
     <a
       href="tel:+16154034538"
       onClick={handlePhoneClick}
-      className={`inline-flex items-center justify-center ${sizeClasses[size]} bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center ${sizeClasses[size]} ${baseClasses} font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''}`}
       aria-label="Call Boxed2Built at (615) 403-4538"
       itemProp="telephone"
     >
