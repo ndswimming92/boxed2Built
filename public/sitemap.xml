@@ -23,13 +23,26 @@
   <!-- Services Page - High Priority for SEO -->
   <url>
     <loc>https://boxed2built.com/services</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
       <image:title>Furniture Assembly Services and Pricing in Spring Hill TN</image:title>
       <image:caption>Professional furniture assembly services with transparent pricing for IKEA, Target, Walmart furniture</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Furniture Assembly Service Page - High Priority SEO Landing Page -->
+  <url>
+    <loc>https://boxed2built.com/services/furniture-assembly</loc>
+    <lastmod>2025-02-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
+      <image:title>Professional Furniture Assembly Services in Spring Hill TN</image:title>
+      <image:caption>Expert IKEA, Target, Walmart, Wayfair furniture assembly in Spring Hill, Franklin, Columbia Tennessee</image:caption>
     </image:image>
   </url>
 

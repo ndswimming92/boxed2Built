@@ -183,6 +183,11 @@ export const LOCAL_SEO_CONTENT = {
     title: "Terms of Service | Boxed2Built Furniture Assembly",
     description:
       "Review the Terms of Service for Boxed2Built, covering scheduling, communication, payment policies, and service expectations for our Spring Hill, TN clients."
+  },
+  furnitureAssembly: {
+    title: "Furniture Assembly Services in Spring Hill, TN | Professional IKEA, Target & Walmart Assembly | Boxed2Built",
+    description:
+      "Expert furniture assembly in Spring Hill, TN. Professional assembly for IKEA, Target, Walmart, Wayfair & Amazon furniture. Free quotes, flexible scheduling. Serving Franklin, Columbia & Thompson's Station. Call (615) 403-4538."
   }
 };
 

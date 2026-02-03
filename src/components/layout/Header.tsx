@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import { trackEvent } from '../../utils/analytics';
@@ -10,6 +10,8 @@ import { useNotificationBarContext } from '../../contexts/NotificationBarContext
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
 
   const headerRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -69,7 +71,12 @@ const Header: React.FC = () => {
     });
   };
 
-  const isActivePage = (path: string) => location.pathname === path;
+  const isActivePage = (path: string) => {
+    if (path === '/services') {
+      return location.pathname === '/services' || location.pathname.startsWith('/services/');
+    }
+    return location.pathname === path;
+  };
 
   /* ----------------------------------------
      Logo sizing (Option 4 behavior)
@@ -131,7 +138,71 @@ const Header: React.FC = () => {
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About', href: '/about' },
-                { label: 'Services', href: '/services' },
+              ].map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    onClick={() =>
+                      handleNavClick(item.label.toLowerCase(), item.href)
+                    }
+                    className={`relative font-medium transition-colors
+                      ${
+                        isActivePage(item.href)
+                          ? 'text-blue-700 font-semibold'
+                          : 'text-gray-800 hover:text-blue-700'
+                      }
+                    `}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+
+              <li
+                className="relative"
+                onMouseEnter={() => setIsServicesOpen(true)}
+                onMouseLeave={() => setIsServicesOpen(false)}
+              >
+                <button
+                  onClick={() => {
+                    window.location.href = '/services';
+                    handleNavClick('services', '/services');
+                  }}
+                  className={`relative font-medium transition-colors flex items-center gap-1
+                    ${
+                      isActivePage('/services')
+                        ? 'text-blue-700 font-semibold'
+                        : 'text-gray-800 hover:text-blue-700'
+                    }
+                  `}
+                >
+                  Services
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isServicesOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    <a
+                      href="/services"
+                      onClick={() => handleNavClick('all_services', '/services')}
+                      className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      <div className="font-semibold">All Services</div>
+                      <div className="text-sm text-gray-600">View complete service list</div>
+                    </a>
+                    <div className="border-t border-gray-200 my-2"></div>
+                    <a
+                      href="/services/furniture-assembly"
+                      onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
+                      className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      <div className="font-semibold">Furniture Assembly</div>
+                      <div className="text-sm text-gray-600">IKEA, Target, Walmart & more</div>
+                    </a>
+                  </div>
+                )}
+              </li>
+
+              {[
                 { label: 'Partners', href: '/partners' },
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'FAQ', href: '/faq' },
@@ -182,15 +253,68 @@ const Header: React.FC = () => {
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About', href: '/about' },
-                { label: 'Services', href: '/services' },
-                { label: 'Partners', href: '/partners' },
-                { label: 'Gallery', href: '/gallery' },
-                { label: 'FAQ', href: '/faq' },
-                { label: 'Contact', href: '/contact' },
               ].map((item, index) => (
                 <a
                   key={item.href}
                   ref={index === 0 ? firstMobileLinkRef : undefined}
+                  href={item.href}
+                  onClick={() =>
+                    handleNavClick(item.label.toLowerCase(), item.href)
+                  }
+                  className={`px-4 py-3 rounded-lg font-medium
+                    ${
+                      isActivePage(item.href)
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {item.label}
+                </a>
+              ))}
+
+              <div>
+                <button
+                  onClick={() => setIsMobileServicesOpen(!isMobileServicesOpen)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium
+                    ${
+                      isActivePage('/services')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  <span>Services</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isMobileServicesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isMobileServicesOpen && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    <a
+                      href="/services"
+                      onClick={() => handleNavClick('all_services', '/services')}
+                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      All Services
+                    </a>
+                    <a
+                      href="/services/furniture-assembly"
+                      onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
+                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Furniture Assembly
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {[
+                { label: 'Partners', href: '/partners' },
+                { label: 'Gallery', href: '/gallery' },
+                { label: 'FAQ', href: '/faq' },
+                { label: 'Contact', href: '/contact' },
+              ].map((item) => (
+                <a
+                  key={item.href}
                   href={item.href}
                   onClick={() =>
                     handleNavClick(item.label.toLowerCase(), item.href)
