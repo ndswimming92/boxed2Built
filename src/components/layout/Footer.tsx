@@ -176,6 +176,16 @@ const Footer: React.FC = () => {
                 </InternalLink>
               </li>
               <li>
+                <InternalLink href="/services/furniture-assembly" className="hover:text-white transition-colors" trackingCategory="footer_nav">
+                  Furniture Assembly
+                </InternalLink>
+              </li>
+              <li>
+                <InternalLink href="/services/tv-mounting" className="hover:text-white transition-colors" trackingCategory="footer_nav">
+                  TV Mounting
+                </InternalLink>
+              </li>
+              <li>
                 <InternalLink href="/gallery" className="hover:text-white transition-colors" trackingCategory="footer_nav">
                   Gallery
                 </InternalLink>
