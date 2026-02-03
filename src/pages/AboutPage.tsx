@@ -145,8 +145,11 @@ const AboutPage: React.FC = () => {
               <div className="mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Why We Exist</h2>
                 <p className="text-gray-700 mb-6 leading-relaxed text-lg">
-                  Families today are busier than ever. Between work, kids, and the endless to-do list, furniture assembly 
-                  shouldn't be one more thing weighing you down. At Boxed2Built, we step in to take the stress off your 
+                  Families today are busier than ever. Between work, kids, and the endless to-do list,{' '}
+                  <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                    furniture assembly
+                  </a>{' '}
+                  shouldn't be one more thing weighing you down. At Boxed2Built, we step in to take the stress off your
                   shoulders—so you can spend more time making memories and less time making sense of confusing instructions.
                 </p>
                 <p className="text-xl text-blue-600 font-medium italic">

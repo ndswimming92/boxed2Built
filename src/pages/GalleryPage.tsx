@@ -67,7 +67,11 @@ const GalleryPage: React.FC = () => {
                 Our Professional Furniture Assembly Work
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                See our expert furniture assembly in action with time-lapse videos, before & after photos, 
+                See our expert{' '}
+                <a href="/services/furniture-assembly" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                  furniture assembly
+                </a>{' '}
+                in action with time-lapse videos, before & after photos,
                 and completed projects throughout Spring Hill, TN and surrounding areas.
               </p>
               
@@ -116,8 +120,17 @@ const GalleryPage: React.FC = () => {
               <h2 className="text-3xl font-bold mb-4">Ready for Your Own Professional Assembly?</h2>
               <p className="text-xl text-blue-50 mb-8">
                 Let us handle your furniture assembly project with the same care and expertise you see in our gallery.
+                Explore our{' '}
+                <a href="/services" className="text-white hover:text-blue-100 underline font-semibold">
+                  full range of services
+                </a>{' '}
+                or{' '}
+                <a href="/contact" className="text-white hover:text-blue-100 underline font-semibold">
+                  get in touch
+                </a>{' '}
+                for a free quote.
               </p>
-              
+
               <div className="flex justify-center mb-6">
                 <CallButton size="lg" pageSection="gallery_page_cta" />
               </div>
