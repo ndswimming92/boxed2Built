@@ -96,7 +96,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                 Expert assembly for IKEA, Target, Walmart, Wayfair, and Amazon furniture. Fast, reliable service with transparent pricing and no hidden fees.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <CallButton size="lg" pageSection="furniture_assembly_hero" onClick={() => handleContactClick('hero_call')} />
+                <CallButton size="lg" pageSection="furniture_assembly_hero" />
                 <Link
                   to="/contact"
                   onClick={() => handleContactClick('hero_quote')}
@@ -355,8 +355,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                 <CallButton
                   size="lg"
                   pageSection="furniture_assembly_cta"
-                  onClick={() => handleContactClick('cta_call')}
-                  className="bg-white text-blue-700 hover:bg-gray-100"
+                  className="bg-white text-blue-700 hover:bg-gray-100 hover:text-blue-800"
                 />
                 <Link
                   to="/contact"

@@ -49,7 +49,7 @@ const CallButton: React.FC<CallButtonProps> = ({
       itemProp="telephone"
     >
       <Phone size={iconSizes[size]} className="mr-2 group-hover:animate-pulse" />
-      <span className="font-bold text-white">{BUSINESS_INFO.phoneFormatted}</span>
+      <span className="font-bold">{BUSINESS_INFO.phoneFormatted}</span>
     </a>
   );
 };
