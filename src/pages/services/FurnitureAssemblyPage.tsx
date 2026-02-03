@@ -61,7 +61,7 @@ const FurnitureAssemblyPage: React.FC = () => {
     servicesAndPricing[0],
     servicesAndPricing[3],
     servicesAndPricing[4],
-  ];
+  ].filter(Boolean);
 
   const handleContactClick = (source: string) => {
     trackEvent('contact_click', source, {
@@ -308,37 +308,39 @@ const FurnitureAssemblyPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
-                Frequently Asked Questions
-              </h2>
-              <div className="space-y-6">
-                {furnitureAssemblyFAQs.map((faq, index) => (
-                  <details key={index} className="bg-white rounded-lg shadow-md p-6 group">
-                    <summary className="flex items-center justify-between cursor-pointer list-none">
-                      <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                      <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
-                    </summary>
-                    <div className="mt-4 text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </div>
-                  </details>
-                ))}
-              </div>
-              <div className="text-center mt-8">
-                <Link
-                  to="/faq"
-                  className="inline-flex items-center text-blue-700 font-semibold hover:text-blue-800 transition-colors"
-                >
-                  View All FAQs
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
+        {furnitureAssemblyFAQs.length > 0 && (
+          <section className="py-16 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
+                  Frequently Asked Questions
+                </h2>
+                <div className="space-y-6">
+                  {furnitureAssemblyFAQs.map((faq, index) => (
+                    <details key={index} className="bg-white rounded-lg shadow-md p-6 group">
+                      <summary className="flex items-center justify-between cursor-pointer list-none">
+                        <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                      </summary>
+                      <div className="mt-4 text-gray-600 leading-relaxed">
+                        {faq.answer}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+                <div className="text-center mt-8">
+                  <Link
+                    to="/faq"
+                    className="inline-flex items-center text-blue-700 font-semibold hover:text-blue-800 transition-colors"
+                  >
+                    View All FAQs
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
