@@ -198,7 +198,7 @@ const Testimonials: React.FC = () => {
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-2 md:left-0 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="absolute left-2 md:-left-12 lg:-left-16 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 aria-label="Previous review"
                 type="button"
               >
@@ -207,7 +207,7 @@ const Testimonials: React.FC = () => {
 
               <button
                 onClick={goToNext}
-                className="absolute right-2 md:right-0 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="absolute right-2 md:-right-12 lg:-right-16 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 aria-label="Next review"
                 type="button"
               >
