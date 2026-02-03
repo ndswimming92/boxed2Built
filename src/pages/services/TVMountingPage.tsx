@@ -199,14 +199,14 @@ const TVMountingPage: React.FC = () => {
               <div className="grid gap-6">
                 {TV_MOUNTING_SERVICES.map((service, index) => (
                   <div key={index} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1">
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.name}</h3>
                         <p className="text-gray-600">{service.description}</p>
                       </div>
-                      <div className="mt-4 sm:mt-0 sm:ml-6">
+                      <div className="mt-4 sm:mt-0 sm:ml-6 text-right">
+                        <div className="text-sm text-gray-500 mb-1">starting at</div>
                         <div className="text-3xl font-bold text-blue-700">${service.price}</div>
-                        <div className="text-sm text-gray-500 text-right">starting at</div>
                       </div>
                     </div>
                   </div>
