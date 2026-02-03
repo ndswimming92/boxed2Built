@@ -46,6 +46,19 @@
     </image:image>
   </url>
 
+  <!-- TV Mounting Service Page - High Priority SEO Landing Page -->
+  <url>
+    <loc>https://boxed2built.com/services/tv-mounting</loc>
+    <lastmod>2025-02-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
+      <image:title>Professional TV Mounting Service in Spring Hill TN</image:title>
+      <image:caption>Expert TV installation and mounting for all sizes in Spring Hill, Franklin, Columbia Tennessee</image:caption>
+    </image:image>
+  </url>
+
   <!-- About Page - Important for Trust Signals -->
   <url>
     <loc>https://boxed2built.com/about</loc>

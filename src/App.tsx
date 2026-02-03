@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import FurnitureAssemblyPage from './pages/services/FurnitureAssemblyPage';
+import TVMountingPage from './pages/services/TVMountingPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import GalleryPage from './pages/GalleryPage';
@@ -250,6 +251,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/services/furniture-assembly" element={<FurnitureAssemblyPage />} />
+                <Route path="/services/tv-mounting" element={<TVMountingPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/partners" element={<PartnersPage />} />

@@ -188,6 +188,11 @@ export const LOCAL_SEO_CONTENT = {
     title: "Furniture Assembly Services in Spring Hill, TN | Professional IKEA, Target & Walmart Assembly | Boxed2Built",
     description:
       "Expert furniture assembly in Spring Hill, TN. Professional assembly for IKEA, Target, Walmart, Wayfair & Amazon furniture. Free quotes, flexible scheduling. Serving Franklin, Columbia & Thompson's Station. Call (615) 403-4538."
+  },
+  tvMounting: {
+    title: "TV Mounting Service in Spring Hill, TN | Professional TV Installation | Boxed2Built",
+    description:
+      "Professional TV mounting service in Spring Hill, TN. Expert installation for all TV sizes, wall types & mounting brackets. Same-day service available. Serving Franklin, Columbia & Thompson's Station. Free quotes. Call (615) 403-4538."
   }
 };
 

@@ -199,6 +199,14 @@ const Header: React.FC = () => {
                         <div className="font-semibold">Furniture Assembly</div>
                         <div className="text-sm text-gray-600">IKEA, Target, Walmart & more</div>
                       </a>
+                      <a
+                        href="/services/tv-mounting"
+                        onClick={() => handleNavClick('tv_mounting', '/services/tv-mounting')}
+                        className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
+                        <div className="font-semibold">TV Mounting</div>
+                        <div className="text-sm text-gray-600">Professional installation & cable management</div>
+                      </a>
                     </div>
                   </div>
                 )}
@@ -304,6 +312,13 @@ const Header: React.FC = () => {
                       className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
                     >
                       Furniture Assembly
+                    </a>
+                    <a
+                      href="/services/tv-mounting"
+                      onClick={() => handleNavClick('tv_mounting', '/services/tv-mounting')}
+                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      TV Mounting
                     </a>
                   </div>
                 )}
