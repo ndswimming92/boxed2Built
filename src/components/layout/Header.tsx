@@ -180,24 +180,26 @@ const Header: React.FC = () => {
                   <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isServicesOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                    <a
-                      href="/services"
-                      onClick={() => handleNavClick('all_services', '/services')}
-                      className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                    >
-                      <div className="font-semibold">All Services</div>
-                      <div className="text-sm text-gray-600">View complete service list</div>
-                    </a>
-                    <div className="border-t border-gray-200 my-2"></div>
-                    <a
-                      href="/services/furniture-assembly"
-                      onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
-                      className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                    >
-                      <div className="font-semibold">Furniture Assembly</div>
-                      <div className="text-sm text-gray-600">IKEA, Target, Walmart & more</div>
-                    </a>
+                  <div className="absolute top-full left-0 pt-2 z-50">
+                    <div className="w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                      <a
+                        href="/services"
+                        onClick={() => handleNavClick('all_services', '/services')}
+                        className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
+                        <div className="font-semibold">All Services</div>
+                        <div className="text-sm text-gray-600">View complete service list</div>
+                      </a>
+                      <div className="border-t border-gray-200 my-2"></div>
+                      <a
+                        href="/services/furniture-assembly"
+                        onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
+                        className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
+                        <div className="font-semibold">Furniture Assembly</div>
+                        <div className="text-sm text-gray-600">IKEA, Target, Walmart & more</div>
+                      </a>
+                    </div>
                   </div>
                 )}
               </li>
