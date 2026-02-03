@@ -23,20 +23,20 @@ const Testimonials: React.FC = () => {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  const REVIEWS =
-    businessData?.reviews.map((review) => ({
+  const REVIEWS = useMemo(() => {
+    if (!businessData?.reviews) return [];
+    return businessData.reviews.map((review) => ({
       id: review.id,
       author: review.author_name,
       text: review.review_body,
       rating: review.rating_value,
       datePublished: review.date_published,
       source: review.is_verified ? 'Google' : 'Customer',
-      // NOTE: You have a hard-coded URL here. Leaving it as-is because you said “no other files”.
-      // If you have a real Google review link in your data later, swap to that.
       googleReviewUrl: review.is_verified
         ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z'
         : undefined,
-    })) || [];
+    }));
+  }, [businessData?.reviews]);
 
   const ratingStats = useMemo(() => {
     if (!businessData?.reviews) return null;

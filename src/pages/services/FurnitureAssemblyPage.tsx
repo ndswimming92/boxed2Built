@@ -73,7 +73,7 @@ const FurnitureAssemblyPage: React.FC = () => {
 
   return (
     <>
-      {businessData && <EnhancedLocalBusinessSchema data={businessData} />}
+      <EnhancedLocalBusinessSchema businessData={businessData} />
       <FAQSchema faqs={furnitureAssemblyFAQs} />
       <Header />
 

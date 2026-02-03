@@ -2,7 +2,7 @@ import React from 'react';
 import { CompleteBusinessData } from '../../lib/supabase';
 
 interface EnhancedLocalBusinessSchemaProps {
-  businessData: CompleteBusinessData;
+  businessData: CompleteBusinessData | null | undefined;
   includeReviews?: boolean;
   pageType?: 'home' | 'services' | 'about' | 'contact';
 }
@@ -12,6 +12,8 @@ const EnhancedLocalBusinessSchema: React.FC<EnhancedLocalBusinessSchemaProps> = 
   includeReviews = false,
   pageType = 'home'
 }) => {
+  if (!businessData) return null;
+
   const { info, address, serviceAreas, services, businessHours, paymentMethods, socialMedia, reviews, attributes } = businessData;
 
   const openingHoursSpec = businessHours
