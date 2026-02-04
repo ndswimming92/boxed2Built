@@ -70,6 +70,7 @@ import ConversionFunnelChart from '../../components/analytics/ConversionFunnelCh
 import LostDealsChart from '../../components/analytics/LostDealsChart';
 import JobTypeConversionTable from '../../components/analytics/JobTypeConversionTable';
 import ConversionMetricsCards from '../../components/analytics/ConversionMetricsCards';
+import ClientAnalytics from '../../components/analytics/ClientAnalytics';
 import { getTotalDeductibleExpenses } from '../../services/expenseService';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
@@ -804,6 +805,11 @@ export default function AnalyticsPage() {
             <div className="mb-8">
               <JobTypeConversionTable data={jobTypeConversionRates} />
             </div>
+          </div>
+
+          {/* Client Analytics Section */}
+          <div className="mt-12 pt-8 border-t-4 border-slate-200">
+            <ClientAnalytics />
           </div>
 
           {taxCalculation && taxSettings && (

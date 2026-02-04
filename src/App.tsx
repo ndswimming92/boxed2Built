@@ -53,6 +53,7 @@ const QRCodeDetailPage = lazy(() => import('./pages/admin/QRCodeDetailPage'));
 const CompletionsPage = lazy(() => import('./pages/admin/CompletionsPage'));
 const RemindersPage = lazy(() => import('./pages/admin/RemindersPage'));
 const FinancesPage = lazy(() => import('./pages/admin/FinancesPage'));
+const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -279,6 +280,7 @@ function App() {
                   <Route path="business-info" element={<BusinessInfoPage />} />
                   <Route path="services" element={<ServicesAdminPage />} />
                   <Route path="service-areas" element={<ServiceAreasPage />} />
+                  <Route path="clients" element={<ClientsPage />} />
                   <Route path="reviews" element={<ReviewsPage />} />
                   <Route path="gallery" element={<GalleryAdminPage />} />
                   <Route path="qr-codes" element={<QRCodesPage />} />

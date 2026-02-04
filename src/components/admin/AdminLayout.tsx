@@ -110,6 +110,7 @@ const navigationGroups: NavigationGroup[] = [
     icon: TrendingUpIcon,
     defaultExpanded: false,
     items: [
+      { name: 'Clients', href: '/admin/clients', icon: Users },
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
