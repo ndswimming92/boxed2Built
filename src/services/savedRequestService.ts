@@ -19,33 +19,16 @@ export interface CreateSavedRequestData {
 }
 
 export async function createSavedRequest(data: CreateSavedRequestData): Promise<SavedRequest> {
-  let confirmationCode = generateConfirmationCode();
-  let isUnique = false;
   let attempts = 0;
   const maxAttempts = 5;
 
-  while (!isUnique && attempts < maxAttempts) {
-    const { data: existing } = await supabase
-      .from('saved_requests')
-      .select('confirmation_code')
-      .eq('confirmation_code', confirmationCode)
-      .maybeSingle();
+  while (attempts < maxAttempts) {
+    const submissionDate = new Date().toISOString();
+    const requestId = crypto.randomUUID();
+    const confirmationCode = generateConfirmationCode();
 
-    if (!existing) {
-      isUnique = true;
-    } else {
-      confirmationCode = generateConfirmationCode();
-      attempts++;
-    }
-  }
-
-  if (!isUnique) {
-    throw new Error('Failed to generate unique confirmation code');
-  }
-
-  const { data: savedRequest, error } = await supabase
-    .from('saved_requests')
-    .insert({
+    const insertPayload = {
+      id: requestId,
       business_id: data.business_id,
       organization_id: data.organization_id,
       inquiry_id: data.inquiry_id || null,
@@ -61,18 +44,35 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
       user_city: data.user_city || null,
       estimated_price: data.estimated_price || null,
       estimated_time: data.estimated_time || null,
-      submission_date: new Date().toISOString(),
+      submission_date: submissionDate,
       is_active: true,
-    })
-    .select()
-    .single();
+    };
 
-  if (error) {
+    const { error } = await supabase
+      .from('saved_requests')
+      .insert(insertPayload);
+
+    if (!error) {
+      return {
+        ...insertPayload,
+        last_accessed: null,
+        access_count: 0,
+        created_at: submissionDate,
+        updated_at: submissionDate,
+      } as SavedRequest;
+    }
+
+    const isDuplicateConfirmationCode = error.code === '23505' && error.message.includes('confirmation_code');
+    if (isDuplicateConfirmationCode) {
+      attempts += 1;
+      continue;
+    }
+
     console.error('Error creating saved request:', error);
     throw new Error(`Failed to create saved request: ${error.message}`);
   }
 
-  return savedRequest as SavedRequest;
+  throw new Error('Failed to generate unique confirmation code');
 }
 
 export async function getSavedRequestByCode(

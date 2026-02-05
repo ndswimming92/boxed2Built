@@ -41,51 +41,55 @@ export interface InquiryFilters {
 }
 
 export async function createInquiry(data: CreateInquiryData): Promise<FormInquiry> {
-  const { data: inquiry, error } = await supabase
+  const inquiryId = crypto.randomUUID();
+
+  const insertPayload = {
+    id: inquiryId,
+    business_id: data.business_id,
+    organization_id: data.organization_id,
+    client_name: data.client_name,
+    client_email: data.client_email,
+    client_phone: data.client_phone || null,
+    furniture_type: data.furniture_type,
+    pieces: data.pieces,
+    preferred_date: data.preferred_date || null,
+    preferred_time_slot: data.preferred_time_slot || null,
+    notes: data.notes || null,
+    user_city: data.user_city || null,
+    estimated_price: data.estimated_price || null,
+    estimated_time: data.estimated_time || null,
+    utm_source: data.utm_source || null,
+    utm_medium: data.utm_medium || null,
+    utm_campaign: data.utm_campaign || null,
+    referral_source: data.referral_source || null,
+    source: data.source || 'contact_form',
+    status: 'pending' as const,
+    viewed: false,
+    response_count: 0,
+    is_active: true,
+  };
+
+  const { error } = await supabase
     .from('form_inquiries')
-    .insert({
-      business_id: data.business_id,
-      organization_id: data.organization_id,
-      client_name: data.client_name,
-      client_email: data.client_email,
-      client_phone: data.client_phone || null,
-      furniture_type: data.furniture_type,
-      pieces: data.pieces,
-      preferred_date: data.preferred_date || null,
-      preferred_time_slot: data.preferred_time_slot || null,
-      notes: data.notes || null,
-      user_city: data.user_city || null,
-      estimated_price: data.estimated_price || null,
-      estimated_time: data.estimated_time || null,
-      utm_source: data.utm_source || null,
-      utm_medium: data.utm_medium || null,
-      utm_campaign: data.utm_campaign || null,
-      referral_source: data.referral_source || null,
-      source: data.source || 'contact_form',
-      status: 'pending',
-      viewed: false,
-      response_count: 0,
-      is_active: true,
-    })
-    .select()
-    .single();
+    .insert(insertPayload);
 
   if (error) {
     console.error('Error creating inquiry:', error);
     console.error('Error details:', JSON.stringify(error, null, 2));
-    console.error('Insert data:', JSON.stringify({
-      business_id: data.business_id,
-      organization_id: data.organization_id,
-      client_name: data.client_name,
-      client_email: data.client_email,
-      furniture_type: data.furniture_type,
-      pieces: data.pieces,
-      source: data.source || 'contact_form',
-    }, null, 2));
+    console.error('Insert data:', JSON.stringify(insertPayload, null, 2));
     throw new Error(`Failed to create inquiry: ${error.message}`);
   }
 
-  return inquiry as FormInquiry;
+  return {
+    ...insertPayload,
+    converted_job_id: null,
+    last_contact_date: null,
+    contact_method: null,
+    contact_notes: null,
+    submission_date: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as FormInquiry;
 }
 
 export async function getInquiries(
