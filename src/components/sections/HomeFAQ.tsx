@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, HelpCircle } from 'lucide-react';
 import InternalLink from '../ui/InternalLink';
 
 interface FAQItem {
@@ -23,29 +23,11 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
   className = ''
 }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [heights, setHeights] = useState<{ [key: number]: number }>({});
-  const contentRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
-
-  useEffect(() => {
-    // Measure all content heights
-    const newHeights: { [key: number]: number } = {};
-    faqs.forEach((_, index) => {
-      if (contentRefs.current[index]) {
-        newHeights[index] = contentRefs.current[index]!.scrollHeight;
-      }
-    });
-    setHeights(newHeights);
-  }, [faqs]);
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
 
   return (
     <section className={`py-16 bg-gradient-to-br from-gray-50 to-blue-50 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          {/* Section Header */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
               <HelpCircle className="text-blue-600 mr-3" size={32} />
@@ -58,61 +40,43 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
             </p>
           </div>
 
-          {/* FAQ Accordion */}
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-              >
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full px-6 py-5 text-left flex items-start justify-between gap-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
-                  aria-expanded={openIndex === index}
-                  aria-controls={`faq-answer-${index}`}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
-                    {faq.question}
-                  </h3>
-                  <span className="flex-shrink-0 text-blue-600 mt-1">
-                    {openIndex === index ? (
-                      <ChevronUp size={24} />
-                    ) : (
-                      <ChevronDown size={24} />
-                    )}
-                  </span>
-                </button>
-
-                <div
-                  id={`faq-answer-${index}`}
-                  className="overflow-hidden transition-all duration-300 ease-in-out"
-                  style={{
-                    height: openIndex === index ? `${heights[index] || 0}px` : '0px',
-                    opacity: openIndex === index ? 1 : 0
+          <div className="space-y-6">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <details
+                  key={index}
+                  className="bg-white rounded-lg shadow-md p-6 group"
+                  open={isOpen}
+                  onToggle={(e) => {
+                    const target = e.currentTarget;
+                    if (target.open) {
+                      setOpenIndex(index);
+                    } else if (isOpen) {
+                      setOpenIndex(null);
+                    }
                   }}
                 >
-                  <div
-                    ref={(el) => {
-                      contentRefs.current[index] = el;
-                    }}
-                    className="px-6 pb-6 text-gray-700 leading-relaxed"
-                  >
+                  <summary className="flex items-center justify-between cursor-pointer list-none">
+                    <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                  </summary>
+                  <div className="mt-4 text-gray-600 leading-relaxed">
                     {faq.answer}
                   </div>
-                </div>
-              </div>
-            ))}
+                </details>
+              );
+            })}
           </div>
 
-          {/* View All FAQs Link */}
           {showViewAllLink && (
             <div className="text-center mt-10">
               <InternalLink
                 to="/faq"
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold text-lg transition-colors duration-200"
+                className="inline-flex items-center text-blue-700 font-semibold text-lg hover:text-blue-800 transition-colors duration-200"
               >
                 View All FAQs
-                <ChevronDown className="ml-2 transform rotate-[-90deg]" size={20} />
+                <ArrowRight className="ml-2 w-5 h-5" />
               </InternalLink>
             </div>
           )}
