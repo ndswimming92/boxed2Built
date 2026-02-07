@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock } from 'lucide-react';
+import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
 import { getInvoicesByInquiry } from '../../services/invoiceService';
+import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
+import ClientDetailModal from './ClientDetailModal';
 
 interface InquiryDetailModalProps {
   inquiry: FormInquiry;
@@ -31,9 +33,14 @@ export default function InquiryDetailModal({
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [linkedClient, setLinkedClient] = useState<Client | null>(null);
 
   useEffect(() => {
     loadInvoices();
+    if (inquiry.client_id) {
+      getClientById(inquiry.client_id).then(setLinkedClient).catch(() => {});
+    }
   }, [inquiry.id]);
 
   const loadInvoices = async () => {
@@ -254,6 +261,15 @@ export default function InquiryDetailModal({
                   </div>
                 )}
               </div>
+              {linkedClient && (
+                <button
+                  onClick={() => setShowClientModal(true)}
+                  className="mt-3 w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  View Client Profile
+                </button>
+              )}
             </div>
 
             <div className="bg-slate-50 p-4 rounded-lg">
@@ -502,6 +518,13 @@ export default function InquiryDetailModal({
             loadInvoices();
             if (onRefresh) onRefresh();
           }}
+        />
+      )}
+
+      {showClientModal && linkedClient && (
+        <ClientDetailModal
+          client={linkedClient}
+          onClose={() => setShowClientModal(false)}
         />
       )}
     </div>

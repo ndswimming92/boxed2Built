@@ -229,6 +229,7 @@ export type FormInquiry = {
   client_name: string;
   client_email: string;
   client_phone: string | null;
+  client_id: string | null;
   furniture_type: string;
   pieces: number;
   preferred_date: string | null;

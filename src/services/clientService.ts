@@ -99,16 +99,19 @@ export async function getClientHistory(clientId: string, clientEmail: string | n
     invoices: []
   };
 
-  // Get inquiries by email
-  if (clientEmail) {
-    const { data: inquiries } = await supabase
-      .from('form_inquiries')
-      .select('*')
-      .ilike('client_email', clientEmail)
-      .order('created_at', { ascending: false });
+  let query = supabase
+    .from('form_inquiries')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    history.inquiries = inquiries || [];
+  if (clientId) {
+    query = query.eq('client_id', clientId);
+  } else if (clientEmail) {
+    query = query.ilike('client_email', clientEmail);
   }
+
+  const { data: inquiries } = await query;
+  history.inquiries = inquiries || [];
 
   // Get jobs by client_id
   const { data: jobs } = await supabase

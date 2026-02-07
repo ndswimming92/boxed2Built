@@ -69,9 +69,11 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     is_active: true,
   };
 
-  const { error } = await supabase
+  const { data: result, error } = await supabase
     .from('form_inquiries')
-    .insert(insertPayload);
+    .insert(insertPayload)
+    .select()
+    .single();
 
   if (error) {
     console.error('Error creating inquiry:', error);
@@ -80,16 +82,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     throw new Error(`Failed to create inquiry: ${error.message}`);
   }
 
-  return {
-    ...insertPayload,
-    converted_job_id: null,
-    last_contact_date: null,
-    contact_method: null,
-    contact_notes: null,
-    submission_date: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  } as FormInquiry;
+  return result as FormInquiry;
 }
 
 export async function getInquiries(
