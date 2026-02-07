@@ -5,7 +5,7 @@
   <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://boxed2built.com/</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -23,7 +23,7 @@
   <!-- Services Page - High Priority for SEO -->
   <url>
     <loc>https://boxed2built.com/services</loc>
-    <lastmod>2025-02-03</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -36,7 +36,7 @@
   <!-- Furniture Assembly Service Page - High Priority SEO Landing Page -->
   <url>
     <loc>https://boxed2built.com/services/furniture-assembly</loc>
-    <lastmod>2025-02-03</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -49,7 +49,7 @@
   <!-- TV Mounting Service Page - High Priority SEO Landing Page -->
   <url>
     <loc>https://boxed2built.com/services/tv-mounting</loc>
-    <lastmod>2025-02-03</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -62,7 +62,7 @@
   <!-- About Page - Important for Trust Signals -->
   <url>
     <loc>https://boxed2built.com/about</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -75,7 +75,7 @@
   <!-- Contact Page - High Priority for Local Business -->
   <url>
     <loc>https://boxed2built.com/contact</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -88,7 +88,7 @@
   <!-- Gallery Page - High Priority for Visual Content -->
   <url>
     <loc>https://boxed2built.com/gallery</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -116,7 +116,7 @@
   <!-- Partners Page - Partnership Inquiries -->
   <url>
     <loc>https://boxed2built.com/partners</loc>
-    <lastmod>2025-01-30</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -124,7 +124,15 @@
   <!-- FAQ Page - Support Content -->
   <url>
     <loc>https://boxed2built.com/faq</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Request Lookup Page -->
+  <url>
+    <loc>https://boxed2built.com/lookup-request</loc>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -132,14 +140,14 @@
   <!-- Legal Pages - Lower Priority but Important for Compliance -->
   <url>
     <loc>https://boxed2built.com/privacy-policy</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
     <loc>https://boxed2built.com/terms-of-service</loc>
-    <lastmod>2025-01-27</lastmod>
+    <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

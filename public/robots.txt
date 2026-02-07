@@ -14,6 +14,10 @@ Disallow: /api/
 Allow: /
 Allow: /services
 Allow: /services/
+Allow: /services/furniture-assembly
+Allow: /services/furniture-assembly/
+Allow: /services/tv-mounting
+Allow: /services/tv-mounting/
 Allow: /contact
 Allow: /contact/
 Allow: /about

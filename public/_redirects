@@ -7,8 +7,12 @@
 "/lookup-request/"   /index.html   200
 "/partners"          /index.html   200
 "/partners/"         /index.html   200
-"/services"          /index.html   200
-"/services/"         /index.html   200
+"/services"                    /index.html   200
+"/services/"                   /index.html   200
+"/services/furniture-assembly" /index.html   200
+"/services/furniture-assembly/"/index.html   200
+"/services/tv-mounting"        /index.html   200
+"/services/tv-mounting/"       /index.html   200
 "/about"             /index.html   200
 "/about/"            /index.html   200
 "/gallery"           /index.html   200

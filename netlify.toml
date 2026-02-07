@@ -31,3 +31,44 @@ for = "/about"
 [headers.values]
 X-Robots-Tag = "index, follow"
 Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/services/furniture-assembly"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/services/tv-mounting"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/contact"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/gallery"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/faq"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/admin/*"
+
+[headers.values]
+X-Robots-Tag = "noindex, nofollow"
