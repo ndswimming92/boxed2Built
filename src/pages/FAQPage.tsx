@@ -1,77 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { ChevronDown, ChevronUp, Phone, Mail } from 'lucide-react';
+import { ArrowRight, Phone, Mail } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
-
-interface FAQItemProps {
-  question: string;
-  answer: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  answerId: string;
-}
-
-const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, answerId }) => {
-  const [height, setHeight] = useState(0);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setHeight(contentRef.current.scrollHeight);
-    }
-  }, [answer]);
-
-  const handleToggle = () => {
-    onToggle();
-    trackEvent('faq_item_toggle', 'faq_page', {
-      event_category: 'engagement',
-      event_label: `faq_${isOpen ? 'close' : 'open'}`,
-      question_text: question,
-      element_type: 'accordion',
-      element_location: 'faq_page',
-      page_section: 'faq_content',
-      action_type: isOpen ? 'close' : 'open'
-    });
-  };
-
-  return (
-    <div className="border border-gray-200 rounded-lg mb-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-      <button
-        onClick={handleToggle}
-        className="w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
-        aria-expanded={isOpen}
-        aria-controls={answerId}
-      >
-        <h3 className="text-lg font-semibold text-gray-900 pr-4">{question}</h3>
-        <span className="flex-shrink-0 text-blue-600">
-          {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-        </span>
-      </button>
-
-      <div
-        id={answerId}
-        className="overflow-hidden transition-all duration-300 ease-in-out"
-        style={{
-          height: isOpen ? `${height}px` : '0px',
-          opacity: isOpen ? 1 : 0
-        }}
-        aria-hidden={!isOpen}
-      >
-        <div ref={contentRef} className="px-6 pb-4 pt-2 text-gray-700 leading-relaxed">
-          {answer}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const FAQPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -192,17 +130,52 @@ const FAQPage: React.FC = () => {
                     {category.category}
                   </h2>
 
-                  <div className="space-y-0">
-                    {category.questions.map((faq, faqIndex) => (
-                      <FAQItem
-                        key={faqIndex}
-                        question={faq.question}
-                        answer={faq.answer}
-                        isOpen={openItem === `${category.category}-${faqIndex}`}
-                        onToggle={() => toggleFAQItem(category.category, faqIndex)}
-                        answerId={`faq-answer-${categoryIndex}-${faqIndex}`}
-                      />
-                    ))}
+                  <div className="space-y-6">
+                    {category.questions.map((faq, faqIndex) => {
+                      const itemKey = `${category.category}-${faqIndex}`;
+                      const isOpen = openItem === itemKey;
+                      return (
+                        <details
+                          key={faqIndex}
+                          className="bg-white rounded-lg shadow-md p-6 group"
+                          open={isOpen}
+                          onToggle={(e) => {
+                            const target = e.currentTarget;
+                            if (target.open) {
+                              toggleFAQItem(category.category, faqIndex);
+                              trackEvent('faq_item_toggle', 'faq_page', {
+                                event_category: 'engagement',
+                                event_label: 'faq_open',
+                                question_text: faq.question,
+                                element_type: 'accordion',
+                                element_location: 'faq_page',
+                                page_section: 'faq_content',
+                                action_type: 'open'
+                              });
+                            } else if (isOpen) {
+                              setOpenItem(null);
+                              trackEvent('faq_item_toggle', 'faq_page', {
+                                event_category: 'engagement',
+                                event_label: 'faq_close',
+                                question_text: faq.question,
+                                element_type: 'accordion',
+                                element_location: 'faq_page',
+                                page_section: 'faq_content',
+                                action_type: 'close'
+                              });
+                            }
+                          }}
+                        >
+                          <summary className="flex items-center justify-between cursor-pointer list-none">
+                            <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                            <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                          </summary>
+                          <div className="mt-4 text-gray-600 leading-relaxed">
+                            {faq.answer}
+                          </div>
+                        </details>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
