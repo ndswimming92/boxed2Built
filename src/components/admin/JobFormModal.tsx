@@ -87,6 +87,17 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     return data?.organization_id ?? null;
   };
 
+  const buildNewJobPayload = async () => {
+    // Merge-safe behavior: always include business_id, and include organization_id when it can be resolved.
+    const resolvedOrganizationId = organizationId ?? await fetchOrganizationId();
+
+    return {
+      ...formData,
+      business_id: businessId,
+      ...(resolvedOrganizationId ? { organization_id: resolvedOrganizationId } : {}),
+    };
+  };
+
   const handleSave = async () => {
     if (!formData.client_name?.trim()) {
       setError('Client name is required');
@@ -106,12 +117,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
         if (updateError) throw updateError;
         onSave({ ...job, ...formData } as Job);
       } else {
-        const resolvedOrganizationId = organizationId ?? await fetchOrganizationId();
-        const newJobPayload = {
-          ...formData,
-          business_id: businessId,
-          ...(resolvedOrganizationId ? { organization_id: resolvedOrganizationId } : {}),
-        };
+        const newJobPayload = await buildNewJobPayload();
 
         const { data: newJob, error: insertError } = await supabase
           .from('jobs')
