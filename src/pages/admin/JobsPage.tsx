@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
 import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info } from 'lucide-react';
 import {
@@ -19,6 +20,7 @@ import MileageRecordsList from '../../components/admin/MileageRecordsList';
 import MarkJobLostModal from '../../components/admin/MarkJobLostModal';
 import CancelJobModal from '../../components/admin/CancelJobModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
+import { attachInvoiceToJob } from '../../services/invoiceService';
 import { jobStatusService } from '../../services/jobStatusService';
 
 interface JobStats {
@@ -28,7 +30,20 @@ interface JobStats {
   avgHourlyRate: number;
 }
 
+interface JobsPageLocationState {
+  createJobFromInvoice?: {
+    invoiceId: string;
+    sourceInvoiceNumber?: string;
+    initialData?: Partial<Job>;
+  };
+}
+
 export default function JobsPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const locationState = location.state as JobsPageLocationState | null;
+  const createJobFromInvoice = locationState?.createJobFromInvoice;
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +65,7 @@ export default function JobsPage() {
   const [markingJobLost, setMarkingJobLost] = useState<Job | null>(null);
   const [cancellingJob, setCancellingJob] = useState<Job | null>(null);
   const [showInactiveJobs, setShowInactiveJobs] = useState(false);
+  const [invoiceToConvert, setInvoiceToConvert] = useState<JobsPageLocationState['createJobFromInvoice'] | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -58,6 +74,19 @@ export default function JobsPage() {
   useEffect(() => {
     applyFilters();
   }, [jobs, searchTerm, statusFilter, locationFilter, showInactiveJobs]);
+
+  useEffect(() => {
+    if (!createJobFromInvoice) {
+      return;
+    }
+
+    setInvoiceToConvert(createJobFromInvoice);
+    setEditingJob(null);
+    setCopyingJob(createJobFromInvoice.initialData || null);
+    setShowModal(true);
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [createJobFromInvoice, navigate, location.pathname]);
 
   const fetchData = async () => {
     try {
@@ -234,6 +263,7 @@ export default function JobsPage() {
           </button>
           <button
             onClick={() => {
+              setInvoiceToConvert(null);
               setEditingJob(null);
               setCopyingJob(null);
               setShowModal(true);
@@ -380,6 +410,7 @@ export default function JobsPage() {
             {jobs.length === 0 && (
               <button
                 onClick={() => {
+                  setInvoiceToConvert(null);
                   setEditingJob(null);
                   setCopyingJob(null);
                   setShowModal(true);
@@ -601,19 +632,36 @@ export default function JobsPage() {
           job={editingJob}
           businessId={businessId}
           initialData={copyingJob || undefined}
+          title={invoiceToConvert?.invoiceId ? 'Create Job From Invoice' : undefined}
           onClose={() => {
             setShowModal(false);
             setEditingJob(null);
             setCopyingJob(null);
+            setInvoiceToConvert(null);
           }}
-          onSave={() => {
+          onSave={async (savedJob) => {
+            if (invoiceToConvert?.invoiceId && savedJob?.id) {
+              try {
+                await attachInvoiceToJob(invoiceToConvert.invoiceId, savedJob.id);
+              } catch (error) {
+                console.error('Error linking invoice to newly created job:', error);
+                setMessage({ type: 'error', text: 'Job created, but failed to link the invoice.' });
+                setTimeout(() => setMessage(null), 4000);
+                fetchData();
+                return;
+              }
+            }
+
             fetchData();
             const messageText = editingJob
               ? 'Job updated successfully!'
-              : copyingJob
-                ? 'Job copied and saved successfully!'
-                : 'Job added successfully!';
+              : invoiceToConvert?.invoiceId
+                ? `Job created from invoice ${invoiceToConvert.sourceInvoiceNumber || ''}`.trim()
+                : copyingJob
+                  ? 'Job copied and saved successfully!'
+                  : 'Job added successfully!';
             setMessage({ type: 'success', text: messageText });
+            setInvoiceToConvert(null);
             setTimeout(() => setMessage(null), 3000);
           }}
         />

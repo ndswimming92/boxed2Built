@@ -1,25 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  FileText,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Edit,
-  Send,
-  CreditCard,
-  MoreVertical,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Trash2,
-  Briefcase,
-} from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { Invoice } from '../../lib/supabase';
+import { FileText, Plus, Search, Download, Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench } from 'lucide-react';
+import { supabase, Invoice } from '../../lib/supabase';
 import {
   getAllInvoices,
   getInvoiceStats,
@@ -121,6 +103,33 @@ export default function InvoicesPage() {
     setShowInvoiceModal(true);
   };
 
+  const handleCreateJobFromInvoice = (invoice: Invoice) => {
+    const invoiceDate = invoice.invoice_date || null;
+    const invoiceAmount = invoice.total_amount || null;
+
+    navigate('/admin/jobs', {
+      state: {
+        createJobFromInvoice: {
+          invoiceId: invoice.id,
+          sourceInvoiceNumber: invoice.invoice_number,
+          initialData: {
+            client_name: invoice.client_name,
+            client_email: invoice.client_email || '',
+            client_phone: invoice.client_phone || '',
+            location_city: invoice.client_address || '',
+            quoted_price: invoiceAmount,
+            final_price: invoiceAmount,
+            date_quoted: invoiceDate,
+            notes: `Created from invoice ${invoice.invoice_number}${invoice.notes ? `
+
+Invoice notes:
+${invoice.notes}` : ''}`,
+          },
+        },
+      },
+    });
+  };
+
   const handleEditInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setShowInvoiceModal(true);
@@ -159,7 +168,7 @@ export default function InvoicesPage() {
     try {
       await deleteInvoice(invoice.id);
       alert('Invoice deleted successfully.');
-      loadInvoices();
+      fetchData();
     } catch (error) {
       console.error('Error deleting invoice:', error);
       alert('Failed to delete invoice. Please try again.');
@@ -433,6 +442,15 @@ export default function InvoicesPage() {
                             title="Record Payment"
                           >
                             <CreditCard className="w-4 h-4" />
+                          </button>
+                        )}
+                        {!invoice.job_id && (
+                          <button
+                            onClick={() => handleCreateJobFromInvoice(invoice)}
+                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="Create Job From Invoice"
+                          >
+                            <Wrench className="w-4 h-4" />
                           </button>
                         )}
                         <button
