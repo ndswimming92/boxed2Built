@@ -7,15 +7,17 @@ interface JobFormModalProps {
   job: Job | null;
   businessId: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (savedJob?: Job) => void;
   initialData?: Partial<Job>;
+  title?: string;
 }
 
-export default function JobFormModal({ job, businessId, onClose, onSave, initialData }: JobFormModalProps) {
+export default function JobFormModal({ job, businessId, onClose, onSave, initialData, title }: JobFormModalProps) {
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Partial<Job>>({
     client_name: '',
@@ -43,12 +45,19 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
   useEffect(() => {
     fetchDropdownData();
+
+    fetchOrganizationId()
+      .then((orgId) => setOrganizationId(orgId))
+      .catch((err) => {
+        console.error('Error fetching business organization:', err);
+      });
+
     if (job) {
       setFormData(job);
     } else if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
     }
-  }, [job, initialData]);
+  }, [job, initialData, businessId]);
 
   const fetchDropdownData = async () => {
     try {
@@ -62,6 +71,20 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     } catch (err) {
       console.error('Error fetching dropdown data:', err);
     }
+  };
+
+  const fetchOrganizationId = async (): Promise<string | null> => {
+    const { data, error: businessError } = await supabase
+      .from('business_info')
+      .select('organization_id')
+      .eq('id', businessId)
+      .maybeSingle();
+
+    if (businessError) {
+      throw businessError;
+    }
+
+    return data?.organization_id ?? null;
   };
 
   const handleSave = async () => {
@@ -81,15 +104,24 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           .eq('id', job.id);
 
         if (updateError) throw updateError;
+        onSave({ ...job, ...formData } as Job);
       } else {
-        const { error: insertError } = await supabase
+        if (!organizationId) {
+          setError('Unable to determine organization for this business. Please refresh and try again.');
+          setSaving(false);
+          return;
+        }
+
+        const { data: newJob, error: insertError } = await supabase
           .from('jobs')
-          .insert([{ ...formData, business_id: businessId }]);
+          .insert([{ ...formData, business_id: businessId, organization_id: organizationId }])
+          .select()
+          .single();
 
         if (insertError) throw insertError;
+        onSave(newJob as Job);
       }
 
-      onSave();
       onClose();
     } catch (err: any) {
       console.error('Error saving job:', err);
@@ -107,7 +139,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">
-            {job ? 'Edit Job' : initialData ? 'Copy Job' : 'Add New Job'}
+            {title || (job ? 'Edit Job' : initialData ? 'Copy Job' : 'Add New Job')}
           </h2>
           <button
             onClick={onClose}
