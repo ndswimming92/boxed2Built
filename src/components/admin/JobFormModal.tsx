@@ -74,7 +74,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   };
 
   const fetchOrganizationId = async (): Promise<string | null> => {
-    const { data, error: businessError } = await supabase
+    const { data: businessData, error: businessError } = await supabase
       .from('business_info')
       .select('organization_id')
       .eq('id', businessId)
@@ -84,7 +84,24 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       throw businessError;
     }
 
-    return data?.organization_id ?? null;
+    if (businessData?.organization_id) {
+      return businessData.organization_id;
+    }
+
+    // Fallback for single-org environments where business_info.organization_id may be unset.
+    const { data: orgData, error: orgError } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (orgError) {
+      throw orgError;
+    }
+
+    return orgData?.id ?? null;
   };
 
   const buildNewJobPayload = async () => {
@@ -117,9 +134,14 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
         if (updateError) throw updateError;
         onSave({ ...job, ...formData } as Job);
       } else {
+        const newJobPayload = await buildNewJobPayload();
+        if (newJobPayload.organization_id && !organizationId) {
+          setOrganizationId(newJobPayload.organization_id);
+        }
+
         const { data: newJob, error: insertError } = await supabase
           .from('jobs')
-          .insert([{ ...formData, business_id: businessId }])
+          .insert([newJobPayload])
           .select()
           .single();
 
