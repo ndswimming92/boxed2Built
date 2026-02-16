@@ -82,6 +82,36 @@ export interface InvoiceStats {
   avgInvoiceAmount: number;
 }
 
+async function getBusinessOrganizationId(businessId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('business_info')
+    .select('organization_id')
+    .eq('id', businessId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching business organization:', error);
+    throw new Error(`Failed to fetch business organization: ${error.message}`);
+  }
+
+  return data?.organization_id ?? null;
+}
+
+async function getInvoiceOrganizationId(invoiceId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select('organization_id')
+    .eq('id', invoiceId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching invoice organization:', error);
+    throw new Error(`Failed to fetch invoice organization: ${error.message}`);
+  }
+
+  return data?.organization_id ?? null;
+}
+
 export async function generateInvoiceNumber(businessId: string): Promise<string> {
   const { data, error } = await supabase.rpc('generate_next_invoice_number', {
     p_business_id: businessId,
@@ -138,6 +168,7 @@ export async function updateInvoiceSettings(
 
 export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
   const invoiceNumber = await generateInvoiceNumber(data.business_id);
+  const organizationId = await getBusinessOrganizationId(data.business_id);
 
   const settings = await getInvoiceSettings(data.business_id);
   const taxRate = data.tax_rate !== undefined ? data.tax_rate : settings?.default_tax_rate || 0;
@@ -145,6 +176,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
   const { data: invoice, error } = await supabase
     .from('invoices')
     .insert({
+      organization_id: organizationId,
       business_id: data.business_id,
       inquiry_id: data.inquiry_id || null,
       job_id: data.job_id || null,
@@ -358,9 +390,12 @@ export async function deleteInvoice(invoiceId: string): Promise<void> {
 }
 
 export async function addLineItem(data: CreateLineItemData): Promise<InvoiceLineItem> {
+  const organizationId = await getInvoiceOrganizationId(data.invoice_id);
+
   const { data: lineItem, error } = await supabase
     .from('invoice_line_items')
     .insert({
+      organization_id: organizationId,
       invoice_id: data.invoice_id,
       item_type: data.item_type,
       description: data.description,
@@ -409,9 +444,12 @@ export async function deleteLineItem(lineItemId: string): Promise<void> {
 }
 
 export async function recordPayment(data: CreatePaymentData): Promise<InvoicePayment> {
+  const organizationId = await getInvoiceOrganizationId(data.invoice_id);
+
   const { data: payment, error } = await supabase
     .from('invoice_payments')
     .insert({
+      organization_id: organizationId,
       invoice_id: data.invoice_id,
       payment_date: data.payment_date,
       payment_amount: data.payment_amount,
