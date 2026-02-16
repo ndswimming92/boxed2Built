@@ -106,15 +106,16 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
         if (updateError) throw updateError;
         onSave({ ...job, ...formData } as Job);
       } else {
-        if (!organizationId) {
-          setError('Unable to determine organization for this business. Please refresh and try again.');
-          setSaving(false);
-          return;
-        }
+        const resolvedOrganizationId = organizationId ?? await fetchOrganizationId();
+        const newJobPayload = {
+          ...formData,
+          business_id: businessId,
+          ...(resolvedOrganizationId ? { organization_id: resolvedOrganizationId } : {}),
+        };
 
         const { data: newJob, error: insertError } = await supabase
           .from('jobs')
-          .insert([{ ...formData, business_id: businessId, organization_id: organizationId }])
+          .insert([newJobPayload])
           .select()
           .single();
 
@@ -125,7 +126,11 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       onClose();
     } catch (err: any) {
       console.error('Error saving job:', err);
-      setError(err.message || 'Failed to save job');
+      if (err?.message?.includes('organization_id') && err?.message?.includes('null value')) {
+        setError('Unable to create job because organization context is missing. Please refresh and try again.');
+      } else {
+        setError(err.message || 'Failed to save job');
+      }
     } finally {
       setSaving(false);
     }
