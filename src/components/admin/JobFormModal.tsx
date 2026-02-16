@@ -117,11 +117,9 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
         if (updateError) throw updateError;
         onSave({ ...job, ...formData } as Job);
       } else {
-        const newJobPayload = await buildNewJobPayload();
-
         const { data: newJob, error: insertError } = await supabase
           .from('jobs')
-          .insert([newJobPayload])
+          .insert([{ ...formData, business_id: businessId }])
           .select()
           .single();
 
