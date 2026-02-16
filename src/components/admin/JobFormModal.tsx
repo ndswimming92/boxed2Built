@@ -7,15 +7,17 @@ interface JobFormModalProps {
   job: Job | null;
   businessId: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (savedJob?: Job) => void;
   initialData?: Partial<Job>;
+  title?: string;
 }
 
-export default function JobFormModal({ job, businessId, onClose, onSave, initialData }: JobFormModalProps) {
+export default function JobFormModal({ job, businessId, onClose, onSave, initialData, title }: JobFormModalProps) {
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Partial<Job>>({
     client_name: '',
@@ -43,12 +45,19 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
   useEffect(() => {
     fetchDropdownData();
+
+    fetchOrganizationId()
+      .then((orgId) => setOrganizationId(orgId))
+      .catch((err) => {
+        console.error('Error fetching business organization:', err);
+      });
+
     if (job) {
       setFormData(job);
     } else if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
     }
-  }, [job, initialData]);
+  }, [job, initialData, businessId]);
 
   const fetchDropdownData = async () => {
     try {
@@ -62,6 +71,48 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     } catch (err) {
       console.error('Error fetching dropdown data:', err);
     }
+  };
+
+  const fetchOrganizationId = async (): Promise<string | null> => {
+    const { data: businessData, error: businessError } = await supabase
+      .from('business_info')
+      .select('organization_id')
+      .eq('id', businessId)
+      .maybeSingle();
+
+    if (businessError) {
+      throw businessError;
+    }
+
+    if (businessData?.organization_id) {
+      return businessData.organization_id;
+    }
+
+    // Fallback for single-org environments where business_info.organization_id may be unset.
+    const { data: orgData, error: orgError } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (orgError) {
+      throw orgError;
+    }
+
+    return orgData?.id ?? null;
+  };
+
+  const buildNewJobPayload = async () => {
+    // Merge-safe behavior: always include business_id, and include organization_id when it can be resolved.
+    const resolvedOrganizationId = organizationId ?? await fetchOrganizationId();
+
+    return {
+      ...formData,
+      business_id: businessId,
+      ...(resolvedOrganizationId ? { organization_id: resolvedOrganizationId } : {}),
+    };
   };
 
   const handleSave = async () => {
@@ -81,19 +132,31 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           .eq('id', job.id);
 
         if (updateError) throw updateError;
+        onSave({ ...job, ...formData } as Job);
       } else {
-        const { error: insertError } = await supabase
+        const newJobPayload = await buildNewJobPayload();
+        if (newJobPayload.organization_id && !organizationId) {
+          setOrganizationId(newJobPayload.organization_id);
+        }
+
+        const { data: newJob, error: insertError } = await supabase
           .from('jobs')
-          .insert([{ ...formData, business_id: businessId }]);
+          .insert([newJobPayload])
+          .select()
+          .single();
 
         if (insertError) throw insertError;
+        onSave(newJob as Job);
       }
 
-      onSave();
       onClose();
     } catch (err: any) {
       console.error('Error saving job:', err);
-      setError(err.message || 'Failed to save job');
+      if (err?.message?.includes('organization_id') && err?.message?.includes('null value')) {
+        setError('Unable to create job because organization context is missing. Please refresh and try again.');
+      } else {
+        setError(err.message || 'Failed to save job');
+      }
     } finally {
       setSaving(false);
     }
@@ -107,7 +170,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">
-            {job ? 'Edit Job' : initialData ? 'Copy Job' : 'Add New Job'}
+            {title || (job ? 'Edit Job' : initialData ? 'Copy Job' : 'Add New Job')}
           </h2>
           <button
             onClick={onClose}
