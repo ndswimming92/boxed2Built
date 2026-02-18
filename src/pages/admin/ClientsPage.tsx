@@ -12,6 +12,7 @@ import {
 import ClientDetailModal from '../../components/admin/ClientDetailModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { useAuth } from '../../contexts/AuthContext';
 
 type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads';
 
@@ -27,14 +28,22 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { currentOrganization } = useAuth();
 
-  const organizationId = 'default-org-id'; // TODO: Get from context
+  const organizationId = currentOrganization?.id;
 
   useEffect(() => {
+    if (!organizationId) return;
     loadData();
-  }, [selectedSegment]);
+  }, [organizationId, selectedSegment]);
 
   async function loadData() {
+    if (!organizationId) {
+      setClients([]);
+      setStats(null);
+      return;
+    }
+
     try {
       setLoading(true);
       const [clientsData, statsData] = await Promise.all([
@@ -55,6 +64,8 @@ export default function ClientsPage() {
 
   async function handleSearch(term: string) {
     setSearchTerm(term);
+    if (!organizationId) return;
+
     if (term.trim()) {
       try {
         const results = await searchClients(organizationId, term);
@@ -191,6 +202,14 @@ export default function ClientsPage() {
       ['high_value', 'vip'].includes(c.client_value_tier)
     ).length;
   }, [clients]);
+
+  if (!organizationId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-600">Select an organization to view clients.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
