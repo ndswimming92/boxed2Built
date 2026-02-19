@@ -1,27 +1,24 @@
 # Redirects configuration for SPA routing
-"/contact"           /index.html   200
-"/contact/"          /index.html   200
-"/faq"               /index.html   200
-"/faq/"              /index.html   200
-"/lookup-request"    /index.html   200
-"/lookup-request/"   /index.html   200
-"/partners"          /index.html   200
-"/partners/"         /index.html   200
-"/services"                    /index.html   200
-"/services/"                   /index.html   200
-"/services/furniture-assembly" /index.html   200
-"/services/furniture-assembly/"/index.html   200
-"/services/tv-mounting"        /index.html   200
-"/services/tv-mounting/"       /index.html   200
-"/about"             /index.html   200
-"/about/"            /index.html   200
-"/gallery"           /index.html   200
-"/gallery/"          /index.html   200
-"/privacy-policy"    /index.html   200
-"/privacy-policy/"   /index.html   200
-"/terms-of-service"  /index.html   200
-"/terms-of-service/" /index.html   200
-/*                   /index.html   200
-
-# Ensure sitemap.xml is served with correct content type
-/sitemap.xml    /sitemap.xml    200
+/contact                    /index.html   200
+/contact/                   /index.html   200
+/faq                        /index.html   200
+/faq/                       /index.html   200
+/lookup-request             /index.html   200
+/lookup-request/            /index.html   200
+/partners                   /index.html   200
+/partners/                  /index.html   200
+/services                   /index.html   200
+/services/                  /index.html   200
+/services/furniture-assembly  /index.html   200
+/services/furniture-assembly/ /index.html   200
+/services/tv-mounting       /index.html   200
+/services/tv-mounting/      /index.html   200
+/about                      /index.html   200
+/about/                     /index.html   200
+/gallery                    /index.html   200
+/gallery/                   /index.html   200
+/privacy-policy             /index.html   200
+/privacy-policy/            /index.html   200
+/terms-of-service           /index.html   200
+/terms-of-service/          /index.html   200
+/*                          /index.html   200
