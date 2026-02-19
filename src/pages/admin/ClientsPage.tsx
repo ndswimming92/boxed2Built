@@ -263,7 +263,7 @@ export default function ClientsPage() {
               </div>
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              ${formatCurrency(stats.total_revenue)} total revenue
+              {formatCurrency(stats.total_revenue)} total revenue
             </p>
           </div>
 
