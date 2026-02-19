@@ -438,35 +438,35 @@ export default function AdminLayout() {
             {/* Toggle collapse button - desktop only */}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`hidden lg:flex w-full items-center gap-3 rounded-lg transition-colors px-4 py-3 text-slate-700 hover:bg-slate-50 ${
+              className={`hidden lg:flex w-full items-center gap-3 rounded-lg transition-colors px-4 py-2 text-slate-500 hover:bg-slate-50 ${
                 sidebarCollapsed ? 'justify-center' : ''
               }`}
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              <Menu className="w-5 h-5 flex-shrink-0" />
-              <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
+              <Menu className="w-4 h-4 flex-shrink-0" />
+              <span className={`text-sm font-normal transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
                 {sidebarCollapsed ? 'Expand' : 'Collapse'}
               </span>
             </button>
 
             {/* User info - hidden when collapsed */}
-            <div className={`px-4 py-2 bg-slate-50 rounded-lg transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
-              <p className="text-xs text-slate-500 mb-1">Signed in as</p>
-              <p className="text-sm font-medium text-slate-900 truncate">
+            <div className={`px-4 py-1.5 bg-slate-50 rounded-lg transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
+              <p className="text-xs text-slate-400 mb-0.5">Signed in as</p>
+              <p className="text-xs text-slate-500 truncate">
                 {user?.email}
               </p>
             </div>
 
             <button
               onClick={handleSignOut}
-              className={`w-full flex items-center gap-3 text-red-700 hover:bg-red-50 rounded-lg transition-colors relative group ${
-                sidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-3' : 'px-4 py-3'
+              className={`w-full flex items-center gap-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors relative group ${
+                sidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-2' : 'px-4 py-2'
               }`}
               title={sidebarCollapsed ? 'Sign Out' : undefined}
             >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
-              <span className={`font-medium transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>Sign Out</span>
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <span className={`text-sm font-normal transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>Sign Out</span>
 
               {/* Tooltip for collapsed state */}
               {sidebarCollapsed && (
