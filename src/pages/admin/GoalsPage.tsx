@@ -415,9 +415,9 @@ export default function GoalsPage() {
                       {goal.due_date && (
                         <>
                           <span>•</span>
-                          <span className={isDueSoon || isOverdue ? 'text-red-600 font-medium' : ''}>
+                          <span className={goal.status !== 'completed' && (isDueSoon || isOverdue) ? 'text-red-600 font-medium' : ''}>
                             Due {new Date(goal.due_date).toLocaleDateString()}
-                            {daysRemaining !== null && (
+                            {daysRemaining !== null && goal.status !== 'completed' && (
                               <span className="ml-1">
                                 ({isOverdue ? `${Math.abs(daysRemaining)} days overdue` : `${daysRemaining} days left`})
                               </span>
