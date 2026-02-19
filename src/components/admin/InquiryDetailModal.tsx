@@ -167,9 +167,9 @@ export default function InquiryDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-4xl w-full my-8">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-4xl w-full flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">{inquiry.client_name}</h2>
             <p className="text-sm text-slate-600 mt-1">Submitted {formatDate(inquiry.submission_date)}</p>
@@ -182,7 +182,7 @@ export default function InquiryDetailModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           <div className="flex items-center gap-3">
             <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
               {inquiry.status.replace('_', ' ').toUpperCase()}
@@ -493,7 +493,7 @@ export default function InquiryDetailModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 flex-shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"
