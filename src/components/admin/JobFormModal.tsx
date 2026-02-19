@@ -15,6 +15,7 @@ interface JobFormModalProps {
 export default function JobFormModal({ job, businessId, onClose, onSave, initialData, title }: JobFormModalProps) {
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [jobTypeOptions, setJobTypeOptions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -61,13 +62,30 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
   const fetchDropdownData = async () => {
     try {
-      const [areasRes, paymentsRes] = await Promise.all([
+      const [areasRes, paymentsRes, jobTypesRes] = await Promise.all([
         supabase.from('service_areas').select('*').eq('is_active', true).order('city_name'),
-        supabase.from('payment_methods').select('*').eq('business_id', businessId).eq('is_active', true).order('display_order')
+        supabase.from('payment_methods').select('*').eq('business_id', businessId).eq('is_active', true).order('display_order'),
+        supabase
+          .from('jobs')
+          .select('job_type')
+          .eq('business_id', businessId)
+          .not('job_type', 'is', null)
       ]);
 
       if (areasRes.data) setServiceAreas(areasRes.data);
       if (paymentsRes.data) setPaymentMethods(paymentsRes.data);
+
+      if (jobTypesRes.data) {
+        const jobTypes = Array.from(
+          new Set(
+            jobTypesRes.data
+              .map(({ job_type }) => job_type?.trim())
+              .filter((jobType): jobType is string => Boolean(jobType))
+          )
+        ).sort((a, b) => a.localeCompare(b));
+
+        setJobTypeOptions(jobTypes);
+      }
     } catch (err) {
       console.error('Error fetching dropdown data:', err);
     }
@@ -162,6 +180,11 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     }
   };
 
+  const currentJobType = formData.job_type?.trim() || '';
+  const availableJobTypes = currentJobType && !jobTypeOptions.includes(currentJobType)
+    ? [currentJobType, ...jobTypeOptions]
+    : jobTypeOptions;
+
   const netProfit = calculateNetProfit(formData.final_price, formData.materials_cost);
   const hourlyRate = calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
 
@@ -228,13 +251,21 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Job Type</label>
-                <input name="job_type"
-                  type="text"
+                <select name="job_type"
                   value={formData.job_type || ''}
                   onChange={(e) => setFormData({ ...formData, job_type: e.target.value })}
-                  placeholder="e.g., Furniture Assembly, Curtain Installation"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
+                >
+                  <option value="">Select job type</option>
+                  {availableJobTypes.map((jobType) => (
+                    <option key={jobType} value={jobType}>
+                      {jobType}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Job types are based on your previously saved jobs.
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
