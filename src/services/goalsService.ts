@@ -325,6 +325,8 @@ export async function getGoalStats(businessId: string): Promise<GoalStats> {
   };
 }
 
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
 export async function getUpcomingGoals(businessId: string, limit: number = 5): Promise<Goal[]> {
   const { data, error } = await supabase
     .from('business_goals')
@@ -333,7 +335,6 @@ export async function getUpcomingGoals(businessId: string, limit: number = 5): P
     .eq('is_active', true)
     .eq('is_archived', false)
     .in('status', ['not_started', 'in_progress', 'overdue'])
-    .order('priority', { ascending: false })
     .order('due_date', { ascending: true })
     .limit(limit);
 
@@ -342,7 +343,11 @@ export async function getUpcomingGoals(businessId: string, limit: number = 5): P
     return [];
   }
 
-  return data || [];
+  return (data || []).sort((a, b) => {
+    const aPriority = PRIORITY_ORDER[a.priority] ?? 99;
+    const bPriority = PRIORITY_ORDER[b.priority] ?? 99;
+    return aPriority - bPriority;
+  });
 }
 
 export async function updateOverdueGoals(): Promise<void> {
