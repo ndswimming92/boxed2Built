@@ -144,11 +144,14 @@ export async function updateInvoiceSettings(
   businessId: string,
   settings: Partial<InvoiceSettings>
 ): Promise<InvoiceSettings> {
+  const organizationId = await getBusinessOrganizationId(businessId);
+
   const { data, error } = await supabase
     .from('invoice_settings')
     .upsert(
       {
         business_id: businessId,
+        organization_id: organizationId,
         ...settings,
       },
       {
