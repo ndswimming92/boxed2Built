@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter } from 'lucide-react';
 import {
-  getAllClients,
+  getAllClientsIncludingTest,
   getClientSegment,
   getClientSegmentStats,
   searchClients,
@@ -48,7 +48,7 @@ export default function ClientsPage() {
       setLoading(true);
       const [clientsData, statsData] = await Promise.all([
         selectedSegment === 'all'
-          ? getAllClients(organizationId)
+          ? getAllClientsIncludingTest(organizationId)
           : getClientSegment(organizationId, selectedSegment),
         getClientSegmentStats(organizationId)
       ]);
@@ -439,7 +439,14 @@ export default function ClientsPage() {
                       />
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900">{client.name}</span>
+                        {client.is_test && (
+                          <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded border border-gray-300">
+                            Test
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex flex-col gap-1">

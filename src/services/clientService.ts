@@ -26,6 +26,7 @@ export interface Client {
   source: string | null;
   tags: string[];
   preferences_token: string;
+  is_test: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -67,8 +68,21 @@ export interface ClientExportOptions {
   includeValueTier: boolean;
 }
 
-// Get all clients for the organization
+// Get all clients for the organization (excludes test accounts)
 export async function getAllClients(organizationId: string): Promise<Client[]> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .eq('is_test', false)
+    .order('last_contact_date', { ascending: false, nullsFirst: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Get all clients including test accounts (for admin management)
+export async function getAllClientsIncludingTest(organizationId: string): Promise<Client[]> {
   const { data, error } = await supabase
     .from('clients')
     .select('*')
@@ -134,7 +148,7 @@ export async function getClientHistory(clientId: string, clientEmail: string | n
   return history;
 }
 
-// Get clients by segment
+// Get clients by segment (excludes test accounts)
 export async function getClientSegment(
   organizationId: string,
   segment: 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads'
@@ -142,7 +156,8 @@ export async function getClientSegment(
   let query = supabase
     .from('clients')
     .select('*')
-    .eq('organization_id', organizationId);
+    .eq('organization_id', organizationId)
+    .eq('is_test', false);
 
   switch (segment) {
     case 'repeat':
@@ -165,12 +180,13 @@ export async function getClientSegment(
   return data || [];
 }
 
-// Get segment statistics
+// Get segment statistics (excludes test accounts)
 export async function getClientSegmentStats(organizationId: string): Promise<ClientSegmentStats> {
   const { data: clients, error } = await supabase
     .from('clients')
     .select('client_status, client_value_tier, total_revenue, job_count')
-    .eq('organization_id', organizationId);
+    .eq('organization_id', organizationId)
+    .eq('is_test', false);
 
   if (error) throw error;
 
@@ -191,7 +207,7 @@ export async function getClientSegmentStats(organizationId: string): Promise<Cli
   return stats;
 }
 
-// Search clients
+// Search clients (excludes test accounts)
 export async function searchClients(organizationId: string, searchTerm: string): Promise<Client[]> {
   const term = `%${searchTerm}%`;
 
@@ -199,6 +215,7 @@ export async function searchClients(organizationId: string, searchTerm: string):
     .from('clients')
     .select('*')
     .eq('organization_id', organizationId)
+    .eq('is_test', false)
     .or(`name.ilike.${term},email.ilike.${term},phone.ilike.${term},address.ilike.${term}`)
     .order('last_contact_date', { ascending: false, nullsFirst: false });
 
