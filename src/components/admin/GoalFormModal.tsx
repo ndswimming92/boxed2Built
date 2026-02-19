@@ -47,8 +47,8 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
   const [category, setCategory] = useState<Goal['category']>('custom');
   const [priority, setPriority] = useState<Goal['priority']>('medium');
   const [status, setStatus] = useState<Goal['status']>('not_started');
-  const [targetValue, setTargetValue] = useState<number>(0);
-  const [currentValue, setCurrentValue] = useState<number>(0);
+  const [targetValue, setTargetValue] = useState<string>('');
+  const [currentValue, setCurrentValue] = useState<string>('');
   const [unitType, setUnitType] = useState<Goal['unit_type']>('custom');
   const [unitLabel, setUnitLabel] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -61,8 +61,8 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
       setCategory(goal.category || 'custom');
       setPriority(goal.priority || 'medium');
       setStatus(goal.status || 'not_started');
-      setTargetValue(goal.target_value || 0);
-      setCurrentValue(goal.current_value || 0);
+      setTargetValue(goal.target_value ? String(goal.target_value) : '');
+      setCurrentValue(goal.current_value ? String(goal.current_value) : '');
       setUnitType(goal.unit_type || 'custom');
       setUnitLabel(goal.unit_label || '');
       setStartDate(goal.start_date || '');
@@ -77,11 +77,11 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
       newErrors.title = 'Title is required';
     }
 
-    if (targetValue <= 0) {
+    if (parseFloat(targetValue) <= 0 || !targetValue) {
       newErrors.targetValue = 'Target value must be greater than 0';
     }
 
-    if (currentValue < 0) {
+    if (parseFloat(currentValue) < 0) {
       newErrors.currentValue = 'Current value cannot be negative';
     }
 
@@ -113,8 +113,8 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
         category,
         priority,
         status,
-        target_value: targetValue,
-        current_value: currentValue,
+        target_value: parseFloat(targetValue) || 0,
+        current_value: parseFloat(currentValue) || 0,
         unit_type: unitType,
         unit_label: unitType === 'custom' ? unitLabel : null,
         start_date: startDate || null,
@@ -241,7 +241,7 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
                 <input name="targetValue"
                   type="number"
                   value={targetValue}
-                  onChange={(e) => setTargetValue(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => setTargetValue(e.target.value)}
                   className={`w-full py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
                     unitType === 'revenue' ? 'pl-7 pr-4' : 'px-4'
                   } ${errors.targetValue ? 'border-red-500' : 'border-slate-300'}`}
@@ -249,20 +249,20 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
                   step={unitType === 'revenue' ? '1' : '0.01'}
                 />
               </div>
-              {unitType === 'revenue' && targetValue > 0 && (
+              {unitType === 'revenue' && parseFloat(targetValue) > 0 && (
                 <div className="mt-2">
                   <input
                     type="range"
                     min="0"
-                    max={Math.max(targetValue * 2, 100000)}
+                    max={Math.max(parseFloat(targetValue) * 2, 100000)}
                     step="100"
-                    value={targetValue}
-                    onChange={(e) => setTargetValue(parseFloat(e.target.value))}
+                    value={parseFloat(targetValue)}
+                    onChange={(e) => setTargetValue(e.target.value)}
                     className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
                   />
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>$0</span>
-                    <span>${(Math.max(targetValue * 2, 100000)).toLocaleString()}</span>
+                    <span>${(Math.max(parseFloat(targetValue) * 2, 100000)).toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -282,7 +282,7 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
                 <input name="currentValue"
                   type="number"
                   value={currentValue}
-                  onChange={(e) => setCurrentValue(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => setCurrentValue(e.target.value)}
                   className={`w-full py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
                     unitType === 'revenue' ? 'pl-7 pr-4' : 'px-4'
                   } ${errors.currentValue ? 'border-red-500' : 'border-slate-300'}`}
@@ -290,20 +290,20 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
                   step={unitType === 'revenue' ? '1' : '0.01'}
                 />
               </div>
-              {unitType === 'revenue' && targetValue > 0 && (
+              {unitType === 'revenue' && parseFloat(targetValue) > 0 && (
                 <div className="mt-2">
                   <input
                     type="range"
                     min="0"
-                    max={targetValue}
+                    max={parseFloat(targetValue)}
                     step="100"
-                    value={Math.min(currentValue, targetValue)}
-                    onChange={(e) => setCurrentValue(parseFloat(e.target.value))}
+                    value={Math.min(parseFloat(currentValue) || 0, parseFloat(targetValue))}
+                    onChange={(e) => setCurrentValue(e.target.value)}
                     className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
                   />
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>$0</span>
-                    <span>${targetValue.toLocaleString()}</span>
+                    <span>${parseFloat(targetValue).toLocaleString()}</span>
                   </div>
                 </div>
               )}
