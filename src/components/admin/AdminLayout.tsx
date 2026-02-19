@@ -511,8 +511,7 @@ export default function AdminLayout() {
             <div className="flex items-center gap-4 ml-auto">
               <Link
                 to="/admin/inquiries"
-                className="relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
-                title="View Inquiries"
+                className="group relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 <Bell className="w-5 h-5" />
                 {unviewedCount > 0 && (
@@ -520,6 +519,9 @@ export default function AdminLayout() {
                     {unviewedCount > 99 ? '99+' : unviewedCount}
                   </span>
                 )}
+                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  View Inquiries
+                </span>
               </Link>
               <a
                 href="/"
