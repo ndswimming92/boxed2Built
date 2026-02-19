@@ -291,31 +291,28 @@ export default function AdminLayout() {
             </button>
           </div>
 
+          {/* Expand/Collapse All — sticky, outside scroll area */}
+          {!sidebarCollapsed && (
+            <div className="flex gap-2 px-4 py-2 border-b border-slate-200 bg-white shrink-0">
+              <button
+                onClick={expandAll}
+                className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                Expand All
+              </button>
+              <button
+                onClick={collapseAll}
+                className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+                Collapse All
+              </button>
+            </div>
+          )}
+
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
-            {/* Quick Actions */}
-            {!sidebarCollapsed && (
-              <div className="mb-4">
-                {/* Expand/Collapse All */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={expandAll}
-                    className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                    Expand All
-                  </button>
-                  <button
-                    onClick={collapseAll}
-                    className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors flex-1"
-                  >
-                    <Minimize2 className="w-3.5 h-3.5" />
-                    Collapse All
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Navigation Groups */}
             <div className="space-y-3">
               {navigationGroups.map((group, groupIndex) => {
