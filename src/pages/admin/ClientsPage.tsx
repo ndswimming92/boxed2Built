@@ -412,11 +412,17 @@ export default function ClientsPage() {
                   >
                     Last Contact {sortField === 'last_contact_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Status
+                  <th
+                    onClick={() => handleSort('client_status')}
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  >
+                    Status {sortField === 'client_status' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Value Tier
+                  <th
+                    onClick={() => handleSort('client_value_tier')}
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  >
+                    Value Tier {sortField === 'client_value_tier' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Opt-In
