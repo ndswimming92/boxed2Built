@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Plus, Search, Filter, Edit, Trash2, Check, Archive, TrendingUp } from 'lucide-react';
+import { Target, Plus, Search, Edit, Trash2, Check, Archive, TrendingUp, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Goal } from '../../lib/supabase';
 import {
@@ -26,6 +26,8 @@ export default function GoalsPage() {
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [updatingProgressId, setUpdatingProgressId] = useState<string | null>(null);
+  const [progressInputValue, setProgressInputValue] = useState<number>(0);
 
   useEffect(() => {
     fetchBusinessId();
@@ -163,10 +165,16 @@ export default function GoalsPage() {
   const handleUpdateProgress = async (id: string, currentValue: number) => {
     try {
       await updateGoalProgress(id, currentValue);
+      setUpdatingProgressId(null);
       await loadGoals();
     } catch (error) {
       showMessage('error', 'Failed to update progress');
     }
+  };
+
+  const openProgressPanel = (goal: Goal) => {
+    setProgressInputValue(goal.current_value);
+    setUpdatingProgressId(goal.id);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -479,17 +487,9 @@ export default function GoalsPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">{Math.round(goal.progress_percentage)}% Complete</span>
-                    {goal.status !== 'completed' && goal.status !== 'cancelled' && (
+                    {goal.status !== 'completed' && goal.status !== 'cancelled' && updatingProgressId !== goal.id && (
                       <button
-                        onClick={() => {
-                          const newValue = prompt(
-                            'Enter current value:',
-                            goal.current_value.toString()
-                          );
-                          if (newValue !== null) {
-                            handleUpdateProgress(goal.id, parseFloat(newValue) || 0);
-                          }
-                        }}
+                        onClick={() => openProgressPanel(goal)}
                         className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
                       >
                         <TrendingUp className="w-4 h-4" />
@@ -497,6 +497,70 @@ export default function GoalsPage() {
                       </button>
                     )}
                   </div>
+
+                  {updatingProgressId === goal.id && (
+                    <div className="mt-2 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-700">Update Current Progress</span>
+                        <button
+                          onClick={() => setUpdatingProgressId(null)}
+                          className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="relative">
+                        {goal.unit_type === 'revenue' && (
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">$</span>
+                        )}
+                        <input
+                          type="number"
+                          value={progressInputValue}
+                          onChange={(e) => setProgressInputValue(parseFloat(e.target.value) || 0)}
+                          className={`w-full py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm ${
+                            goal.unit_type === 'revenue' ? 'pl-7 pr-4' : 'px-4'
+                          }`}
+                          min="0"
+                          step={goal.unit_type === 'revenue' ? '1' : '0.01'}
+                          placeholder={goal.unit_type === 'revenue' ? 'Enter amount achieved...' : 'Enter current value...'}
+                        />
+                      </div>
+                      {goal.unit_type === 'revenue' && (
+                        <div>
+                          <input
+                            type="range"
+                            min="0"
+                            max={goal.target_value}
+                            step="100"
+                            value={Math.min(progressInputValue, goal.target_value)}
+                            onChange={(e) => setProgressInputValue(parseFloat(e.target.value))}
+                            className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
+                          />
+                          <div className="flex justify-between text-xs text-slate-400 mt-1">
+                            <span>$0</span>
+                            <span className="font-medium text-emerald-700">
+                              {progressInputValue > 0 ? `$${progressInputValue.toLocaleString()} (${Math.round((progressInputValue / goal.target_value) * 100)}%)` : '$0'}
+                            </span>
+                            <span>${goal.target_value.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => handleUpdateProgress(goal.id, progressInputValue)}
+                          className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
+                        >
+                          Save Progress
+                        </button>
+                        <button
+                          onClick={() => setUpdatingProgressId(null)}
+                          className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

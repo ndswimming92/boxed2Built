@@ -234,16 +234,38 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Target Value *
               </label>
-              <input name="targetValue"
-                type="number"
-                value={targetValue}
-                onChange={(e) => setTargetValue(parseFloat(e.target.value) || 0)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
-                  errors.targetValue ? 'border-red-500' : 'border-slate-300'
-                }`}
-                min="0"
-                step="0.01"
-              />
+              <div className="relative">
+                {unitType === 'revenue' && (
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">$</span>
+                )}
+                <input name="targetValue"
+                  type="number"
+                  value={targetValue}
+                  onChange={(e) => setTargetValue(parseFloat(e.target.value) || 0)}
+                  className={`w-full py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    unitType === 'revenue' ? 'pl-7 pr-4' : 'px-4'
+                  } ${errors.targetValue ? 'border-red-500' : 'border-slate-300'}`}
+                  min="0"
+                  step={unitType === 'revenue' ? '1' : '0.01'}
+                />
+              </div>
+              {unitType === 'revenue' && targetValue > 0 && (
+                <div className="mt-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max={Math.max(targetValue * 2, 100000)}
+                    step="100"
+                    value={targetValue}
+                    onChange={(e) => setTargetValue(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
+                  />
+                  <div className="flex justify-between text-xs text-slate-400 mt-1">
+                    <span>$0</span>
+                    <span>${(Math.max(targetValue * 2, 100000)).toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
               {errors.targetValue && (
                 <p className="text-sm text-red-600 mt-1">{errors.targetValue}</p>
               )}
@@ -253,16 +275,38 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Current Value
               </label>
-              <input name="currentValue"
-                type="number"
-                value={currentValue}
-                onChange={(e) => setCurrentValue(parseFloat(e.target.value) || 0)}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
-                  errors.currentValue ? 'border-red-500' : 'border-slate-300'
-                }`}
-                min="0"
-                step="0.01"
-              />
+              <div className="relative">
+                {unitType === 'revenue' && (
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">$</span>
+                )}
+                <input name="currentValue"
+                  type="number"
+                  value={currentValue}
+                  onChange={(e) => setCurrentValue(parseFloat(e.target.value) || 0)}
+                  className={`w-full py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                    unitType === 'revenue' ? 'pl-7 pr-4' : 'px-4'
+                  } ${errors.currentValue ? 'border-red-500' : 'border-slate-300'}`}
+                  min="0"
+                  step={unitType === 'revenue' ? '1' : '0.01'}
+                />
+              </div>
+              {unitType === 'revenue' && targetValue > 0 && (
+                <div className="mt-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max={targetValue}
+                    step="100"
+                    value={Math.min(currentValue, targetValue)}
+                    onChange={(e) => setCurrentValue(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-600"
+                  />
+                  <div className="flex justify-between text-xs text-slate-400 mt-1">
+                    <span>$0</span>
+                    <span>${targetValue.toLocaleString()}</span>
+                  </div>
+                </div>
+              )}
               {errors.currentValue && (
                 <p className="text-sm text-red-600 mt-1">{errors.currentValue}</p>
               )}
