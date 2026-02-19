@@ -521,12 +521,14 @@ export default function AdminLayout() {
                   </span>
                 )}
               </Link>
-              <Link
-                to="/"
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-sm text-slate-600 hover:text-emerald-600 transition-colors"
               >
                 View Website →
-              </Link>
+              </a>
             </div>
           </div>
         </header>
