@@ -19,6 +19,7 @@ export interface CreateInquiryData {
   utm_campaign?: string;
   referral_source?: string;
   source?: string;
+  is_test?: boolean;
 }
 
 export interface UpdateInquiryData {
@@ -38,6 +39,7 @@ export interface InquiryFilters {
   searchTerm?: string;
   startDate?: string;
   endDate?: string;
+  includeTestData?: boolean;
 }
 
 export async function createInquiry(data: CreateInquiryData): Promise<FormInquiry> {
@@ -67,6 +69,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     viewed: false,
     response_count: 0,
     is_active: true,
+    is_test: data.is_test ?? false,
   };
 
   const { data: result, error } = await supabase
@@ -97,6 +100,10 @@ export async function getInquiries(
     `)
     .eq('business_id', businessId)
     .eq('is_active', true);
+
+  if (!filters?.includeTestData) {
+    query = query.eq('is_test', false);
+  }
 
   if (filters?.status && filters.status !== 'all') {
     query = query.eq('status', filters.status);
@@ -288,7 +295,8 @@ export async function getUnviewedCount(businessId: string): Promise<number> {
     .select('*', { count: 'exact', head: true })
     .eq('business_id', businessId)
     .eq('is_active', true)
-    .eq('viewed', false);
+    .eq('viewed', false)
+    .eq('is_test', false);
 
   if (error) {
     console.error('Error getting unviewed count:', error);
@@ -298,12 +306,18 @@ export async function getUnviewedCount(businessId: string): Promise<number> {
   return count || 0;
 }
 
-export async function getInquiryStats(businessId: string) {
-  const { data, error } = await supabase
+export async function getInquiryStats(businessId: string, includeTestData = false) {
+  let query = supabase
     .from('form_inquiries')
     .select('*')
     .eq('business_id', businessId)
     .eq('is_active', true);
+
+  if (!includeTestData) {
+    query = query.eq('is_test', false);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching inquiry stats:', error);
@@ -344,6 +358,7 @@ export async function getRecentInquiries(
     `)
     .eq('business_id', businessId)
     .eq('is_active', true)
+    .eq('is_test', false)
     .order('submission_date', { ascending: false })
     .limit(limit);
 

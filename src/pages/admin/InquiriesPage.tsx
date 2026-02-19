@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Eye, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw } from 'lucide-react';
+import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical } from 'lucide-react';
 import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
@@ -31,8 +31,9 @@ export default function InquiriesPage() {
   const [jobFormData, setJobFormData] = useState<Partial<Job> | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [showTestData, setShowTestData] = useState(false);
 
-  const { inquiries, unviewedCount, refresh } = useRealtimeInquiries({ businessId });
+  const { inquiries, unviewedCount, refresh } = useRealtimeInquiries({ businessId, includeTestData: showTestData });
 
   useEffect(() => {
     fetchBusinessId();
@@ -42,7 +43,7 @@ export default function InquiriesPage() {
     if (businessId) {
       fetchStats();
     }
-  }, [businessId, inquiries]);
+  }, [businessId, inquiries, showTestData]);
 
   useEffect(() => {
     applyFilters();
@@ -69,7 +70,7 @@ export default function InquiriesPage() {
   const fetchStats = async () => {
     if (!businessId) return;
     try {
-      const data = await getInquiryStats(businessId);
+      const data = await getInquiryStats(businessId, showTestData);
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -312,24 +313,38 @@ export default function InquiriesPage() {
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Form Inquiries</h1>
             <p className="text-slate-600">Manage customer inquiries from your website contact form</p>
           </div>
-          <button
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className={`relative px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              isRefreshing
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow-md'
-            }`}
-            title="Check for new form submissions"
-          >
-            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Check for New</span>
-            {unviewedCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
-                {unviewedCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowTestData(!showTestData)}
+              className={`px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 border ${
+                showTestData
+                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+              }`}
+              title={showTestData ? 'Hide test submissions' : 'Show test submissions'}
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span className="text-sm">{showTestData ? 'Hide Tests' : 'Show Tests'}</span>
+            </button>
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className={`relative px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                isRefreshing
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow-md'
+              }`}
+              title="Check for new form submissions"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Check for New</span>
+              {unviewedCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
+                  {unviewedCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <span>Last updated: {formatLastUpdated()}</span>
@@ -501,16 +516,22 @@ export default function InquiriesPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     {!inquiry.viewed && (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">NEW</span>
+                    )}
+                    {inquiry.is_test && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
+                        <FlaskConical className="w-3 h-3" />
+                        TEST
+                      </span>
                     )}
                     <h3 className="text-xl font-semibold text-slate-900">{inquiry.client_name}</h3>
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
                       {getStatusLabel(inquiry.status)}
                     </span>
                     {inquiry.source === 'footer_quick_contact' && (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
                         Quick Contact
                       </span>
                     )}

@@ -40,7 +40,8 @@ import {
   Building,
   TrendingUpIcon,
   Wrench,
-  Users
+  Users,
+  FlaskConical
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -126,6 +127,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
+      { name: 'Test Identifiers', href: '/admin/test-identifiers', icon: FlaskConical },
     ],
   },
 ];

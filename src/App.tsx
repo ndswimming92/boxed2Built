@@ -54,6 +54,7 @@ const CompletionsPage = lazy(() => import('./pages/admin/CompletionsPage'));
 const RemindersPage = lazy(() => import('./pages/admin/RemindersPage'));
 const FinancesPage = lazy(() => import('./pages/admin/FinancesPage'));
 const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
+const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -277,6 +278,7 @@ function App() {
                   <Route path="mileage-settings" element={<MileageSettingsPage />} />
                   <Route path="notification-bar" element={<NotificationBarPage />} />
                   <Route path="activity-logs" element={<ActivityLogsPage />} />
+                  <Route path="test-identifiers" element={<TestIdentifiersPage />} />
                   <Route path="business-info" element={<BusinessInfoPage />} />
                   <Route path="services" element={<ServicesAdminPage />} />
                   <Route path="service-areas" element={<ServiceAreasPage />} />

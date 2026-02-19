@@ -7,6 +7,7 @@ interface UseRealtimeInquiriesOptions {
   businessId: string | null;
   autoRefresh?: boolean;
   enableNotifications?: boolean;
+  includeTestData?: boolean;
 }
 
 interface UseRealtimeInquiriesResult {
@@ -21,6 +22,7 @@ export function useRealtimeInquiries({
   businessId,
   autoRefresh = true,
   enableNotifications = false,
+  includeTestData = false,
 }: UseRealtimeInquiriesOptions): UseRealtimeInquiriesResult {
   const [inquiries, setInquiries] = useState<FormInquiry[]>([]);
   const [unviewedCount, setUnviewedCount] = useState(0);
@@ -34,7 +36,7 @@ export function useRealtimeInquiries({
     }
 
     try {
-      const data = await getInquiries(businessId);
+      const data = await getInquiries(businessId, { includeTestData });
       setInquiries(data);
       setError(null);
     } catch (err) {
@@ -106,7 +108,7 @@ export function useRealtimeInquiries({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [businessId, autoRefresh, enableNotifications]);
+  }, [businessId, autoRefresh, enableNotifications, includeTestData]);
 
   return {
     inquiries,

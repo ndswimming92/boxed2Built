@@ -4,6 +4,7 @@ import { trackEvent, trackFormInteraction, trackConversion } from '../utils/anal
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
 import { logPublicAction } from '../services/auditLogService';
+import { isTestSubmission } from '../services/testIdentifierService';
 
 const QuickContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -145,11 +146,14 @@ const QuickContactForm: React.FC = () => {
 
       // Submit to Supabase for record-keeping
       try {
-        const { data: businessInfo, error: businessError } = await supabase
-          .from('business_info')
-          .select('id, organization_id')
-          .eq('is_active', true)
-          .maybeSingle();
+        const [{ data: businessInfo, error: businessError }, isTest] = await Promise.all([
+          supabase
+            .from('business_info')
+            .select('id, organization_id')
+            .eq('is_active', true)
+            .maybeSingle(),
+          isTestSubmission(formData.name, formData.email),
+        ]);
 
         if (businessError) {
           console.error('Error fetching business info:', businessError);
@@ -169,6 +173,7 @@ const QuickContactForm: React.FC = () => {
             pieces: 1,
             notes: formData.message,
             source: 'footer_quick_contact',
+            is_test: isTest,
           });
 
           supabaseSuccess = true;

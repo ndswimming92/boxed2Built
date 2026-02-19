@@ -16,6 +16,7 @@ export interface CreateSavedRequestData {
   user_city?: string;
   estimated_price?: string;
   estimated_time?: string;
+  is_test?: boolean;
 }
 
 export async function createSavedRequest(data: CreateSavedRequestData): Promise<SavedRequest> {
@@ -46,6 +47,7 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
       estimated_time: data.estimated_time || null,
       submission_date: submissionDate,
       is_active: true,
+      is_test: data.is_test ?? false,
     };
 
     const { error } = await supabase

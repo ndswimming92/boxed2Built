@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
 import { createSavedRequest } from '../services/savedRequestService';
 import { logPublicAction } from '../services/auditLogService';
+import { isTestSubmission } from '../services/testIdentifierService';
 import ConfirmationModal from './ConfirmationModal';
 
 const initialValues = {
@@ -302,11 +303,14 @@ const ContactForm: React.FC = () => {
       });
 
       // Save to Supabase database for admin tracking and create saved request
-      const { data: businessInfo } = await supabase
-        .from('business_info')
-        .select('id, organization_id')
-        .eq('is_active', true)
-        .maybeSingle();
+      const [{ data: businessInfo }, isTest] = await Promise.all([
+        supabase
+          .from('business_info')
+          .select('id, organization_id')
+          .eq('is_active', true)
+          .maybeSingle(),
+        isTestSubmission(values.name, values.email),
+      ]);
 
       if (!businessInfo) {
         throw new Error('Business information not found');
@@ -326,6 +330,7 @@ const ContactForm: React.FC = () => {
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
+        is_test: isTest,
       });
 
       const savedRequest = await createSavedRequest({
@@ -342,6 +347,7 @@ const ContactForm: React.FC = () => {
         notes: values.notes || undefined,
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
+        is_test: isTest,
       });
 
       // Set confirmation data
