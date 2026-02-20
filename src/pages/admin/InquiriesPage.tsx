@@ -220,20 +220,12 @@ export default function InquiriesPage() {
     setShowJobModal(true);
   };
 
-  const handleJobSaved = async () => {
+  const handleJobSaved = async (savedJob?: Job) => {
     if (!selectedInquiry) return;
 
     try {
-      const { data: createdJob } = await supabase
-        .from('jobs')
-        .select('id')
-        .eq('client_email', selectedInquiry.client_email)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (createdJob) {
-        await convertInquiryToJob(selectedInquiry.id, createdJob.id);
+      if (savedJob?.id) {
+        await convertInquiryToJob(selectedInquiry.id, savedJob.id);
       }
 
       setMessage({ type: 'success', text: 'Inquiry converted to job successfully!' });
