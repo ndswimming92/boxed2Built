@@ -138,7 +138,10 @@ const navigation: Array<NavigationItem & { category?: string }> = navigationGrou
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const stored = localStorage.getItem('admin-sidebar-collapsed');
+    return stored === 'true';
+  });
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const { user, signOut } = useAuth();
@@ -168,6 +171,10 @@ export default function AdminLayout() {
   useEffect(() => {
     localStorage.setItem('admin-nav-expanded', JSON.stringify(expandedCategories));
   }, [expandedCategories]);
+
+  useEffect(() => {
+    localStorage.setItem('admin-sidebar-collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const toggleCategory = (categoryId: string) => {
     // If sidebar is collapsed, expand it first, then expand the category
@@ -372,6 +379,7 @@ export default function AdminLayout() {
                               <Link
                                 to={item.href}
                                 onClick={() => setSidebarOpen(false)}
+                                aria-current={isActive ? 'page' : undefined}
                                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors relative ${
                                   isActive
                                     ? 'bg-emerald-50 text-emerald-700'
