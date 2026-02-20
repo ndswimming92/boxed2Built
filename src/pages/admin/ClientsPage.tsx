@@ -28,6 +28,8 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
+  const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const { currentOrganization } = useAuth();
 
   const organizationId = currentOrganization?.id;
@@ -81,14 +83,52 @@ export default function ClientsPage() {
   async function handleRefreshMetrics() {
     if (refreshing) return;
 
+    const batchSize = 5;
+    const totalClients = clients.length;
+
+    if (totalClients === 0) {
+      setRefreshMessage({ type: 'success', text: 'No clients to refresh.' });
+      return;
+    }
+
     try {
       setRefreshing(true);
-      for (const client of clients) {
-        await calculateClientMetrics(client.id);
+      setRefreshMessage(null);
+      setRefreshProgress({ processed: 0, total: totalClients });
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (let i = 0; i < totalClients; i += batchSize) {
+        const batch = clients.slice(i, i + batchSize);
+
+        const results = await Promise.all(
+          batch.map(async (client) => {
+            try {
+              await calculateClientMetrics(client.id);
+              return true;
+            } catch (error) {
+              console.error(`Error refreshing metrics for client ${client.id}:`, error);
+              return false;
+            }
+          })
+        );
+
+        const batchSuccesses = results.filter(Boolean).length;
+        successCount += batchSuccesses;
+        failureCount += batch.length - batchSuccesses;
+        setRefreshProgress({ processed: i + batch.length, total: totalClients });
       }
+
       await loadData();
+
+      setRefreshMessage({
+        type: failureCount > 0 ? 'error' : 'success',
+        text: `Metrics refresh complete: ${successCount} succeeded, ${failureCount} failed.`
+      });
     } catch (error) {
       console.error('Error refreshing metrics:', error);
+      setRefreshMessage({ type: 'error', text: 'Metrics refresh failed before completion.' });
     } finally {
       setRefreshing(false);
     }
@@ -203,6 +243,10 @@ export default function ClientsPage() {
     ).length;
   }, [clients]);
 
+  const refreshPercent = refreshProgress.total
+    ? Math.round((refreshProgress.processed / refreshProgress.total) * 100)
+    : 0;
+
   if (!organizationId) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -235,7 +279,9 @@ export default function ClientsPage() {
             disabled={refreshing}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
           >
-            {refreshing ? 'Refreshing...' : 'Refresh Metrics'}
+            {refreshing
+              ? `Refreshing ${refreshProgress.processed}/${refreshProgress.total} (${refreshPercent}%)`
+              : 'Refresh Metrics'}
           </button>
           {selectedClients.size > 0 && (
             <button
@@ -248,6 +294,18 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
+
+      {refreshing && (
+        <p className="text-sm text-blue-600">
+          Refreshing metrics for {refreshProgress.processed} of {refreshProgress.total} clients...
+        </p>
+      )}
+
+      {refreshMessage && (
+        <p className={`text-sm ${refreshMessage.type === 'success' ? 'text-green-600' : 'text-orange-600'}`}>
+          {refreshMessage.text}
+        </p>
+      )}
 
       {/* Stats Dashboard */}
       {stats && (
