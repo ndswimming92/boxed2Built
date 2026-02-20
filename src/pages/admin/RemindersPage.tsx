@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, JobCompletionReminder } from '../../lib/supabase';
 import { Calendar, Bell, CheckCircle, X, Clock, AlertCircle, Filter, Search } from 'lucide-react';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import { useToast } from '../../contexts/ToastContext';
 
 type ReminderWithDetails = JobCompletionReminder & {
   job: any;
@@ -17,6 +19,11 @@ export default function RemindersPage() {
   const [selectedReminder, setSelectedReminder] = useState<ReminderWithDetails | null>(null);
   const [outcomeNotes, setOutcomeNotes] = useState('');
   const [snoozeDate, setSnoozeDate] = useState('');
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isSnoozing, setIsSnoozing] = useState(false);
+  const [isDismissing, setIsDismissing] = useState(false);
+  const [dismissReminderId, setDismissReminderId] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -96,6 +103,7 @@ export default function RemindersPage() {
   };
 
   const handleCompleteReminder = async (reminderId: string) => {
+    setIsCompleting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -113,19 +121,23 @@ export default function RemindersPage() {
 
       setSelectedReminder(null);
       setOutcomeNotes('');
-      fetchData();
+      showToast({ type: 'success', message: 'Reminder marked as complete.' });
+      await fetchData();
     } catch (error) {
       console.error('Error completing reminder:', error);
-      alert('Failed to complete reminder');
+      showToast({ type: 'error', message: 'Failed to complete reminder.' });
+    } finally {
+      setIsCompleting(false);
     }
   };
 
   const handleSnoozeReminder = async (reminderId: string) => {
     if (!snoozeDate) {
-      alert('Please select a snooze date');
+      showToast({ type: 'error', message: 'Please select a snooze date.' });
       return;
     }
 
+    setIsSnoozing(true);
     try {
       const { error } = await supabase
         .from('job_completion_reminders')
@@ -139,16 +151,18 @@ export default function RemindersPage() {
 
       setSelectedReminder(null);
       setSnoozeDate('');
-      fetchData();
+      showToast({ type: 'success', message: 'Reminder snoozed.' });
+      await fetchData();
     } catch (error) {
       console.error('Error snoozing reminder:', error);
-      alert('Failed to snooze reminder');
+      showToast({ type: 'error', message: 'Failed to snooze reminder.' });
+    } finally {
+      setIsSnoozing(false);
     }
   };
 
   const handleDismissReminder = async (reminderId: string) => {
-    if (!confirm('Are you sure you want to dismiss this reminder?')) return;
-
+    setIsDismissing(true);
     try {
       const { error } = await supabase
         .from('job_completion_reminders')
@@ -158,10 +172,14 @@ export default function RemindersPage() {
       if (error) throw error;
 
       setSelectedReminder(null);
-      fetchData();
+      setDismissReminderId(null);
+      showToast({ type: 'success', message: 'Reminder dismissed.' });
+      await fetchData();
     } catch (error) {
       console.error('Error dismissing reminder:', error);
-      alert('Failed to dismiss reminder');
+      showToast({ type: 'error', message: 'Failed to dismiss reminder.' });
+    } finally {
+      setIsDismissing(false);
     }
   };
 
@@ -371,6 +389,17 @@ export default function RemindersPage() {
         </div>
       )}
 
+
+      <ConfirmActionModal
+        isOpen={!!dismissReminderId}
+        title="Dismiss reminder"
+        description="Are you sure you want to dismiss this reminder?"
+        confirmLabel="Dismiss"
+        isLoading={isDismissing}
+        onCancel={() => setDismissReminderId(null)}
+        onConfirm={() => dismissReminderId && handleDismissReminder(dismissReminderId)}
+      />
+
       {selectedReminder && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -465,22 +494,24 @@ export default function RemindersPage() {
                 <>
                   <button
                     onClick={() => handleCompleteReminder(selectedReminder.id)}
-                    className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                    disabled={isCompleting || isSnoozing || isDismissing}
+                    className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <CheckCircle className="w-5 h-5" />
-                    Mark Complete
+                    {isCompleting ? 'Saving...' : 'Mark Complete'}
                   </button>
                   <button
                     onClick={() => handleSnoozeReminder(selectedReminder.id)}
-                    disabled={!snoozeDate}
+                    disabled={!snoozeDate || isCompleting || isSnoozing || isDismissing}
                     className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Clock className="w-5 h-5" />
-                    Snooze
+                    {isSnoozing ? 'Saving...' : 'Snooze'}
                   </button>
                   <button
-                    onClick={() => handleDismissReminder(selectedReminder.id)}
-                    className="px-6 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+                    onClick={() => setDismissReminderId(selectedReminder.id)}
+                    disabled={isCompleting || isSnoozing || isDismissing}
+                    className="px-6 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Dismiss
                   </button>

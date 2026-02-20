@@ -18,6 +18,7 @@ import PageLoader from './components/ui/PageLoader';
 import { initPostHog } from './lib/posthog';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
+import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
@@ -242,14 +243,15 @@ function App() {
     <Router>
       <AuthProvider>
         <NotificationBarProvider>
-          <div className="min-h-screen">
-            <NotificationBarWrapper />
-            <PostHogInitializer />
-            <ManifestManager />
-            <Analytics />
-            <HashHandler />
-            <Suspense fallback={<PageLoader message="Loading application..." />}>
-              <Routes>
+          <ToastProvider>
+            <div className="min-h-screen">
+              <NotificationBarWrapper />
+              <PostHogInitializer />
+              <ManifestManager />
+              <Analytics />
+              <HashHandler />
+              <Suspense fallback={<PageLoader message="Loading application..." />}>
+                <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/services/furniture-assembly" element={<FurnitureAssemblyPage />} />
@@ -295,10 +297,11 @@ function App() {
                   <Route path="social-media" element={<SocialMediaPage />} />
                   <Route path="attributes" element={<AttributesPage />} />
                 </Route>
-              </Routes>
-            </Suspense>
-            <ScrollToTop />
-          </div>
+                </Routes>
+              </Suspense>
+              <ScrollToTop />
+            </div>
+          </ToastProvider>
         </NotificationBarProvider>
       </AuthProvider>
     </Router>

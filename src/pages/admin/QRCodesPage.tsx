@@ -24,6 +24,8 @@ import {
   QRCodeStats
 } from '../../services/qrCodeService';
 import QRCodeFormModal from '../../components/admin/QRCodeFormModal';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function QRCodesPage() {
   const navigate = useNavigate();
@@ -36,6 +38,11 @@ export default function QRCodesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedQRCode, setSelectedQRCode] = useState<QRCodeWithSchedules | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<QRCodeWithSchedules | null>(null);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [isTogglingId, setIsTogglingId] = useState<string | null>(null);
+  const [copyingSlug, setCopyingSlug] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -89,35 +96,54 @@ export default function QRCodesPage() {
     setFilteredQRCodes(filtered);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this QR code? This will also delete all associated schedules and scan data.')) {
-      return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!deleteCandidate) return;
 
+    setIsDeletingId(deleteCandidate.id);
     try {
-      await deleteQRCode(id);
+      await deleteQRCode(deleteCandidate.id);
+      showToast({ type: 'success', message: 'QR code deleted successfully.' });
+      setDeleteCandidate(null);
       await fetchData();
     } catch (error) {
       console.error('Error deleting QR code:', error);
-      alert('Failed to delete QR code');
+      showToast({ type: 'error', message: 'Failed to delete QR code.' });
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
+    setIsTogglingId(id);
     try {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
       await toggleQRCodeStatus(id, newStatus);
+      showToast({
+        type: 'success',
+        message: `QR code ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully.`,
+      });
       await fetchData();
     } catch (error) {
       console.error('Error toggling status:', error);
-      alert('Failed to update status');
+      showToast({ type: 'error', message: 'Failed to update status.' });
+    } finally {
+      setIsTogglingId(null);
     }
   };
 
-  const handleCopyURL = (slug: string) => {
+  const handleCopyURL = async (slug: string) => {
+    setCopyingSlug(slug);
     const url = getShortURL(slug);
-    navigator.clipboard.writeText(url);
-    alert('Short URL copied to clipboard!');
+
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast({ type: 'success', message: 'Short URL copied to clipboard.' });
+    } catch (error) {
+      console.error('Error copying URL:', error);
+      showToast({ type: 'error', message: 'Failed to copy URL.' });
+    } finally {
+      setCopyingSlug(null);
+    }
   };
 
   const handleEdit = (qrCode: QRCodeWithSchedules) => {
@@ -319,7 +345,8 @@ export default function QRCodesPage() {
                         </code>
                         <button
                           onClick={() => handleCopyURL(qrCode.slug)}
-                          className="p-1 hover:bg-gray-100 rounded"
+                          disabled={copyingSlug === qrCode.slug}
+                          className="p-1 hover:bg-gray-100 rounded disabled:cursor-not-allowed disabled:opacity-50"
                           title="Copy URL"
                         >
                           <Copy className="w-4 h-4 text-gray-400" />
@@ -374,7 +401,8 @@ export default function QRCodesPage() {
                         </a>
                         <button
                           onClick={() => handleToggleStatus(qrCode.id, qrCode.status)}
-                          className={`p-2 hover:bg-gray-100 rounded-lg transition-colors ${
+                          disabled={isTogglingId === qrCode.id}
+                          className={`p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                             qrCode.status === 'active' ? 'text-gray-600' : 'text-green-600'
                           }`}
                           title={qrCode.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -382,8 +410,9 @@ export default function QRCodesPage() {
                           <Power className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(qrCode.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={() => setDeleteCandidate(qrCode)}
+                          disabled={isDeletingId === qrCode.id}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
@@ -397,6 +426,18 @@ export default function QRCodesPage() {
           </div>
         </div>
       )}
+
+
+      <ConfirmActionModal
+        isOpen={!!deleteCandidate}
+        title="Delete QR code"
+        description={`Are you sure you want to delete ${deleteCandidate?.title || 'this QR code'}? This will also delete all associated schedules and scan data.`}
+        confirmLabel="Delete QR Code"
+        destructive
+        isLoading={!!isDeletingId}
+        onCancel={() => setDeleteCandidate(null)}
+        onConfirm={handleDeleteConfirm}
+      />
 
       {businessId ? (
         <QRCodeFormModal

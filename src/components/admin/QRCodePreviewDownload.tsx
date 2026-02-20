@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Copy, ExternalLink, FileImage, FileCode, FileText } from 'lucide-react';
 import QRCode from 'qrcode';
 import jsPDF from 'jspdf';
 import { QRCodeWithSchedules } from '../../lib/supabase';
 import { getShortURL } from '../../services/qrCodeService';
+import { useToast } from '../../contexts/ToastContext';
 
 type Props = {
   qrCode: QRCodeWithSchedules;
@@ -13,11 +14,12 @@ type DownloadFormat = 'png' | 'svg' | 'pdf';
 type PNGSize = 300 | 600 | 1200;
 
 export default function QRCodePreviewDownload({ qrCode }: Props) {
-  const [selectedFormat, setSelectedFormat] = useState<DownloadFormat>('png');
   const [selectedSize, setSelectedSize] = useState<PNGSize>(600);
   const [qrDataURL, setQrDataURL] = useState<string>('');
   const [qrSVG, setQrSVG] = useState<string>('');
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [downloadingFormat, setDownloadingFormat] = useState<DownloadFormat | null>(null);
+  const [copying, setCopying] = useState(false);
+  const { showToast } = useToast();
 
   const shortURL = getShortURL(qrCode.slug);
 
@@ -54,6 +56,7 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
   };
 
   const handleDownloadPNG = async (size: PNGSize) => {
+    setDownloadingFormat('png');
     try {
       const dataURL = await QRCode.toDataURL(shortURL, {
         width: size,
@@ -69,11 +72,14 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Error downloading PNG:', error);
-      alert('Failed to download PNG');
+      showToast({ type: 'error', message: 'Failed to download PNG.' });
+    } finally {
+      setDownloadingFormat(null);
     }
   };
 
   const handleDownloadSVG = () => {
+    setDownloadingFormat('svg');
     try {
       const blob = new Blob([qrSVG], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
@@ -86,11 +92,14 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading SVG:', error);
-      alert('Failed to download SVG');
+      showToast({ type: 'error', message: 'Failed to download SVG.' });
+    } finally {
+      setDownloadingFormat(null);
     }
   };
 
   const handleDownloadPDF = async () => {
+    setDownloadingFormat('pdf');
     try {
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -121,13 +130,23 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
       pdf.save(`qr-code-${qrCode.slug}.pdf`);
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF');
+      showToast({ type: 'error', message: 'Failed to download PDF.' });
+    } finally {
+      setDownloadingFormat(null);
     }
   };
 
-  const handleCopyURL = () => {
-    navigator.clipboard.writeText(shortURL);
-    alert('Short URL copied to clipboard!');
+  const handleCopyURL = async () => {
+    setCopying(true);
+    try {
+      await navigator.clipboard.writeText(shortURL);
+      showToast({ type: 'success', message: 'Short URL copied to clipboard.' });
+    } catch (error) {
+      console.error('Error copying short URL:', error);
+      showToast({ type: 'error', message: 'Failed to copy short URL.' });
+    } finally {
+      setCopying(false);
+    }
   };
 
   const handleTestScan = () => {
@@ -158,7 +177,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
           <span className="text-sm font-medium text-gray-700">Short URL:</span>
           <button
             onClick={handleCopyURL}
-            className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
+            disabled={copying}
+            className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Copy className="w-4 h-4" />
             Copy
@@ -194,7 +214,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
                 onClick={() => handleDownloadPNG(300)}
-                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={downloadingFormat !== null}
+                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div>
                   <div className="font-medium text-gray-900">Small</div>
@@ -206,7 +227,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
 
               <button
                 onClick={() => handleDownloadPNG(600)}
-                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={downloadingFormat !== null}
+                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div>
                   <div className="font-medium text-gray-900">Medium</div>
@@ -218,7 +240,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
 
               <button
                 onClick={() => handleDownloadPNG(1200)}
-                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                disabled={downloadingFormat !== null}
+                className="flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div>
                   <div className="font-medium text-gray-900">Large</div>
@@ -240,7 +263,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
             </p>
             <button
               onClick={handleDownloadSVG}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              disabled={downloadingFormat !== null}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             >
               <div>
                 <div className="font-medium text-gray-900">Vector Format</div>
@@ -260,7 +284,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
             </p>
             <button
               onClick={handleDownloadPDF}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              disabled={downloadingFormat !== null}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             >
               <div>
                 <div className="font-medium text-gray-900">Print-Ready PDF</div>
