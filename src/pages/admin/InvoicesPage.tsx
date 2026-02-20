@@ -12,6 +12,8 @@ import {
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
+import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function InvoicesPage() {
   const navigate = useNavigate();
@@ -28,6 +30,10 @@ export default function InvoicesPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [businessInfo, setBusinessInfo] = useState<any>(null);
   const [jobsMap, setJobsMap] = useState<Map<string, any>>(new Map());
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+  const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -146,6 +152,7 @@ ${invoice.notes}` : ''}`,
   };
 
   const handleDownloadPDF = async (invoice: Invoice) => {
+    setDownloadingInvoiceId(invoice.id);
     try {
       const fullInvoice = await getInvoice(invoice.id);
       if (fullInvoice && businessInfo) {
@@ -153,25 +160,27 @@ ${invoice.notes}` : ''}`,
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      alert('Failed to download PDF. Please try again.');
+      showToast({ type: 'error', message: 'Failed to download PDF. Please try again.' });
+    } finally {
+      setDownloadingInvoiceId(null);
+      setOpenMenuId(null);
     }
-    setOpenMenuId(null);
   };
 
-  const handleDeleteInvoice = async (invoice: Invoice) => {
-    const confirmMessage = `Are you sure you want to delete invoice ${invoice.invoice_number}?\n\nThis action cannot be undone.`;
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
 
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
+    setDeletingInvoiceId(invoiceToDelete.id);
     try {
-      await deleteInvoice(invoice.id);
-      alert('Invoice deleted successfully.');
-      fetchData();
+      await deleteInvoice(invoiceToDelete.id);
+      showToast({ type: 'success', message: 'Invoice deleted successfully.' });
+      setInvoiceToDelete(null);
+      await fetchData();
     } catch (error) {
       console.error('Error deleting invoice:', error);
-      alert('Failed to delete invoice. Please try again.');
+      showToast({ type: 'error', message: 'Failed to delete invoice. Please try again.' });
+    } finally {
+      setDeletingInvoiceId(null);
     }
   };
 
@@ -455,14 +464,16 @@ ${invoice.notes}` : ''}`,
                         )}
                         <button
                           onClick={() => handleDownloadPDF(invoice)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          disabled={downloadingInvoiceId === invoice.id}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                           title="Download PDF"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteInvoice(invoice)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={() => setInvoiceToDelete(invoice)}
+                          disabled={deletingInvoiceId === invoice.id}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                           title="Delete Invoice"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -476,6 +487,18 @@ ${invoice.notes}` : ''}`,
           </table>
         </div>
       </div>
+
+
+      <ConfirmActionModal
+        isOpen={!!invoiceToDelete}
+        title="Delete invoice"
+        description={`Are you sure you want to delete invoice ${invoiceToDelete?.invoice_number || ''}? This action cannot be undone.`}
+        confirmLabel="Delete Invoice"
+        destructive
+        isLoading={!!deletingInvoiceId}
+        onCancel={() => setInvoiceToDelete(null)}
+        onConfirm={handleDeleteInvoice}
+      />
 
       {showInvoiceModal && businessId && (
         <InvoiceFormModal
