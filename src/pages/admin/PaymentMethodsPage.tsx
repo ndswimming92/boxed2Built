@@ -6,8 +6,32 @@ export default function PaymentMethodsPage() {
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [newMethod, setNewMethod] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const fetchOrganizationId = async (activeBusinessId: string): Promise<string | null> => {
+    const { data: businessData, error: businessError } = await supabase
+      .from('business_info')
+      .select('organization_id')
+      .eq('id', activeBusinessId)
+      .maybeSingle();
+
+    if (businessError) throw businessError;
+    if (businessData?.organization_id) return businessData.organization_id;
+
+    // Fallback for single-org setups where the active business may not have organization_id populated.
+    const { data: orgData, error: orgError } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (orgError) throw orgError;
+    return orgData?.id ?? null;
+  };
 
   useEffect(() => {
     fetchData();
@@ -23,6 +47,10 @@ export default function PaymentMethodsPage() {
 
       if (businessInfo) {
         setBusinessId(businessInfo.id);
+
+        const resolvedOrganizationId = await fetchOrganizationId(businessInfo.id);
+        setOrganizationId(resolvedOrganizationId);
+
         const { data } = await supabase
           .from('payment_methods')
           .select('*')
@@ -44,16 +72,23 @@ export default function PaymentMethodsPage() {
     if (!businessId || !newMethod.trim()) return;
 
     try {
+      const resolvedOrganizationId = organizationId ?? await fetchOrganizationId(businessId);
+      if (!resolvedOrganizationId) {
+        throw new Error('Unable to resolve organization context for payment methods');
+      }
+
       const { error } = await supabase
         .from('payment_methods')
         .insert([{
           business_id: businessId,
+          organization_id: resolvedOrganizationId,
           method_name: newMethod,
           is_active: true,
           display_order: methods.length
         }]);
 
       if (error) throw error;
+      if (!organizationId) setOrganizationId(resolvedOrganizationId);
       setMessage({ type: 'success', text: 'Payment method added!' });
       setNewMethod('');
       fetchData();
