@@ -64,7 +64,48 @@ const DATE_PRESETS = [
   { label: 'All time', value: 'all' },
 ];
 
+const DEFAULT_DATE_PRESET = '30days';
+
+const getDateFromPreset = (preset: string): string | null => {
+  const now = new Date();
+  switch (preset) {
+    case 'today':
+      return new Date(now.setHours(0, 0, 0, 0)).toISOString();
+    case '7days':
+      return new Date(now.setDate(now.getDate() - 7)).toISOString();
+    case '30days':
+      return new Date(now.setDate(now.getDate() - 30)).toISOString();
+    case '90days':
+      return new Date(now.setDate(now.getDate() - 90)).toISOString();
+    case 'all':
+      return null;
+    default:
+      return null;
+  }
+};
+
+const getEffectiveDateFilters = (datePreset: string, pendingFilters: AuditLogFilters) => {
+  const presetDateFrom = getDateFromPreset(datePreset) || undefined;
+  const hasCustomDateSelection =
+    Boolean(pendingFilters.dateTo) ||
+    (pendingFilters.dateFrom !== undefined && pendingFilters.dateFrom !== presetDateFrom);
+
+  if (hasCustomDateSelection) {
+    return {
+      dateFrom: pendingFilters.dateFrom,
+      dateTo: pendingFilters.dateTo,
+    };
+  }
+
+  return {
+    dateFrom: presetDateFrom,
+    dateTo: undefined,
+  };
+};
+
 export default function ActivityLogsPage() {
+  const initialDateFrom = getDateFromPreset(DEFAULT_DATE_PRESET) || undefined;
+
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [stats, setStats] = useState<AuditLogStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,11 +118,14 @@ export default function ActivityLogsPage() {
   const [filters, setFilters] = useState<AuditLogFilters>({
     limit: 50,
     offset: 0,
+    dateFrom: initialDateFrom,
   });
 
-  const [tempFilters, setTempFilters] = useState<AuditLogFilters>({});
+  const [tempFilters, setTempFilters] = useState<AuditLogFilters>({
+    dateFrom: initialDateFrom,
+  });
   const [searchQuery, setSearchQuery] = useState('');
-  const [datePreset, setDatePreset] = useState('30days');
+  const [datePreset, setDatePreset] = useState(DEFAULT_DATE_PRESET);
 
   useEffect(() => {
     loadLogs();
@@ -111,9 +155,12 @@ export default function ActivityLogsPage() {
   };
 
   const handleSearch = () => {
+    const effectiveDateFilters = getEffectiveDateFilters(datePreset, tempFilters);
+
     setFilters({
       ...filters,
       ...tempFilters,
+      ...effectiveDateFilters,
       searchQuery,
       offset: 0,
     });
@@ -121,14 +168,16 @@ export default function ActivityLogsPage() {
   };
 
   const handleClearFilters = () => {
-    setTempFilters({});
     setSearchQuery('');
-    setDatePreset('30days');
-    const dateFrom = getDateFromPreset('30days');
+    setDatePreset(DEFAULT_DATE_PRESET);
+    const dateFrom = getDateFromPreset(DEFAULT_DATE_PRESET);
     setFilters({
       limit: 50,
       offset: 0,
-      dateFrom,
+      dateFrom: dateFrom || undefined,
+    });
+    setTempFilters({
+      dateFrom: dateFrom || undefined,
     });
     setPage(0);
   };
@@ -136,29 +185,11 @@ export default function ActivityLogsPage() {
   const handleDatePresetChange = (preset: string) => {
     setDatePreset(preset);
     const dateFrom = getDateFromPreset(preset);
-    setTempFilters({
-      ...tempFilters,
+    setTempFilters((prev) => ({
+      ...prev,
       dateFrom: dateFrom || undefined,
       dateTo: undefined,
-    });
-  };
-
-  const getDateFromPreset = (preset: string): string | null => {
-    const now = new Date();
-    switch (preset) {
-      case 'today':
-        return new Date(now.setHours(0, 0, 0, 0)).toISOString();
-      case '7days':
-        return new Date(now.setDate(now.getDate() - 7)).toISOString();
-      case '30days':
-        return new Date(now.setDate(now.getDate() - 30)).toISOString();
-      case '90days':
-        return new Date(now.setDate(now.getDate() - 90)).toISOString();
-      case 'all':
-        return null;
-      default:
-        return null;
-    }
+    }));
   };
 
   const handleExport = async () => {
