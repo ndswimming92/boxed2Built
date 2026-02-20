@@ -325,7 +325,7 @@ export default function AdminLayout() {
                 return (
                   <div
                     key={group.id}
-                    className={groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}
+                    className={`group relative ${groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}`}
                   >
                     {/* Category Header */}
                     <button
