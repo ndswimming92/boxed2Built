@@ -325,7 +325,7 @@ export default function AdminLayout() {
                 return (
                   <div
                     key={group.id}
-                    className={groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}
+                    className={`group relative ${groupIndex > 0 ? 'border-t border-slate-100 pt-3' : ''}`}
                   >
                     {/* Category Header */}
                     <button
@@ -393,42 +393,6 @@ export default function AdminLayout() {
                       </ul>
                     )}
 
-                    {/* Collapsed sidebar submenu on hover */}
-                    {sidebarCollapsed && (
-                      <div className="hidden lg:block absolute left-full top-0 ml-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none group-hover:pointer-events-auto z-50">
-                        <div className="bg-white border border-slate-200 rounded-lg shadow-lg py-2 min-w-[200px]">
-                          <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-600 border-b border-slate-100 mb-1">
-                            {group.name}
-                          </div>
-                          {group.items.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = location.pathname === item.href;
-                            const showBadge = item.name === 'Inquiries' && unviewedCount > 0;
-
-                            return (
-                              <Link
-                                key={item.name}
-                                to={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-2 transition-colors ${
-                                  isActive
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'text-slate-700 hover:bg-slate-50'
-                                }`}
-                              >
-                                <Icon className="w-4 h-4 flex-shrink-0" />
-                                <span className="font-medium text-sm">{item.name}</span>
-                                {showBadge && (
-                                  <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
-                                    {unviewedCount > 99 ? '99+' : unviewedCount}
-                                  </span>
-                                )}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
