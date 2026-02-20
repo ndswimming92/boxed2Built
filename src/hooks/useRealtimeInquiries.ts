@@ -15,7 +15,7 @@ interface UseRealtimeInquiriesResult {
   unviewedCount: number;
   loading: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<FormInquiry[]>;
 }
 
 export function useRealtimeInquiries({
@@ -29,19 +29,21 @@ export function useRealtimeInquiries({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = async (): Promise<FormInquiry[]> => {
     if (!businessId) {
       setLoading(false);
-      return;
+      return [];
     }
 
     try {
       const data = await getInquiries(businessId, { includeTestData });
       setInquiries(data);
       setError(null);
+      return data;
     } catch (err) {
       console.error('Error fetching inquiries:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch inquiries');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -58,8 +60,9 @@ export function useRealtimeInquiries({
     }
   };
 
-  const refresh = async () => {
-    await Promise.all([fetchInquiries(), fetchUnviewedCount()]);
+  const refresh = async (): Promise<FormInquiry[]> => {
+    const [latestInquiries] = await Promise.all([fetchInquiries(), fetchUnviewedCount()]);
+    return latestInquiries;
   };
 
   useEffect(() => {

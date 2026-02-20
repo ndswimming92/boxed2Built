@@ -82,12 +82,12 @@ export default function InquiriesPage() {
     const previousCount = inquiries.length;
 
     try {
-      await refresh();
+      const refreshedInquiries = await refresh();
       await fetchStats();
       setLastUpdated(new Date());
 
-      const newCount = inquiries.length;
-      const newSubmissions = newCount - previousCount;
+      const refreshedCount = refreshedInquiries.length;
+      const newSubmissions = refreshedCount - previousCount;
 
       if (newSubmissions > 0) {
         setMessage({
