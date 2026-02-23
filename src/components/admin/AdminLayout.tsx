@@ -41,12 +41,15 @@ import {
   TrendingUpIcon,
   Wrench,
   Users,
-  FlaskConical
+  FlaskConical,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
+import { PrivacyModeProvider, usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface NavigationItem {
   name: string;
@@ -136,7 +139,7 @@ const navigation: Array<NavigationItem & { category?: string }> = navigationGrou
   group.items.map(item => ({ ...item, category: group.name }))
 );
 
-export default function AdminLayout() {
+function AdminLayoutContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const stored = localStorage.getItem('admin-sidebar-collapsed');
@@ -480,6 +483,7 @@ export default function AdminLayout() {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
+              <PrivacyModeToggleButton />
               <Link
                 to="/admin/inquiries"
                 className="group relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
@@ -512,5 +516,35 @@ export default function AdminLayout() {
         </main>
       </div>
     </div>
+  );
+}
+
+function PrivacyModeToggleButton() {
+  const { privacyModeEnabled, togglePrivacyMode } = usePrivacyMode();
+
+  return (
+    <button
+      onClick={togglePrivacyMode}
+      className={`group relative p-2 rounded-lg transition-colors ${
+        privacyModeEnabled
+          ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+          : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50'
+      }`}
+      aria-label={privacyModeEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+      title={privacyModeEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+    >
+      {privacyModeEnabled ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
+        {privacyModeEnabled ? 'Privacy Mode On' : 'Privacy Mode Off'}
+      </span>
+    </button>
+  );
+}
+
+export default function AdminLayout() {
+  return (
+    <PrivacyModeProvider>
+      <AdminLayoutContent />
+    </PrivacyModeProvider>
   );
 }
