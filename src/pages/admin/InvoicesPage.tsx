@@ -14,8 +14,10 @@ import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 export default function InvoicesPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const navigate = useNavigate();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -212,6 +214,17 @@ ${invoice.notes}` : ''}`,
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
+  const formatCurrency = (amount: number) => {
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+
+    return maskFinancialValue(formatted);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -259,7 +272,7 @@ ${invoice.notes}` : ''}`,
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600 mb-1">Draft Total</p>
-                <p className="text-2xl font-bold text-slate-600">${stats.totalDraft.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-slate-600">{formatCurrency(stats.totalDraft)}</p>
                 <p className="text-xs text-slate-500 mt-1">{stats.draft} unsent invoices</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
@@ -272,7 +285,7 @@ ${invoice.notes}` : ''}`,
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600 mb-1">Outstanding</p>
-                <p className="text-2xl font-bold text-orange-600">${stats.totalOutstanding.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-orange-600">{formatCurrency(stats.totalOutstanding)}</p>
                 <p className="text-xs text-slate-500 mt-1">
                   {stats.sent + stats.partiallyPaid + stats.overdue} invoices
                   {stats.overdue > 0 && (
@@ -290,7 +303,7 @@ ${invoice.notes}` : ''}`,
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600 mb-1">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">${stats.totalPaid.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalPaid)}</p>
                 <p className="text-xs text-slate-500 mt-1">{stats.paid} paid invoices</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
@@ -416,13 +429,13 @@ ${invoice.notes}` : ''}`,
                     <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.invoice_date)}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.due_date)}</td>
                     <td className="px-6 py-4 text-right font-medium text-slate-900">
-                      ${invoice.total_amount.toFixed(2)}
+                      {formatCurrency(invoice.total_amount)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm text-green-600 font-medium">
-                      ${invoice.amount_paid.toFixed(2)}
+                      {formatCurrency(invoice.amount_paid)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm text-blue-600 font-medium">
-                      ${invoice.amount_due.toFixed(2)}
+                      {formatCurrency(invoice.amount_due)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-center">

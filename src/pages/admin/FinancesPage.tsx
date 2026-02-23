@@ -35,10 +35,12 @@ import {
 } from '../../services/expenseService';
 import ExpenseFormModal from '../../components/admin/ExpenseFormModal';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
 export default function FinancesPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [expenses, setExpenses] = useState<ExpenseWithCategory[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<ExpenseWithCategory[]>([]);
@@ -198,12 +200,14 @@ export default function FinancesPage() {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const taxSavings = useMemo(() => {

@@ -11,6 +11,7 @@ import {
   ForecastResult,
   ForecastDataPoint,
 } from '../../services/forecastingService';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import {
   LineChart,
   Line,
@@ -42,6 +43,7 @@ import {
 } from 'lucide-react';
 
 export default function ForecastingPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const { jobs, loading: jobsLoading } = useRealtimeJobs(businessId);
   const [forecastResult, setForecastResult] = useState<ForecastResult | null>(null);
@@ -171,12 +173,14 @@ export default function ForecastingPage() {
   }, [forecastResult]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const getTrendIcon = () => {
