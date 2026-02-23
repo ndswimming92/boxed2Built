@@ -3,6 +3,7 @@ import { FileText, Download, ExternalLink, Unlink, ChevronDown, ChevronUp } from
 import { Invoice } from '../../lib/supabase';
 import { getInvoicesByJob, detachInvoiceFromJob, getInvoice } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface JobInvoicesListProps {
   jobId: string;
@@ -11,6 +12,7 @@ interface JobInvoicesListProps {
 }
 
 export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached }: JobInvoicesListProps) {
+  const { maskFinancialValue } = usePrivacyMode();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
@@ -91,6 +93,17 @@ export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
+  const formatCurrency = (amount: number) => {
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+
+    return maskFinancialValue(formatted);
+  };
+
   if (loading) {
     return (
       <div className="mt-4 pt-4 border-t border-slate-200">
@@ -157,11 +170,11 @@ export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-slate-900">
-                    ${invoice.total_amount.toFixed(2)}
+                    {formatCurrency(invoice.total_amount)}
                   </p>
                   {invoice.amount_due > 0 && (
                     <p className="text-xs text-orange-600 font-medium">
-                      ${invoice.amount_due.toFixed(2)} due
+                      {formatCurrency(invoice.amount_due)} due
                     </p>
                   )}
                 </div>

@@ -13,10 +13,12 @@ import ClientDetailModal from '../../components/admin/ClientDetailModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads';
 
 export default function ClientsPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [clients, setClients] = useState<Client[]>([]);
   const [stats, setStats] = useState<ClientSegmentStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -321,7 +323,7 @@ export default function ClientsPage() {
               </div>
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              {formatCurrency(stats.total_revenue)} total revenue
+              {maskFinancialValue(formatCurrency(stats.total_revenue))} total revenue
             </p>
           </div>
 
@@ -529,7 +531,7 @@ export default function ClientsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                      {formatCurrency(client.total_revenue)}
+                      {maskFinancialValue(formatCurrency(client.total_revenue))}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600">
                       {client.job_count}

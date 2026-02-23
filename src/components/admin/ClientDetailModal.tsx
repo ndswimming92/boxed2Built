@@ -14,6 +14,7 @@ import {
   updateClient
 } from '../../services/clientService';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface ClientDetailModalProps {
   client: Client;
@@ -21,6 +22,7 @@ interface ClientDetailModalProps {
 }
 
 export default function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
+  const { maskFinancialValue } = usePrivacyMode();
   const [history, setHistory] = useState<ClientHistory | null>(null);
   const [notes, setNotes] = useState<ClientNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,12 +98,14 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   }
 
   function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+
+    return maskFinancialValue(formatted);
   }
 
   function formatDate(date: string | null): string {
