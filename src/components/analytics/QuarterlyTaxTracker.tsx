@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { QuarterlyTaxPayment } from '../../services/taxService';
 import { Calendar, CheckCircle, AlertCircle, Plus, DollarSign, X } from 'lucide-react';
 import { addQuarterlyPayment } from '../../services/taxService';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface QuarterlyTaxTrackerProps {
   businessId: string;
@@ -32,6 +33,7 @@ export default function QuarterlyTaxTracker({
   payments,
   onPaymentAdded,
 }: QuarterlyTaxTrackerProps) {
+  const { maskFinancialValue } = usePrivacyMode();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedQuarter, setSelectedQuarter] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -41,12 +43,14 @@ export default function QuarterlyTaxTracker({
   const [saving, setSaving] = useState(false);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const getQuarterPayments = (quarter: number): QuarterlyTaxPayment[] => {

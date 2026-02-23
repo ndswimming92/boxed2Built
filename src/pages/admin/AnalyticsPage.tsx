@@ -72,10 +72,12 @@ import JobTypeConversionTable from '../../components/analytics/JobTypeConversion
 import ConversionMetricsCards from '../../components/analytics/ConversionMetricsCards';
 import ClientAnalytics from '../../components/analytics/ClientAnalytics';
 import { getTotalDeductibleExpenses } from '../../services/expenseService';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
 export default function AnalyticsPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('current_year');
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
@@ -170,12 +172,14 @@ export default function AnalyticsPage() {
   const nextQuarterDueDate = useMemo(() => getNextQuarterDueDate(), []);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const formatPercent = (value: number) => {

@@ -22,6 +22,7 @@ import CancelJobModal from '../../components/admin/CancelJobModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 import { attachInvoiceToJob } from '../../services/invoiceService';
 import { jobStatusService } from '../../services/jobStatusService';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface JobStats {
   totalJobs: number;
@@ -39,6 +40,7 @@ interface JobsPageLocationState {
 }
 
 export default function JobsPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const location = useLocation();
   const navigate = useNavigate();
   const locationState = location.state as JobsPageLocationState | null;
@@ -301,7 +303,7 @@ export default function JobsPage() {
             </div>
             <p className="text-sm font-medium text-slate-600">Total Revenue</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.totalRevenue)}</p>
+          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalRevenue))}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -311,7 +313,7 @@ export default function JobsPage() {
             </div>
             <p className="text-sm font-medium text-slate-600">Total Profit</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.totalProfit)}</p>
+          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalProfit))}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 border border-slate-200">
@@ -321,7 +323,7 @@ export default function JobsPage() {
             </div>
             <p className="text-sm font-medium text-slate-600">Avg Hourly Rate</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.avgHourlyRate)}/hr</p>
+          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.avgHourlyRate))}/hr</p>
         </div>
       </div>
 
@@ -558,19 +560,19 @@ export default function JobsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
-                    <p className="text-lg font-bold text-slate-900">{formatCurrency(job.final_price)}</p>
+                    <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Materials Cost</p>
-                    <p className="text-lg font-bold text-slate-900">{formatCurrency(job.materials_cost)}</p>
+                    <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Net Profit</p>
-                    <p className="text-lg font-bold text-emerald-600">{formatCurrency(netProfit)}</p>
+                    <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
-                    <p className="text-lg font-bold text-emerald-600">{formatCurrency(hourlyRate)}/hr</p>
+                    <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
                   </div>
                   {(job.total_mileage ?? 0) > 0 && (
                     <div>
@@ -578,7 +580,7 @@ export default function JobsPage() {
                         <Navigation className="w-3 h-3" />
                         Mileage Deduction
                       </p>
-                      <p className="text-lg font-bold text-blue-600">{formatCurrency(job.mileage_deduction)}</p>
+                      <p className="text-lg font-bold text-blue-600">{maskFinancialValue(formatCurrency(job.mileage_deduction))}</p>
                       <p className="text-xs text-slate-500">{job.total_mileage?.toFixed(1)} mi</p>
                     </div>
                   )}
