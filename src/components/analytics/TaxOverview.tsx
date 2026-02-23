@@ -1,6 +1,7 @@
 import React from 'react';
 import { TaxCalculationResult } from '../../services/taxService';
 import { DollarSign, TrendingUp, AlertTriangle, Calendar, Info } from 'lucide-react';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface TaxOverviewProps {
   taxCalculation: TaxCalculationResult;
@@ -9,13 +10,16 @@ interface TaxOverviewProps {
 }
 
 export default function TaxOverview({ taxCalculation, quarterlyPayments = [], nextDueDate }: TaxOverviewProps) {
+  const { maskFinancialValue } = usePrivacyMode();
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const formatPercent = (value: number) => {

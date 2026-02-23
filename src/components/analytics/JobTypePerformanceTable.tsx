@@ -1,19 +1,23 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { JobTypePerformance } from '../../services/analyticsService';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface JobTypePerformanceTableProps {
   performance: JobTypePerformance[];
 }
 
 export default function JobTypePerformanceTable({ performance }: JobTypePerformanceTableProps) {
+  const { maskFinancialValue } = usePrivacyMode();
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+    return maskFinancialValue(formatted);
   };
 
   const formatPercent = (value: number) => {

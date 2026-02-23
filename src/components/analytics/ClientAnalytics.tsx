@@ -19,6 +19,7 @@ import { supabase } from '../../lib/supabase';
 import MetricCard from './MetricCard';
 import ChartCard from './ChartCard';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
@@ -46,6 +47,7 @@ interface ClientSource {
 }
 
 export default function ClientAnalytics() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [metrics, setMetrics] = useState<ClientMetrics | null>(null);
   const [acquisition, setAcquisition] = useState<ClientAcquisition[]>([]);
   const [sources, setSources] = useState<ClientSource[]>([]);
@@ -155,12 +157,14 @@ export default function ClientAnalytics() {
   }
 
   function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+
+    return maskFinancialValue(formatted);
   }
 
   if (loading) {
