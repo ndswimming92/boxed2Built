@@ -5,6 +5,7 @@ import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
 import type { Goal } from '../../lib/supabase';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import {
   Building2,
   Briefcase,
@@ -40,6 +41,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
+  const { maskFinancialValue } = usePrivacyMode();
   const [stats, setStats] = useState<Stats>({
     services: 0,
     serviceAreas: 0,
@@ -177,7 +179,7 @@ export default function DashboardPage() {
     },
     {
       name: 'Total Revenue',
-      value: formatCurrency(stats.totalRevenue),
+      value: maskFinancialValue(formatCurrency(stats.totalRevenue)),
       icon: TrendingUp,
       link: '/admin/jobs',
       color: 'bg-emerald-500'
@@ -391,7 +393,7 @@ export default function DashboardPage() {
                           {getStatusLabel(inquiry.status)}
                         </span>
                         {inquiry.estimated_price && (
-                          <span className="text-sm font-semibold text-emerald-600">{inquiry.estimated_price}</span>
+                          <span className="text-sm font-semibold text-emerald-600">{maskFinancialValue(inquiry.estimated_price)}</span>
                         )}
                       </div>
                     </div>
