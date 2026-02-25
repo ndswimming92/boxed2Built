@@ -87,17 +87,14 @@ export default function CommandPalette({ isOpen, onClose, navigation }: CommandP
   };
 
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4 bg-slate-900/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        className="fixed inset-0 bg-slate-900/50 z-50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4">
-        <div
-          className="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden"
-          onClick={e => e.stopPropagation()}
-        >
+        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200">
             <Search className="w-5 h-5 text-slate-400" />
             <input name="query"
@@ -173,8 +170,7 @@ export default function CommandPalette({ isOpen, onClose, navigation }: CommandP
               <span>Close</span>
             </div>
           </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 }
