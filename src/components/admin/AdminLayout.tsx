@@ -533,7 +533,6 @@ function PrivacyModeToggleButton() {
           : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50'
       }`}
       aria-label={privacyModeEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
-      title={privacyModeEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
     >
       {privacyModeEnabled ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
       <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
