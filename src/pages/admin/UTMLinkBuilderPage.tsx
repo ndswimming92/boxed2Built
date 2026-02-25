@@ -8,6 +8,24 @@ interface Option {
 }
 
 const customValue = '__custom__';
+const customDestinationValue = '__custom_destination__';
+const siteOrigin = 'https://boxed2built.com';
+
+const destinationPageOptions: Option[] = [
+  { label: 'Home', value: '/' },
+  { label: 'About', value: '/about' },
+  { label: 'Services', value: '/services' },
+  { label: 'Furniture Assembly Service', value: '/services/furniture-assembly' },
+  { label: 'TV Mounting Service', value: '/services/tv-mounting' },
+  { label: 'Gallery', value: '/gallery' },
+  { label: 'FAQ', value: '/faq' },
+  { label: 'Partners', value: '/partners' },
+  { label: 'Contact', value: '/contact' },
+  { label: 'Request Lookup', value: '/lookup-request' },
+  { label: 'Privacy Policy', value: '/privacy-policy' },
+  { label: 'Terms of Service', value: '/terms-of-service' },
+  { label: 'Custom URL...', value: customDestinationValue },
+];
 
 const sourceOptions: Option[] = [
   { label: 'Instagram', value: 'instagram' },
@@ -77,8 +95,18 @@ const getValue = (selected: string, custom: string): string => {
   return selected;
 };
 
+const buildSiteUrl = (path: string): string => {
+  if (!path || path === '/') {
+    return siteOrigin;
+  }
+
+  return `${siteOrigin}${path}`;
+};
+
 export default function UTMLinkBuilderPage() {
-  const [baseUrl, setBaseUrl] = useState('https://boxed2built.com');
+  const [selectedDestinationPath, setSelectedDestinationPath] = useState('/');
+  const [customDestinationUrl, setCustomDestinationUrl] = useState('');
+
   const [selectedChannel, setSelectedChannel] = useState('instagram_post');
 
   const [source, setSource] = useState('instagram');
@@ -98,15 +126,23 @@ export default function UTMLinkBuilderPage() {
 
   const [copied, setCopied] = useState(false);
 
+  const destinationUrl = useMemo(() => {
+    if (selectedDestinationPath === customDestinationValue) {
+      return customDestinationUrl;
+    }
+
+    return buildSiteUrl(selectedDestinationPath);
+  }, [selectedDestinationPath, customDestinationUrl]);
+
   const canBuildUrl = useMemo(() => {
     try {
       // eslint-disable-next-line no-new
-      new URL(baseUrl);
+      new URL(destinationUrl);
       return true;
     } catch {
       return false;
     }
-  }, [baseUrl]);
+  }, [destinationUrl]);
 
   const utmParams = useMemo<UTMParams>(() => {
     const nextParams: UTMParams = {
@@ -134,8 +170,8 @@ export default function UTMLinkBuilderPage() {
       return '';
     }
 
-    return createUTMUrl(baseUrl, utmParams);
-  }, [baseUrl, canBuildUrl, utmParams]);
+    return createUTMUrl(destinationUrl, utmParams);
+  }, [destinationUrl, canBuildUrl, utmParams]);
 
   const applyChannel = (key: string) => {
     setSelectedChannel(key);
@@ -248,14 +284,30 @@ export default function UTMLinkBuilderPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-2">Destination URL *</label>
-            <input
-              type="url"
-              value={baseUrl}
-              onChange={(event) => setBaseUrl(event.target.value)}
-              placeholder="https://your-site.com/landing-page"
+            <select
+              value={selectedDestinationPath}
+              onChange={(event) => setSelectedDestinationPath(event.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-            />
-            {!canBuildUrl && <p className="text-sm text-red-600 mt-2">Please enter a valid URL including https://</p>}
+            >
+              {destinationPageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            {selectedDestinationPath === customDestinationValue && (
+              <input
+                type="url"
+                value={customDestinationUrl}
+                onChange={(event) => setCustomDestinationUrl(event.target.value)}
+                placeholder="https://your-site.com/landing-page"
+                className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              />
+            )}
+
+            <p className="text-sm text-slate-500 mt-2">Selected URL: {destinationUrl || 'Choose a destination page'}</p>
+            {!canBuildUrl && <p className="text-sm text-red-600 mt-2">Please select a valid destination URL.</p>}
           </div>
 
           {renderSelect('UTM Source', source, setSource, sourceOptions, sourceCustom, setSourceCustom)}
