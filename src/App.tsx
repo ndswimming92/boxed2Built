@@ -36,6 +36,7 @@ const ReviewsPage = lazy(() => import('./pages/admin/ReviewsPage'));
 const BusinessHoursPage = lazy(() => import('./pages/admin/BusinessHoursPage'));
 const PaymentMethodsPage = lazy(() => import('./pages/admin/PaymentMethodsPage'));
 const SocialMediaPage = lazy(() => import('./pages/admin/SocialMediaPage'));
+const UTMLinkBuilderPage = lazy(() => import('./pages/admin/UTMLinkBuilderPage'));
 const AttributesPage = lazy(() => import('./pages/admin/AttributesPage'));
 const GalleryAdminPage = lazy(() => import('./pages/admin/GalleryPage'));
 const JobsAdminPage = lazy(() => import('./pages/admin/JobsPage'));
@@ -295,6 +296,7 @@ function App() {
                   <Route path="business-hours" element={<BusinessHoursPage />} />
                   <Route path="payment-methods" element={<PaymentMethodsPage />} />
                   <Route path="social-media" element={<SocialMediaPage />} />
+                  <Route path="utm-link-builder" element={<UTMLinkBuilderPage />} />
                   <Route path="attributes" element={<AttributesPage />} />
                 </Route>
                 </Routes>
