@@ -44,7 +44,7 @@ import {
   FlaskConical,
   Eye,
   EyeOff,
-  Link
+  Link as LinkIcon
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -119,7 +119,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
-      { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: Link },
+      { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: LinkIcon },
       { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
     ],
   },
