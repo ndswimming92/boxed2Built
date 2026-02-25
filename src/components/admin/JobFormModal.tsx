@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase, Job, ServiceArea, PaymentMethod } from '../../lib/supabase';
-import { X, Save, DollarSign, TrendingUp } from 'lucide-react';
+import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon } from 'lucide-react';
 import { REFERRAL_SOURCES, calculateNetProfit, calculateHourlyRate, formatCurrency } from '../../utils/jobCalculations';
 
 interface JobFormModalProps {
@@ -13,6 +13,7 @@ interface JobFormModalProps {
 }
 
 export default function JobFormModal({ job, businessId, onClose, onSave, initialData, title }: JobFormModalProps) {
+  const notesTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [jobTypeOptions, setJobTypeOptions] = useState<string[]>([]);
@@ -187,6 +188,132 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
   const netProfit = calculateNetProfit(formData.final_price, formData.materials_cost);
   const hourlyRate = calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
+
+  const updateNotes = (nextValue: string) => {
+    setFormData({ ...formData, notes: nextValue });
+  };
+
+  const applyNotesFormat = (mode: 'bold' | 'italic' | 'list' | 'link') => {
+    const textarea = notesTextareaRef.current;
+    if (!textarea) return;
+
+    const value = formData.notes || '';
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = value.slice(start, end);
+
+    let replacement = selectedText;
+
+    if (mode === 'bold') {
+      replacement = `**${selectedText || 'bold text'}**`;
+    }
+
+    if (mode === 'italic') {
+      replacement = `*${selectedText || 'italic text'}*`;
+    }
+
+    if (mode === 'list') {
+      replacement = selectedText
+        ? selectedText
+            .split('\n')
+            .map((line) => (line.trim() ? `- ${line}` : line))
+            .join('\n')
+        : '- List item';
+    }
+
+    if (mode === 'link') {
+      const selected = selectedText.trim();
+      replacement = selected.startsWith('http://') || selected.startsWith('https://')
+        ? `[${selected}](${selected})`
+        : `[${selected || 'Link text'}](https://)`;
+    }
+
+    const nextValue = `${value.slice(0, start)}${replacement}${value.slice(end)}`;
+    updateNotes(nextValue);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const caret = start + replacement.length;
+      textarea.setSelectionRange(caret, caret);
+    });
+  };
+
+  const renderStyledText = (text: string, keyPrefix: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+    return parts.filter(Boolean).map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={`${keyPrefix}-b-${index}`}>{part.slice(2, -2)}</strong>;
+      }
+
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={`${keyPrefix}-i-${index}`}>{part.slice(1, -1)}</em>;
+      }
+
+      return <React.Fragment key={`${keyPrefix}-t-${index}`}>{part}</React.Fragment>;
+    });
+  };
+
+  const renderNotesInline = (line: string, lineIndex: number) => {
+    const pattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+    const chunks: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        chunks.push(
+          <React.Fragment key={`line-${lineIndex}-text-${lastIndex}`}>
+            {renderStyledText(line.slice(lastIndex, match.index), `line-${lineIndex}-${lastIndex}`)}
+          </React.Fragment>
+        );
+      }
+
+      const label = match[1] || match[3];
+      const href = match[2] || match[3];
+      chunks.push(
+        <a
+          key={`line-${lineIndex}-link-${match.index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-700 underline hover:text-emerald-800"
+        >
+          {label}
+        </a>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < line.length) {
+      chunks.push(
+        <React.Fragment key={`line-${lineIndex}-tail`}>
+          {renderStyledText(line.slice(lastIndex), `line-${lineIndex}-tail`)}
+        </React.Fragment>
+      );
+    }
+
+    return chunks;
+  };
+
+  const renderNotesPreview = (notes: string) => {
+    const lines = notes.split('\n');
+    return (
+      <div className="space-y-2">
+        {lines.map((line, index) => {
+          if (line.startsWith('- ')) {
+            return (
+              <ul key={`line-${index}`} className="list-disc list-inside">
+                <li>{renderNotesInline(line.slice(2), index)}</li>
+              </ul>
+            );
+          }
+
+          return <p key={`line-${index}`}>{line ? renderNotesInline(line, index) : <>&nbsp;</>}</p>;
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-start sm:items-center justify-center p-4">
@@ -480,13 +607,40 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Additional Notes</h3>
-            <textarea name="notes"
-              value={formData.notes || ''}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={4}
-              placeholder="Any additional notes about this job..."
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
+            <div className="border border-slate-300 rounded-lg overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200">
+                <button type="button" onClick={() => applyNotesFormat('bold')} className="p-1.5 rounded hover:bg-slate-200 text-slate-700" title="Bold">
+                  <Bold className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => applyNotesFormat('italic')} className="p-1.5 rounded hover:bg-slate-200 text-slate-700" title="Italic">
+                  <Italic className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => applyNotesFormat('list')} className="p-1.5 rounded hover:bg-slate-200 text-slate-700" title="Bulleted list">
+                  <List className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => applyNotesFormat('link')} className="p-1.5 rounded hover:bg-slate-200 text-slate-700" title="Insert link">
+                  <LinkIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <textarea
+                ref={notesTextareaRef}
+                name="notes"
+                value={formData.notes || ''}
+                onChange={(e) => updateNotes(e.target.value)}
+                rows={5}
+                placeholder="Any additional notes about this job..."
+                className="w-full px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-500">Supports basic formatting: **bold**, *italic*, - list items, and links.</p>
+            {!!formData.notes?.trim() && (
+              <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Preview</p>
+                <div className="text-sm text-slate-700 break-words">
+                  {renderNotesPreview(formData.notes)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
