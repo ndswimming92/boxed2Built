@@ -163,3 +163,32 @@ This website is optimized for local search results in:
 **Ready to get started?** [Book your free consultation today](https://calendly.com/boxed2built/30min) or call [(615) 403-4538](tel:+16154034538) for immediate assistance.
 
 *Boxed2Built - Professional furniture assembly service in Spring Hill, TN and surrounding Tennessee communities.*
+
+## 🔐 Dependency Security Troubleshooting
+
+If CI still reports npm vulnerabilities after you updated dependency ranges in `package.json`, check whether `package-lock.json` is stale. Our pipelines use `npm ci`, which installs exactly what is pinned in the lockfile.
+
+Run this check locally:
+
+```bash
+npm run check:lock-sync
+```
+
+If it fails, regenerate and commit the lockfile so CI installs the patched versions:
+
+```bash
+npm install --package-lock-only
+```
+
+If your environment blocks the default npm endpoint, retry with an explicit registry:
+
+```bash
+npm install --package-lock-only --registry=https://registry.npmjs.org/
+```
+
+If you see `vite: not found` during build, your install likely omitted dev dependencies (Vite is a dev dependency). Install with dev dependencies enabled:
+
+```bash
+npm ci --include=dev
+```
+
