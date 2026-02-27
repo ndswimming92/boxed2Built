@@ -26,6 +26,19 @@ const initialValues = {
   notes: { value: '', error: '', touched: false },
 };
 
+const normalizePhoneValue = (value?: string): string => {
+  if (!value) return '';
+
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return digits.slice(1);
+  }
+
+  return digits;
+};
+
 // Enhanced validation rules
 const validationRules: Record<string, ValidationRule> = {
   name: {
@@ -64,12 +77,13 @@ const validationRules: Record<string, ValidationRule> = {
   phone: {
     required: false,
     custom: (value) => {
-      if (!value) return null;
-      const digits = value.replace(/\D/g, '');
+      const digits = normalizePhoneValue(value);
+      if (!digits) return null;
+
       if (digits.length > 0 && digits.length < 10) {
         return 'Please enter a complete phone number';
       }
-      if (digits.length > 11) {
+      if (digits.length > 10) {
         return 'Phone number is too long';
       }
       return null;
@@ -265,6 +279,9 @@ const ContactForm: React.FC = () => {
 
   const onSubmit = handleValidatedSubmit(async (values) => {
     try {
+      const normalizedPhone = normalizePhoneValue(values.phone);
+      const clientPhone = normalizedPhone || undefined;
+
       // Track form completion with detailed parameters
       trackFormInteraction('contact_form', 'complete', {
         page_section: 'contact_form',
@@ -322,7 +339,7 @@ const ContactForm: React.FC = () => {
         organization_id: businessInfo.organization_id,
         client_name: values.name,
         client_email: values.email,
-        client_phone: values.phone || undefined,
+        client_phone: clientPhone,
         furniture_type: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferred_date: values.preferredDate || undefined,
@@ -340,7 +357,7 @@ const ContactForm: React.FC = () => {
         inquiry_id: inquiry.id,
         client_name: values.name,
         client_email: values.email,
-        client_phone: values.phone || undefined,
+        client_phone: clientPhone,
         furniture_type: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferred_date: values.preferredDate || undefined,
@@ -356,7 +373,7 @@ const ContactForm: React.FC = () => {
         confirmationCode: savedRequest.confirmation_code,
         clientName: values.name,
         clientEmail: values.email,
-        clientPhone: values.phone || undefined,
+        clientPhone,
         furnitureType: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferredDate: values.preferredDate || undefined,
@@ -380,7 +397,7 @@ const ContactForm: React.FC = () => {
         payload: {
           client_name: values.name,
           client_email: values.email,
-          client_phone: values.phone || null,
+          client_phone: clientPhone || null,
           furniture_type: values.furnitureType,
           pieces: parseInt(values.pieces) || 1,
           preferred_date: values.preferredDate || null,
