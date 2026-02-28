@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, Tag, FileText, AlertCircle, ToggleLeft, ToggleRight } from 'lucide-react';
+import { X, Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -32,6 +32,15 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   const [emailOptIn, setEmailOptIn] = useState(client.marketing_email_opt_in);
   const [smsOptIn, setSmsOptIn] = useState(client.marketing_sms_opt_in);
 
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [editName, setEditName] = useState(client.name);
+  const [editEmail, setEditEmail] = useState(client.email ?? '');
+  const [editPhone, setEditPhone] = useState(client.phone ?? '');
+  const [editAddress, setEditAddress] = useState(client.address ?? '');
+  const [savingInfo, setSavingInfo] = useState(false);
+  const [saveInfoError, setSaveInfoError] = useState<string | null>(null);
+  const [currentClient, setCurrentClient] = useState<Client>(client);
+
   useEffect(() => {
     loadClientDetails();
   }, [client.id]);
@@ -40,8 +49,8 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
     try {
       setLoading(true);
       const [historyData, notesData] = await Promise.all([
-        getClientHistory(client.id, client.email),
-        getClientNotes(client.id)
+        getClientHistory(currentClient.id, currentClient.email),
+        getClientNotes(currentClient.id)
       ]);
       setHistory(historyData);
       setNotes(notesData);
@@ -57,8 +66,8 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
 
     try {
       setSavingNote(true);
-      const userId = 'current-user-id'; // TODO: Get from auth context
-      await createClientNote(client.id, client.organization_id, newNote, userId);
+      const userId = 'current-user-id';
+      await createClientNote(currentClient.id, currentClient.organization_id, newNote, userId);
       setNewNote('');
       await loadClientDetails();
     } catch (error) {
@@ -70,19 +79,49 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
 
   async function handleUpdatePreferences() {
     try {
-      await updateMarketingPreferences(client.id, emailOptIn, smsOptIn);
+      await updateMarketingPreferences(currentClient.id, emailOptIn, smsOptIn);
     } catch (error) {
       console.error('Error updating preferences:', error);
     }
+  }
+
+  async function handleSaveInfo() {
+    if (!editName.trim()) return;
+    try {
+      setSavingInfo(true);
+      setSaveInfoError(null);
+      const updated = await updateClient(currentClient.id, {
+        name: editName.trim(),
+        email: editEmail.trim() || null,
+        phone: editPhone.trim() || null,
+        address: editAddress.trim() || null,
+      });
+      setCurrentClient(updated);
+      setEditingInfo(false);
+    } catch (error) {
+      console.error('Error saving client info:', error);
+      setSaveInfoError('Failed to save changes. Please try again.');
+    } finally {
+      setSavingInfo(false);
+    }
+  }
+
+  function handleCancelEdit() {
+    setEditName(currentClient.name);
+    setEditEmail(currentClient.email ?? '');
+    setEditPhone(currentClient.phone ?? '');
+    setEditAddress(currentClient.address ?? '');
+    setSaveInfoError(null);
+    setEditingInfo(false);
   }
 
   async function handleAddTag() {
     if (!newTag.trim()) return;
 
     try {
-      await addClientTags(client.id, [newTag.trim()]);
+      await addClientTags(currentClient.id, [newTag.trim()]);
       setNewTag('');
-      onClose(); // Refresh parent
+      onClose();
     } catch (error) {
       console.error('Error adding tag:', error);
     }
@@ -90,8 +129,8 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
 
   async function handleRemoveTag(tag: string) {
     try {
-      await removeClientTags(client.id, [tag]);
-      onClose(); // Refresh parent
+      await removeClientTags(currentClient.id, [tag]);
+      onClose();
     } catch (error) {
       console.error('Error removing tag:', error);
     }
@@ -150,49 +189,130 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
         <div className="p-6 bg-gray-50 rounded-lg">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{client.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{currentClient.name}</h2>
               <div className="flex items-center gap-2 mt-2">
-                <span className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${getStatusBadgeColor(client.client_status)}`}>
-                  {client.client_status}
+                <span className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${getStatusBadgeColor(currentClient.client_status)}`}>
+                  {currentClient.client_status}
                 </span>
                 <span className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full capitalize">
-                  {client.client_value_tier.replace('_', ' ')}
+                  {currentClient.client_value_tier.replace('_', ' ')}
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Customer Since</p>
-              <p className="text-lg font-semibold text-gray-900">{formatDate(client.first_contact_date)}</p>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Customer Since</p>
+                <p className="text-lg font-semibold text-gray-900">{formatDate(currentClient.first_contact_date)}</p>
+              </div>
+              {!editingInfo && (
+                <button
+                  onClick={() => setEditingInfo(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  Edit
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Contact Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            {client.email && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-sm">{client.email}</span>
+          {/* Contact Info — View or Edit */}
+          {editingInfo ? (
+            <div className="mt-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Full Name <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="(555) 555-5555"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                  <input
+                    type="text"
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="123 Main St, City, State"
+                  />
+                </div>
               </div>
-            )}
-            {client.phone && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-sm">{client.phone}</span>
+              {saveInfoError && (
+                <p className="text-sm text-red-600">{saveInfoError}</p>
+              )}
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={handleSaveInfo}
+                  disabled={savingInfo || !editName.trim()}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {savingInfo ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={savingInfo}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
-            )}
-            {client.address && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-sm">{client.address}</span>
-              </div>
-            )}
-            {client.source && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <FileText className="w-4 h-4 text-gray-400" />
-                <span className="text-sm">Source: {client.source}</span>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              {currentClient.email && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">{currentClient.email}</span>
+                </div>
+              )}
+              {currentClient.phone && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Phone className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">{currentClient.phone}</span>
+                </div>
+              )}
+              {currentClient.address && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">{currentClient.address}</span>
+                </div>
+              )}
+              {currentClient.source && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <FileText className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm">Source: {currentClient.source}</span>
+                </div>
+              )}
+              {!currentClient.email && !currentClient.phone && !currentClient.address && !currentClient.source && (
+                <p className="text-sm text-gray-500 col-span-2">No contact information on file.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Key Metrics */}
@@ -202,21 +322,21 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Total Revenue</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(client.total_revenue)}</p>
+            <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.total_revenue)}</p>
           </div>
           <div className="p-4 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center gap-2 text-gray-600 mb-1">
               <Briefcase className="w-4 h-4" />
               <p className="text-sm font-medium">Number of Jobs</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{client.job_count}</p>
+            <p className="text-2xl font-bold text-gray-900">{currentClient.job_count}</p>
           </div>
           <div className="p-4 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center gap-2 text-gray-600 mb-1">
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Avg Job Value</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(client.average_job_value)}</p>
+            <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.average_job_value)}</p>
           </div>
         </div>
 
@@ -272,9 +392,9 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
                 />
               </button>
             </div>
-            {client.last_campaign_date && (
+            {currentClient.last_campaign_date && (
               <p className="text-sm text-gray-600 mt-4">
-                Last campaign: {formatDate(client.last_campaign_date)}
+                Last campaign: {formatDate(currentClient.last_campaign_date)}
               </p>
             )}
           </div>
@@ -284,8 +404,8 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
           <div className="flex flex-wrap gap-2 mb-4">
-            {client.tags && client.tags.length > 0 ? (
-              client.tags.map((tag) => (
+            {currentClient.tags && currentClient.tags.length > 0 ? (
+              currentClient.tags.map((tag) => (
                 <span
                   key={tag}
                   className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
@@ -410,7 +530,7 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
         </div>
 
         {/* Re-engagement Suggestions (for dormant clients) */}
-        {client.client_status === 'dormant' && (
+        {currentClient.client_status === 'dormant' && (
           <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex gap-3">
               <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
