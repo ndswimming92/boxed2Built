@@ -258,12 +258,25 @@ export default function CompletionsPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
                     <p className="text-sm font-semibold text-slate-900">
-                      ${completion.final_price?.toLocaleString() || 'N/A'}
+                      {completion.job?.final_price != null ? `$${Number(completion.job.final_price).toLocaleString()}` : 'N/A'}
                     </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 mb-1">Payment</p>
+                    {completion.job?.payment_date ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Unpaid
+                      </span>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-medium text-slate-500 mb-1">Checklist</p>
@@ -317,7 +330,22 @@ export default function CompletionsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-slate-600">Final Price</p>
-                    <p className="font-semibold text-slate-900">${selectedCompletion.final_price?.toLocaleString() || 'N/A'}</p>
+                    <p className="font-semibold text-slate-900">
+                      {selectedCompletion.job?.final_price != null ? `$${Number(selectedCompletion.job.final_price).toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600">Payment Status</p>
+                    {selectedCompletion.job?.payment_date ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Unpaid
+                      </span>
+                    )}
                   </div>
                   <div>
                     <p className="text-slate-600">Customer Satisfied</p>
