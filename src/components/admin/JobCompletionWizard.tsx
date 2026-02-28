@@ -161,7 +161,14 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      const { data: bizData } = await supabase
+        .from('business_info')
+        .select('organization_id')
+        .eq('id', job.business_id)
+        .maybeSingle();
+
       const completionData = {
+        organization_id: bizData?.organization_id ?? null,
         job_id: job.id,
         completed_at: new Date().toISOString(),
         completed_by: user?.id || null,
