@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import FurnitureAssemblyPage from './pages/services/FurnitureAssemblyPage';
@@ -269,6 +269,7 @@ function App() {
 
                 <Route path="/admin/login" element={<LoginPage />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                  <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="goals" element={<GoalsPage />} />
                   <Route path="inquiries" element={<InquiriesPage />} />
