@@ -252,6 +252,8 @@ export type FormInquiry = {
   utm_campaign: string | null;
   referral_source: string | null;
   confirmation_code?: string | null;
+  furniture_photo_url: string | null;
+  furniture_image_path: string | null;
   is_test: boolean;
   is_active: boolean;
   created_at: string;
@@ -277,6 +279,8 @@ export type SavedRequest = {
   submission_date: string;
   last_accessed: string | null;
   access_count: number;
+  furniture_photo_url: string | null;
+  furniture_image_path: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

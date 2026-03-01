@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical } from 'lucide-react';
+import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image } from 'lucide-react';
 import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
@@ -546,6 +546,12 @@ export default function InquiriesPage() {
                     {inquiry.source === 'footer_quick_contact' && (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
                         Quick Contact
+                      </span>
+                    )}
+                    {(inquiry.furniture_photo_url || inquiry.furniture_image_path) && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1" title="Customer provided a photo or product link">
+                        <Image className="w-3 h-3" />
+                        Photo
                       </span>
                     )}
                   </div>

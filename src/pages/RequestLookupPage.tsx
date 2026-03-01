@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import FormField from '../components/ui/FormField';
 import ValidationMessage from '../components/ui/ValidationMessage';
-import { Search, Download, Mail, CheckCircle, AlertCircle, Loader2, FileText, Clock } from 'lucide-react';
+import { Search, Download, Mail, CheckCircle, AlertCircle, Loader2, FileText, Clock, Image, Link, ExternalLink } from 'lucide-react';
 import { getSavedRequestByCode } from '../services/savedRequestService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
@@ -385,6 +385,46 @@ Serving Spring Hill, Columbia, Franklin & Surrounding Areas
                             <p className="text-sm text-gray-900 bg-white p-2 rounded border border-gray-200">
                               {request.notes}
                             </p>
+                          </div>
+                        )}
+
+                        {(request.furniture_photo_url || request.furniture_image_path) && (
+                          <div className="border-t border-gray-200 pt-3 mt-3">
+                            <p className="text-gray-600 mb-2 flex items-center gap-1.5">
+                              <Image size={14} />
+                              Furniture Reference
+                            </p>
+                            <div className="space-y-3">
+                              {request.furniture_image_path && (
+                                <a
+                                  href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/furniture-photos/${request.furniture_image_path}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block group"
+                                >
+                                  <img
+                                    src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/furniture-photos/${request.furniture_image_path}`}
+                                    alt="Furniture photo you uploaded"
+                                    className="h-36 w-auto rounded-lg border border-gray-300 object-cover group-hover:opacity-90 transition-opacity"
+                                  />
+                                  <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                    <ExternalLink size={11} />
+                                    View full size
+                                  </p>
+                                </a>
+                              )}
+                              {request.furniture_photo_url && (
+                                <a
+                                  href={request.furniture_photo_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-900 underline break-all"
+                                >
+                                  <Link size={13} className="flex-shrink-0" />
+                                  {request.furniture_photo_url}
+                                </a>
+                              )}
+                            </div>
                           </div>
                         )}
 

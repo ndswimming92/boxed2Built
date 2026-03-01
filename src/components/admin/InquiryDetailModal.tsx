@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User } from 'lucide-react';
+import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
@@ -323,6 +323,49 @@ export default function InquiryDetailModal({
             <div className="bg-slate-50 p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-slate-700 mb-2">Additional Notes</h3>
               <p className="text-sm text-slate-900 whitespace-pre-wrap">{inquiry.notes}</p>
+            </div>
+          )}
+
+          {(inquiry.furniture_photo_url || inquiry.furniture_image_path) && (
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                <Image className="w-4 h-4 text-amber-600" />
+                Furniture Reference
+              </h3>
+              <div className="flex flex-wrap gap-4 items-start">
+                {inquiry.furniture_image_path && (
+                  <a
+                    href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/furniture-photos/${inquiry.furniture_image_path}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
+                  >
+                    <img
+                      src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/furniture-photos/${inquiry.furniture_image_path}`}
+                      alt="Customer furniture photo"
+                      className="h-36 w-auto rounded-lg border border-amber-300 object-cover group-hover:opacity-90 transition-opacity shadow-sm"
+                    />
+                    <p className="text-xs text-amber-700 mt-1.5 flex items-center gap-1">
+                      <ExternalLink className="w-3 h-3" />
+                      View full size
+                    </p>
+                  </a>
+                )}
+                {inquiry.furniture_photo_url && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-500 mb-1">Product link</p>
+                    <a
+                      href={inquiry.furniture_photo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-900 underline break-all"
+                    >
+                      <Link className="w-3.5 h-3.5 flex-shrink-0" />
+                      {inquiry.furniture_photo_url}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

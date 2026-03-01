@@ -19,6 +19,8 @@ export interface CreateInquiryData {
   utm_campaign?: string;
   referral_source?: string;
   source?: string;
+  furniture_photo_url?: string;
+  furniture_image_path?: string;
   is_test?: boolean;
 }
 
@@ -70,6 +72,8 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     response_count: 0,
     is_active: true,
     is_test: data.is_test ?? false,
+    furniture_photo_url: data.furniture_photo_url || null,
+    furniture_image_path: data.furniture_image_path || null,
   };
 
   const { data: result, error } = await supabase

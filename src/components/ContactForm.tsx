@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -127,6 +127,11 @@ const ContactForm: React.FC = () => {
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formProgress, setFormProgress] = useState(0);
+  const [furniturePhotoUrl, setFurniturePhotoUrl] = useState('');
+  const [furniturePhotoFile, setFurniturePhotoFile] = useState<File | null>(null);
+  const [furniturePhotoPreview, setFurniturePhotoPreview] = useState<string | null>(null);
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // Use enhanced form validation
@@ -251,6 +256,43 @@ const ContactForm: React.FC = () => {
   ]);
 
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setPhotoUploadError(null);
+
+    if (!file) {
+      setFurniturePhotoFile(null);
+      setFurniturePhotoPreview(null);
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setPhotoUploadError('Image must be under 10 MB');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+    if (!allowedTypes.includes(file.type)) {
+      setPhotoUploadError('Please upload a JPG, PNG, WEBP, or GIF image');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setFurniturePhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setFurniturePhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFile = () => {
+    setFurniturePhotoFile(null);
+    setFurniturePhotoPreview(null);
+    setPhotoUploadError(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const toggleOptionalFields = () => {
     setShowOptionalFields(!showOptionalFields);
     trackEvent('form-optional-fields-toggle', 'contact_form', {
@@ -297,6 +339,12 @@ const ContactForm: React.FC = () => {
       Object.entries(values).forEach(([key, value]) => {
         formData.append(key, value);
       });
+      if (furniturePhotoUrl.trim()) {
+        formData.append('furniture_photo_url', furniturePhotoUrl.trim());
+      }
+      if (furniturePhotoFile) {
+        formData.append('furniture_photo', furniturePhotoFile);
+      }
 
       // Submit to Formspree (fire and forget - don't block on this)
       handleSubmit(formData).catch((error) => {
@@ -317,6 +365,18 @@ const ContactForm: React.FC = () => {
         throw new Error('Business information not found');
       }
 
+      let uploadedImagePath: string | undefined;
+      if (furniturePhotoFile) {
+        const ext = furniturePhotoFile.name.split('.').pop() || 'jpg';
+        const fileName = `${businessInfo.id}/${crypto.randomUUID()}.${ext}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('furniture-photos')
+          .upload(fileName, furniturePhotoFile, { contentType: furniturePhotoFile.type, upsert: false });
+        if (!uploadError && uploadData) {
+          uploadedImagePath = uploadData.path;
+        }
+      }
+
       const inquiry = await createInquiry({
         business_id: businessInfo.id,
         organization_id: businessInfo.organization_id,
@@ -331,6 +391,8 @@ const ContactForm: React.FC = () => {
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
+        furniture_photo_url: furniturePhotoUrl.trim() || undefined,
+        furniture_image_path: uploadedImagePath,
         is_test: isTest,
       });
 
@@ -348,6 +410,8 @@ const ContactForm: React.FC = () => {
         notes: values.notes || undefined,
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
+        furniture_photo_url: furniturePhotoUrl.trim() || undefined,
+        furniture_image_path: uploadedImagePath,
         is_test: isTest,
       });
 
@@ -412,6 +476,11 @@ const ContactForm: React.FC = () => {
       // Reset form AFTER showing modal
       console.log('[ContactForm] Resetting form');
       reset();
+      setFurniturePhotoUrl('');
+      setFurniturePhotoFile(null);
+      setFurniturePhotoPreview(null);
+      setPhotoUploadError(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
 
     } catch (error) {
       console.error('[ContactForm] Error during form submission:', error);
@@ -830,6 +899,88 @@ const ContactForm: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Furniture Reference - Optional photo/link */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Image size={16} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">
+                Furniture Reference <span className="text-gray-400 font-normal">(optional)</span>
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              A photo or product link helps us give you a more accurate quote. Totally optional — skip it if you prefer.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                  <Link size={13} />
+                  Product link (Amazon, Wayfair, IKEA, etc.)
+                </label>
+                <input
+                  type="url"
+                  value={furniturePhotoUrl}
+                  onChange={(e) => setFurniturePhotoUrl(e.target.value)}
+                  placeholder="https://www.amazon.com/your-product..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                  <Image size={13} />
+                  Upload a photo
+                </label>
+                {furniturePhotoPreview ? (
+                  <div className="relative inline-block">
+                    <img
+                      src={furniturePhotoPreview}
+                      alt="Furniture preview"
+                      className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
+                      aria-label="Remove photo"
+                    >
+                      <X size={12} />
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1.5">{furniturePhotoFile?.name}</p>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group"
+                  >
+                    <Image size={24} className="mx-auto text-gray-400 group-hover:text-blue-500 mb-2 transition-colors" />
+                    <p className="text-sm text-gray-600 group-hover:text-gray-700">
+                      Click to upload a photo
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 10 MB</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      aria-label="Upload furniture photo"
+                    />
+                  </div>
+                )}
+                {photoUploadError && (
+                  <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    {photoUploadError}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Submit Button */}

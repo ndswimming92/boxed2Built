@@ -16,6 +16,8 @@ export interface CreateSavedRequestData {
   user_city?: string;
   estimated_price?: string;
   estimated_time?: string;
+  furniture_photo_url?: string;
+  furniture_image_path?: string;
   is_test?: boolean;
 }
 
@@ -48,6 +50,8 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
       submission_date: submissionDate,
       is_active: true,
       is_test: data.is_test ?? false,
+      furniture_photo_url: data.furniture_photo_url || null,
+      furniture_image_path: data.furniture_image_path || null,
     };
 
     const { error } = await supabase
@@ -59,6 +63,8 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
         ...insertPayload,
         last_accessed: null,
         access_count: 0,
+        furniture_photo_url: data.furniture_photo_url || null,
+        furniture_image_path: data.furniture_image_path || null,
         created_at: submissionDate,
         updated_at: submissionDate,
       } as SavedRequest;
