@@ -5,6 +5,7 @@ import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquirySt
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
+import { logAction } from '../../services/auditLogService';
 
 interface InquiryStats {
   total: number;
@@ -173,8 +174,15 @@ export default function InquiriesPage() {
   const handleArchive = async (id: string) => {
     if (!confirm('Archive this inquiry? You can still view it later by filtering for archived inquiries.')) return;
 
+    const inquiry = filteredInquiries.find(i => i.id === id);
     try {
       await archiveInquiry(id);
+      await logAction({
+        actionType: 'ARCHIVE',
+        tableName: 'form_inquiries',
+        recordId: id,
+        recordIdentifier: inquiry?.client_name,
+      });
       setMessage({ type: 'success', text: 'Inquiry archived successfully!' });
       await refresh();
       await fetchStats();
@@ -190,6 +198,12 @@ export default function InquiriesPage() {
 
     try {
       await deleteInquiry(id);
+      await logAction({
+        actionType: 'DELETE',
+        tableName: 'form_inquiries',
+        recordId: id,
+        recordIdentifier: clientName,
+      });
       setMessage({ type: 'success', text: 'Inquiry deleted successfully!' });
       await refresh();
       await fetchStats();
@@ -226,6 +240,13 @@ export default function InquiriesPage() {
     try {
       if (savedJob?.id) {
         await convertInquiryToJob(selectedInquiry.id, savedJob.id);
+        await logAction({
+          actionType: 'UPDATE',
+          tableName: 'form_inquiries',
+          recordId: selectedInquiry.id,
+          recordIdentifier: selectedInquiry.client_name,
+          metadata: { converted_to_job_id: savedJob.id },
+        });
       }
 
       setMessage({ type: 'success', text: 'Inquiry converted to job successfully!' });

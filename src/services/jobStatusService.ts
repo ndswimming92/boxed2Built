@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Job, JobStatus, LostReasonCategory } from '../lib/supabase';
+import { logAction } from './auditLogService';
 
 export interface MarkJobLostParams {
   jobId: string;
@@ -37,8 +38,23 @@ export const jobStatusService = {
 
       if (error) {
         console.error('Error marking job as lost:', error);
+        await logAction({
+          actionType: 'UPDATE',
+          tableName: 'jobs',
+          recordId: params.jobId,
+          status: 'error',
+          errorMessage: error.message,
+          metadata: { new_status: 'lost', reason: params.lostReasonCategory },
+        });
         return { success: false, error: error.message };
       }
+
+      await logAction({
+        actionType: 'UPDATE',
+        tableName: 'jobs',
+        recordId: params.jobId,
+        metadata: { new_status: 'lost', reason: params.lostReasonCategory },
+      });
 
       return { success: true };
     } catch (error) {
@@ -63,8 +79,23 @@ export const jobStatusService = {
 
       if (error) {
         console.error('Error marking job as cancelled:', error);
+        await logAction({
+          actionType: 'UPDATE',
+          tableName: 'jobs',
+          recordId: params.jobId,
+          status: 'error',
+          errorMessage: error.message,
+          metadata: { new_status: 'cancelled' },
+        });
         return { success: false, error: error.message };
       }
+
+      await logAction({
+        actionType: 'UPDATE',
+        tableName: 'jobs',
+        recordId: params.jobId,
+        metadata: { new_status: 'cancelled' },
+      });
 
       return { success: true };
     } catch (error) {
@@ -99,8 +130,23 @@ export const jobStatusService = {
 
       if (error) {
         console.error('Error updating job status:', error);
+        await logAction({
+          actionType: 'UPDATE',
+          tableName: 'jobs',
+          recordId: params.jobId,
+          status: 'error',
+          errorMessage: error.message,
+          metadata: { new_status: params.newStatus },
+        });
         return { success: false, error: error.message };
       }
+
+      await logAction({
+        actionType: 'UPDATE',
+        tableName: 'jobs',
+        recordId: params.jobId,
+        metadata: { new_status: params.newStatus },
+      });
 
       return { success: true };
     } catch (error) {

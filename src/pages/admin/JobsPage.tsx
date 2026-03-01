@@ -23,6 +23,7 @@ import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../serv
 import { attachInvoiceToJob } from '../../services/invoiceService';
 import { jobStatusService } from '../../services/jobStatusService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { logAction } from '../../services/auditLogService';
 
 interface JobStats {
   totalJobs: number;
@@ -174,14 +175,30 @@ export default function JobsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this job? This action cannot be undone.')) return;
 
+    const jobToDelete = jobs.find(j => j.id === id);
+
     try {
       const { error } = await supabase.from('jobs').delete().eq('id', id);
       if (error) throw error;
+      await logAction({
+        actionType: 'DELETE',
+        tableName: 'jobs',
+        recordId: id,
+        recordIdentifier: jobToDelete ? `${jobToDelete.client_name} - ${jobToDelete.job_type}` : id,
+      });
       setMessage({ type: 'success', text: 'Job deleted successfully!' });
       fetchData();
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error('Error deleting:', error);
+      await logAction({
+        actionType: 'DELETE',
+        tableName: 'jobs',
+        recordId: id,
+        recordIdentifier: jobToDelete ? `${jobToDelete.client_name} - ${jobToDelete.job_type}` : id,
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
       setMessage({ type: 'error', text: 'Failed to delete job' });
     }
   };
@@ -190,12 +207,14 @@ export default function JobsPage() {
     const csv = exportJobsToCSV(jobs);
     const filename = generateExportFilename();
     downloadCSV(csv, filename);
+    logAction({ actionType: 'EXPORT', tableName: 'jobs', recordIdentifier: `${jobs.length} jobs` });
     setMessage({ type: 'success', text: `Exported ${jobs.length} jobs successfully!` });
     setTimeout(() => setMessage(null), 3000);
   };
 
   const handleImportSuccess = (count: number) => {
     fetchData();
+    logAction({ actionType: 'IMPORT', tableName: 'jobs', recordIdentifier: `${count} jobs` });
     setMessage({ type: 'success', text: `Successfully imported ${count} jobs!` });
     setTimeout(() => setMessage(null), 3000);
   };
@@ -652,6 +671,15 @@ export default function JobsPage() {
                 fetchData();
                 return;
               }
+            }
+
+            if (savedJob) {
+              await logAction({
+                actionType: editingJob ? 'UPDATE' : 'CREATE',
+                tableName: 'jobs',
+                recordId: savedJob.id,
+                recordIdentifier: `${savedJob.client_name} - ${savedJob.job_type}`,
+              });
             }
 
             fetchData();

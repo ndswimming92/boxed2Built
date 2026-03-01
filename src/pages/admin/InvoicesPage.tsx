@@ -15,6 +15,7 @@ import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { logAction } from '../../services/auditLogService';
 
 export default function InvoicesPage() {
   const { maskFinancialValue } = usePrivacyMode();
@@ -175,11 +176,25 @@ ${invoice.notes}` : ''}`,
     setDeletingInvoiceId(invoiceToDelete.id);
     try {
       await deleteInvoice(invoiceToDelete.id);
+      await logAction({
+        actionType: 'DELETE',
+        tableName: 'invoices',
+        recordId: invoiceToDelete.id,
+        recordIdentifier: `${invoiceToDelete.invoice_number} - ${invoiceToDelete.client_name}`,
+      });
       showToast({ type: 'success', message: 'Invoice deleted successfully.' });
       setInvoiceToDelete(null);
       await fetchData();
     } catch (error) {
       console.error('Error deleting invoice:', error);
+      await logAction({
+        actionType: 'DELETE',
+        tableName: 'invoices',
+        recordId: invoiceToDelete.id,
+        recordIdentifier: `${invoiceToDelete.invoice_number} - ${invoiceToDelete.client_name}`,
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
       showToast({ type: 'error', message: 'Failed to delete invoice. Please try again.' });
     } finally {
       setDeletingInvoiceId(null);
@@ -522,6 +537,14 @@ ${invoice.notes}` : ''}`,
             setSelectedInvoice(null);
           }}
           onSaved={() => {
+            logAction({
+              actionType: selectedInvoice ? 'UPDATE' : 'CREATE',
+              tableName: 'invoices',
+              recordId: selectedInvoice?.id,
+              recordIdentifier: selectedInvoice
+                ? `${selectedInvoice.invoice_number} - ${selectedInvoice.client_name}`
+                : undefined,
+            });
             setShowInvoiceModal(false);
             setSelectedInvoice(null);
             fetchData();

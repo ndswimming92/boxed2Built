@@ -14,6 +14,7 @@ import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { logAction } from '../../services/auditLogService';
 
 type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads';
 
@@ -287,7 +288,10 @@ export default function ClientsPage() {
           </button>
           {selectedClients.size > 0 && (
             <button
-              onClick={() => setShowExportModal(true)}
+              onClick={() => {
+                setShowExportModal(true);
+                logAction({ actionType: 'EXPORT', tableName: 'clients', recordIdentifier: `${selectedClients.size} clients` });
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               <Download className="w-4 h-4" />

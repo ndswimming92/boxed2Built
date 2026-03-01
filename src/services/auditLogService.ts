@@ -37,6 +37,7 @@ export interface AuditLog {
   error_message: string | null;
   metadata: Record<string, any>;
   created_at: string;
+  organization_id: string;
 }
 
 export interface LogActionParams {
@@ -73,12 +74,68 @@ export interface AuditLogStats {
   mostActiveUsers: Array<{ user_email: string; count: number }>;
 }
 
+let cachedOrgId: string | null = null;
+
+async function getOrganizationId(): Promise<string | null> {
+  if (cachedOrgId) return cachedOrgId;
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const { data } = await supabase
+        .from('organizations')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) {
+        cachedOrgId = data.id;
+        return cachedOrgId;
+      }
+      return null;
+    }
+
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (membership?.organization_id) {
+      cachedOrgId = membership.organization_id;
+      return cachedOrgId;
+    }
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .limit(1)
+      .maybeSingle();
+
+    if (org?.id) {
+      cachedOrgId = org.id;
+      return cachedOrgId;
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
 export async function logAction(params: LogActionParams): Promise<void> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       console.warn('No authenticated user found for audit log');
+      return;
+    }
+
+    const organizationId = await getOrganizationId();
+    if (!organizationId) {
+      console.warn('No organization found for audit log');
       return;
     }
 
@@ -104,6 +161,7 @@ export async function logAction(params: LogActionParams): Promise<void> {
       user_agent: navigator?.userAgent || null,
       status: params.status || 'success',
       error_message: params.errorMessage || null,
+      organization_id: organizationId,
       metadata: {
         ...params.metadata,
         page: window.location.pathname,
@@ -125,6 +183,12 @@ export async function logAction(params: LogActionParams): Promise<void> {
 
 export async function logPublicAction(params: LogActionParams & { userEmail: string }): Promise<void> {
   try {
+    const organizationId = await getOrganizationId();
+    if (!organizationId) {
+      console.warn('No organization found for public audit log');
+      return;
+    }
+
     const changesSummary = generateChangesSummary(
       params.actionType,
       params.tableName,
@@ -147,6 +211,7 @@ export async function logPublicAction(params: LogActionParams & { userEmail: str
       user_agent: navigator?.userAgent || null,
       status: params.status || 'success',
       error_message: params.errorMessage || null,
+      organization_id: organizationId,
       metadata: {
         ...params.metadata,
         page: window.location.pathname,
