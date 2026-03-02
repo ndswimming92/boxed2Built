@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Search, Download, Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench } from 'lucide-react';
+import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2 } from 'lucide-react';
 import { supabase, Invoice } from '../../lib/supabase';
 import {
   getAllInvoices,
@@ -36,6 +36,7 @@ export default function InvoicesPage() {
   const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -152,6 +153,17 @@ ${invoice.notes}` : ''}`,
       setShowPaymentModal(true);
     }
     setOpenMenuId(null);
+  };
+
+  const handleCopyPaymentLink = (invoice: Invoice) => {
+    const url = `${window.location.origin}/pay/${invoice.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLinkId(invoice.id);
+      showToast({ type: 'success', message: 'Payment link copied to clipboard!' });
+      setTimeout(() => setCopiedLinkId(null), 2500);
+    }).catch(() => {
+      showToast({ type: 'error', message: 'Failed to copy link.' });
+    });
   };
 
   const handleDownloadPDF = async (invoice: Invoice) => {
@@ -498,6 +510,15 @@ ${invoice.notes}` : ''}`,
                         >
                           <Download className="w-4 h-4" />
                         </button>
+                        {['sent', 'overdue', 'partially_paid'].includes(invoice.status) && (
+                          <button
+                            onClick={() => handleCopyPaymentLink(invoice)}
+                            className={`p-2 rounded-lg transition-colors ${copiedLinkId === invoice.id ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 hover:bg-slate-100'}`}
+                            title="Copy Payment Link"
+                          >
+                            <Link2 className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => setInvoiceToDelete(invoice)}
                           disabled={deletingInvoiceId === invoice.id}

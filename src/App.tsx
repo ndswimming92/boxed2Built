@@ -24,6 +24,8 @@ import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
 import { supabase } from './lib/supabase';
 import QRRedirectPage from './pages/QRRedirectPage';
+import InvoicePaymentPage from './pages/InvoicePaymentPage';
+import InvoiceThankYouPage from './pages/InvoiceThankYouPage';
 import { useManifestManager } from './hooks/useManifestManager';
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -202,7 +204,7 @@ function NotificationBarWrapper() {
     fetchBusinessId();
   }, []);
 
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/pay')) {
     return null;
   }
 
@@ -266,6 +268,8 @@ function App() {
                 <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                 <Route path="/lookup-request" element={<RequestLookupPage />} />
                 <Route path="/go/:slug" element={<QRRedirectPage />} />
+                <Route path="/pay/:invoiceId" element={<InvoicePaymentPage />} />
+                <Route path="/pay/:invoiceId/thank-you" element={<InvoiceThankYouPage />} />
 
                 <Route path="/admin/login" element={<LoginPage />} />
                 <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
