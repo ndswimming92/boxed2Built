@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package } from 'lucide-react';
+import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface BusinessBranding {
   business_name: string;
   phone: string;
   email: string;
+  website: string | null;
   logo_url: string | null;
   slogan: string | null;
 }
 
 interface BusinessAddress {
+  street_address: string | null;
   address_locality: string;
   address_region: string;
+  postal_code: string | null;
 }
 
 interface LineItem {
@@ -84,13 +87,13 @@ export default function InvoicePaymentPage() {
 
       const { data: biz } = await supabase
         .from('business_info')
-        .select('business_name, phone, email, logo_url, slogan')
+        .select('business_name, phone, email, website, logo_url, slogan')
         .eq('id', inv.business_id)
         .maybeSingle();
 
       const { data: addr } = await supabase
         .from('business_address')
-        .select('address_locality, address_region')
+        .select('street_address, address_locality, address_region, postal_code')
         .eq('business_id', inv.business_id)
         .maybeSingle();
 
@@ -196,15 +199,15 @@ export default function InvoicePaymentPage() {
                 )}
               </div>
             </div>
-            <div className="hidden sm:flex flex-col items-end gap-0.5 text-xs text-slate-500">
+            <div className="flex flex-col items-end gap-0.5 text-xs text-slate-500">
               {branding?.phone && (
-                <span className="flex items-center gap-1">
+                <a href={`tel:${branding.phone}`} className="flex items-center gap-1 hover:text-slate-700 transition-colors">
                   <Phone className="w-3 h-3" />
                   {branding.phone}
-                </span>
+                </a>
               )}
               {address && (
-                <span className="flex items-center gap-1">
+                <span className="hidden sm:flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {address.address_locality}, {address.address_region}
                 </span>
@@ -241,14 +244,51 @@ export default function InvoicePaymentPage() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">Billed To</p>
             <p className="font-semibold text-slate-900">{invoice.client_name}</p>
             {invoice.client_email && <p className="text-sm text-slate-500 mt-0.5">{invoice.client_email}</p>}
             {invoice.client_phone && <p className="text-sm text-slate-500 mt-0.5">{invoice.client_phone}</p>}
           </div>
+
           <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">From</p>
+            <div className="flex items-start gap-2.5">
+              <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <div className="space-y-1 min-w-0">
+                <p className="font-semibold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
+                {address?.street_address && (
+                  <p className="text-sm text-slate-500">{address.street_address}</p>
+                )}
+                {address && (
+                  <p className="text-sm text-slate-500">
+                    {address.address_locality}, {address.address_region}{address.postal_code ? ` ${address.postal_code}` : ''}
+                  </p>
+                )}
+                {branding?.phone && (
+                  <a href={`tel:${branding.phone}`} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors pt-0.5">
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    {branding.phone}
+                  </a>
+                )}
+                {branding?.email && (
+                  <a href={`mailto:${branding.email}`} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
+                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                    {branding.email}
+                  </a>
+                )}
+                {branding?.website && (
+                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
+                    <Globe className="w-3.5 h-3.5 shrink-0" />
+                    {branding.website.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:col-span-2 lg:col-span-1">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">Invoice Details</p>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
@@ -372,22 +412,41 @@ export default function InvoicePaymentPage() {
         )}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white mt-12 py-6">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-          <span>{branding?.business_name || 'Boxed2Built'} &copy; {new Date().getFullYear()}</span>
-          <div className="flex items-center gap-4">
-            {branding?.email && (
-              <a href={`mailto:${branding.email}`} className="flex items-center gap-1 hover:text-slateald-600 transition-colors">
-                <Mail className="w-3 h-3" />
-                {branding.email}
-              </a>
-            )}
-            {branding?.phone && (
-              <a href={`tel:${branding.phone}`} className="flex items-center gap-1 hover:text-slate-600 transition-colors">
-                <Phone className="w-3 h-3" />
-                {branding.phone}
-              </a>
-            )}
+      <footer className="border-t border-slate-200 bg-white mt-12 py-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="font-semibold text-slate-700 text-sm">{branding?.business_name || 'Boxed2Built'}</p>
+              {address?.street_address && (
+                <p className="text-xs text-slate-400 mt-0.5">{address.street_address}</p>
+              )}
+              {address && (
+                <p className="text-xs text-slate-400">
+                  {address.address_locality}, {address.address_region}{address.postal_code ? ` ${address.postal_code}` : ''}
+                </p>
+              )}
+              <p className="text-xs text-slate-400 mt-1">&copy; {new Date().getFullYear()} All rights reserved.</p>
+            </div>
+            <div className="flex flex-col items-start sm:items-end gap-1.5 text-xs text-slate-400">
+              {branding?.phone && (
+                <a href={`tel:${branding.phone}`} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                  <Phone className="w-3 h-3" />
+                  {branding.phone}
+                </a>
+              )}
+              {branding?.email && (
+                <a href={`mailto:${branding.email}`} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                  <Mail className="w-3 h-3" />
+                  {branding.email}
+                </a>
+              )}
+              {branding?.website && (
+                <a href={branding.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                  <Globe className="w-3 h-3" />
+                  {branding.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </footer>
