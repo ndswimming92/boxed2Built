@@ -357,7 +357,8 @@ export async function previewInvoicePDF(invoice: InvoiceWithDetails, businessInf
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
