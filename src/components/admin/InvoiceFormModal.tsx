@@ -918,7 +918,7 @@ export default function InvoiceFormModal({
             <button
               type="button"
               onClick={() => handleSave(false)}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={saving || downloading}
             >
               {saving ? (
@@ -930,6 +930,24 @@ export default function InvoiceFormModal({
                 <>
                   <Save className="w-5 h-5" />
                   {invoice ? 'Save Changes' : 'Save Invoice'}
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSave(true)}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={saving || downloading}
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  Save &amp; Send
                 </>
               )}
             </button>

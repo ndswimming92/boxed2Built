@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2 } from 'lucide-react';
+import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2, Send } from 'lucide-react';
 import { supabase, Invoice } from '../../lib/supabase';
 import {
   getAllInvoices,
   getInvoiceStats,
   getInvoice,
   deleteInvoice,
+  markInvoiceAsSent,
   InvoiceStats,
 } from '../../services/invoiceService';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
@@ -37,6 +38,7 @@ export default function InvoicesPage() {
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [markingSentId, setMarkingSentId] = useState<string | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -153,6 +155,19 @@ ${invoice.notes}` : ''}`,
       setShowPaymentModal(true);
     }
     setOpenMenuId(null);
+  };
+
+  const handleMarkAsSent = async (invoice: Invoice) => {
+    setMarkingSentId(invoice.id);
+    try {
+      await markInvoiceAsSent(invoice.id);
+      showToast({ type: 'success', message: `Invoice ${invoice.invoice_number} marked as sent.` });
+      await fetchData();
+    } catch (error) {
+      showToast({ type: 'error', message: 'Failed to mark invoice as sent.' });
+    } finally {
+      setMarkingSentId(null);
+    }
   };
 
   const handleCopyPaymentLink = (invoice: Invoice) => {
@@ -500,6 +515,16 @@ ${invoice.notes}` : ''}`,
                             title="Create Job From Invoice"
                           >
                             <Wrench className="w-4 h-4" />
+                          </button>
+                        )}
+                        {invoice.status === 'draft' && (
+                          <button
+                            onClick={() => handleMarkAsSent(invoice)}
+                            disabled={markingSentId === invoice.id}
+                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                            title="Mark as Sent"
+                          >
+                            <Send className="w-4 h-4" />
                           </button>
                         )}
                         <button
