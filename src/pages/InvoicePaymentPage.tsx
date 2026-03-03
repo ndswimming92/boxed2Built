@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2 } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface BusinessBranding {
   business_name: string;
+  founder_name: string | null;
   phone: string;
   email: string;
   website: string | null;
@@ -87,7 +88,7 @@ export default function InvoicePaymentPage() {
 
       const { data: biz } = await supabase
         .from('business_info')
-        .select('business_name, phone, email, website, logo_url, slogan')
+        .select('business_name, founder_name, phone, email, website, logo_url, slogan')
         .eq('id', inv.business_id)
         .maybeSingle();
 
@@ -256,43 +257,63 @@ export default function InvoicePaymentPage() {
 
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">From</p>
-            <div className="flex items-start gap-2.5">
-              <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-              <div className="space-y-1 min-w-0">
-                {branding?.website ? (
-                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 leading-tight hover:text-slate-600 transition-colors underline decoration-slate-300 hover:decoration-slate-500">
-                    {branding?.business_name || 'Boxed2Built'}
-                  </a>
-                ) : (
-                  <p className="font-semibold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
-                )}
-                {address?.street_address && (
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-start gap-2.5 mb-2">
+                <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                <div>
+                  {branding?.website ? (
+                    <a href={branding.website} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-900 leading-tight hover:text-emerald-700 transition-colors">
+                      {branding?.business_name || 'Boxed2Built'}
+                    </a>
+                  ) : (
+                    <p className="font-bold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
+                  )}
+                </div>
+              </div>
+              {branding?.founder_name && (
+                <div className="flex items-center gap-2.5">
+                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <p className="text-sm text-slate-700 font-medium">{branding.founder_name}</p>
+                </div>
+              )}
+              {address?.street_address && (
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
                   <p className="text-sm text-slate-500">{address.street_address}</p>
-                )}
-                {address && (
+                </div>
+              )}
+              {address && (
+                <div className="flex items-start gap-2.5">
+                  <MapPin className={`w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0 ${address?.street_address ? 'invisible' : ''}`} />
                   <p className="text-sm text-slate-500">
                     {address.address_locality}, {address.address_region}{address.postal_code ? ` ${address.postal_code}` : ''}
                   </p>
-                )}
-                {branding?.phone && (
-                  <a href={`tel:${branding.phone}`} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors pt-0.5">
-                    <Phone className="w-3.5 h-3.5 shrink-0" />
-                    {branding.phone}
+                </div>
+              )}
+              {branding?.phone && (
+                <div className="flex items-center gap-2.5 pt-0.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <a href={`tel:${branding.phone}`} className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+                    {branding.phone.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')}
                   </a>
-                )}
-                {branding?.email && (
-                  <a href={`mailto:${branding.email}`} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
-                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                </div>
+              )}
+              {branding?.email && (
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <a href={`mailto:${branding.email}`} className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
                     {branding.email}
                   </a>
-                )}
-                {branding?.website && (
-                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
-                    <Globe className="w-3.5 h-3.5 shrink-0" />
+                </div>
+              )}
+              {branding?.website && (
+                <div className="flex items-center gap-2.5">
+                  <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
                     {branding.website.replace(/^https?:\/\//, '')}
                   </a>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -425,6 +446,9 @@ export default function InvoicePaymentPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <p className="font-semibold text-slate-700 text-sm">{branding?.business_name || 'Boxed2Built'}</p>
+              {branding?.founder_name && (
+                <p className="text-xs text-slate-500 mt-0.5">{branding.founder_name}, Owner</p>
+              )}
               {address?.street_address && (
                 <p className="text-xs text-slate-400 mt-0.5">{address.street_address}</p>
               )}
@@ -439,7 +463,7 @@ export default function InvoicePaymentPage() {
               {branding?.phone && (
                 <a href={`tel:${branding.phone}`} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
                   <Phone className="w-3 h-3" />
-                  {branding.phone}
+                  {branding.phone.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')}
                 </a>
               )}
               {branding?.email && (
@@ -455,6 +479,15 @@ export default function InvoicePaymentPage() {
                 </a>
               )}
             </div>
+          </div>
+          <div className="border-t border-slate-100 mt-6 pt-4 flex items-center justify-center gap-4 text-xs text-slate-400">
+            <Link to="/terms-of-service" className="hover:text-slate-600 transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-slate-200">&bull;</span>
+            <Link to="/privacy-policy" className="hover:text-slate-600 transition-colors">
+              Privacy Policy
+            </Link>
           </div>
         </div>
       </footer>
