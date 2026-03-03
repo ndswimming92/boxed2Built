@@ -3,8 +3,7 @@ import React, { useEffect } from 'react';
 const TermsOfService = () => {
   useEffect(() => {
     document.title = 'Terms of Service - Boxed2Built Furniture Assembly Service';
-    
-    // Update meta description for this page
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Terms of Service for Boxed2Built furniture assembly services in Spring Hill, TN. Read our service terms and conditions for IKEA, Target, Walmart furniture assembly.');
@@ -13,8 +12,9 @@ const TermsOfService = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-6">Terms of Service - Boxed2Built Furniture Assembly</h1>
-      <p className="text-sm text-gray-500 mb-8">Effective Date: June 2, 2025</p>
+      <h1 className="text-3xl font-bold mb-2">Terms of Service - Boxed2Built Furniture Assembly</h1>
+      <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: March 3, 2026</p>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
@@ -33,51 +33,62 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">3. Payment Terms for Furniture Assembly</h2>
         <p>
-          Payment for furniture assembly services is due upon completion unless otherwise agreed. We accept major forms of payment including credit/debit cards (processed through Square), cash, and other electronic payment methods for all furniture assembly projects.
+          Payment for furniture assembly services is due upon completion unless otherwise agreed. We accept major forms of payment including credit/debit cards (processed through Stripe), cash, and other electronic payment methods for all furniture assembly projects.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">4. Payment Processing and Square Services</h2>
+        <h2 className="text-xl font-semibold mb-2">4. Payment Processing and Stripe Services</h2>
         <div>
-          <h3 className="text-lg font-semibold mb-2">Square Payment Processing</h3>
+          <h3 className="text-lg font-semibold mb-2">Stripe Payment Processing</h3>
           <p className="mb-4">
-            We use Square, Inc. as our payment processor for credit and debit card transactions. By making a payment through Square, you agree to:
+            We use Stripe, Inc. as our payment processor for credit and debit card transactions. By making a payment through Stripe, you agree to:
           </p>
-          <ul className="list-disc pl-6 mb-4">
-            <li>Square's Terms of Service and Privacy Notice</li>
+          <ul className="list-disc pl-6 mb-4 space-y-1">
+            <li>Stripe's Terms of Service and Privacy Policy</li>
             <li>Provide accurate payment and billing information</li>
-            <li>Allow Square to process and store your payment information as needed</li>
-            <li>Square's fraud prevention and security measures</li>
+            <li>Allow Stripe to process and store your payment information as needed</li>
+            <li>Stripe's fraud prevention and security measures</li>
           </ul>
-          
+
+          <h3 className="text-lg font-semibold mb-2">Online Invoice Payment Links</h3>
+          <p className="mb-4">
+            We may send you a secure payment link to pay your invoice online. By accessing and using an invoice payment link, you acknowledge:
+          </p>
+          <ul className="list-disc pl-6 mb-4 space-y-1">
+            <li>Your invoice details (name, service description, amount owed) are visible to anyone with access to the link — keep your link private</li>
+            <li>Payment is processed through Stripe's hosted checkout and is subject to Stripe's Terms of Service</li>
+            <li>A Stripe checkout session ID will be retained in our records as a payment reference tied to your invoice</li>
+            <li>Invoice payment links may expire; contact us if your link is no longer active</li>
+          </ul>
+
           <h3 className="text-lg font-semibold mb-2">Payment Security and Disputes</h3>
           <p className="mb-4">
             Payment processing security and dispute resolution:
           </p>
-          <ul className="list-disc pl-6 mb-4">
-            <li>All card payments are processed securely through Square's PCI DSS compliant systems</li>
+          <ul className="list-disc pl-6 mb-4 space-y-1">
+            <li>All card payments are processed securely through Stripe's PCI DSS compliant systems</li>
             <li>We do not store complete credit card information on our systems</li>
-            <li>Payment disputes should be directed to Square's customer support</li>
-            <li>Chargebacks and refunds are subject to Square's policies and procedures</li>
+            <li>Payment disputes should be directed to Stripe's customer support</li>
+            <li>Chargebacks and refunds are subject to Stripe's policies and procedures</li>
             <li>You may be charged additional fees for disputed or failed payments</li>
           </ul>
-          
+
           <h3 className="text-lg font-semibold mb-2">Refund Policy</h3>
           <p className="mb-4">
             Refunds for furniture assembly services:
           </p>
-          <ul className="list-disc pl-6 mb-4">
+          <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>Refunds are provided at our discretion for unsatisfactory work</li>
             <li>Payment processing fees may not be refundable</li>
-            <li>Refund processing times depend on Square's payment processing schedule</li>
+            <li>Refund processing times depend on Stripe's payment processing schedule</li>
             <li>Partial refunds may be issued for partially completed work</li>
           </ul>
-          
+
           <p className="text-sm text-gray-600">
-            For more information about Square's payment processing terms, please review 
-            <a href="https://squareup.com/legal/general/ua" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Square's Terms of Service</a> and 
-            <a href="https://squareup.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> Privacy Notice</a>.
+            For more information about Stripe's payment processing terms, please review{' '}
+            <a href="https://stripe.com/legal/ssa" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">Stripe's Terms of Service</a> and{' '}
+            <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">Privacy Policy</a>.
           </p>
         </div>
       </section>
@@ -85,7 +96,7 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">5. Cancellations and Rescheduling</h2>
         <p>
-          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee that will be processed through Square. Rescheduling is available when possible for Spring Hill area services.
+          We request at least 24 hours' notice for cancellations of furniture assembly appointments. Late cancellations may be subject to a fee. Rescheduling is available when possible for Spring Hill area services.
         </p>
       </section>
 
@@ -97,24 +108,52 @@ const TermsOfService = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">7. Affiliate Links and Third-Party Services</h2>
+        <h2 className="text-xl font-semibold mb-2">7. Photo Submissions</h2>
+        <p className="mb-4">
+          You may optionally upload photos of your furniture when submitting a service request. By submitting photos, you agree to the following:
+        </p>
+        <ul className="list-disc pl-6 mb-4 space-y-1">
+          <li>Photos are used solely for the purpose of quoting and preparing for your furniture assembly service</li>
+          <li>Photos are stored securely in an access-controlled environment and are not publicly accessible</li>
+          <li>Photos are retained for the duration of the associated service request and for up to one year thereafter</li>
+          <li>You may request deletion of any photos you have submitted by contacting us</li>
+          <li>You confirm that you have the right to submit any photos you provide</li>
+        </ul>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">8. Marketing Communications</h2>
+        <p className="mb-4">
+          We may send you communications related to our furniture assembly services. There are two types of communications:
+        </p>
+        <ul className="list-disc pl-6 mb-4 space-y-1">
+          <li><strong>Transactional Communications:</strong> Appointment confirmations, service updates, quotes, and invoice notifications are sent as part of your service and are not subject to marketing opt-out preferences</li>
+          <li><strong>Marketing Communications:</strong> Promotional offers and newsletters are only sent if you have explicitly opted in to receive them</li>
+        </ul>
+        <p className="text-sm text-gray-600">
+          You may withdraw your marketing communication consent at any time by replying to any marketing email, calling us, or using the preference management link included in our communications. Withdrawing marketing consent does not affect transactional communications related to active or upcoming services.
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">9. Affiliate Links and Third-Party Services</h2>
         <div>
           <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program</h3>
           <p className="mb-4">
             Boxed2Built participates in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com. This means:
           </p>
-          <ul className="list-disc pl-6 mb-4">
+          <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>Some links to Amazon products on our website are affiliate links</li>
             <li>We may earn a commission if you make a qualifying purchase through these links</li>
             <li>The price you pay remains the same - there is no additional cost to you</li>
             <li>We only recommend products we have personally assembled or believe will be valuable to our customers</li>
           </ul>
-          
+
           <h3 className="text-lg font-semibold mb-2">Third-Party Websites</h3>
           <p className="mb-4">
             Our website may contain links to third-party websites, including Amazon.com and other retailers. We are not responsible for:
           </p>
-          <ul className="list-disc pl-6 mb-4">
+          <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>The content, products, or services offered by third-party websites</li>
             <li>The privacy practices or terms of service of third-party websites</li>
             <li>Any transactions you conduct with third-party websites</li>
@@ -127,31 +166,31 @@ const TermsOfService = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">8. Service Area</h2>
+        <h2 className="text-xl font-semibold mb-2">10. Service Area</h2>
         <p>
           Our furniture assembly services are available in Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, and surrounding Tennessee areas. Travel fees may apply for locations outside our primary service area.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">9. Changes to Terms</h2>
+        <h2 className="text-xl font-semibold mb-2">11. Changes to Terms</h2>
         <p>
-          We may update these Terms of Service at any time. Continued use of our furniture assembly services after changes means you accept the new terms.
+          We may update these Terms of Service at any time. Any changes will be posted on this page with the updated "Last Updated" date at the top of these terms. Continued use of our furniture assembly services after changes means you accept the new terms.
         </p>
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">10. Contact Boxed2Built</h2>
+        <h2 className="text-xl font-semibold mb-2">12. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about these Terms or our furniture assembly services in Spring Hill, TN, contact us at:</p>
-        <ul className="list-none pl-0 mt-2">
+        <ul className="list-none pl-0 mt-2 space-y-1">
           <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
           <li>Phone: <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">(615) 403-4538</a></li>
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
           <li>Services: IKEA Assembly, Target Furniture Assembly, Walmart Furniture Assembly, Professional Furniture Assembly</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          For payment processing questions or disputes, please contact Square customer support directly at 
-          <a href="https://squareup.com/help" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline"> https://squareup.com/help</a>.
+          For payment processing questions or disputes, please contact Stripe customer support directly at{' '}
+          <a href="https://stripe.com/contact" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">stripe.com/contact</a>.
         </p>
       </section>
     </div>
