@@ -332,6 +332,10 @@ export default function InvoicePaymentPage() {
                 <span className="text-slate-500">Terms</span>
                 <span className="text-slate-900 font-medium">{invoice.payment_terms}</span>
               </div>
+              <div className="flex justify-between pt-1.5 border-t border-slate-100 mt-1.5">
+                <span className="text-slate-500">Total</span>
+                <span className="text-slate-900 font-semibold">{formatCurrency(invoice.total_amount)}</span>
+              </div>
             </div>
           </div>
         </div>
