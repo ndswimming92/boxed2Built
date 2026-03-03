@@ -4,7 +4,7 @@ import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Pack
 import { supabase } from '../lib/supabase';
 
 interface BusinessBranding {
-  business_name: string;
+  name: string;
   founder_name: string | null;
   phone: string;
   email: string;
@@ -88,7 +88,7 @@ export default function InvoicePaymentPage() {
 
       const { data: biz } = await supabase
         .from('business_info')
-        .select('business_name, founder_name, phone, email, website, logo_url, slogan')
+        .select('name, founder_name, phone, email, website, logo_url, slogan')
         .eq('id', inv.business_id)
         .maybeSingle();
 
@@ -185,7 +185,7 @@ export default function InvoicePaymentPage() {
               {branding?.logo_url ? (
                 <img
                   src={branding.logo_url}
-                  alt={branding.business_name}
+                  alt={branding.name}
                   className="h-10 w-auto object-contain"
                 />
               ) : (
@@ -195,7 +195,7 @@ export default function InvoicePaymentPage() {
               )}
               <div>
                 <p className="font-bold text-slate-900 text-lg leading-tight">
-                  {branding?.business_name || 'Boxed2Built'}
+                  {branding?.name || 'Boxed2Built'}
                 </p>
                 {branding?.slogan && (
                   <p className="text-xs text-slate-500 leading-tight">{branding.slogan}</p>
@@ -263,10 +263,10 @@ export default function InvoicePaymentPage() {
                 <div>
                   {branding?.website ? (
                     <a href={branding.website} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-900 leading-tight hover:text-emerald-700 transition-colors">
-                      {branding?.business_name || 'Boxed2Built'}
+                      {branding?.name || 'Boxed2Built'}
                     </a>
                   ) : (
-                    <p className="font-bold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
+                    <p className="font-bold text-slate-900 leading-tight">{branding?.name || 'Boxed2Built'}</p>
                   )}
                 </div>
               </div>
@@ -445,7 +445,7 @@ export default function InvoicePaymentPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-slate-700 text-sm">{branding?.business_name || 'Boxed2Built'}</p>
+              <p className="font-semibold text-slate-700 text-sm">{branding?.name || 'Boxed2Built'}</p>
               {branding?.founder_name && (
                 <p className="text-xs text-slate-500 mt-0.5">{branding.founder_name}, Owner</p>
               )}
