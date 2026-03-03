@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getInvoiceExternalUrl, getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
 
 interface BusinessBranding {
   name: string;
@@ -204,7 +205,7 @@ export default function InvoicePaymentPage() {
             </div>
             <div className="flex flex-col items-end gap-0.5 text-xs text-slate-500">
               {branding?.phone && (
-                <a href={`tel:${branding.phone}`} className="flex items-center gap-1 hover:text-slate-700 transition-colors">
+                <a href={`tel:${branding.phone}`} onClick={() => trackInvoiceClick('phone', branding!.phone)} className="flex items-center gap-1 hover:text-slate-700 transition-colors">
                   <Phone className="w-3 h-3" />
                   {branding.phone}
                 </a>
@@ -262,7 +263,7 @@ export default function InvoicePaymentPage() {
                 <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                 <div>
                   {branding?.website ? (
-                    <a href={branding.website} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-900 leading-tight hover:text-emerald-700 transition-colors">
+                    <a href={getInvoiceExternalUrl(branding.website, 'website_card_name')} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-900 leading-tight hover:text-emerald-700 transition-colors">
                       {branding?.name || 'Boxed2Built'}
                     </a>
                   ) : (
@@ -293,7 +294,7 @@ export default function InvoicePaymentPage() {
               {branding?.phone && (
                 <div className="flex items-center gap-2.5 pt-0.5">
                   <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <a href={`tel:${branding.phone}`} className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+                  <a href={`tel:${branding.phone}`} onClick={() => trackInvoiceClick('phone', branding!.phone)} className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
                     {branding.phone.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')}
                   </a>
                 </div>
@@ -301,7 +302,7 @@ export default function InvoicePaymentPage() {
               {branding?.email && (
                 <div className="flex items-center gap-2.5">
                   <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <a href={`mailto:${branding.email}`} className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
+                  <a href={`mailto:${branding.email}`} onClick={() => trackInvoiceClick('email', branding!.email)} className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
                     {branding.email}
                   </a>
                 </div>
@@ -309,7 +310,7 @@ export default function InvoicePaymentPage() {
               {branding?.website && (
                 <div className="flex items-center gap-2.5">
                   <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
+                  <a href={getInvoiceExternalUrl(branding.website, 'website_card_globe')} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-slate-700 transition-colors truncate">
                     {branding.website.replace(/^https?:\/\//, '')}
                   </a>
                 </div>
@@ -465,19 +466,19 @@ export default function InvoicePaymentPage() {
             </div>
             <div className="flex flex-col items-start sm:items-end gap-1.5 text-xs text-slate-400">
               {branding?.phone && (
-                <a href={`tel:${branding.phone}`} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                <a href={`tel:${branding.phone}`} onClick={() => trackInvoiceClick('phone', branding!.phone)} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
                   <Phone className="w-3 h-3" />
                   {branding.phone.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')}
                 </a>
               )}
               {branding?.email && (
-                <a href={`mailto:${branding.email}`} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                <a href={`mailto:${branding.email}`} onClick={() => trackInvoiceClick('email', branding!.email)} className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
                   <Mail className="w-3 h-3" />
                   {branding.email}
                 </a>
               )}
               {branding?.website && (
-                <a href={branding.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
+                <a href={getInvoiceExternalUrl(branding.website, 'website_footer')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">
                   <Globe className="w-3 h-3" />
                   {branding.website.replace(/^https?:\/\//, '')}
                 </a>
@@ -485,11 +486,11 @@ export default function InvoicePaymentPage() {
             </div>
           </div>
           <div className="border-t border-slate-100 mt-6 pt-4 flex items-center justify-center gap-4 text-xs text-slate-400">
-            <Link to="/terms-of-service" className="hover:text-slate-600 transition-colors">
+            <Link to={`/terms-of-service${getInvoiceInternalSearch('terms_of_service')}`} className="hover:text-slate-600 transition-colors">
               Terms of Service
             </Link>
             <span className="text-slate-200">&bull;</span>
-            <Link to="/privacy-policy" className="hover:text-slate-600 transition-colors">
+            <Link to={`/privacy-policy${getInvoiceInternalSearch('privacy_policy')}`} className="hover:text-slate-600 transition-colors">
               Privacy Policy
             </Link>
           </div>

@@ -102,3 +102,26 @@ export const getGoogleReviewUrl = (): string => {
   const utmParams = UTM_CONFIGS.reviews.google;
   return createUTMUrl(baseUrl, utmParams);
 };
+
+export const INVOICE_UTM_BASE = {
+  source: 'invoice',
+  medium: 'invoice',
+  campaign: 'invoice_payment',
+};
+
+export const getInvoiceExternalUrl = (baseUrl: string, content: string): string => {
+  return createUTMUrl(baseUrl, { ...INVOICE_UTM_BASE, content });
+};
+
+export const getInvoiceInternalSearch = (content: string): string => {
+  return `?utm_source=invoice&utm_medium=invoice&utm_campaign=invoice_payment&utm_content=${content}`;
+};
+
+export const trackInvoiceClick = (type: 'phone' | 'email', label: string): void => {
+  if (typeof window !== 'undefined' && typeof (window as Window & { gtag?: Function }).gtag === 'function') {
+    (window as Window & { gtag: Function }).gtag('event', `invoice_${type}_click`, {
+      event_category: 'invoice',
+      event_label: label,
+    });
+  }
+};

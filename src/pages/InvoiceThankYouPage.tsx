@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Phone, Mail, Package, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
 
 interface BusinessBranding {
   business_name: string;
@@ -146,6 +147,7 @@ export default function InvoiceThankYouPage() {
             {branding?.phone && (
               <a
                 href={`tel:${branding.phone}`}
+                onClick={() => trackInvoiceClick('phone', branding!.phone)}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors text-sm"
               >
                 <Phone className="w-4 h-4" />
@@ -155,6 +157,7 @@ export default function InvoiceThankYouPage() {
             {branding?.email && (
               <a
                 href={`mailto:${branding.email}`}
+                onClick={() => trackInvoiceClick('email', branding!.email)}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors text-sm"
               >
                 <Mail className="w-4 h-4" />
@@ -165,7 +168,7 @@ export default function InvoiceThankYouPage() {
 
           <div className="mt-8">
             <Link
-              to="/"
+              to={`/${getInvoiceInternalSearch('thankyou_home')}`}
               className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-600 transition-colors"
             >
               Visit our website
