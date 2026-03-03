@@ -569,9 +569,10 @@ export async function createInvoiceFromInquiry(
   invoiceType: 'estimate' | 'deposit' | 'progress' | 'final' | 'general' = 'general'
 ): Promise<Invoice> {
   const settings = await getInvoiceSettings(inquiry.business_id);
-  const dueDays = settings?.default_due_days || 30;
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + dueDays);
+  const today = new Date();
+  const invoiceDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const paymentTerms = settings?.default_payment_terms || 'Net 30';
+  const dueDate = calculatePaymentTermsDueDate(invoiceDate, paymentTerms);
 
   const invoice = await createInvoice({
     business_id: inquiry.business_id,
@@ -580,9 +581,9 @@ export async function createInvoiceFromInquiry(
     client_name: inquiry.client_name,
     client_email: inquiry.client_email,
     client_phone: inquiry.client_phone || undefined,
-    invoice_date: new Date().toISOString().split('T')[0],
-    due_date: dueDate.toISOString().split('T')[0],
-    payment_terms: settings?.default_payment_terms || 'Net 30',
+    invoice_date: invoiceDate,
+    due_date: dueDate,
+    payment_terms: paymentTerms,
     notes: settings?.invoice_notes_template || undefined,
   });
 
@@ -606,9 +607,10 @@ export async function createInvoiceFromJob(
   invoiceType: 'estimate' | 'deposit' | 'progress' | 'final' | 'general' = 'final'
 ): Promise<Invoice> {
   const settings = await getInvoiceSettings(job.business_id);
-  const dueDays = settings?.default_due_days || 30;
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + dueDays);
+  const today = new Date();
+  const invoiceDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const paymentTerms = settings?.default_payment_terms || 'Net 30';
+  const dueDate = calculatePaymentTermsDueDate(invoiceDate, paymentTerms);
 
   const invoice = await createInvoice({
     business_id: job.business_id,
@@ -617,9 +619,9 @@ export async function createInvoiceFromJob(
     client_name: job.client_name,
     client_email: job.client_email || '',
     client_phone: job.client_phone || undefined,
-    invoice_date: new Date().toISOString().split('T')[0],
-    due_date: dueDate.toISOString().split('T')[0],
-    payment_terms: settings?.default_payment_terms || 'Net 30',
+    invoice_date: invoiceDate,
+    due_date: dueDate,
+    payment_terms: paymentTerms,
     notes: settings?.invoice_notes_template || undefined,
   });
 
@@ -640,11 +642,12 @@ export async function createInvoiceFromJob(
 }
 
 export function calculatePaymentTermsDueDate(invoiceDate: string, paymentTerms: string): string {
-  const date = new Date(invoiceDate);
-
-  if (paymentTerms === 'Due on Receipt' || paymentTerms === 'Due on Completion') {
+  if (paymentTerms === 'Due on Receipt' || paymentTerms === 'Due on Completion' || paymentTerms === 'Due Upon Completion') {
     return invoiceDate;
   }
+
+  const [year, month, day] = invoiceDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
 
   const match = paymentTerms.match(/Net (\d+)/i);
   if (match) {
@@ -654,5 +657,8 @@ export function calculatePaymentTermsDueDate(invoiceDate: string, paymentTerms: 
     date.setDate(date.getDate() + 30);
   }
 
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
