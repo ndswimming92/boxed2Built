@@ -259,7 +259,13 @@ export default function InvoicePaymentPage() {
             <div className="flex items-start gap-2.5">
               <Building2 className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
               <div className="space-y-1 min-w-0">
-                <p className="font-semibold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
+                {branding?.website ? (
+                  <a href={branding.website} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 leading-tight hover:text-slate-600 transition-colors underline decoration-slate-300 hover:decoration-slate-500">
+                    {branding?.business_name || 'Boxed2Built'}
+                  </a>
+                ) : (
+                  <p className="font-semibold text-slate-900 leading-tight">{branding?.business_name || 'Boxed2Built'}</p>
+                )}
                 {address?.street_address && (
                   <p className="text-sm text-slate-500">{address.street_address}</p>
                 )}
