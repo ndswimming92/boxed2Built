@@ -458,6 +458,8 @@ const ContactForm: React.FC = () => {
           estimatedTime: estimatedTime || undefined,
           confirmationCode: savedRequest.confirmation_code,
           isTest,
+          furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
+          furnitureImagePath: savedRequest.furniture_image_path || undefined,
         }),
       }).catch((err) => {
         console.error('[ContactForm] Email send error:', err);

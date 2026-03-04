@@ -25,6 +25,8 @@ interface ContactFormPayload {
   estimatedTime?: string;
   confirmationCode: string;
   isTest?: boolean;
+  furniturePhotoUrl?: string;
+  furnitureImagePath?: string;
 }
 
 interface QuickContactPayload {
@@ -135,12 +137,23 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${formatTimeSlot(p.preferredTimeSlot)}</span></td>
           </tr>
           ${p.notes ? `<tr>
-            <td colspan="2" style="padding:12px 0;">
+            <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
               <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Notes</span>
               <p style="margin:0;color:#111827;font-size:14px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${p.notes}</p>
             </td>
           </tr>` : ""}
+          ${p.furniturePhotoUrl ? `<tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Product Link</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${p.furniturePhotoUrl}" style="color:#1d4ed8;font-size:14px;word-break:break-all;" target="_blank">View Product</a></td>
+          </tr>` : ""}
+          ${p.furnitureImagePath ? `<tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Uploaded Photo</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/furniture-photos/${p.furnitureImagePath}" style="color:#1d4ed8;font-size:14px;" target="_blank">View Photo</a></td>
+          </tr>` : ""}
         </table>
+        <div style="margin-top:20px;text-align:center;">
+          <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:6px;">View Full Request &rarr;</a>
+        </div>
       </td></tr>
       <tr><td style="background:#f9fafb;padding:16px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;">
         <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Submitted via boxed2built.com contact form &bull; ${new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })} CT</p>
