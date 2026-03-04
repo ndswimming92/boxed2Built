@@ -355,41 +355,70 @@ Deno.serve(async (req: Request) => {
 
     const payload: Payload = await req.json();
 
+    const emailResults: { owner: boolean; client: boolean; clientError?: string } = {
+      owner: false,
+      client: false,
+    };
+
     if (payload.formType === "contact") {
       const p = payload as ContactFormPayload;
-      await Promise.all([
-        sendEmail(
+
+      try {
+        await sendEmail(
           [OWNER_EMAIL, OWNER_CC],
           `New Quote Request — ${p.name} (${p.furnitureType}, ${p.pieces} pc${p.pieces !== 1 ? "s" : ""})`,
           ownerNotificationContact(p),
           p.email
-        ),
-        sendEmail(
+        );
+        emailResults.owner = true;
+      } catch (err) {
+        console.error("Owner notification email failed:", err);
+      }
+
+      try {
+        await sendEmail(
           p.email,
           `Your Boxed2Built request is confirmed — Code: ${p.confirmationCode}`,
           customerConfirmationContact(p)
-        ),
-      ]);
+        );
+        emailResults.client = true;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("Client confirmation email failed:", msg);
+        emailResults.clientError = msg;
+      }
     } else if (payload.formType === "quick_contact") {
       const p = payload as QuickContactPayload;
-      await Promise.all([
-        sendEmail(
+
+      try {
+        await sendEmail(
           [OWNER_EMAIL, OWNER_CC],
           `Quick Contact from ${p.name}`,
           ownerNotificationQuick(p),
           p.email
-        ),
-        sendEmail(
+        );
+        emailResults.owner = true;
+      } catch (err) {
+        console.error("Owner notification email failed:", err);
+      }
+
+      try {
+        await sendEmail(
           p.email,
           "We received your message — Boxed2Built",
           customerConfirmationQuick(p)
-        ),
-      ]);
+        );
+        emailResults.client = true;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("Client confirmation email failed:", msg);
+        emailResults.clientError = msg;
+      }
     } else {
       throw new Error("Invalid formType");
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, emailResults }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

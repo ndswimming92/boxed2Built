@@ -461,6 +461,17 @@ const ContactForm: React.FC = () => {
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
         }),
+      }).then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          console.error('[ContactForm] Email function error:', data);
+        } else {
+          const r = data.emailResults;
+          if (r) {
+            if (!r.owner) console.warn('[ContactForm] Owner notification email failed to send');
+            if (!r.client) console.warn('[ContactForm] Client confirmation email failed to send — Resend may require a paid plan to send to this address. Error:', r.clientError);
+          }
+        }
       }).catch((err) => {
         console.error('[ContactForm] Email send error:', err);
       });
