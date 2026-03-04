@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
-import { CheckCircle, Download, Mail, Copy, Check, Loader2, Clock, Phone } from 'lucide-react';
+import { CheckCircle, Download, Copy, Check, Clock, Phone } from 'lucide-react';
 import { generateRequestSummaryPDF, RequestSummaryData } from '../services/pdfGenerationService';
 import { trackEvent } from '../utils/analytics';
 
@@ -31,8 +31,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   requestData,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
 
   console.log('[ConfirmationModal] Rendered with:', {
     isOpen,
@@ -64,62 +62,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       confirmation_code: confirmationCode,
       furniture_type: requestData.furnitureType,
     });
-  };
-
-  const handleEmailConfirmation = async () => {
-    setEmailSending(true);
-
-    try {
-      const subject = `Your Boxed2Built Service Request - ${confirmationCode}`;
-      const body = `
-Thank you for requesting furniture assembly service with Boxed2Built!
-
-Confirmation Code: ${confirmationCode}
-
-Your Request Details:
-- Furniture Type: ${requestData.furnitureType}
-- Number of Pieces: ${requestData.pieces}
-${requestData.estimatedPrice ? `- Estimated Cost: ${requestData.estimatedPrice}` : ''}
-${requestData.estimatedTime ? `- Estimated Time: ${requestData.estimatedTime}` : ''}
-${requestData.preferredDate ? `- Preferred Date: ${new Date(requestData.preferredDate).toLocaleDateString()}` : ''}
-${requestData.preferredTimeSlot ? `- Preferred Time: ${requestData.preferredTimeSlot}` : ''}
-${requestData.notes ? `\nAdditional Notes:\n${requestData.notes}` : ''}
-
-What Happens Next:
-1. We will review your project details within 24 hours
-2. You will receive a detailed quote via email
-3. Once approved, we will schedule your assembly service
-4. Our professional team will complete your assembly on time
-
-To view your request later, visit:
-https://boxed2built.com/lookup-request
-
-Enter your email (${requestData.clientEmail}) and confirmation code (${confirmationCode}) to access your saved request.
-
-Contact Us:
-Phone: (615) 403-4538
-Email: boxed2builtco@gmail.com
-Website: https://boxed2built.com
-
-Thank you for choosing Boxed2Built!
-Serving Spring Hill, Columbia, Franklin & Surrounding Areas
-      `.trim();
-
-      const mailtoLink = `mailto:${requestData.clientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailtoLink;
-
-      setEmailSent(true);
-      setTimeout(() => setEmailSent(false), 3000);
-
-      trackEvent('confirmation_email_sent', 'confirmation_modal', {
-        event_category: 'conversion',
-        confirmation_code: confirmationCode,
-      });
-    } catch (error) {
-      console.error('Error sending confirmation email:', error);
-    } finally {
-      setEmailSending(false);
-    }
   };
 
   return (
@@ -291,36 +233,13 @@ Serving Spring Hill, Columbia, Franklin & Surrounding Areas
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div className="mb-4">
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
           >
             <Download size={18} />
             Download Summary
-          </button>
-
-          <button
-            onClick={handleEmailConfirmation}
-            disabled={emailSending}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {emailSending ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Sending...
-              </>
-            ) : emailSent ? (
-              <>
-                <Check size={18} />
-                Sent!
-              </>
-            ) : (
-              <>
-                <Mail size={18} />
-                Email Summary
-              </>
-            )}
           </button>
         </div>
 
