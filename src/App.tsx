@@ -59,6 +59,7 @@ const RemindersPage = lazy(() => import('./pages/admin/RemindersPage'));
 const FinancesPage = lazy(() => import('./pages/admin/FinancesPage'));
 const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage'));
+const EmailActivityPage = lazy(() => import('./pages/admin/EmailActivityPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -303,6 +304,7 @@ function App() {
                   <Route path="social-media" element={<SocialMediaPage />} />
                   <Route path="utm-link-builder" element={<UTMLinkBuilderPage />} />
                   <Route path="attributes" element={<AttributesPage />} />
+                  <Route path="email-activity" element={<EmailActivityPage />} />
                 </Route>
                 </Routes>
               </Suspense>
