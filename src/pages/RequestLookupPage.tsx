@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import FormField from '../components/ui/FormField';
 import ValidationMessage from '../components/ui/ValidationMessage';
-import { Search, Download, Mail, CheckCircle, AlertCircle, Loader2, FileText, Clock, Image, Link, ExternalLink } from 'lucide-react';
+import { Search, Download, CheckCircle, Loader2, FileText, Clock, Image, Link, ExternalLink } from 'lucide-react';
 import { getSavedRequestByCode } from '../services/savedRequestService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
@@ -18,8 +18,6 @@ const RequestLookupPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
-  const [emailSending, setEmailSending] = useState(false);
-
   useEffect(() => {
     document.title = 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly';
 
@@ -120,52 +118,6 @@ const RequestLookupPage: React.FC = () => {
     });
 
     trackEvent('request_summary_downloaded', 'lookup_page', {
-      event_category: 'conversion',
-      confirmation_code: request.confirmation_code,
-    });
-  };
-
-  const handleEmailSummary = () => {
-    if (!request) return;
-
-    setEmailSending(true);
-
-    const subject = `Your Boxed2Built Service Request - ${request.confirmation_code}`;
-    const body = `
-Thank you for requesting furniture assembly service with Boxed2Built!
-
-Confirmation Code: ${request.confirmation_code}
-
-Your Request Details:
-- Furniture Type: ${request.furniture_type}
-- Number of Pieces: ${request.pieces}
-${request.estimated_price ? `- Estimated Cost: ${request.estimated_price}` : ''}
-${request.estimated_time ? `- Estimated Time: ${request.estimated_time}` : ''}
-${request.preferred_date ? `- Preferred Date: ${new Date(request.preferred_date).toLocaleDateString()}` : ''}
-${request.preferred_time_slot ? `- Preferred Time: ${request.preferred_time_slot}` : ''}
-${request.notes ? `\nAdditional Notes:\n${request.notes}` : ''}
-
-What Happens Next:
-1. We will review your project details within 24 hours
-2. You will receive a detailed quote via email
-3. Once approved, we will schedule your assembly service
-4. Our professional team will complete your assembly on time
-
-Contact Us:
-Phone: (615) 403-4538
-Email: boxed2builtco@gmail.com
-Website: https://boxed2built.com
-
-Thank you for choosing Boxed2Built!
-Serving Spring Hill, Columbia, Franklin & Surrounding Areas
-    `.trim();
-
-    const mailtoLink = `mailto:${request.client_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
-
-    setTimeout(() => setEmailSending(false), 1000);
-
-    trackEvent('request_summary_emailed', 'lookup_page', {
       event_category: 'conversion',
       confirmation_code: request.confirmation_code,
     });
@@ -440,31 +392,13 @@ Serving Spring Hill, Columbia, Franklin & Surrounding Areas
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+                    <div className="mt-6">
                       <button
                         onClick={handleDownloadPDF}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
                       >
                         <Download size={18} />
                         Download PDF
-                      </button>
-
-                      <button
-                        onClick={handleEmailSummary}
-                        disabled={emailSending}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
-                      >
-                        {emailSending ? (
-                          <>
-                            <Loader2 size={18} className="animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Mail size={18} />
-                            Email Summary
-                          </>
-                        )}
                       </button>
                     </div>
 
