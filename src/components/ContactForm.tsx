@@ -437,6 +437,32 @@ const ContactForm: React.FC = () => {
       console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
       setShowConfirmationModal(true);
 
+      // Send emails via Resend (fire and forget — do not block the success flow)
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-form-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formType: 'contact',
+          name: values.name,
+          email: values.email,
+          phone: values.phone || undefined,
+          furnitureType: values.furnitureType,
+          pieces: parseInt(values.pieces) || 1,
+          preferredDate: values.preferredDate || undefined,
+          preferredTimeSlot: values.preferredTimeSlot || undefined,
+          notes: values.notes || undefined,
+          estimatedPrice: estimatedPrice || undefined,
+          estimatedTime: estimatedTime || undefined,
+          confirmationCode: savedRequest.confirmation_code,
+          isTest,
+        }),
+      }).catch((err) => {
+        console.error('[ContactForm] Email send error:', err);
+      });
+
 
       sendFormWebhook({
         formType: 'contact_form',

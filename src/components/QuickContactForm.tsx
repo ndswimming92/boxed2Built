@@ -185,6 +185,25 @@ const QuickContactForm: React.FC = () => {
         errors.push('Database save unavailable');
       }
 
+      // Send emails via Resend (fire and forget — do not block the success flow)
+      if (formspreeSuccess || supabaseSuccess) {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-form-email`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            formType: 'quick_contact',
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+          }),
+        }).catch((err) => {
+          console.error('[QuickContactForm] Email send error:', err);
+        });
+      }
+
       // Show success if at least one submission succeeded
       if (formspreeSuccess || supabaseSuccess) {
         trackFormInteraction('footer_quick_contact', 'complete', {
