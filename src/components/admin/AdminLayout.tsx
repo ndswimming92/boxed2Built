@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Wallet, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon } from 'lucide-react';
+import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Wallet, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
