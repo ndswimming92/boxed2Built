@@ -351,11 +351,6 @@ export default function InquiriesPage() {
             >
               <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>Check for New</span>
-              {unviewedCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
-                  {unviewedCount}
-                </span>
-              )}
             </button>
           </div>
         </div>
