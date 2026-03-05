@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -116,7 +116,7 @@ const validationRules: Record<string, ValidationRule> = {
 };
 
 const ContactForm: React.FC = () => {
-  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [showOptionalFields, setShowOptionalFields] = useState(true);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
   const [isIOS, setIsIOS] = useState(false);
@@ -808,19 +808,23 @@ const ContactForm: React.FC = () => {
             <button
               type="button"
               onClick={toggleOptionalFields}
-              className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+              className="flex items-center justify-between w-full text-left rounded-lg px-3 py-2.5 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-expanded={showOptionalFields}
             >
-              <span>Scheduling Preferences (optional)</span>
+              <span className="flex items-center gap-2">
+                <Calendar size={16} className="text-blue-600 shrink-0" />
+                <span className="text-sm font-semibold text-gray-800">Scheduling Preferences</span>
+                <span className="text-xs text-blue-600 font-medium">— helps us respond faster</span>
+              </span>
               {showOptionalFields ? (
-                <ChevronUp size={16} className="text-gray-500" />
+                <ChevronUp size={16} className="text-blue-500 shrink-0" />
               ) : (
-                <ChevronDown size={16} className="text-gray-500" />
+                <ChevronDown size={16} className="text-blue-500 shrink-0" />
               )}
             </button>
-            
+
             {showOptionalFields && (
-              <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg animate-fadeIn">
+              <div className="mt-3 space-y-4 bg-gray-50 border-l-2 border-blue-200 pl-4 pr-3 py-4 rounded-r-lg animate-fadeIn">
                 {/* Preferred Date */}
                 <FormField
                   label="Preferred Date"
