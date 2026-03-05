@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
     const payload = JSON.parse(rawBody);
 
     const eventType: string = payload.type ?? "unknown";
-    const eventId: string | undefined = payload.data?.email_id ?? payload.id;
+    const eventId: string | undefined = payload.id ?? payload.data?.email_id;
     const messageId: string | undefined = payload.data?.email_id;
     const recipient: string | undefined =
       Array.isArray(payload.data?.to) ? payload.data.to[0] : payload.data?.to;
