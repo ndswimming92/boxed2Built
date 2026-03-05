@@ -117,6 +117,7 @@ const validationRules: Record<string, ValidationRule> = {
 
 const ContactForm: React.FC = () => {
   const [showOptionalFields, setShowOptionalFields] = useState(true);
+  const [showFurnitureReference, setShowFurnitureReference] = useState(true);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
   const [isIOS, setIsIOS] = useState(false);
@@ -896,86 +897,96 @@ const ContactForm: React.FC = () => {
 
           {/* Furniture Reference - Optional photo/link */}
           <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Image size={16} className="text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
-                Furniture Reference <span className="text-gray-400 font-normal">(optional)</span>
+            <button
+              type="button"
+              onClick={() => setShowFurnitureReference(!showFurnitureReference)}
+              className="flex items-center justify-between w-full text-left rounded-lg px-3 py-2.5 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-expanded={showFurnitureReference}
+            >
+              <span className="flex items-center gap-2">
+                <Image size={16} className="text-blue-600 shrink-0" />
+                <span className="text-sm font-semibold text-gray-800">Furniture Reference</span>
+                <span className="text-xs text-blue-600 font-medium">— helps us give a more accurate quote</span>
               </span>
-            </div>
-            <p className="text-xs text-gray-500 mb-4">
-              A photo or product link helps us give you a more accurate quote. Totally optional — skip it if you prefer.
-            </p>
+              {showFurnitureReference ? (
+                <ChevronUp size={16} className="text-blue-500 shrink-0" />
+              ) : (
+                <ChevronDown size={16} className="text-blue-500 shrink-0" />
+              )}
+            </button>
 
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="productUrl" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                  <Link size={13} />
-                  Product link (Amazon, Wayfair, IKEA, etc.)
-                </label>
-                <input
-                  id="productUrl"
-                  type="url"
-                  value={furniturePhotoUrl}
-                  onChange={(e) => setFurniturePhotoUrl(e.target.value)}
-                  placeholder="https://www.amazon.com/your-product..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  autoComplete="off"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                />
-              </div>
+            {showFurnitureReference && (
+              <div className="mt-3 space-y-4 bg-gray-50 border-l-2 border-blue-200 pl-4 pr-3 py-4 rounded-r-lg animate-fadeIn">
+                <div>
+                  <label htmlFor="productUrl" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                    <Link size={13} />
+                    Product link (Amazon, Wayfair, IKEA, etc.)
+                  </label>
+                  <input
+                    id="productUrl"
+                    type="url"
+                    value={furniturePhotoUrl}
+                    onChange={(e) => setFurniturePhotoUrl(e.target.value)}
+                    placeholder="https://www.amazon.com/your-product..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="furniturePhoto" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                  <Image size={13} />
-                  Upload a photo
-                </label>
-                {furniturePhotoPreview ? (
-                  <div className="relative inline-block">
-                    <img
-                      src={furniturePhotoPreview}
-                      alt="Furniture preview"
-                      className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveFile}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
-                      aria-label="Remove photo"
+                <div>
+                  <label htmlFor="furniturePhoto" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                    <Image size={13} />
+                    Upload a photo
+                  </label>
+                  {furniturePhotoPreview ? (
+                    <div className="relative inline-block">
+                      <img
+                        src={furniturePhotoPreview}
+                        alt="Furniture preview"
+                        className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
+                        aria-label="Remove photo"
+                      >
+                        <X size={12} />
+                      </button>
+                      <p className="text-xs text-gray-500 mt-1.5">{furniturePhotoFile?.name}</p>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group"
                     >
-                      <X size={12} />
-                    </button>
-                    <p className="text-xs text-gray-500 mt-1.5">{furniturePhotoFile?.name}</p>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group"
-                  >
-                    <Image size={24} className="mx-auto text-gray-400 group-hover:text-blue-500 mb-2 transition-colors" />
-                    <p className="text-sm text-gray-600 group-hover:text-gray-700">
-                      Click to upload a photo
+                      <Image size={24} className="mx-auto text-gray-400 group-hover:text-blue-500 mb-2 transition-colors" />
+                      <p className="text-sm text-gray-600 group-hover:text-gray-700">
+                        Click to upload a photo
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 10 MB</p>
+                      <input
+                        id="furniturePhoto"
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        aria-label="Upload furniture photo"
+                      />
+                    </div>
+                  )}
+                  {photoUploadError && (
+                    <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                      <AlertCircle size={12} />
+                      {photoUploadError}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 10 MB</p>
-                    <input
-                      id="furniturePhoto"
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      aria-label="Upload furniture photo"
-                    />
-                  </div>
-                )}
-                {photoUploadError && (
-                  <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                    <AlertCircle size={12} />
-                    {photoUploadError}
-                  </p>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Submit Button */}
