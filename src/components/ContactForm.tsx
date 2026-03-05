@@ -954,11 +954,12 @@ const ContactForm: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                <label htmlFor="productUrl" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
                   <Link size={13} />
                   Product link (Amazon, Wayfair, IKEA, etc.)
                 </label>
                 <input
+                  id="productUrl"
                   type="url"
                   value={furniturePhotoUrl}
                   onChange={(e) => setFurniturePhotoUrl(e.target.value)}
@@ -971,7 +972,7 @@ const ContactForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+                <label htmlFor="furniturePhoto" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
                   <Image size={13} />
                   Upload a photo
                 </label>
@@ -1003,6 +1004,7 @@ const ContactForm: React.FC = () => {
                     </p>
                     <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 10 MB</p>
                     <input
+                      id="furniturePhoto"
                       ref={fileInputRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
