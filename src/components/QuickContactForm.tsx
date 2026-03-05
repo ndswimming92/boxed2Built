@@ -105,7 +105,6 @@ const QuickContactForm: React.FC = () => {
     setSubmitStatus('idle');
     setErrorMessage('');
 
-    let formspreeSuccess = false;
     let supabaseSuccess = false;
     const errors: string[] = [];
 
@@ -113,36 +112,6 @@ const QuickContactForm: React.FC = () => {
       trackFormInteraction('footer_quick_contact', 'submit', {
         page_section: 'footer',
       });
-
-      // Submit to Formspree for email notifications
-      try {
-        const formspreeResponse = await fetch('https://formspree.io/f/xlgnqeqa', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            message: formData.message,
-            _subject: `Quick Question from ${formData.name}`,
-            _replyto: formData.email,
-          }),
-        });
-
-        if (formspreeResponse.ok) {
-          formspreeSuccess = true;
-          console.log('Formspree submission successful');
-        } else {
-          const errorData = await formspreeResponse.json().catch(() => ({}));
-          console.error('Formspree submission failed:', errorData);
-          errors.push('Email notification failed');
-        }
-      } catch (formspreeError) {
-        console.error('Formspree submission error:', formspreeError);
-        errors.push('Email notification unavailable');
-      }
 
       // Submit to Supabase for record-keeping
       try {
@@ -185,7 +154,7 @@ const QuickContactForm: React.FC = () => {
       }
 
       // Send emails via Resend (fire and forget — do not block the success flow)
-      if (formspreeSuccess || supabaseSuccess) {
+      if (supabaseSuccess) {
         fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-form-email`, {
           method: 'POST',
           headers: {
@@ -214,11 +183,10 @@ const QuickContactForm: React.FC = () => {
         });
       }
 
-      // Show success if at least one submission succeeded
-      if (formspreeSuccess || supabaseSuccess) {
+      // Show success if Supabase submission succeeded
+      if (supabaseSuccess) {
         trackFormInteraction('footer_quick_contact', 'complete', {
           page_section: 'footer',
-          formspree_success: formspreeSuccess,
           supabase_success: supabaseSuccess,
         });
 
@@ -246,7 +214,6 @@ const QuickContactForm: React.FC = () => {
           metadata: {
             form_type: 'quick_contact',
             message_preview: formData.message.substring(0, 50),
-            formspree_success: formspreeSuccess,
             supabase_success: supabaseSuccess,
             partial_failure: errors.length > 0,
           },
@@ -287,7 +254,6 @@ const QuickContactForm: React.FC = () => {
       trackEvent('quick-contact-error', 'footer', {
         event_category: 'error',
         error_message: message,
-        formspree_success: formspreeSuccess,
         supabase_success: supabaseSuccess,
       });
 
@@ -302,7 +268,6 @@ const QuickContactForm: React.FC = () => {
         errorMessage: message,
         metadata: {
           form_type: 'quick_contact',
-          formspree_success: formspreeSuccess,
           supabase_success: supabaseSuccess,
           error_details: error instanceof Error ? error.stack : String(error),
           failed_components: errors,

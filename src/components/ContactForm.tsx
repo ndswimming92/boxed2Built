@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm, ValidationError } from '@formspree/react';
 import InputMask from 'react-input-mask';
 import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X } from 'lucide-react';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
@@ -117,7 +116,6 @@ const validationRules: Record<string, ValidationRule> = {
 };
 
 const ContactForm: React.FC = () => {
-  const [state, handleSubmit] = useForm("mwpqepva");
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
@@ -331,23 +329,6 @@ const ContactForm: React.FC = () => {
         action_type: 'submit',
         furniture_type: values.furnitureType,
         number_of_pieces: parseInt(values.pieces) || 0
-      });
-
-      // Create form data for submission to Formspree
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      if (furniturePhotoUrl.trim()) {
-        formData.append('furniture_photo_url', furniturePhotoUrl.trim());
-      }
-      if (furniturePhotoFile) {
-        formData.append('furniture_photo', furniturePhotoFile);
-      }
-
-      // Submit to Formspree (fire and forget - don't block on this)
-      handleSubmit(formData).catch((error) => {
-        console.error('Formspree submission error:', error);
       });
 
       // Save to Supabase database for admin tracking and create saved request
@@ -1032,13 +1013,6 @@ const ContactForm: React.FC = () => {
               />
             )}
 
-            {state.errors && state.errors.length > 0 && (
-              <ValidationMessage
-                type="error"
-                message="There was an error submitting your form. Please try again."
-                className="mt-4"
-              />
-            )}
           </div>
 
           {/* Terms and Benefits */}
