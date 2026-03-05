@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, MessageSquare, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link } from 'lucide-react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
-import { EMAIL_TEMPLATES, SMS_TEMPLATES, openEmailClient, openSMSClient, formatPhoneForDisplay } from '../../services/communicationService';
-import { archiveInquiry, deleteInquiry, logCommunication } from '../../services/inquiryService';
+import { formatPhoneForDisplay } from '../../services/communicationService';
+import { archiveInquiry, deleteInquiry } from '../../services/inquiryService';
 import { getInvoicesByInquiry } from '../../services/invoiceService';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
@@ -25,11 +25,6 @@ export default function InquiryDetailModal({
   onConvertToJob,
   onRefresh,
 }: InquiryDetailModalProps) {
-  const [showEmailTemplates, setShowEmailTemplates] = useState(false);
-  const [showSMSTemplates, setShowSMSTemplates] = useState(false);
-  const [customEmailSubject, setCustomEmailSubject] = useState('');
-  const [customEmailBody, setCustomEmailBody] = useState('');
-  const [customSMSMessage, setCustomSMSMessage] = useState('');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,56 +44,6 @@ export default function InquiryDetailModal({
       setInvoices(data);
     } catch (error) {
       console.error('Error loading invoices:', error);
-    }
-  };
-
-  const handleSendEmail = async (templateKey?: keyof typeof EMAIL_TEMPLATES) => {
-    let subject = '';
-    let body = '';
-
-    if (templateKey && templateKey !== 'custom') {
-      const template = EMAIL_TEMPLATES[templateKey](inquiry);
-      subject = template.subject;
-      body = template.body;
-    } else {
-      subject = customEmailSubject;
-      body = customEmailBody;
-    }
-
-    try {
-      await logCommunication(inquiry.id, 'email', `Sent email: ${subject}`);
-      openEmailClient(inquiry.client_email, subject, body);
-      setShowEmailTemplates(false);
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Error logging email:', error);
-    }
-  };
-
-  const handleSendSMS = async (templateKey?: keyof typeof SMS_TEMPLATES) => {
-    if (!inquiry.client_phone) return;
-
-    let message = '';
-
-    if (templateKey && templateKey !== 'custom') {
-      if (templateKey === 'schedule_confirmation') {
-        const template = SMS_TEMPLATES[templateKey](inquiry, inquiry.preferred_date || 'TBD', inquiry.preferred_time_slot || 'TBD');
-        message = template.message;
-      } else {
-        const template = SMS_TEMPLATES[templateKey as 'quick_response' | 'quote_provided'](inquiry);
-        message = template.message;
-      }
-    } else {
-      message = customSMSMessage;
-    }
-
-    try {
-      await logCommunication(inquiry.id, 'sms', `Sent SMS: ${message.substring(0, 50)}...`);
-      openSMSClient(inquiry.client_phone, message);
-      setShowSMSTemplates(false);
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Error logging SMS:', error);
     }
   };
 
@@ -445,66 +390,6 @@ export default function InquiryDetailModal({
           <div className="border-t border-slate-200 pt-6">
             <h3 className="text-sm font-semibold text-slate-700 mb-4">Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <button
-                  onClick={() => setShowEmailTemplates(!showEmailTemplates)}
-                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Mail className="w-5 h-5" />
-                  Send Email
-                </button>
-                {showEmailTemplates && (
-                  <div className="mt-2 p-3 bg-slate-50 rounded-lg space-y-2">
-                    <button
-                      onClick={() => handleSendEmail('quote_followup')}
-                      className="w-full px-3 py-2 text-sm bg-white hover:bg-slate-100 rounded border border-slate-200 text-left"
-                    >
-                      Quote Follow-up
-                    </button>
-                    <button
-                      onClick={() => handleSendEmail('request_more_info')}
-                      className="w-full px-3 py-2 text-sm bg-white hover:bg-slate-100 rounded border border-slate-200 text-left"
-                    >
-                      Request More Info
-                    </button>
-                    <button
-                      onClick={() => handleSendEmail('schedule_consultation')}
-                      className="w-full px-3 py-2 text-sm bg-white hover:bg-slate-100 rounded border border-slate-200 text-left"
-                    >
-                      Schedule Consultation
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {inquiry.client_phone && (
-                <div>
-                  <button
-                    onClick={() => setShowSMSTemplates(!showSMSTemplates)}
-                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    Send SMS
-                  </button>
-                  {showSMSTemplates && (
-                    <div className="mt-2 p-3 bg-slate-50 rounded-lg space-y-2">
-                      <button
-                        onClick={() => handleSendSMS('quick_response')}
-                        className="w-full px-3 py-2 text-sm bg-white hover:bg-slate-100 rounded border border-slate-200 text-left"
-                      >
-                        Quick Response
-                      </button>
-                      <button
-                        onClick={() => handleSendSMS('quote_provided')}
-                        className="w-full px-3 py-2 text-sm bg-white hover:bg-slate-100 rounded border border-slate-200 text-left"
-                      >
-                        Quote Provided
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {inquiry.status === 'pending' && onConvertToJob && (
                 <button
                   onClick={() => onConvertToJob(inquiry)}
