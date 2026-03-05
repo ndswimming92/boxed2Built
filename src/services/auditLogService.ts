@@ -83,12 +83,13 @@ async function getOrganizationId(): Promise<string | null> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       const { data } = await supabase
-        .from('organizations')
-        .select('id')
+        .from('business_info')
+        .select('organization_id')
+        .eq('is_active', true)
         .limit(1)
         .maybeSingle();
-      if (data?.id) {
-        cachedOrgId = data.id;
+      if (data?.organization_id) {
+        cachedOrgId = data.organization_id;
         return cachedOrgId;
       }
       return null;
