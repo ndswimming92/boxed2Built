@@ -36,10 +36,10 @@ export function updateManifest(isAdminRoute: boolean): void {
   }
   appleStatusBarMeta.setAttribute('content', statusBarStyle);
 
-  let appleCapableMeta = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+  let appleCapableMeta = document.querySelector('meta[name="mobile-web-app-capable"]');
   if (!appleCapableMeta) {
     appleCapableMeta = document.createElement('meta');
-    appleCapableMeta.setAttribute('name', 'apple-mobile-web-app-capable');
+    appleCapableMeta.setAttribute('name', 'mobile-web-app-capable');
     document.head.appendChild(appleCapableMeta);
   }
   appleCapableMeta.setAttribute('content', 'yes');
