@@ -110,7 +110,7 @@ function ownerNotificationContact(p: ContactFormPayload): string {
           </tr>
           ${p.phone ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="tel:${p.phone}" style="color:#1d4ed8;font-size:14px;">${p.phone}</a></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.phone}</span></td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Furniture Type</span></td>
@@ -258,7 +258,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
           </table>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call or text us at <a href="tel:+16154034538" style="color:#1d4ed8;">(615) 403-4538</a> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call or text us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
       </td></tr>
@@ -329,7 +329,7 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
           <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic;">"${p.message}"</p>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call or text us at <a href="tel:+16154034538" style="color:#1d4ed8;">(615) 403-4538</a>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call or text us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span>.</p>
         <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">If you're ready for a free quote, you can also <a href="https://boxed2built.com/#contact" style="color:#1d4ed8;">fill out our full request form</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
