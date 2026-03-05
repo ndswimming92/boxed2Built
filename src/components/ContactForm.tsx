@@ -12,7 +12,6 @@ import { createInquiry } from '../services/inquiryService';
 import { createSavedRequest } from '../services/savedRequestService';
 import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
-import { sendFormWebhook } from '../services/webhookService';
 import ConfirmationModal from './ConfirmationModal';
 
 const initialValues = {
@@ -477,24 +476,6 @@ const ContactForm: React.FC = () => {
       });
 
 
-      sendFormWebhook({
-        formType: 'contact_form',
-        status: 'success',
-        payload: {
-          client_name: values.name,
-          client_email: values.email,
-          client_phone: values.phone || null,
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
-          preferred_date: values.preferredDate || null,
-          preferred_time_slot: values.preferredTimeSlot || null,
-          estimated_price: estimatedPrice || null,
-          estimated_time: estimatedTime || null,
-          confirmation_code: savedRequest.confirmation_code,
-          is_test: isTest,
-        },
-      });
-
       // Log successful form submission
       await logPublicAction({
         actionType: 'SUBMIT',
@@ -537,18 +518,6 @@ const ContactForm: React.FC = () => {
 
       setSubmissionError(errorMessage);
 
-
-      sendFormWebhook({
-        formType: 'contact_form',
-        status: 'error',
-        payload: {
-          client_name: values.name,
-          client_email: values.email,
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
-          error_message: errorMessage,
-        },
-      });
 
       // Log failed form submission
       await logPublicAction({

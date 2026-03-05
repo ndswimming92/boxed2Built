@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
 import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
-import { sendFormWebhook } from '../services/webhookService';
 
 const QuickContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -237,18 +236,6 @@ const QuickContactForm: React.FC = () => {
         });
 
 
-        sendFormWebhook({
-          formType: 'footer_quick_contact',
-          status: 'success',
-          payload: {
-            client_name: formData.name,
-            client_email: formData.email,
-            message: formData.message,
-            formspree_success: formspreeSuccess,
-            supabase_success: supabaseSuccess,
-          },
-        });
-
         // Log successful form submission
         await logPublicAction({
           actionType: 'SUBMIT',
@@ -304,19 +291,6 @@ const QuickContactForm: React.FC = () => {
         supabase_success: supabaseSuccess,
       });
 
-
-      sendFormWebhook({
-        formType: 'footer_quick_contact',
-        status: 'error',
-        payload: {
-          client_name: formData.name,
-          client_email: formData.email,
-          message: formData.message,
-          error_message: message,
-          formspree_success: formspreeSuccess,
-          supabase_success: supabaseSuccess,
-        },
-      });
 
       // Log failed form submission
       await logPublicAction({
