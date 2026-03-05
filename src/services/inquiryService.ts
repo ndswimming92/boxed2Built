@@ -76,11 +76,9 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     furniture_image_path: data.furniture_image_path || null,
   };
 
-  const { data: result, error } = await supabase
+  const { error } = await supabase
     .from('form_inquiries')
-    .insert(insertPayload)
-    .select()
-    .single();
+    .insert(insertPayload);
 
   if (error) {
     console.error('Error creating inquiry:', error);
@@ -89,7 +87,18 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     throw new Error(`Failed to create inquiry: ${error.message}`);
   }
 
-  return result as FormInquiry;
+  return {
+    ...insertPayload,
+    submission_date: new Date().toISOString(),
+    converted_job_id: null,
+    last_contact_date: null,
+    contact_method: null,
+    contact_notes: null,
+    furniture_photo_url: data.furniture_photo_url || null,
+    furniture_image_path: data.furniture_image_path || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as FormInquiry;
 }
 
 export async function getInquiries(
