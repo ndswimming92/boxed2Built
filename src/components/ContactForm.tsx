@@ -123,8 +123,8 @@ const validationRules: Record<string, ValidationRule> = {
 };
 
 const ContactForm: React.FC = () => {
-  const [showOptionalFields, setShowOptionalFields] = useState(true);
-  const [showFurnitureReference, setShowFurnitureReference] = useState(true);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [showFurnitureReference, setShowFurnitureReference] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
   const [isIOS, setIsIOS] = useState(false);
@@ -829,6 +829,7 @@ const ContactForm: React.FC = () => {
               <span className="flex items-center gap-2">
                 <Calendar size={16} className="text-blue-600 shrink-0" />
                 <span className="text-sm font-semibold text-gray-800">Scheduling Preferences</span>
+                <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
                 <span className="text-xs text-blue-600 font-medium">— helps us respond faster</span>
               </span>
               {showOptionalFields ? (
@@ -921,6 +922,7 @@ const ContactForm: React.FC = () => {
               <span className="flex items-center gap-2">
                 <Image size={16} className="text-blue-600 shrink-0" />
                 <span className="text-sm font-semibold text-gray-800">Furniture Reference</span>
+                <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
                 <span className="text-xs text-blue-600 font-medium">— helps us give a more accurate quote</span>
               </span>
               {showFurnitureReference ? (
