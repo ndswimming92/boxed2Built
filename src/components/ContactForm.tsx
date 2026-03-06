@@ -741,7 +741,7 @@ const ContactForm: React.FC = () => {
 
               {/* Pieces */}
               <FormField
-                label="How many furniture items need assembly?"
+                label="How many items need assembly?"
                 required
                 error={fields.pieces?.error}
                 success={fields.pieces?.valid && fields.pieces?.touched}
