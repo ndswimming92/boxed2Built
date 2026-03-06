@@ -18,7 +18,7 @@ const initialValues = {
   email: { value: '', error: '', touched: false },
   phone: { value: '', error: '', touched: false },
   furnitureType: { value: '', error: '', touched: false },
-  pieces: { value: '', error: '', touched: false },
+  pieces: { value: '1', error: '', touched: false },
   preferredDate: { value: '', error: '', touched: false },
   preferredTimeSlot: { value: '', error: '', touched: false },
   notes: { value: '', error: '', touched: false },
@@ -108,7 +108,13 @@ const validationRules: Record<string, ValidationRule> = {
     }
   },
   preferredDate: {
-    required: false
+    required: false,
+    custom: (value) => {
+      if (!value) return null;
+      const today = new Date().toISOString().split('T')[0];
+      if (value < today) return 'Please select a date today or in the future';
+      return null;
+    }
   },
   preferredTimeSlot: {
     required: false
@@ -147,7 +153,7 @@ const ContactForm: React.FC = () => {
     getFieldProps
   } = useFormValidation({
     initialValues: Object.keys(initialValues).reduce((acc, key) => {
-      acc[key] = '';
+      acc[key] = initialValues[key as keyof typeof initialValues].value;
       return acc;
     }, {} as Record<string, string>),
     validationRules,
@@ -887,6 +893,7 @@ const ContactForm: React.FC = () => {
                       autoCapitalize="sentences"
                       autoCorrect="on"
                       maxLength={500}
+                      onKeyDown={(e) => e.stopPropagation()}
                       {...getFieldProps('notes')}
                     />
                   </FormField>
