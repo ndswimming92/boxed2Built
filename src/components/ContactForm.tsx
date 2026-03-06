@@ -424,8 +424,10 @@ const ContactForm: React.FC = () => {
       setConfirmationData(confirmData);
 
       console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
-      setShowConfirmationModal(true);
       setShowConfetti(true);
+      setTimeout(() => {
+        setShowConfirmationModal(true);
+      }, 700);
 
       // Send emails via Resend (fire and forget — do not block the success flow)
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-form-email`, {

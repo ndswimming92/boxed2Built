@@ -117,7 +117,7 @@ const ConfettiCanvas: React.FC<ConfettiCanvasProps> = ({ onComplete }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9999,
+        zIndex: 99999,
         pointerEvents: 'none',
       }}
     />
