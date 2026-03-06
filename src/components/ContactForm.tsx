@@ -12,6 +12,7 @@ import { createSavedRequest } from '../services/savedRequestService';
 import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
 import ConfirmationModal from './ConfirmationModal';
+import ConfettiCanvas from './ConfettiCanvas';
 
 const initialValues = {
   name: { value: '', error: '', touched: false },
@@ -129,6 +130,7 @@ const ContactForm: React.FC = () => {
   const [isIOS, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formProgress, setFormProgress] = useState(0);
   const [furniturePhotoUrl, setFurniturePhotoUrl] = useState('');
@@ -423,6 +425,7 @@ const ContactForm: React.FC = () => {
 
       console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
       setShowConfirmationModal(true);
+      setShowConfetti(true);
 
       // Send emails via Resend (fire and forget — do not block the success flow)
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-form-email`, {
@@ -557,6 +560,9 @@ const ContactForm: React.FC = () => {
 
   return (
     <>
+      {showConfetti && (
+        <ConfettiCanvas onComplete={() => setShowConfetti(false)} />
+      )}
       {confirmationData && showConfirmationModal && (
         <ConfirmationModal
           isOpen={showConfirmationModal}
