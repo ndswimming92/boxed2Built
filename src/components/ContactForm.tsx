@@ -803,7 +803,7 @@ const ContactForm: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-xs text-green-600">
-                  {parseInt(fields.pieces?.value || '0') > 3 && "Volume discount applied! "}
+                  {parseInt(fields.pieces?.value || '0') > 3 && "Multi-item discount applied! "}
                   Final quote provided after consultation.
                 </p>
               </div>
