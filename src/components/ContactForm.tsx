@@ -745,7 +745,7 @@ const ContactForm: React.FC = () => {
                 required
                 error={fields.pieces?.error}
                 success={fields.pieces?.valid && fields.pieces?.touched}
-                helpText="Number of furniture items to assemble"
+                helpText="e.g. 2 chairs + 1 desk = 3 items"
               >
                 <input
                   id="pieces"
