@@ -178,7 +178,6 @@ export const trackPhoneLinkClick = (phoneNumber: string, linkText?: string) => {
     action_type: 'phone_click',
     action_value: phoneNumber,
     element_text: linkText,
-    user_engagement: 'phone_link_click'
   });
 };
 
