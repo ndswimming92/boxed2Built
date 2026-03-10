@@ -27,6 +27,10 @@ export interface Client {
   tags: string[];
   preferences_token: string;
   is_test: boolean;
+  referral_code: string | null;
+  referred_by_client_id: string | null;
+  referral_credit_balance: number;
+  referral_credit_used: number;
   created_at: string;
   updated_at: string;
 }
@@ -537,4 +541,85 @@ export async function updateLastCampaignDate(clientIds: string[]): Promise<void>
     .in('id', clientIds);
 
   if (error) throw error;
+}
+
+// Get clients who were referred by a specific client
+export async function getReferredClients(referrerClientId: string): Promise<Client[]> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('referred_by_client_id', referrerClientId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Look up a client by referral code
+export async function getClientByReferralCode(referralCode: string): Promise<Client | null> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('referral_code', referralCode.toUpperCase().trim())
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+// Add referral credit to a client
+export async function addReferralCredit(clientId: string, amount: number): Promise<Client> {
+  const client = await getClientById(clientId);
+  if (!client) throw new Error('Client not found');
+
+  const newBalance = parseFloat((client.referral_credit_balance + amount).toFixed(2));
+  return updateClient(clientId, { referral_credit_balance: newBalance });
+}
+
+// Redeem referral credit (subtract from balance, add to used)
+export async function redeemReferralCredit(clientId: string, amount: number): Promise<Client> {
+  const client = await getClientById(clientId);
+  if (!client) throw new Error('Client not found');
+
+  if (amount > client.referral_credit_balance) {
+    throw new Error('Insufficient referral credit balance');
+  }
+
+  const newBalance = parseFloat((client.referral_credit_balance - amount).toFixed(2));
+  const newUsed = parseFloat((client.referral_credit_used + amount).toFixed(2));
+
+  return updateClient(clientId, {
+    referral_credit_balance: newBalance,
+    referral_credit_used: newUsed,
+  });
+}
+
+// Get referral stats for dashboard
+export async function getReferralStats(organizationId: string): Promise<{
+  totalCodes: number;
+  totalReferrals: number;
+  creditsIssuedAllTime: number;
+  creditsRedeemedAllTime: number;
+}> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('referral_code, referred_by_client_id, referral_credit_balance, referral_credit_used')
+    .eq('organization_id', organizationId)
+    .eq('is_test', false);
+
+  if (error) throw error;
+
+  const clients = data || [];
+  return {
+    totalCodes: clients.filter(c => c.referral_code).length,
+    totalReferrals: clients.filter(c => c.referred_by_client_id).length,
+    creditsIssuedAllTime: clients.reduce(
+      (sum, c) => sum + (parseFloat(c.referral_credit_balance?.toString() || '0') + parseFloat(c.referral_credit_used?.toString() || '0')),
+      0
+    ),
+    creditsRedeemedAllTime: clients.reduce(
+      (sum, c) => sum + parseFloat(c.referral_credit_used?.toString() || '0'),
+      0
+    ),
+  };
 }

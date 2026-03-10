@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -16,7 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { logAction } from '../../services/auditLogService';
 
-type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads';
+type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads' | 'referrals';
 
 export default function ClientsPage() {
   const { maskFinancialValue } = usePrivacyMode();
@@ -33,6 +33,7 @@ export default function ClientsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { currentOrganization } = useAuth();
 
   const organizationId = currentOrganization?.id;
@@ -54,6 +55,8 @@ export default function ClientsPage() {
       const [clientsData, statsData] = await Promise.all([
         selectedSegment === 'all'
           ? getAllClientsIncludingTest(organizationId)
+          : selectedSegment === 'referrals'
+          ? getClientSegment(organizationId, 'all').then(all => all.filter(c => !c.is_test && (c.referral_credit_balance > 0 || c.referral_credit_used > 0 || c.referral_code)))
           : getClientSegment(organizationId, selectedSegment),
         getClientSegmentStats(organizationId)
       ]);
@@ -188,6 +191,14 @@ export default function ClientsPage() {
     } else {
       setSelectedClients(new Set(clients.map(c => c.id)));
     }
+  }
+
+  function copyReferralCode(code: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    });
   }
 
   function getStatusBadgeColor(status: string): string {
@@ -391,6 +402,7 @@ export default function ClientsPage() {
               { value: 'high_value', label: 'High-Value', icon: Star },
               { value: 'dormant', label: 'Dormant', icon: UserX },
               { value: 'leads', label: 'New Leads', icon: Filter },
+              { value: 'referrals', label: 'Referrals', icon: Gift },
             ].map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
@@ -491,6 +503,9 @@ export default function ClientsPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Opt-In
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Referral
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -560,6 +575,31 @@ export default function ClientsPage() {
                           <Phone className="w-4 h-4 text-green-600" title="SMS opt-in" />
                         )}
                       </div>
+                    </td>
+                    <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                      {client.referral_code ? (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={(e) => copyReferralCode(client.referral_code!, e)}
+                            className="flex items-center gap-1.5 px-2 py-1 text-xs font-mono font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors max-w-max"
+                            title="Click to copy"
+                          >
+                            {copiedCode === client.referral_code ? (
+                              <Check className="w-3 h-3 text-green-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                            {client.referral_code}
+                          </button>
+                          {(client.referral_credit_balance > 0 || client.referral_credit_used > 0) && (
+                            <span className="text-xs text-gray-500">
+                              ${client.referral_credit_balance.toFixed(2)} credit
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -11,6 +11,7 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
+import ReferralProgram from '../components/sections/ReferralProgram';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import {
   LOCAL_SEO_CONTENT,
@@ -117,6 +118,8 @@ const HomePage: React.FC = () => {
         <HomeServices />
 
         <Testimonials />
+
+        <ReferralProgram />
 
         <Pricing />
 

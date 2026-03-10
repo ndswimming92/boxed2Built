@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download } from 'lucide-react';
+import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download, Gift } from 'lucide-react';
 import { Invoice, InvoiceLineItem } from '../../lib/supabase';
 import {
   createInvoice,
@@ -32,7 +32,7 @@ interface InvoiceFormModalProps {
 
 interface LineItemForm {
   id?: string;
-  item_type: 'labor' | 'material' | 'other';
+  item_type: 'labor' | 'material' | 'other' | 'discount';
   description: string;
   quantity: number;
   unit_price: number;
@@ -623,14 +623,24 @@ export default function InvoiceFormModal({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">Line Items</h3>
-              <button
-                type="button"
-                onClick={addNewLineItem}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Add Line Item
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLineItems([...lineItems, { item_type: 'discount', description: 'Referral Credit Discount', quantity: 1, unit_price: -25, is_taxable: false }])}
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                >
+                  <Gift className="w-4 h-4" />
+                  Referral Credit
+                </button>
+                <button
+                  type="button"
+                  onClick={addNewLineItem}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Line Item
+                </button>
+              </div>
             </div>
 
             {lineItems.length > 0 && (
@@ -664,6 +674,7 @@ export default function InvoiceFormModal({
                         <option value="labor">Labor</option>
                         <option value="material">Material</option>
                         <option value="other">Other</option>
+                        <option value="discount">Discount</option>
                       </select>
                     </div>
                     <div className="col-span-5">

@@ -78,6 +78,7 @@ export interface FormInquiry {
   utm_medium: string | null;
   utm_campaign: string | null;
   referral_source: string | null;
+  referral_code_used: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

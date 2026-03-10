@@ -18,6 +18,7 @@ export interface CreateInquiryData {
   utm_medium?: string;
   utm_campaign?: string;
   referral_source?: string;
+  referral_code_used?: string;
   source?: string;
   furniture_photo_url?: string;
   furniture_image_path?: string;
@@ -66,6 +67,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     utm_medium: data.utm_medium || null,
     utm_campaign: data.utm_campaign || null,
     referral_source: data.referral_source || null,
+    referral_code_used: data.referral_code_used || null,
     source: data.source || 'contact_form',
     status: 'pending' as const,
     viewed: false,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Mail, Phone, MapPin, Calendar, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check } from 'lucide-react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -11,7 +11,10 @@ import {
   updateMarketingPreferences,
   addClientTags,
   removeClientTags,
-  updateClient
+  updateClient,
+  getReferredClients,
+  addReferralCredit,
+  redeemReferralCredit,
 } from '../../services/clientService';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -40,6 +43,12 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   const [savingInfo, setSavingInfo] = useState(false);
   const [saveInfoError, setSaveInfoError] = useState<string | null>(null);
   const [currentClient, setCurrentClient] = useState<Client>(client);
+  const [referredClients, setReferredClients] = useState<Client[]>([]);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [creditAmount, setCreditAmount] = useState('25');
+  const [creditAction, setCreditAction] = useState<'add' | 'redeem' | null>(null);
+  const [creditLoading, setCreditLoading] = useState(false);
+  const [creditMessage, setCreditMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     loadClientDetails();
@@ -48,12 +57,14 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   async function loadClientDetails() {
     try {
       setLoading(true);
-      const [historyData, notesData] = await Promise.all([
+      const [historyData, notesData, referredData] = await Promise.all([
         getClientHistory(currentClient.id, currentClient.email),
-        getClientNotes(currentClient.id)
+        getClientNotes(currentClient.id),
+        getReferredClients(currentClient.id),
       ]);
       setHistory(historyData);
       setNotes(notesData);
+      setReferredClients(referredData);
     } catch (error) {
       console.error('Error loading client details:', error);
     } finally {
@@ -164,6 +175,40 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
       hour: 'numeric',
       minute: '2-digit'
     });
+  }
+
+  function copyReferralCode() {
+    if (!currentClient.referral_code) return;
+    navigator.clipboard.writeText(currentClient.referral_code).then(() => {
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2500);
+    });
+  }
+
+  async function handleCreditAction() {
+    const amount = parseFloat(creditAmount);
+    if (!amount || amount <= 0) return;
+
+    setCreditLoading(true);
+    setCreditMessage(null);
+    try {
+      let updated: Client;
+      if (creditAction === 'add') {
+        updated = await addReferralCredit(currentClient.id, amount);
+        setCreditMessage({ type: 'success', text: `$${amount.toFixed(2)} credit added successfully.` });
+      } else {
+        updated = await redeemReferralCredit(currentClient.id, amount);
+        setCreditMessage({ type: 'success', text: `$${amount.toFixed(2)} credit redeemed successfully.` });
+      }
+      setCurrentClient(updated);
+      setCreditAction(null);
+      setCreditAmount('25');
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to update credit.';
+      setCreditMessage({ type: 'error', text: msg });
+    } finally {
+      setCreditLoading(false);
+    }
   }
 
   const allActivities = [
@@ -337,6 +382,113 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
               <p className="text-sm font-medium">Avg Job Value</p>
             </div>
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.average_job_value)}</p>
+          </div>
+        </div>
+
+        {/* Referral Program */}
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Referral Program</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-center">
+              <p className="text-xs font-medium text-blue-700 mb-1">Referral Code</p>
+              {currentClient.referral_code ? (
+                <button
+                  onClick={copyReferralCode}
+                  className="flex items-center gap-1.5 mx-auto px-3 py-1.5 text-sm font-mono font-bold text-blue-800 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  {codeCopied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {codeCopied ? 'Copied!' : currentClient.referral_code}
+                </button>
+              ) : (
+                <span className="text-xs text-gray-400">Not assigned</span>
+              )}
+            </div>
+            <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-center">
+              <p className="text-xs font-medium text-green-700 mb-1">Available Credit</p>
+              <p className="text-xl font-bold text-green-800">${(currentClient.referral_credit_balance ?? 0).toFixed(2)}</p>
+            </div>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-center">
+              <p className="text-xs font-medium text-gray-600 mb-1">Lifetime Redeemed</p>
+              <p className="text-xl font-bold text-gray-800">${(currentClient.referral_credit_used ?? 0).toFixed(2)}</p>
+            </div>
+          </div>
+
+          {/* Referred Clients */}
+          {referredClients.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                <p className="text-sm font-medium text-gray-700">Clients Referred ({referredClients.length})</p>
+              </div>
+              <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                {referredClients.map(c => (
+                  <div key={c.id} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
+                    <span className="font-medium text-gray-800">{c.name}</span>
+                    <span className="text-xs text-gray-500">{formatDate(c.created_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Credit Management */}
+          <div className="border-t border-gray-100 pt-4">
+            {creditMessage && (
+              <div className={`mb-3 px-3 py-2 rounded-lg text-sm ${creditMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                {creditMessage.text}
+              </div>
+            )}
+
+            {creditAction ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 font-medium">
+                  {creditAction === 'add' ? 'Add' : 'Redeem'} $
+                </span>
+                <input
+                  type="number"
+                  value={creditAmount}
+                  onChange={(e) => setCreditAmount(e.target.value)}
+                  min="0.01"
+                  step="0.01"
+                  className="w-24 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleCreditAction}
+                  disabled={creditLoading}
+                  className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  {creditLoading ? 'Saving...' : 'Confirm'}
+                </button>
+                <button
+                  onClick={() => { setCreditAction(null); setCreditMessage(null); }}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setCreditAction('add'); setCreditMessage(null); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Credit
+                </button>
+                <button
+                  onClick={() => { setCreditAction('redeem'); setCreditMessage(null); }}
+                  disabled={(currentClient.referral_credit_balance ?? 0) <= 0}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                  Redeem Credit
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

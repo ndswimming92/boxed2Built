@@ -23,6 +23,7 @@ const initialValues = {
   preferredDate: { value: '', error: '', touched: false },
   preferredTimeSlot: { value: '', error: '', touched: false },
   notes: { value: '', error: '', touched: false },
+  referralCode: { value: '', error: '', touched: false },
 };
 
 // Enhanced validation rules
@@ -119,6 +120,17 @@ const validationRules: Record<string, ValidationRule> = {
   },
   preferredTimeSlot: {
     required: false
+  },
+  referralCode: {
+    required: false,
+    custom: (value) => {
+      if (!value) return null;
+      const cleaned = value.trim().toUpperCase();
+      if (cleaned.length > 0 && !/^B2B-[A-Z0-9]+-[A-Z0-9]+$/.test(cleaned)) {
+        return 'Referral codes look like B2B-NAME-XXXX';
+      }
+      return null;
+    }
   }
 };
 
@@ -380,6 +392,7 @@ const ContactForm: React.FC = () => {
         estimated_price: estimatedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
+        referral_code_used: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
         is_test: isTest,
@@ -1004,6 +1017,38 @@ const ContactForm: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Referral Code */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <label htmlFor="referralCode" className="text-sm font-medium text-gray-700">
+                Have a Referral Code?
+              </label>
+              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
+            </div>
+            <input
+              id="referralCode"
+              name="referralCode"
+              type="text"
+              placeholder="e.g. B2B-JONES-4X2"
+              className={getInputClasses('referralCode')}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+              maxLength={30}
+              {...getFieldProps('referralCode')}
+              onChange={(e) => {
+                const upper = e.target.value.toUpperCase();
+                getFieldProps('referralCode').onChange({ ...e, target: { ...e.target, value: upper } });
+              }}
+            />
+            {fields.referralCode?.error && (
+              <p className="text-xs text-red-600 mt-1">{fields.referralCode.error}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Enter a code from a friend and they'll receive $25 credit on their next service.
+            </p>
           </div>
 
           {/* Submit Button */}

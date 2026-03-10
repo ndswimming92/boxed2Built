@@ -4,8 +4,10 @@ import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
+import { getReferralStats } from '../../services/clientService';
 import type { Goal } from '../../lib/supabase';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Building2,
   Briefcase,
@@ -13,17 +15,16 @@ import {
   Star,
   TrendingUp,
   Clock,
-  CreditCard,
-  Share2,
   BarChart3,
   ArrowRight,
   Inbox,
-  ExternalLink,
   Mail,
   MessageSquare,
   AlertCircle,
   Target,
-  CheckCircle2
+  Gift,
+  Users,
+  DollarSign,
 } from 'lucide-react';
 
 interface Stats {
@@ -42,6 +43,13 @@ interface Stats {
 
 export default function DashboardPage() {
   const { maskFinancialValue } = usePrivacyMode();
+  const { currentOrganization } = useAuth();
+  const [referralStats, setReferralStats] = useState<{
+    totalCodes: number;
+    totalReferrals: number;
+    creditsIssuedAllTime: number;
+    creditsRedeemedAllTime: number;
+  } | null>(null);
   const [stats, setStats] = useState<Stats>({
     services: 0,
     serviceAreas: 0,
@@ -66,6 +74,14 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    if (currentOrganization?.id) {
+      getReferralStats(currentOrganization.id)
+        .then(setReferralStats)
+        .catch(() => {});
+    }
+  }, [currentOrganization?.id]);
 
   useEffect(() => {
     if (realtimeJobs.length > 0 && businessId) {
@@ -283,6 +299,56 @@ export default function DashboardPage() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {!loading && referralStats && (
+        <div className="mt-8">
+          <div className="bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl p-6 border border-blue-800">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Gift className="w-5 h-5 text-blue-200" />
+                <h2 className="text-base font-semibold text-white">Referral Program</h2>
+              </div>
+              <Link
+                to="/admin/clients?segment=referrals"
+                className="text-xs font-medium text-blue-200 hover:text-white flex items-center gap-1 transition-colors"
+              >
+                View Referrals
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Gift className="w-5 h-5 text-blue-200" />
+                </div>
+                <p className="text-2xl font-bold text-white">{referralStats.totalCodes}</p>
+                <p className="text-xs text-blue-200 mt-1">Active Codes</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Users className="w-5 h-5 text-blue-200" />
+                </div>
+                <p className="text-2xl font-bold text-white">{referralStats.totalReferrals}</p>
+                <p className="text-xs text-blue-200 mt-1">Total Referrals</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <DollarSign className="w-5 h-5 text-blue-200" />
+                </div>
+                <p className="text-2xl font-bold text-white">{maskFinancialValue(`$${referralStats.creditsIssuedAllTime.toFixed(0)}`)}</p>
+                <p className="text-xs text-blue-200 mt-1">Credits Issued</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <DollarSign className="w-5 h-5 text-blue-200" />
+                </div>
+                <p className="text-2xl font-bold text-white">{maskFinancialValue(`$${referralStats.creditsRedeemedAllTime.toFixed(0)}`)}</p>
+                <p className="text-xs text-blue-200 mt-1">Credits Redeemed</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
