@@ -13,7 +13,7 @@ import PartnersPage from './pages/PartnersPage';
 import RequestLookupPage from './pages/RequestLookupPage';
 import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
-import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone } from './utils/analytics';
+import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone, trackPhoneLinkClick } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { initPostHog } from './lib/posthog';
 import { AuthProvider } from './contexts/AuthContext';
@@ -122,6 +122,19 @@ function Analytics() {
       }
     };
     
+    const handlePhoneLinkClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const phoneLink = target?.closest('a[href^=\"tel:\"]') as HTMLAnchorElement | null;
+
+      if (!phoneLink) return;
+
+      const href = phoneLink.getAttribute('href') || '';
+      const phoneNumber = href.replace(/^tel:/i, '').trim();
+      const linkText = phoneLink.textContent?.trim();
+
+      trackPhoneLinkClick(phoneNumber || href, linkText);
+    };
+
     // Set up time tracking
     const timeTrackingInterval = setInterval(() => {
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
@@ -144,10 +157,12 @@ function Analytics() {
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handlePhoneLinkClick);
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handlePhoneLinkClick);
       clearInterval(timeTrackingInterval);
       
       // Track final time on page
