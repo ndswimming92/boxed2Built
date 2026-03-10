@@ -36,6 +36,7 @@ interface Stats {
   socialMedia: number;
   jobs: number;
   totalRevenue: number;
+  totalHoursSaved: number;
   inquiries: number;
   pendingInquiries: number;
   conversionRate: number;
@@ -59,6 +60,7 @@ export default function DashboardPage() {
     socialMedia: 0,
     jobs: 0,
     totalRevenue: 0,
+    totalHoursSaved: 0,
     inquiries: 0,
     pendingInquiries: 0,
     conversionRate: 0,
@@ -92,11 +94,13 @@ export default function DashboardPage() {
   const updateRevenueFromJobs = () => {
     const completedJobs = realtimeJobs.filter(job => job.date_completed);
     const totalRevenue = completedJobs.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0);
+    const totalHoursSaved = completedJobs.reduce((sum, job) => sum + (Number(job.hours_worked) || 0), 0);
 
     setStats(prev => ({
       ...prev,
       jobs: realtimeJobs.length,
       totalRevenue,
+      totalHoursSaved,
     }));
   };
 
@@ -137,7 +141,7 @@ export default function DashboardPage() {
         supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true),
-        supabase.from('jobs').select('final_price, date_completed').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null),
+        supabase.from('jobs').select('final_price, date_completed, hours_worked').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null),
         getInquiryStats(businessInfo.id),
         getRecentInquiries(businessInfo.id, 5),
         getGoalStats(businessInfo.id),
@@ -156,6 +160,10 @@ export default function DashboardPage() {
         ? jobsData.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0)
         : 0;
 
+      const totalHoursSaved = jobsData && jobsData.length > 0
+        ? jobsData.reduce((sum, job) => sum + (Number(job.hours_worked) || 0), 0)
+        : 0;
+
       setStats({
         services: servicesCount || 0,
         serviceAreas: serviceAreasCount || 0,
@@ -165,6 +173,7 @@ export default function DashboardPage() {
         socialMedia: socialMediaCount || 0,
         jobs: jobsCount || 0,
         totalRevenue,
+        totalHoursSaved,
         inquiries: inquiryStats.total,
         pendingInquiries: inquiryStats.pending,
         conversionRate: inquiryStats.conversionRate,
@@ -185,6 +194,8 @@ export default function DashboardPage() {
     }).format(amount);
   };
 
+  const formatHours = (hours: number) => `${hours.toFixed(1)} hrs`;
+
   const statCards = [
     {
       name: 'Total Jobs',
@@ -199,6 +210,13 @@ export default function DashboardPage() {
       icon: TrendingUp,
       link: '/admin/jobs',
       color: 'bg-emerald-500'
+    },
+    {
+      name: 'Hours Saved',
+      value: formatHours(stats.totalHoursSaved),
+      icon: Clock,
+      link: '/admin/analytics',
+      color: 'bg-violet-500'
     },
     {
       name: 'Services',
