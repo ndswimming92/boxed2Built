@@ -170,6 +170,18 @@ export const trackExternalLink = (url: string, linkText?: string) => {
   });
 };
 
+// Track phone link clicks
+export const trackPhoneLinkClick = (phoneNumber: string, linkText?: string) => {
+  trackGAEvent('phone_link_click', {
+    event_category: 'contact',
+    event_label: phoneNumber,
+    action_type: 'phone_click',
+    action_value: phoneNumber,
+    element_text: linkText,
+    user_engagement: 'phone_link_click'
+  });
+};
+
 // Track file downloads
 export const trackFileDownload = (fileName: string, fileType: string) => {
   trackGAEvent('file_download', {
