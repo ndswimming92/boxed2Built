@@ -68,6 +68,7 @@ export default function JobsPage() {
   const [markingJobLost, setMarkingJobLost] = useState<Job | null>(null);
   const [cancellingJob, setCancellingJob] = useState<Job | null>(null);
   const [showInactiveJobs, setShowInactiveJobs] = useState(false);
+  const [showMissingHoursOnly, setShowMissingHoursOnly] = useState(false);
   const [invoiceToConvert, setInvoiceToConvert] = useState<JobsPageLocationState['createJobFromInvoice'] | null>(null);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [jobs, searchTerm, statusFilter, locationFilter, showInactiveJobs]);
+  }, [jobs, searchTerm, statusFilter, locationFilter, showInactiveJobs, showMissingHoursOnly]);
 
   useEffect(() => {
     if (!createJobFromInvoice) {
@@ -142,6 +143,11 @@ export default function JobsPage() {
     });
   };
 
+  const isCompletedMissingHoursWorked = (job: Job) => {
+    const isCompleted = job.job_status === 'completed' || Boolean(job.date_completed);
+    return isCompleted && (job.hours_worked === null || job.hours_worked === undefined || job.hours_worked <= 0);
+  };
+
   const applyFilters = () => {
     let filtered = [...jobs];
 
@@ -167,6 +173,10 @@ export default function JobsPage() {
 
     if (locationFilter !== 'All') {
       filtered = filtered.filter(job => job.location_city === locationFilter);
+    }
+
+    if (showMissingHoursOnly) {
+      filtered = filtered.filter((job) => isCompletedMissingHoursWorked(job));
     }
 
     setFilteredJobs(filtered);
@@ -249,6 +259,7 @@ export default function JobsPage() {
   };
 
   const uniqueLocations = Array.from(new Set(jobs.map(job => job.location_city).filter(Boolean))) as string[];
+  const missingCompletedHoursCount = jobs.filter((job) => isCompletedMissingHoursWorked(job)).length;
 
   if (loading) {
     return (
@@ -301,6 +312,25 @@ export default function JobsPage() {
         <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
           {message.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
           <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{message.text}</p>
+        </div>
+      )}
+
+      {missingCompletedHoursCount > 0 && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-2">
+              <Info className="mt-0.5 h-5 w-5 text-amber-700" />
+              <p className="text-sm text-amber-900">
+                <span className="font-semibold">Data quality warning:</span> {missingCompletedHoursCount} completed job{missingCompletedHoursCount === 1 ? '' : 's'} are missing hours worked. Backfill these to keep all-time hourly metrics accurate.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowMissingHoursOnly((prev) => !prev)}
+              className={`inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${showMissingHoursOnly ? 'border-amber-700 bg-amber-700 text-white hover:bg-amber-800' : 'border-amber-400 bg-white text-amber-800 hover:bg-amber-100'}`}
+            >
+              {showMissingHoursOnly ? 'Show All Jobs' : 'Show Missing Hours Only'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -415,6 +445,18 @@ export default function JobsPage() {
               />
               <label htmlFor="showInactiveJobs" className="ml-2 text-sm text-slate-700">
                 Show lost and cancelled jobs
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="showMissingHoursOnly"
+                checked={showMissingHoursOnly}
+                onChange={(e) => setShowMissingHoursOnly(e.target.checked)}
+                className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+              />
+              <label htmlFor="showMissingHoursOnly" className="ml-2 text-sm text-slate-700">
+                Show completed jobs missing hours worked
               </label>
             </div>
           </div>
@@ -575,6 +617,12 @@ export default function JobsPage() {
                     <p className="text-sm font-medium text-slate-900">{formatHours(job.hours_worked)}</p>
                   </div>
                 </div>
+
+                {isCompletedMissingHoursWorked(job) && (
+                  <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                    This completed job is missing hours worked. Please edit and backfill to keep profitability metrics reliable.
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
                   <div>

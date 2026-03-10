@@ -135,8 +135,16 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   };
 
   const handleSave = async () => {
+    const requiresHoursWorked = formData.job_status === 'completed' || Boolean(formData.date_completed);
+    const hasValidHoursWorked = typeof formData.hours_worked === 'number' && formData.hours_worked > 0;
+
     if (!formData.client_name?.trim()) {
       setError('Client name is required');
+      return;
+    }
+
+    if (requiresHoursWorked && !hasValidHoursWorked) {
+      setError('Hours worked is required and must be greater than 0 when a job is completed.');
       return;
     }
 
@@ -188,6 +196,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
   const netProfit = calculateNetProfit(formData.final_price, formData.materials_cost);
   const hourlyRate = calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
+  const requiresHoursWorked = formData.job_status === 'completed' || Boolean(formData.date_completed);
 
   const updateNotes = (nextValue: string) => {
     setFormData({ ...formData, notes: nextValue });
@@ -475,15 +484,24 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Financial Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Hours Worked</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Hours Worked
+                  {requiresHoursWorked && <span className="text-red-500"> *</span>}
+                </label>
                 <input name="hours_worked"
                   type="number"
                   step="0.01"
-                  min="0"
+                  min={requiresHoursWorked ? '0.01' : '0'}
                   value={formData.hours_worked || ''}
                   onChange={(e) => setFormData({ ...formData, hours_worked: parseFloat(e.target.value) || null })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  required={requiresHoursWorked}
                 />
+                {requiresHoursWorked && (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Required when status is completed or a completion date is set.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Quoted Price</label>
