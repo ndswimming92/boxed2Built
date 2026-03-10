@@ -465,6 +465,7 @@ const ContactForm: React.FC = () => {
           isTest,
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
+          referralCodeUsed: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
         }),
       }).then(async (res) => {
         const data = await res.json().catch(() => ({}));

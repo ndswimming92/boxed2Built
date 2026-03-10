@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +28,8 @@ interface ContactFormPayload {
   isTest?: boolean;
   furniturePhotoUrl?: string;
   furnitureImagePath?: string;
+  referralCodeUsed?: string;
+  referrerName?: string;
 }
 
 interface QuickContactPayload {
@@ -150,6 +153,22 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Uploaded Photo</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/furniture-photos/${p.furnitureImagePath}" style="color:#1d4ed8;font-size:14px;" target="_blank">View Photo</a></td>
           </tr>` : ""}
+          ${p.referralCodeUsed ? `<tr>
+            <td colspan="2" style="padding:12px 0;">
+              <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 14px;">
+                <span style="color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Referral Code Used</span>
+                <span style="color:#166534;font-size:15px;font-weight:800;font-family:monospace;">${p.referralCodeUsed}</span>
+                ${p.referrerName ? `<span style="color:#15803d;font-size:13px;display:block;margin-top:4px;">Referred by: ${p.referrerName}</span>` : `<span style="color:#6b7280;font-size:13px;display:block;margin-top:4px;">Referrer not found in system</span>`}
+              </div>
+            </td>
+          </tr>` : `<tr>
+            <td colspan="2" style="padding:10px 0;">
+              <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;">
+                <span style="color:#9ca3af;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Referral Code</span>
+                <span style="color:#6b7280;font-size:13px;display:block;margin-top:2px;">None entered</span>
+              </div>
+            </td>
+          </tr>`}
         </table>
         <div style="margin-top:20px;text-align:center;">
           <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:6px;">View Full Request &rarr;</a>
@@ -362,6 +381,25 @@ Deno.serve(async (req: Request) => {
 
     if (payload.formType === "contact") {
       const p = payload as ContactFormPayload;
+
+      if (p.referralCodeUsed) {
+        try {
+          const supabase = createClient(
+            Deno.env.get("SUPABASE_URL")!,
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+          );
+          const { data: referrer } = await supabase
+            .from("clients")
+            .select("name")
+            .eq("referral_code", p.referralCodeUsed)
+            .maybeSingle();
+          if (referrer?.name) {
+            p.referrerName = referrer.name;
+          }
+        } catch (err) {
+          console.error("Referrer lookup failed:", err);
+        }
+      }
 
       try {
         await sendEmail(
