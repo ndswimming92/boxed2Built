@@ -26,7 +26,7 @@ const PrivacyPolicy = () => {
           <li><strong>Service Details:</strong> Furniture assembly requests, IKEA, Target, or Walmart furniture specifications.</li>
           <li><strong>Photos &amp; Media:</strong> Furniture photos you optionally upload with a service request. These images are stored securely and used solely for quoting and service delivery purposes.</li>
           <li><strong>Device Information:</strong> IP address, browser type, website usage data for our furniture assembly website.</li>
-          <li><strong>Analytics Data:</strong> Website usage patterns, page views, session duration, and user interactions collected through Google Analytics 4 and PostHog.</li>
+          <li><strong>Analytics Data:</strong> Website usage patterns, page views, session duration, and user interactions collected through Google Analytics 4.</li>
           <li><strong>Technical Data:</strong> Device type, operating system, screen resolution, and browsing behavior for website optimization purposes.</li>
           <li><strong>Marketing Attribution Data:</strong> UTM parameters (source, medium, campaign) and referral source information collected when you submit a contact form. This data is used solely to understand how customers find our business and is never sold or shared with third parties for marketing purposes.</li>
           <li><strong>Client Marketing Preferences:</strong> Your opt-in or opt-out status for marketing communications, along with your service history and contact history, used to ensure we only send communications you have consented to receive.</li>
@@ -43,7 +43,7 @@ const PrivacyPolicy = () => {
           <li>Send promotional offers for furniture assembly services (only if you have opted in to marketing communications)</li>
           <li>Review furniture photos you submit to provide accurate quotes and prepare for service</li>
           <li>Improve our furniture assembly website and service offerings using analytics data</li>
-          <li>Analyze website performance and user experience through Google Analytics 4 and PostHog</li>
+          <li>Analyze website performance and user experience through Google Analytics 4</li>
           <li>Understand how customers discover our business using marketing attribution data</li>
           <li>Understand customer preferences and optimize our online presence</li>
         </ul>
@@ -59,16 +59,14 @@ const PrivacyPolicy = () => {
           <li>Service providers assisting with our furniture assembly business operations</li>
           <li>Stripe, Inc. for payment processing when you pay for our services or pay an invoice online</li>
           <li>Google (through Google Analytics 4) for website analytics purposes</li>
-          <li>PostHog for product analytics and admin session tracking</li>
-          <li>Third-party analytics providers to help us understand website usage and improve our services</li>
+                    <li>Third-party analytics providers to help us understand website usage and improve our services</li>
           <li>Amazon (through the Amazon Services LLC Associates Program) when you click on affiliate links to Amazon products</li>
           <li>Law enforcement if required by Tennessee state law or federal law</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          Note: Stripe, Google Analytics, PostHog, and Amazon have their own privacy policies and data handling practices. We recommend reviewing their privacy policies for more information about how they process data:
+          Note: Stripe, Google Analytics, and Amazon have their own privacy policies and data handling practices. We recommend reviewing their privacy policies for more information about how they process data:
           <br />• Stripe Privacy Policy: <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">https://stripe.com/privacy</a>
           <br />• Google Analytics privacy policy is available on their website
-          <br />• PostHog Privacy Policy: <a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">https://posthog.com/privacy</a>
           <br />• Amazon's privacy policy governs how they handle data from affiliate link clicks
         </p>
       </section>
@@ -169,20 +167,6 @@ const PrivacyPolicy = () => {
             <p className="text-sm text-gray-600 mb-3">
               Google Analytics uses cookies to track your activity. You can opt out of Google Analytics by installing the{' '}
               <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">Google Analytics Opt-out Browser Add-on</a>.
-            </p>
-          </div>
-
-          <div className="mb-4">
-            <h4 className="font-semibold mb-2">PostHog</h4>
-            <p className="mb-2">We use PostHog for product analytics. PostHog is only used to track identified admin users who manage our business backend — it is not used to track or profile general website visitors. PostHog collects:</p>
-            <ul className="list-disc pl-6 mb-3 space-y-1">
-              <li>Page views and navigation events for admin users</li>
-              <li>Feature interactions within the admin dashboard</li>
-              <li>Session metadata (device type, browser) for admin sessions</li>
-            </ul>
-            <p className="text-sm text-gray-600 mb-3">
-              Session recording and survey features are disabled. You can learn more about PostHog's data practices in{' '}
-              <a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">PostHog's Privacy Policy</a>.
             </p>
           </div>
 

@@ -1,21 +1,9 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import ServicesPage from './pages/ServicesPage';
-import FurnitureAssemblyPage from './pages/services/FurnitureAssemblyPage';
-import TVMountingPage from './pages/services/TVMountingPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import GalleryPage from './pages/GalleryPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsOfServicePage from './pages/TermsOfServicePage';
-import PartnersPage from './pages/PartnersPage';
-import RequestLookupPage from './pages/RequestLookupPage';
-import FAQPage from './pages/FAQPage';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone, trackPhoneLinkClick } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
-import { initPostHog } from './lib/posthog';
+import { loadGoogleAnalytics } from './utils/analyticsLoader';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -23,10 +11,23 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
 import { supabase } from './lib/supabase';
-import QRRedirectPage from './pages/QRRedirectPage';
-import InvoicePaymentPage from './pages/InvoicePaymentPage';
-import InvoiceThankYouPage from './pages/InvoiceThankYouPage';
 import { useManifestManager } from './hooks/useManifestManager';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ServicesPage = lazy(() => import('./pages/ServicesPage'));
+const FurnitureAssemblyPage = lazy(() => import('./pages/services/FurnitureAssemblyPage'));
+const TVMountingPage = lazy(() => import('./pages/services/TVMountingPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const GalleryPage = lazy(() => import('./pages/GalleryPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const PartnersPage = lazy(() => import('./pages/PartnersPage'));
+const RequestLookupPage = lazy(() => import('./pages/RequestLookupPage'));
+const FAQPage = lazy(() => import('./pages/FAQPage'));
+const QRRedirectPage = lazy(() => import('./pages/QRRedirectPage'));
+const InvoicePaymentPage = lazy(() => import('./pages/InvoicePaymentPage'));
+const InvoiceThankYouPage = lazy(() => import('./pages/InvoiceThankYouPage'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const LoginPage = lazy(() => import('./pages/admin/LoginPage'));
@@ -81,10 +82,10 @@ function Analytics() {
     scrollDepthTracked = { 25: false, 50: false, 75: false, 100: false };
     pageStartTime = Date.now();
     engagementTracked = false;
-    
+
     // Track page views with Google Analytics
     trackPageView(location.pathname, document.title);
-    
+
     // Additional GA4 specific tracking
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'page_view', {
@@ -93,16 +94,16 @@ function Analytics() {
         page_location: window.location.href
       });
     }
-    
+
     // Set up scroll depth tracking
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      
+
       if (scrollHeight === 0) return;
-      
+
       const scrollPercentage = Math.round((scrollTop / scrollHeight) * 100);
-      
+
       // Track scroll depth milestones
       Object.keys(scrollDepthTracked).forEach(depth => {
         const depthNum = parseInt(depth);
@@ -111,7 +112,7 @@ function Analytics() {
           trackScrollDepth(depthNum);
         }
       });
-      
+
       // Track engagement after 30 seconds and 50% scroll
       if (!engagementTracked && scrollPercentage >= 50) {
         const timeOnPage = (Date.now() - pageStartTime) / 1000;
@@ -121,10 +122,10 @@ function Analytics() {
         }
       }
     };
-    
+
     const handlePhoneLinkClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      const phoneLink = target?.closest('a[href^=\"tel:\"]') as HTMLAnchorElement | null;
+      const phoneLink = target?.closest('a[href^="tel:"]') as HTMLAnchorElement | null;
 
       if (!phoneLink) return;
 
@@ -138,7 +139,7 @@ function Analytics() {
     // Set up time tracking
     const timeTrackingInterval = setInterval(() => {
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
-      
+
       // Track time milestones
       if (timeOnPage >= 30 && timeOnPage < 35) {
         trackEngagementMilestone('30_seconds', 30);
@@ -148,23 +149,23 @@ function Analytics() {
         trackEngagementMilestone('3_minutes', 180);
       }
     }, 5000); // Check every 5 seconds
-    
+
     // Track page exit
     const handleBeforeUnload = () => {
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
       trackTimeOnPage(Math.round(timeOnPage));
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('click', handlePhoneLinkClick);
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('click', handlePhoneLinkClick);
       clearInterval(timeTrackingInterval);
-      
+
       // Track final time on page
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
       trackTimeOnPage(Math.round(timeOnPage));
@@ -182,11 +183,11 @@ function HashHandler() {
     if (location.hash) {
       const elementId = location.hash.substring(1); // Remove the # symbol
       const element = document.getElementById(elementId);
-      
+
       if (element) {
         // Small delay to ensure the page is fully rendered
         setTimeout(() => {
-          element.scrollIntoView({ 
+          element.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
           });
@@ -227,13 +228,13 @@ function NotificationBarWrapper() {
   return notification ? <NotificationBar notification={notification} /> : null;
 }
 
-function PostHogInitializer() {
+function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
-    // Only initialize PostHog on non-admin routes
+    // Only initialize analytics scripts on non-admin routes and defer until required.
     if (!location.pathname.startsWith('/admin')) {
-      initPostHog();
+      loadGoogleAnalytics();
     }
   }, [location.pathname]);
 
@@ -248,14 +249,6 @@ function ManifestManager() {
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
-
-    // Track app initialization
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'app_initialized', {
-        event_category: 'app_lifecycle',
-        page_location: window.location.href
-      });
-    }
   }, []);
 
   return (
@@ -265,62 +258,62 @@ function App() {
           <ToastProvider>
             <div className="min-h-screen">
               <NotificationBarWrapper />
-              <PostHogInitializer />
+              <AnalyticsInitializer />
               <ManifestManager />
               <Analytics />
               <HashHandler />
               <Suspense fallback={<PageLoader message="Loading application..." />}>
                 <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/services/furniture-assembly" element={<FurnitureAssemblyPage />} />
-                <Route path="/services/tv-mounting" element={<TVMountingPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/partners" element={<PartnersPage />} />
-                <Route path="/gallery" element={<GalleryPage />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                <Route path="/lookup-request" element={<RequestLookupPage />} />
-                <Route path="/go/:slug" element={<QRRedirectPage />} />
-                <Route path="/pay/:invoiceId" element={<InvoicePaymentPage />} />
-                <Route path="/pay/:invoiceId/thank-you" element={<InvoiceThankYouPage />} />
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/services" element={<ServicesPage />} />
+                  <Route path="/services/furniture-assembly" element={<FurnitureAssemblyPage />} />
+                  <Route path="/services/tv-mounting" element={<TVMountingPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/partners" element={<PartnersPage />} />
+                  <Route path="/gallery" element={<GalleryPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/lookup-request" element={<RequestLookupPage />} />
+                  <Route path="/go/:slug" element={<QRRedirectPage />} />
+                  <Route path="/pay/:invoiceId" element={<InvoicePaymentPage />} />
+                  <Route path="/pay/:invoiceId/thank-you" element={<InvoiceThankYouPage />} />
 
-                <Route path="/admin/login" element={<LoginPage />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="goals" element={<GoalsPage />} />
-                  <Route path="inquiries" element={<InquiriesPage />} />
-                  <Route path="invoices" element={<InvoicesPage />} />
-                  <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
-                  <Route path="finances" element={<FinancesPage />} />
-                  <Route path="forecasting" element={<ForecastingPage />} />
-                  <Route path="tax-settings" element={<TaxSettingsPage />} />
-                  <Route path="mileage-settings" element={<MileageSettingsPage />} />
-                  <Route path="notification-bar" element={<NotificationBarPage />} />
-                  <Route path="activity-logs" element={<ActivityLogsPage />} />
-                  <Route path="test-identifiers" element={<TestIdentifiersPage />} />
-                  <Route path="business-info" element={<BusinessInfoPage />} />
-                  <Route path="services" element={<ServicesAdminPage />} />
-                  <Route path="service-areas" element={<ServiceAreasPage />} />
-                  <Route path="clients" element={<ClientsPage />} />
-                  <Route path="reviews" element={<ReviewsPage />} />
-                  <Route path="gallery" element={<GalleryAdminPage />} />
-                  <Route path="qr-codes" element={<QRCodesPage />} />
-                  <Route path="qr-codes/:id" element={<QRCodeDetailPage />} />
-                  <Route path="jobs" element={<JobsAdminPage />} />
-                  <Route path="completions" element={<CompletionsPage />} />
-                  <Route path="reminders" element={<RemindersPage />} />
-                  <Route path="business-hours" element={<BusinessHoursPage />} />
-                  <Route path="payment-methods" element={<PaymentMethodsPage />} />
-                  <Route path="social-media" element={<SocialMediaPage />} />
-                  <Route path="utm-link-builder" element={<UTMLinkBuilderPage />} />
-                  <Route path="attributes" element={<AttributesPage />} />
-                  <Route path="email-activity" element={<EmailActivityPage />} />
-                </Route>
+                  <Route path="/admin/login" element={<LoginPage />} />
+                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="dashboard" replace />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="goals" element={<GoalsPage />} />
+                    <Route path="inquiries" element={<InquiriesPage />} />
+                    <Route path="invoices" element={<InvoicesPage />} />
+                    <Route path="invoice-settings" element={<InvoiceSettingsPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="finances" element={<FinancesPage />} />
+                    <Route path="forecasting" element={<ForecastingPage />} />
+                    <Route path="tax-settings" element={<TaxSettingsPage />} />
+                    <Route path="mileage-settings" element={<MileageSettingsPage />} />
+                    <Route path="notification-bar" element={<NotificationBarPage />} />
+                    <Route path="activity-logs" element={<ActivityLogsPage />} />
+                    <Route path="test-identifiers" element={<TestIdentifiersPage />} />
+                    <Route path="business-info" element={<BusinessInfoPage />} />
+                    <Route path="services" element={<ServicesAdminPage />} />
+                    <Route path="service-areas" element={<ServiceAreasPage />} />
+                    <Route path="clients" element={<ClientsPage />} />
+                    <Route path="reviews" element={<ReviewsPage />} />
+                    <Route path="gallery" element={<GalleryAdminPage />} />
+                    <Route path="qr-codes" element={<QRCodesPage />} />
+                    <Route path="qr-codes/:id" element={<QRCodeDetailPage />} />
+                    <Route path="jobs" element={<JobsAdminPage />} />
+                    <Route path="completions" element={<CompletionsPage />} />
+                    <Route path="reminders" element={<RemindersPage />} />
+                    <Route path="business-hours" element={<BusinessHoursPage />} />
+                    <Route path="payment-methods" element={<PaymentMethodsPage />} />
+                    <Route path="social-media" element={<SocialMediaPage />} />
+                    <Route path="utm-link-builder" element={<UTMLinkBuilderPage />} />
+                    <Route path="attributes" element={<AttributesPage />} />
+                    <Route path="email-activity" element={<EmailActivityPage />} />
+                  </Route>
                 </Routes>
               </Suspense>
               <ScrollToTop />

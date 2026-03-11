@@ -1,8 +1,6 @@
-import { posthog } from '../lib/posthog';
-
 declare global {
   interface Window {
-    gtag: (command: string, targetId: string, config?: any) => void;
+    gtag: (...args: any[]) => void;
     dataLayer: any[];
   }
 }
@@ -85,11 +83,6 @@ export const trackGAEvent = (eventName: string, parameters?: GAEventParams) => {
     });
   }
 
-  posthog.capture(eventName, {
-    category: parameters?.event_category || 'engagement',
-    label: parameters?.event_label || eventName,
-    ...parameters
-  });
 };
 
 export const trackConversion = (action: string, value?: number, currency: string = 'USD', additionalParams?: GAEventParams) => {
@@ -112,12 +105,6 @@ export const trackConversion = (action: string, value?: number, currency: string
     });
   }
 
-  posthog.capture('conversion', {
-    action,
-    value,
-    currency,
-    ...additionalParams
-  });
 };
 
 // Track form interactions with enhanced parameters
@@ -126,8 +113,6 @@ export const trackFormInteraction = (
   action: 'start' | 'complete' | 'abandon' | 'field_interaction' | 'validation_error',
   additionalParams?: GAEventParams
 ) => {
-  const pageContext = getPageContext();
-
   trackGAEvent(`form_${action}`, {
     event_category: 'form_interaction',
     event_label: formName,
@@ -234,17 +219,10 @@ export const trackGAPageView = (path: string, title?: string) => {
     });
   }
 
-  posthog.capture('$pageview', {
-    $current_url: window.location.href,
-    page_path: path,
-    page_title: title || document.title
-  });
 };
 
 // Enhanced event tracking with automatic page context
 export const trackEvent = (eventName: string, pageSection?: string, additionalParams?: GAEventParams) => {
-  const pageContext = getPageContext();
-
   trackGAEvent(eventName, {
     event_category: additionalParams?.event_category || 'user_interaction',
     event_label: additionalParams?.event_label || eventName,
