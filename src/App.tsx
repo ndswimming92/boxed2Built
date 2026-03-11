@@ -4,7 +4,6 @@ import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone, trackPhoneLinkClick } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { loadGoogleAnalytics } from './utils/analyticsLoader';
-import { initPostHog } from './lib/posthog';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -229,14 +228,13 @@ function NotificationBarWrapper() {
   return notification ? <NotificationBar notification={notification} /> : null;
 }
 
-function PostHogInitializer() {
+function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
     // Only initialize analytics scripts on non-admin routes and defer until required.
     if (!location.pathname.startsWith('/admin')) {
       loadGoogleAnalytics();
-      initPostHog();
     }
   }, [location.pathname]);
 
@@ -260,7 +258,7 @@ function App() {
           <ToastProvider>
             <div className="min-h-screen">
               <NotificationBarWrapper />
-              <PostHogInitializer />
+              <AnalyticsInitializer />
               <ManifestManager />
               <Analytics />
               <HashHandler />
