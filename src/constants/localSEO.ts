@@ -225,7 +225,7 @@ export const FAQ_CONTENT = [
     questions: [
       {
         question: "What is Boxed2Built?",
-        answer: "Boxed2Built is a professional furniture assembly and handyman service based in Spring Hill, TN. Founded by Nicholas Davidson, we specialize in assembling furniture from all major brands including IKEA, Target, Walmart, Wayfair, and Amazon. Our mission is to turn boxes into comfort so families can focus on what matters most."
+        answer: "Boxed2Built is a professional furniture assembly and handyman service based in Spring Hill, TN. Founded by Nicholas Davidson, we specialize in assembling furniture from all major brands including IKEA, Target, Walmart, Wayfair, and Amazon. Our mission is to turn boxes into comfort, one home at a time."
       },
       {
         question: "Do you assemble IKEA furniture?",
