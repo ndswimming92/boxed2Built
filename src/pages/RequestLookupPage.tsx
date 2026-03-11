@@ -98,10 +98,10 @@ const RequestLookupPage: React.FC = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!request) return;
 
-    generateRequestSummaryPDF({
+    await generateRequestSummaryPDF({
       confirmationCode: request.confirmation_code,
       clientName: request.client_name,
       clientEmail: request.client_email,

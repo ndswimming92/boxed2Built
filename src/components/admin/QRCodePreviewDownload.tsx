@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Copy, ExternalLink, FileImage, FileCode, FileText } from 'lucide-react';
 import QRCode from 'qrcode';
-import jsPDF from 'jspdf';
 import { QRCodeWithSchedules } from '../../lib/supabase';
 import { getShortURL } from '../../services/qrCodeService';
 import { useToast } from '../../contexts/ToastContext';
@@ -101,6 +100,7 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
   const handleDownloadPDF = async () => {
     setDownloadingFormat('pdf');
     try {
+      const { default: jsPDF } = await import('jspdf');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',

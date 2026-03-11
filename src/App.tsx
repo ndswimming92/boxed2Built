@@ -232,10 +232,32 @@ function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
-    // Only initialize analytics scripts on non-admin routes and defer until required.
-    if (!location.pathname.startsWith('/admin')) {
+    // Only initialize analytics scripts on non-admin routes and defer until user interaction.
+    if (location.pathname.startsWith('/admin')) return;
+
+    let isLoaded = false;
+
+    const initializeAnalytics = () => {
+      if (isLoaded) return;
+      isLoaded = true;
       loadGoogleAnalytics();
-    }
+      window.removeEventListener('pointerdown', initializeAnalytics);
+      window.removeEventListener('keydown', initializeAnalytics);
+      window.removeEventListener('scroll', initializeAnalytics);
+      window.removeEventListener('touchstart', initializeAnalytics);
+    };
+
+    window.addEventListener('pointerdown', initializeAnalytics, { once: true, passive: true });
+    window.addEventListener('keydown', initializeAnalytics, { once: true });
+    window.addEventListener('scroll', initializeAnalytics, { once: true, passive: true });
+    window.addEventListener('touchstart', initializeAnalytics, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', initializeAnalytics);
+      window.removeEventListener('keydown', initializeAnalytics);
+      window.removeEventListener('scroll', initializeAnalytics);
+      window.removeEventListener('touchstart', initializeAnalytics);
+    };
   }, [location.pathname]);
 
   return null;

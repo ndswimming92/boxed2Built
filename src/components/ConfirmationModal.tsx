@@ -49,13 +49,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     });
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const pdfData: RequestSummaryData = {
       confirmationCode,
       ...requestData,
     };
 
-    generateRequestSummaryPDF(pdfData);
+    await generateRequestSummaryPDF(pdfData);
 
     trackEvent('request_summary_downloaded', 'confirmation_modal', {
       event_category: 'conversion',
