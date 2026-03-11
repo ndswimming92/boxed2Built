@@ -1,5 +1,3 @@
-import { jsPDF } from 'jspdf';
-
 export interface RequestSummaryData {
   confirmationCode: string;
   clientName: string;
@@ -16,7 +14,8 @@ export interface RequestSummaryData {
   submissionDate: string;
 }
 
-export function generateRequestSummaryPDF(data: RequestSummaryData): void {
+export async function generateRequestSummaryPDF(data: RequestSummaryData): Promise<void> {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF();
 
   const pageWidth = doc.internal.pageSize.getWidth();

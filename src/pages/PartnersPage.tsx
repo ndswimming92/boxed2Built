@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import jsPDF from 'jspdf';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -86,7 +85,7 @@ const PartnersPage: React.FC = () => {
     });
   };
 
-  const handleFlyerDownload = () => {
+  const handleFlyerDownload = async () => {
     trackEvent('file_download', 'partners_page_flyer', {
       event_category: 'download',
       event_label: 'realtor_flyer_download',
@@ -94,6 +93,7 @@ const PartnersPage: React.FC = () => {
       action_value: 'realtor_flyer_pdf',
     });
 
+    const { default: jsPDF } = await import('jspdf');
     const pdf = new jsPDF();
     pdf.text('Boxed2Built Realtor Partnership Program', 20, 20);
     pdf.save('Boxed2Built-Realtor-Partnership-Program.pdf');
