@@ -8,7 +8,7 @@
 **Boxed2Built** is Spring Hill, Tennessee's premier furniture assembly service, specializing in professional IKEA, Target, Walmart, and major brand furniture assembly. We serve families throughout Middle Tennessee with expert handyman services, transparent pricing, and satisfaction guaranteed.
 
 ### 🎯 Our Mission
-*"We turn boxes into comfort so families can focus on what matters most."*
+*"Turning boxes into comfort, one home at a time."*
 
 ## 🔧 Services Offered
 
