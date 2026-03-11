@@ -136,7 +136,6 @@ This website is built with modern web technologies for optimal performance:
 - **Styling**: Tailwind CSS
 - **Build Tool**: Vite
 - **Hosting**: Bolt.new
-- **Domain**: Porkbun
 - **Analytics**: Google Analytics 4
 - **Forms**: Formspree
 - **Scheduling**: Calendly Integration
