@@ -33,7 +33,7 @@ const Footer: React.FC = () => {
   const phoneTel = toTelHref(phoneRaw);
   const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
-  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most.';
+  const slogan = businessData?.info?.slogan || 'Turning boxes into comfort, one home at a time.';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
 
