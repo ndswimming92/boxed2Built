@@ -1,8 +1,8 @@
-import { posthog } from '../lib/posthog';
+import { capturePostHogEvent } from '../lib/posthog';
 
 declare global {
   interface Window {
-    gtag: (command: string, targetId: string, config?: any) => void;
+    gtag: (...args: any[]) => void;
     dataLayer: any[];
   }
 }
@@ -85,7 +85,7 @@ export const trackGAEvent = (eventName: string, parameters?: GAEventParams) => {
     });
   }
 
-  posthog.capture(eventName, {
+  void capturePostHogEvent(eventName, {
     category: parameters?.event_category || 'engagement',
     label: parameters?.event_label || eventName,
     ...parameters
@@ -112,7 +112,7 @@ export const trackConversion = (action: string, value?: number, currency: string
     });
   }
 
-  posthog.capture('conversion', {
+  void capturePostHogEvent('conversion', {
     action,
     value,
     currency,
@@ -234,7 +234,7 @@ export const trackGAPageView = (path: string, title?: string) => {
     });
   }
 
-  posthog.capture('$pageview', {
+  void capturePostHogEvent('$pageview', {
     $current_url: window.location.href,
     page_path: path,
     page_title: title || document.title
