@@ -66,6 +66,13 @@ export interface ConversionMetrics {
   avgDaysToComplete: number;
 }
 
+export interface ClientTimeSavedMetric {
+  rawHours: number;
+  label: string;
+  title: string;
+  subtitle: string;
+}
+
 export interface LostDealBreakdown {
   category: string;
   count: number;
@@ -85,6 +92,20 @@ export interface JobTypeConversion {
 }
 
 export type TimePeriod = 'current_month' | 'last_3_months' | 'last_6_months' | 'current_year' | 'all_time';
+
+const CLIENT_TIME_SAVED_TITLE = 'Total Client Hours Saved';
+const CLIENT_TIME_SAVED_SUBTITLE = 'Calculated as the direct sum of completed job hours worked.';
+
+export function calculateClientTimeSaved(hoursWorkedValues: Array<number | null | undefined>): ClientTimeSavedMetric {
+  const rawHours = hoursWorkedValues.reduce((sum, hoursWorked) => sum + (Number(hoursWorked) || 0), 0);
+
+  return {
+    rawHours,
+    label: `${rawHours.toFixed(1)} hrs`,
+    title: CLIENT_TIME_SAVED_TITLE,
+    subtitle: CLIENT_TIME_SAVED_SUBTITLE,
+  };
+}
 
 function calculateNetProfit(finalPrice: number | null, materialsCost: number | null): number {
   if (finalPrice === null) return 0;

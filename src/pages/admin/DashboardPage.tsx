@@ -5,6 +5,7 @@ import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
 import { getReferralStats } from '../../services/clientService';
+import { calculateClientTimeSaved } from '../../services/analyticsService';
 import type { Goal } from '../../lib/supabase';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -94,13 +95,13 @@ export default function DashboardPage() {
   const updateRevenueFromJobs = () => {
     const completedJobs = realtimeJobs.filter(job => job.date_completed);
     const totalRevenue = completedJobs.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0);
-    const totalHoursSaved = completedJobs.reduce((sum, job) => sum + (Number(job.hours_worked) || 0), 0);
+    const clientTimeSaved = calculateClientTimeSaved(completedJobs.map(job => job.hours_worked));
 
     setStats(prev => ({
       ...prev,
       jobs: realtimeJobs.length,
       totalRevenue,
-      totalHoursSaved,
+      totalHoursSaved: clientTimeSaved.rawHours,
     }));
   };
 
@@ -160,9 +161,7 @@ export default function DashboardPage() {
         ? jobsData.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0)
         : 0;
 
-      const totalHoursSaved = jobsData && jobsData.length > 0
-        ? jobsData.reduce((sum, job) => sum + (Number(job.hours_worked) || 0), 0)
-        : 0;
+      const clientTimeSaved = calculateClientTimeSaved((jobsData || []).map(job => job.hours_worked));
 
       setStats({
         services: servicesCount || 0,
@@ -173,7 +172,7 @@ export default function DashboardPage() {
         socialMedia: socialMediaCount || 0,
         jobs: jobsCount || 0,
         totalRevenue,
-        totalHoursSaved,
+        totalHoursSaved: clientTimeSaved.rawHours,
         inquiries: inquiryStats.total,
         pendingInquiries: inquiryStats.pending,
         conversionRate: inquiryStats.conversionRate,
@@ -194,7 +193,7 @@ export default function DashboardPage() {
     }).format(amount);
   };
 
-  const formatHours = (hours: number) => `${hours.toFixed(1)} hrs`;
+  const clientTimeSaved = calculateClientTimeSaved([stats.totalHoursSaved]);
 
   const statCards = [
     {
@@ -212,8 +211,9 @@ export default function DashboardPage() {
       color: 'bg-emerald-500'
     },
     {
-      name: 'Hours Saved',
-      value: formatHours(stats.totalHoursSaved),
+      name: clientTimeSaved.title,
+      value: clientTimeSaved.label,
+      subtitle: clientTimeSaved.subtitle,
       icon: Clock,
       link: '/admin/analytics',
       color: 'bg-violet-500'
@@ -311,6 +311,9 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-sm font-medium text-slate-600 mb-1">{card.name}</p>
                 <p className="text-3xl font-bold text-slate-900">{card.value}</p>
+                {'subtitle' in card && card.subtitle && (
+                  <p className="text-xs text-slate-500 mt-2">{card.subtitle}</p>
+                )}
                 <p className="text-sm text-emerald-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   Manage →
                 </p>
