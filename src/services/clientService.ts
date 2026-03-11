@@ -601,18 +601,33 @@ export async function getReferralStats(organizationId: string): Promise<{
   creditsIssuedAllTime: number;
   creditsRedeemedAllTime: number;
 }> {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('referral_code, referred_by_client_id, referral_credit_balance, referral_credit_used')
-    .eq('organization_id', organizationId)
-    .eq('is_test', false);
+  const [
+    { data: clientsData, error: clientsError },
+    { count: referredInquiryCount, error: inquiriesError }
+  ] = await Promise.all([
+    supabase
+      .from('clients')
+      .select('referral_code, referred_by_client_id, referral_credit_balance, referral_credit_used')
+      .eq('organization_id', organizationId)
+      .eq('is_test', false),
+    supabase
+      .from('form_inquiries')
+      .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
+      .eq('is_test', false)
+      .not('referral_code_used', 'is', null)
+      .neq('referral_code_used', ''),
+  ]);
 
-  if (error) throw error;
+  if (clientsError) throw clientsError;
+  if (inquiriesError) throw inquiriesError;
 
-  const clients = data || [];
+  const clients = clientsData || [];
+  const clientReferralCount = clients.filter(c => c.referred_by_client_id).length;
+
   return {
     totalCodes: clients.filter(c => c.referral_code).length,
-    totalReferrals: clients.filter(c => c.referred_by_client_id).length,
+    totalReferrals: Math.max(clientReferralCount, referredInquiryCount || 0),
     creditsIssuedAllTime: clients.reduce(
       (sum, c) => sum + (parseFloat(c.referral_credit_balance?.toString() || '0') + parseFloat(c.referral_credit_used?.toString() || '0')),
       0
