@@ -126,7 +126,7 @@ const HomeHero: React.FC = () => {
                     variant="primary"
                     size="lg"
                     onClick={handleContactFormClick}
-                    className="group text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 shadow-xl hover:shadow-2xl"
+                    className="group w-full sm:w-auto min-h-[52px] whitespace-nowrap text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 shadow-xl hover:shadow-2xl"
                     trackingLabel="get_free_quote_hero"
                     pageSection="hero"
                     aria-label="Get a free furniture assembly quote in Spring Hill TN"
@@ -138,7 +138,7 @@ const HomeHero: React.FC = () => {
                   <a
                     href={`sms:${smsNumber}`}
                     onClick={handleTextPhotoClick}
-                    className="inline-flex items-center justify-center text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
+                    className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
                     aria-label="Text a photo for a fast furniture assembly quote"
                   >
                     Text a Photo
