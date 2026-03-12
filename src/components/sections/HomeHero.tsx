@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import CallButton from '../ui/CallButton';
 import { trackEvent, trackConversion } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { BUSINESS_INFO } from '../../constants/localSEO';
 
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -65,9 +66,8 @@ const HomeHero: React.FC = () => {
   }
 
   const businessName = businessData?.info?.name || 'Boxed2Built';
-  const slogan =
-    businessData?.info?.slogan ||
-    'Turning boxes into comfort, one home at a time.';
+  // Keep the homepage hero tagline stable even if the external CMS/supabase slogan changes.
+  const slogan = BUSINESS_INFO.slogan;
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
 
