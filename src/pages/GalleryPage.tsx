@@ -6,6 +6,7 @@ import MediaGallery from '../components/sections/MediaGallery';
 import { Camera, Video, CheckCircle } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { supabase } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
