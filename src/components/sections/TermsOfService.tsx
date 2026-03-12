@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
+import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
 
 const TermsOfService = () => {
   useEffect(() => {
-    document.title = 'Terms of Service - Boxed2Built Furniture Assembly Service';
+    document.title = LOCAL_SEO_CONTENT.termsOfService.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Terms of Service for Boxed2Built furniture assembly services in Spring Hill, TN. Read our service terms and conditions for IKEA, Target, Walmart furniture assembly.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.termsOfService.description);
     }
   }, []);
 

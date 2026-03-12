@@ -7,6 +7,7 @@ import { Camera, Video, CheckCircle } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
 import { supabase } from '../lib/supabase';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const GalleryPage: React.FC = () => {
   const [businessId, setBusinessId] = useState<string>('');
@@ -29,11 +30,11 @@ const GalleryPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'Furniture Assembly Gallery | Boxed2Built Spring Hill';
+    document.title = LOCAL_SEO_CONTENT.gallery.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.gallery.description);
     }
 
     let canonicalLink = document.querySelector('link[rel="canonical"]');
