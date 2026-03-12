@@ -1,21 +1,21 @@
 import React from 'react';
-import { useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import TermsOfService from '../components/sections/TermsOfService';
 import { ChevronRight } from 'lucide-react';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const TermsOfServicePage: React.FC = () => {
-  useEffect(() => {
-    // Set canonical URL for this page
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/terms-of-service');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.termsOfService.title,
+    description: LOCAL_SEO_CONTENT.termsOfService.description,
+    canonicalUrl: 'https://boxed2built.com/terms-of-service',
+    ogTitle: 'Boxed2Built Terms of Service',
+    ogDescription: 'Review service terms for furniture assembly bookings with Boxed2Built.',
+    twitterTitle: 'Terms of Service | Boxed2Built',
+    twitterDescription: 'Read the service terms for Boxed2Built appointments and payments.',
+  });
 
   return (
     <>

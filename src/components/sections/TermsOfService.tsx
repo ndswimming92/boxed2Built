@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const TermsOfService = () => {
-  useEffect(() => {
-    document.title = 'Terms of Service - Boxed2Built Furniture Assembly Service';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Terms of Service for Boxed2Built furniture assembly services in Spring Hill, TN. Read our service terms and conditions for IKEA, Target, Walmart furniture assembly.');
-    }
-  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">

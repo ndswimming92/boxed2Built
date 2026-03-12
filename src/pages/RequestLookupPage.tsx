@@ -10,8 +10,19 @@ import { getSavedRequestByCode } from '../services/savedRequestService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const RequestLookupPage: React.FC = () => {
+
+  usePageMeta({
+    title: 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly',
+    description: 'Check your furniture assembly request status with Boxed2Built. Quickly access details for your Spring Hill service inquiry.',
+    canonicalUrl: 'https://boxed2built.com/lookup-request',
+    ogTitle: 'Request Lookup | Boxed2Built',
+    ogDescription: 'Need to review your Boxed2Built request? Use the request lookup page to find your inquiry details fast.',
+    twitterTitle: 'Boxed2Built Request Lookup',
+    twitterDescription: 'Look up your furniture assembly request details with Boxed2Built.',
+  });
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
@@ -19,24 +30,6 @@ const RequestLookupPage: React.FC = () => {
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
   useEffect(() => {
-    document.title = 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        'Look up your Boxed2Built furniture assembly service request using your email and confirmation code. View, download, or email your request details.'
-      );
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/lookup-request');
-
     const searchParams = new URLSearchParams(location.search);
     const codeParam = searchParams.get('code');
     const emailParam = searchParams.get('email');

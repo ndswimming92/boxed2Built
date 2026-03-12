@@ -9,28 +9,22 @@ import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
 
 const FAQPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.faq.title,
+    description: LOCAL_SEO_CONTENT.faq.description,
+    canonicalUrl: 'https://boxed2built.com/faq',
+    ogTitle: 'Furniture Assembly FAQ | Boxed2Built',
+    ogDescription: 'Read answers about pricing, timelines, service areas, and what to expect from Boxed2Built furniture assembly.',
+    twitterTitle: 'Boxed2Built FAQ',
+    twitterDescription: 'Get quick answers to common furniture assembly questions from Boxed2Built in Spring Hill, TN.',
+  });
   const [openItem, setOpenItem] = useState<string | null>(null);
-
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.faq.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.faq.description);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/faq');
-  }, []);
 
 
   const handleEmailClick = () => {

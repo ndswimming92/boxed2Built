@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Trash2, Star, Home, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
@@ -10,46 +10,21 @@ import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { usePageMeta } from '../../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
 
 const FurnitureAssemblyPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.furnitureAssembly.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.furnitureAssembly.description);
-    } else {
-      const newMeta = document.createElement('meta');
-      newMeta.setAttribute('name', 'description');
-      newMeta.setAttribute('content', LOCAL_SEO_CONTENT.furnitureAssembly.description);
-      document.head.appendChild(newMeta);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/services/furniture-assembly');
-
-    const setMeta = (name: string, content: string) => {
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('name', name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('content', content);
-    };
-
-    setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', LOCAL_SEO_CONTENT.furnitureAssembly.title);
-    setMeta('twitter:description', LOCAL_SEO_CONTENT.furnitureAssembly.description);
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.furnitureAssembly.title,
+    description: LOCAL_SEO_CONTENT.furnitureAssembly.description,
+    canonicalUrl: 'https://boxed2built.com/services/furniture-assembly',
+    ogTitle: 'Furniture Assembly Service in Spring Hill, TN',
+    ogDescription: 'Book professional furniture assembly with Boxed2Built for IKEA, Target, Walmart, and more in Spring Hill, TN.',
+    twitterTitle: 'Furniture Assembly | Boxed2Built',
+    twitterDescription: 'Professional furniture assembly service in Spring Hill, TN from Boxed2Built.',
+  });
 
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
   const servicesAndPricing = FAQ_CONTENT.find(cat => cat.category === "Services & Pricing")?.questions || [];

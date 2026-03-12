@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const PrivacyPolicy = () => {
-  useEffect(() => {
-    document.title = 'Privacy Policy - Boxed2Built Furniture Assembly Service';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Privacy Policy for Boxed2Built furniture assembly services in Spring Hill, TN. Learn how we protect your personal information and data.');
-    }
-  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">

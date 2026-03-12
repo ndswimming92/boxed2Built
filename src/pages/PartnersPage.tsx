@@ -17,28 +17,22 @@ import {
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.partners.title,
+    description: LOCAL_SEO_CONTENT.partners.description,
+    canonicalUrl: 'https://boxed2built.com/partners',
+    ogTitle: 'Partner with Boxed2Built in Spring Hill, TN',
+    ogDescription: 'See how Boxed2Built partners with movers, realtors, and local businesses to deliver turnkey move-in support.',
+    twitterTitle: 'Boxed2Built Partnerships',
+    twitterDescription: 'Explore partnership opportunities with Boxed2Built for reliable assembly support in Spring Hill, TN.',
+  });
   useEffect(() => {
-    document.title = 'Boxed2Built Partnerships | Realtors & Movers in Spring Hill';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        'Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts.'
-      );
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/partners');
-
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',

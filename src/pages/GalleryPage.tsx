@@ -7,10 +7,22 @@ import { Camera, Video, CheckCircle } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
 import { supabase } from '../lib/supabase';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const GalleryPage: React.FC = () => {
   const [businessId, setBusinessId] = useState<string>('');
   const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
+
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.gallery.title,
+    description: LOCAL_SEO_CONTENT.gallery.description,
+    canonicalUrl: 'https://boxed2built.com/gallery',
+    ogTitle: 'Furniture Assembly Gallery | Boxed2Built',
+    ogDescription: 'Browse real furniture assembly and TV mounting projects completed by Boxed2Built in Spring Hill, TN.',
+    twitterTitle: 'Boxed2Built Gallery',
+    twitterDescription: 'See real Boxed2Built furniture assembly projects in Spring Hill and surrounding communities.',
+  });
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -26,23 +38,6 @@ const GalleryPage: React.FC = () => {
       }
     };
     fetchBusinessId();
-  }, []);
-
-  useEffect(() => {
-    document.title = 'Furniture Assembly Gallery | Boxed2Built Spring Hill';
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas.');
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/gallery');
   }, []);
 
 

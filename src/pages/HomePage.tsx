@@ -1,5 +1,4 @@
 import React from 'react';
-import { useEffect } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
@@ -13,6 +12,7 @@ import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
 import {
   LOCAL_SEO_CONTENT,
   FAQ_CONTENT
@@ -21,22 +21,15 @@ import {
 const HomePage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.homepage.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.homepage.description);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.homepage.title,
+    description: LOCAL_SEO_CONTENT.homepage.description,
+    canonicalUrl: 'https://boxed2built.com/',
+    ogTitle: 'Spring Hill Furniture Assembly | Boxed2Built',
+    ogDescription: 'Fast, reliable furniture assembly in Spring Hill, TN for IKEA, Target, Walmart, and more. Get a free quote from Boxed2Built.',
+    twitterTitle: 'Spring Hill Furniture Assembly | Boxed2Built',
+    twitterDescription: 'Need furniture assembled in Spring Hill, TN? Boxed2Built provides professional setup and cleanup for every build.',
+  });
 
   // Get high-value FAQ questions from Common Questions category plus a few popular ones
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
