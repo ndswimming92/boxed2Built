@@ -185,14 +185,14 @@ export const LOCAL_SEO_CONTENT = {
       "Review the Terms of Service for Boxed2Built, covering scheduling, communication, payment policies, and service expectations for our Spring Hill, TN clients."
   },
   furnitureAssembly: {
-    title: "Furniture Assembly Services in Spring Hill, TN | Professional IKEA, Target & Walmart Assembly | Boxed2Built",
+    title: "Furniture Assembly Spring Hill, TN | Boxed2Built",
     description:
-      "Expert furniture assembly in Spring Hill, TN. Professional assembly for IKEA, Target, Walmart, Wayfair & Amazon furniture. Free quotes, flexible scheduling. Serving Franklin, Columbia & Thompson's Station. Call (615) 403-4538."
+      "Get stress-free furniture assembly in Spring Hill, TN with Boxed2Built. We assemble it right, clean up, and get your space ready fast. Call for a free quote."
   },
   tvMounting: {
-    title: "TV Mounting Service in Spring Hill, TN | Professional TV Installation | Boxed2Built",
+    title: "TV Mounting Spring Hill, TN | Boxed2Built",
     description:
-      "Professional TV mounting service in Spring Hill, TN. Expert installation for all TV sizes, wall types & mounting brackets. Same-day service available. Serving Franklin, Columbia & Thompson's Station. Free quotes. Call (615) 403-4538."
+      "Book professional TV mounting in Spring Hill, TN with Boxed2Built for secure installation, clean cable setup, and a polished finish. Call now for a free quote."
   }
 };
 
