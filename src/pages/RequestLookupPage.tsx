@@ -10,7 +10,7 @@ import { getSavedRequestByCode } from '../services/savedRequestService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const RequestLookupPage: React.FC = () => {
 
@@ -30,6 +30,24 @@ const RequestLookupPage: React.FC = () => {
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
   useEffect(() => {
+    document.title = LOCAL_SEO_CONTENT.requestLookup.title;
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        'content',
+        LOCAL_SEO_CONTENT.requestLookup.description
+      );
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/lookup-request');
+
     const searchParams = new URLSearchParams(location.search);
     const codeParam = searchParams.get('code');
     const emailParam = searchParams.get('email');

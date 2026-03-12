@@ -17,11 +17,28 @@ import {
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+  useEffect(() => {
+    document.title = LOCAL_SEO_CONTENT.partners.title;
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        'content',
+        LOCAL_SEO_CONTENT.partners.description
+      );
+    }
+
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', 'https://boxed2built.com/partners');
 
   usePageMeta({
     title: LOCAL_SEO_CONTENT.partners.title,

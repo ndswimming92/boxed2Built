@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
 
 const TermsOfService = () => {
+  useEffect(() => {
+    document.title = LOCAL_SEO_CONTENT.termsOfService.title;
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.termsOfService.description);
+    }
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">

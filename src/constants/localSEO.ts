@@ -165,24 +165,29 @@ export const LOCAL_SEO_CONTENT = {
       "Find answers to common questions about furniture assembly, pricing, scheduling, and service areas. Boxed2Built helps Spring Hill families build with confidence."
   },
   partners: {
-    title: "Local Partnerships in Spring Hill, TN | Boxed2Built",
+    title: "Boxed2Built Partnerships | Realtors & Movers in Spring Hill",
     description:
-      "Discover how Boxed2Built partners with realtors, movers, and local businesses to support families in Spring Hill, TN with reliable assembly and setup services."
+      "Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts."
   },
   gallery: {
-    title: "Furniture Assembly Gallery | Boxed2Built Projects",
+    title: "Furniture Assembly Gallery | Boxed2Built Spring Hill",
     description:
-      "Browse recent Boxed2Built projects, including TV mounting, furniture assembly, nurseries, patios, and more. Real builds from homes across Spring Hill, TN."
+      "View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas."
   },
   privacyPolicy: {
-    title: "Privacy Policy | Boxed2Built Furniture Assembly",
+    title: "Privacy Policy - Boxed2Built Furniture Assembly Service",
     description:
-      "Learn how Boxed2Built protects your personal information when you request quotes, schedule services, or use our website. Clear, transparent privacy practices."
+      "Privacy Policy for Boxed2Built furniture assembly services in Spring Hill, TN. Learn how we protect your personal information and data."
   },
   termsOfService: {
-    title: "Terms of Service | Boxed2Built Furniture Assembly",
+    title: "Terms of Service - Boxed2Built Furniture Assembly Service",
     description:
-      "Review the Terms of Service for Boxed2Built, covering scheduling, communication, payment policies, and service expectations for our Spring Hill, TN clients."
+      "Terms of Service for Boxed2Built furniture assembly services in Spring Hill, TN. Read our service terms and conditions for IKEA, Target, Walmart furniture assembly."
+  },
+  requestLookup: {
+    title: "Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly",
+    description:
+      "Look up your Boxed2Built furniture assembly service request using your email and confirmation code. View, download, or email your request details."
   },
   furnitureAssembly: {
     title: "Furniture Assembly Spring Hill, TN | Boxed2Built",
