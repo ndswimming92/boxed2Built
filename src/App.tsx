@@ -1,7 +1,6 @@
 import React, { ReactNode, Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ScrollToTop from './components/ui/ScrollToTop';
-import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone, trackPhoneLinkClick } from './utils/analytics';
 import PageLoader from './components/ui/PageLoader';
 import { loadGoogleAnalytics } from './utils/analyticsLoader';
 import { AuthProvider } from './contexts/AuthContext';
@@ -10,8 +9,16 @@ import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
-import { supabase } from './lib/supabase';
 import { useManifestManager } from './hooks/useManifestManager';
+import { supabase } from './lib/supabase';
+
+type AnalyticsModule = typeof import('./utils/analytics');
+let analyticsModulePromise: Promise<AnalyticsModule> | null = null;
+
+const loadAnalyticsModule = (): Promise<AnalyticsModule> => {
+  analyticsModulePromise ??= import('./utils/analytics');
+  return analyticsModulePromise;
+};
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
@@ -78,22 +85,30 @@ function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
-    // Reset tracking for new page
-    scrollDepthTracked = { 25: false, 50: false, 75: false, 100: false };
-    pageStartTime = Date.now();
-    engagementTracked = false;
+    let analytics: AnalyticsModule | null = null;
 
-    // Track page views with Google Analytics
-    trackPageView(location.pathname, document.title);
+    const run = async () => {
+      analytics = await loadAnalyticsModule();
+
+      // Reset tracking for new page
+      scrollDepthTracked = { 25: false, 50: false, 75: false, 100: false };
+      pageStartTime = Date.now();
+      engagementTracked = false;
+
+      // Track page views with Google Analytics
+      analytics.trackPageView(location.pathname, document.title);
 
     // Additional GA4 specific tracking
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'page_view', {
-        page_path: location.pathname,
-        page_title: document.title,
-        page_location: window.location.href
-      });
-    }
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'page_view', {
+          page_path: location.pathname,
+          page_title: document.title,
+          page_location: window.location.href
+        });
+      }
+    };
+
+    run();
 
     // Set up scroll depth tracking
     const handleScroll = () => {
@@ -109,7 +124,7 @@ function Analytics() {
         const depthNum = parseInt(depth);
         if (scrollPercentage >= depthNum && !scrollDepthTracked[depthNum as keyof typeof scrollDepthTracked]) {
           scrollDepthTracked[depthNum as keyof typeof scrollDepthTracked] = true;
-          trackScrollDepth(depthNum);
+          analytics?.trackScrollDepth(depthNum);
         }
       });
 
@@ -117,7 +132,7 @@ function Analytics() {
       if (!engagementTracked && scrollPercentage >= 50) {
         const timeOnPage = (Date.now() - pageStartTime) / 1000;
         if (timeOnPage >= 30) {
-          trackEngagementMilestone('engaged_user', timeOnPage);
+          analytics?.trackEngagementMilestone('engaged_user', timeOnPage);
           engagementTracked = true;
         }
       }
@@ -133,7 +148,7 @@ function Analytics() {
       const phoneNumber = href.replace(/^tel:/i, '').trim();
       const linkText = phoneLink.textContent?.trim();
 
-      trackPhoneLinkClick(phoneNumber || href, linkText);
+      analytics?.trackPhoneLinkClick(phoneNumber || href, linkText);
     };
 
     // Set up time tracking
@@ -142,18 +157,18 @@ function Analytics() {
 
       // Track time milestones
       if (timeOnPage >= 30 && timeOnPage < 35) {
-        trackEngagementMilestone('30_seconds', 30);
+        analytics?.trackEngagementMilestone('30_seconds', 30);
       } else if (timeOnPage >= 60 && timeOnPage < 65) {
-        trackEngagementMilestone('1_minute', 60);
+        analytics?.trackEngagementMilestone('1_minute', 60);
       } else if (timeOnPage >= 180 && timeOnPage < 185) {
-        trackEngagementMilestone('3_minutes', 180);
+        analytics?.trackEngagementMilestone('3_minutes', 180);
       }
     }, 5000); // Check every 5 seconds
 
     // Track page exit
     const handleBeforeUnload = () => {
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
-      trackTimeOnPage(Math.round(timeOnPage));
+      analytics?.trackTimeOnPage(Math.round(timeOnPage));
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -168,7 +183,7 @@ function Analytics() {
 
       // Track final time on page
       const timeOnPage = (Date.now() - pageStartTime) / 1000;
-      trackTimeOnPage(Math.round(timeOnPage));
+      analytics?.trackTimeOnPage(Math.round(timeOnPage));
     };
   }, [location]);
 

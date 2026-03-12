@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getNotificationBar, NotificationBar } from '../lib/supabase';
+import { getNotificationBar, type NotificationBar } from '../lib/supabase';
 
 export function useNotificationBar(businessId: string | null) {
   const [notification, setNotification] = useState<NotificationBar | null>(null);
