@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { ReactNode, Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ScrollToTop from './components/ui/ScrollToTop';
 import { trackPageView, trackScrollDepth, trackTimeOnPage, trackEngagementMilestone, trackPhoneLinkClick } from './utils/analytics';
@@ -268,6 +268,17 @@ function ManifestManager() {
   return null;
 }
 
+
+function ConditionalAuthProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
+
+  if (location.pathname.startsWith('/admin')) {
+    return <AuthProvider>{children}</AuthProvider>;
+  }
+
+  return <>{children}</>;
+}
+
 function App() {
   useEffect(() => {
     document.title = 'Boxed2Built - Furniture Assembly Service';
@@ -275,9 +286,9 @@ function App() {
 
   return (
     <Router>
-      <AuthProvider>
-        <NotificationBarProvider>
-          <ToastProvider>
+      <NotificationBarProvider>
+        <ToastProvider>
+          <ConditionalAuthProvider>
             <div className="min-h-screen">
               <NotificationBarWrapper />
               <AnalyticsInitializer />
@@ -340,9 +351,9 @@ function App() {
               </Suspense>
               <ScrollToTop />
             </div>
-          </ToastProvider>
-        </NotificationBarProvider>
-      </AuthProvider>
+          </ConditionalAuthProvider>
+        </ToastProvider>
+      </NotificationBarProvider>
     </Router>
   );
 }
