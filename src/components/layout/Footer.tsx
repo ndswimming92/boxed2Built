@@ -40,7 +40,10 @@ const Footer: React.FC = () => {
   const serviceAreas =
     businessData?.serviceAreas?.map((area) => `${area.city_name}, ${area.region}`) || [];
   const paymentMethods = businessData?.paymentMethods?.map((pm) => pm.method_name) || [];
-  const socialMedia = businessData?.socialMedia || [];
+  const socialMedia = (businessData?.socialMedia || []).filter((social) => {
+    const platform = social.platform.toLowerCase();
+    return !platform.includes('email');
+  });
   const businessHours = businessData?.businessHours || [];
 
   const handleSocialClick = (platform: string) => {
