@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Calendar, Clock, CheckCircle, Phone, Lock } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
-import { getCalendlyUrl } from '../../utils/utm';
 
 const Booking: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -20,9 +19,9 @@ const Booking: React.FC = () => {
       element_location: 'booking_section',
       page_section: 'booking_section',
       action_type: 'booking_click',
-      conversion_type: 'calendly_booking'
+      conversion_type: 'contact_page_visit'
     });
-    window.open(getCalendlyUrl('booking'), '_blank');
+    window.location.href = '/contact?utm_source=website&utm_medium=cta&utm_campaign=booking_section&utm_content=main_booking_form';
   };
 
   const handleTermsClick = () => {
