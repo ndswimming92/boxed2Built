@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -10,51 +10,21 @@ import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
 
 const ServicesPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  useEffect(() => {
-    // Title + meta description (SPA-friendly)
-    document.title = LOCAL_SEO_CONTENT.services.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
-    } else {
-      const newMeta = document.createElement('meta');
-      newMeta.setAttribute('name', 'description');
-      newMeta.setAttribute('content', LOCAL_SEO_CONTENT.services.description);
-      document.head.appendChild(newMeta);
-    }
-
-    // Canonical URL
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/services');
-
-    // Optional: basic Twitter tags (helps shares; harmless for SEO)
-    const setMeta = (name: string, content: string) => {
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('name', name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('content', content);
-    };
-
-    setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', LOCAL_SEO_CONTENT.services.title);
-    setMeta('twitter:description', LOCAL_SEO_CONTENT.services.description);
-    // If you have a dedicated social share image, uncomment:
-    // setMeta('twitter:image', 'https://boxed2built.com/og-services.jpg');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.services.title,
+    description: LOCAL_SEO_CONTENT.services.description,
+    canonicalUrl: 'https://boxed2built.com/services',
+    ogTitle: 'Furniture Assembly Services | Boxed2Built',
+    ogDescription: 'Browse Boxed2Built services for furniture assembly and setup in Spring Hill, TN and surrounding communities.',
+    twitterTitle: 'Boxed2Built Services',
+    twitterDescription: 'Explore furniture assembly services from Boxed2Built in Spring Hill, TN.',
+  });
 
   // Get high-value FAQ questions for services page
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];

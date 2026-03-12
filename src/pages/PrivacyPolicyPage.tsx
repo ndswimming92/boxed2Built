@@ -1,21 +1,21 @@
 import React from 'react';
-import { useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PrivacyPolicy from '../components/sections/PrivacyPolicy';
 import { ChevronRight } from 'lucide-react';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PrivacyPolicyPage: React.FC = () => {
-  useEffect(() => {
-    // Set canonical URL for this page
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/privacy-policy');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.privacyPolicy.title,
+    description: LOCAL_SEO_CONTENT.privacyPolicy.description,
+    canonicalUrl: 'https://boxed2built.com/privacy-policy',
+    ogTitle: 'Boxed2Built Privacy Policy',
+    ogDescription: 'Read the Boxed2Built privacy policy for furniture assembly services and website usage.',
+    twitterTitle: 'Privacy Policy | Boxed2Built',
+    twitterDescription: 'Learn how Boxed2Built handles personal information.',
+  });
 
   return (
     <>

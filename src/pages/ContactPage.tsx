@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import NAPConsistency from '../components/seo/NAPConsistency';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -9,6 +9,7 @@ import { ChevronRight, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
 import {
   BUSINESS_INFO,
   ADDRESS_INFO,
@@ -22,23 +23,15 @@ import {
 const ContactPage: React.FC = () => {
   const { data: businessData, loading: businessLoading } = useBusinessDataWithFallback();
 
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.contact.title;
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.contact.description);
-    }
-
-    // Set canonical URL for this page
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/contact');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.contact.title,
+    description: LOCAL_SEO_CONTENT.contact.description,
+    canonicalUrl: 'https://boxed2built.com/contact',
+    ogTitle: 'Contact Boxed2Built | Free Furniture Assembly Quote',
+    ogDescription: 'Contact Boxed2Built to schedule furniture assembly in Spring Hill, TN. Call, email, or submit a quick quote request.',
+    twitterTitle: 'Contact Boxed2Built',
+    twitterDescription: 'Ready to book furniture assembly in Spring Hill, TN? Reach Boxed2Built today for a free quote.',
+  });
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'contact_page_info', {

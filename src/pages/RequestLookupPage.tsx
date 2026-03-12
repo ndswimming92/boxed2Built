@@ -13,6 +13,16 @@ import { trackEvent } from '../utils/analytics';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const RequestLookupPage: React.FC = () => {
+
+  usePageMeta({
+    title: 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly',
+    description: 'Check your furniture assembly request status with Boxed2Built. Quickly access details for your Spring Hill service inquiry.',
+    canonicalUrl: 'https://boxed2built.com/lookup-request',
+    ogTitle: 'Request Lookup | Boxed2Built',
+    ogDescription: 'Need to review your Boxed2Built request? Use the request lookup page to find your inquiry details fast.',
+    twitterTitle: 'Boxed2Built Request Lookup',
+    twitterDescription: 'Look up your furniture assembly request details with Boxed2Built.',
+  });
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');

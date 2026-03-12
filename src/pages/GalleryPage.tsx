@@ -13,6 +13,16 @@ const GalleryPage: React.FC = () => {
   const [businessId, setBusinessId] = useState<string>('');
   const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
 
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.gallery.title,
+    description: LOCAL_SEO_CONTENT.gallery.description,
+    canonicalUrl: 'https://boxed2built.com/gallery',
+    ogTitle: 'Furniture Assembly Gallery | Boxed2Built',
+    ogDescription: 'Browse real furniture assembly and TV mounting projects completed by Boxed2Built in Spring Hill, TN.',
+    twitterTitle: 'Boxed2Built Gallery',
+    twitterDescription: 'See real Boxed2Built furniture assembly projects in Spring Hill and surrounding communities.',
+  });
+
   useEffect(() => {
     const fetchBusinessId = async () => {
       try {

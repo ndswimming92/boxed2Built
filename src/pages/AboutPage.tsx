@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
@@ -7,27 +7,21 @@ import { CheckCircle, Users, Clock, Award } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const AboutPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.about.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.about.description);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/about');
-  }, []);
+  usePageMeta({
+    title: LOCAL_SEO_CONTENT.about.title,
+    description: LOCAL_SEO_CONTENT.about.description,
+    canonicalUrl: 'https://boxed2built.com/about',
+    ogTitle: 'About Boxed2Built | Spring Hill Furniture Assembly',
+    ogDescription: 'Meet the team behind Boxed2Built and learn why families in Spring Hill trust us for dependable furniture assembly.',
+    twitterTitle: 'About Boxed2Built',
+    twitterDescription: 'Learn more about Boxed2Built, a local furniture assembly company serving Spring Hill and nearby communities.',
+  });
 
 
 
