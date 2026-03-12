@@ -39,16 +39,8 @@ const PartnersPage: React.FC = () => {
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.setAttribute('href', 'https://boxed2built.com/partners');
+  }, []);
 
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.partners.title,
-    description: LOCAL_SEO_CONTENT.partners.description,
-    canonicalUrl: 'https://boxed2built.com/partners',
-    ogTitle: 'Partner with Boxed2Built in Spring Hill, TN',
-    ogDescription: 'See how Boxed2Built partners with movers, realtors, and local businesses to deliver turnkey move-in support.',
-    twitterTitle: 'Boxed2Built Partnerships',
-    twitterDescription: 'Explore partnership opportunities with Boxed2Built for reliable assembly support in Spring Hill, TN.',
-  });
   useEffect(() => {
     const schema = {
       '@context': 'https://schema.org',

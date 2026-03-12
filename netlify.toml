@@ -3,7 +3,7 @@ command = "npm ci --include=dev && npm run build"
 publish = "dist"
 
 [build.environment]
-NODE_VERSION = "18"
+NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
 
 [[headers]]
