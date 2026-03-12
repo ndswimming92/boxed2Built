@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
+import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
 
 const PrivacyPolicy = () => {
   useEffect(() => {
-    document.title = 'Privacy Policy - Boxed2Built Furniture Assembly Service';
+    document.title = LOCAL_SEO_CONTENT.privacyPolicy.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Privacy Policy for Boxed2Built furniture assembly services in Spring Hill, TN. Learn how we protect your personal information and data.');
+      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.privacyPolicy.description);
     }
   }, []);
 

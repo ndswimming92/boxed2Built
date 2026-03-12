@@ -10,6 +10,7 @@ import { getSavedRequestByCode } from '../services/savedRequestService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const RequestLookupPage: React.FC = () => {
   const location = useLocation();
@@ -19,13 +20,13 @@ const RequestLookupPage: React.FC = () => {
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
   useEffect(() => {
-    document.title = 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly';
+    document.title = LOCAL_SEO_CONTENT.requestLookup.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Look up your Boxed2Built furniture assembly service request using your email and confirmation code. View, download, or email your request details.'
+        LOCAL_SEO_CONTENT.requestLookup.description
       );
     }
 

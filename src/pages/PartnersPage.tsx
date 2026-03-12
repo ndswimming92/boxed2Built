@@ -17,17 +17,18 @@ import {
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
   useEffect(() => {
-    document.title = 'Boxed2Built Partnerships | Realtors & Movers in Spring Hill';
+    document.title = LOCAL_SEO_CONTENT.partners.title;
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts.'
+        LOCAL_SEO_CONTENT.partners.description
       );
     }
 
