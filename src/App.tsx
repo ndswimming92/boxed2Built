@@ -77,6 +77,7 @@ const PortalJobsPage = lazy(() => import('./pages/portal/JobsPage'));
 const PortalJobDetailPage = lazy(() => import('./pages/portal/JobDetailPage'));
 const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
 const PortalLinkAccountPage = lazy(() => import('./pages/portal/LinkAccountPage'));
+const PortalNotificationsPage = lazy(() => import('./pages/portal/NotificationsPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -344,6 +345,7 @@ function App() {
                   <Route path="/portal/dashboard" element={<PortalRouteGuard><PortalDashboardPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs" element={<PortalRouteGuard><PortalJobsPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs/:id" element={<PortalRouteGuard><PortalJobDetailPage /></PortalRouteGuard>} />
+                  <Route path="/portal/notifications" element={<PortalRouteGuard><PortalNotificationsPage /></PortalRouteGuard>} />
                   <Route path="/portal/profile" element={<PortalRouteGuard><PortalProfilePage /></PortalRouteGuard>} />
                   <Route path="/portal/link-account" element={<PortalRouteGuard><PortalLinkAccountPage /></PortalRouteGuard>} />
 
