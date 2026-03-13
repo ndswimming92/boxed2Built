@@ -20,11 +20,14 @@ import {
   exportAuditLogs,
   downloadCSV,
   getAuditLogStats,
+  getSecurityAlerts,
+  logAction,
   type AuditLog,
   type AuditLogFilters,
   type ActionType,
   type LogStatus,
   type AuditLogStats,
+  type AuditAlert,
 } from '../../services/auditLogService';
 
 const ACTION_TYPES: ActionType[] = [
@@ -111,6 +114,7 @@ export default function ActivityLogsPage() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [total, setTotal] = useState(0);
+  const [alerts, setAlerts] = useState<AuditAlert[]>([]);
   const [page, setPage] = useState(0);
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -130,6 +134,7 @@ export default function ActivityLogsPage() {
   useEffect(() => {
     loadLogs();
     loadStats();
+    loadAlerts();
   }, [filters]);
 
   const loadLogs = async () => {
@@ -138,6 +143,22 @@ export default function ActivityLogsPage() {
       const result = await getAuditLogs(filters);
       setLogs(result.logs);
       setTotal(result.total);
+
+      await logAction({
+        actionType: 'VIEW',
+        tableName: 'admin_audit_logs',
+        status: 'success',
+        metadata: {
+          operation: 'audit_logs_read',
+          returned_count: result.logs.length,
+          filter_summary: {
+            actionType: filters.actionType,
+            tableName: filters.tableName,
+            status: filters.status,
+            hasSearchQuery: Boolean(filters.searchQuery),
+          },
+        },
+      });
     } catch (error) {
       console.error('Error loading logs:', error);
     } finally {
@@ -152,6 +173,11 @@ export default function ActivityLogsPage() {
     } catch (error) {
       console.error('Error loading stats:', error);
     }
+  };
+
+  const loadAlerts = async () => {
+    const securityAlerts = await getSecurityAlerts();
+    setAlerts(securityAlerts);
   };
 
   const handleSearch = () => {
@@ -198,6 +224,16 @@ export default function ActivityLogsPage() {
       const csvContent = await exportAuditLogs(filters);
       const filename = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
       downloadCSV(csvContent, filename);
+      await logAction({
+        actionType: 'EXPORT',
+        tableName: 'admin_audit_logs',
+        recordIdentifier: filename,
+        status: 'success',
+        metadata: {
+          operation: 'audit_logs_export',
+          filters,
+        },
+      });
     } catch (error) {
       console.error('Error exporting logs:', error);
       alert('Failed to export logs');
@@ -347,6 +383,25 @@ export default function ActivityLogsPage() {
               <AlertTriangle className="w-8 h-8 text-yellow-600" />
             </div>
           </div>
+        </div>
+      )}
+
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((alertItem) => (
+            <div
+              key={alertItem.id}
+              className="rounded-lg border border-amber-300 bg-amber-50 p-4"
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-semibold text-amber-900">{alertItem.title}</p>
+                  <p className="text-sm text-amber-800">{alertItem.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

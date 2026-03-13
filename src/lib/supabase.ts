@@ -1,6 +1,7 @@
 // supabase.ts
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { getRequestTraceContext } from '../utils/telemetry';
 
 /** ────────────────────────────────────────────────────────────────────────────
  *  Environment & Client (public website settings)
@@ -22,6 +23,19 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
     detectSessionInUrl: true,
     flowType: 'pkce',
     storageKey: 'boxed2built.auth.token',
+  },
+  global: {
+    fetch: async (input, init) => {
+      const traceContext = getRequestTraceContext();
+      const headers = new Headers(init?.headers || {});
+      headers.set('x-correlation-id', traceContext.correlationId);
+      headers.set('x-session-correlation-id', traceContext.sessionCorrelationId);
+
+      return fetch(input, {
+        ...init,
+        headers,
+      });
+    },
   },
   // db: { schema: 'public' }, // uncomment if you use a non-default schema
 });

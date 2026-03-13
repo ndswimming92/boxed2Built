@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { getRequestTraceContext } from '../utils/telemetry';
 
 export type ActionType =
   | 'CREATE'
@@ -72,6 +73,16 @@ export interface AuditLogStats {
   actionTypeDistribution: Record<ActionType, number>;
   tableDistribution: Record<string, number>;
   mostActiveUsers: Array<{ user_email: string; count: number }>;
+}
+
+export interface AuditAlert {
+  id: string;
+  level: LogStatus;
+  type: 'failed_logins' | 'abnormal_access';
+  title: string;
+  description: string;
+  observedValue: number;
+  threshold: number;
 }
 
 let cachedOrgId: string | null = null;
@@ -148,6 +159,8 @@ export async function logAction(params: LogActionParams): Promise<void> {
       params.newValues
     );
 
+    const traceContext = getRequestTraceContext();
+
     const logEntry = {
       user_id: user.id,
       user_email: user.email || 'unknown',
@@ -165,6 +178,8 @@ export async function logAction(params: LogActionParams): Promise<void> {
       organization_id: organizationId,
       metadata: {
         ...params.metadata,
+        correlation_id: traceContext.correlationId,
+        session_correlation_id: traceContext.sessionCorrelationId,
         page: window.location.pathname,
         timestamp: new Date().toISOString(),
       },
@@ -198,6 +213,8 @@ export async function logPublicAction(params: LogActionParams & { userEmail: str
       params.newValues
     );
 
+    const traceContext = getRequestTraceContext();
+
     const logEntry = {
       user_id: null,
       user_email: params.userEmail,
@@ -215,6 +232,8 @@ export async function logPublicAction(params: LogActionParams & { userEmail: str
       organization_id: organizationId,
       metadata: {
         ...params.metadata,
+        correlation_id: traceContext.correlationId,
+        session_correlation_id: traceContext.sessionCorrelationId,
         page: window.location.pathname,
         timestamp: new Date().toISOString(),
         public_submission: true,
@@ -230,6 +249,70 @@ export async function logPublicAction(params: LogActionParams & { userEmail: str
     }
   } catch (error) {
     console.error('Error in public audit logging:', error);
+  }
+}
+
+export async function getSecurityAlerts(): Promise<AuditAlert[]> {
+  const lookbackHours = 24;
+  const since = new Date(Date.now() - lookbackHours * 60 * 60 * 1000).toISOString();
+
+  try {
+    const { data, error } = await supabase
+      .from('admin_audit_logs')
+      .select('id, created_at, user_email, action_type, table_name, status')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const logs = data || [];
+    const alerts: AuditAlert[] = [];
+
+    const failedLoginCount = logs.filter(
+      (log) => log.action_type === 'LOGIN' && log.status === 'error'
+    ).length;
+    const failedLoginThreshold = 5;
+
+    if (failedLoginCount >= failedLoginThreshold) {
+      alerts.push({
+        id: 'failed-login-attempts',
+        level: 'warning',
+        type: 'failed_logins',
+        title: 'Repeated failed login attempts detected',
+        description: `${failedLoginCount} failed logins recorded in the last ${lookbackHours} hours.`,
+        observedValue: failedLoginCount,
+        threshold: failedLoginThreshold,
+      });
+    }
+
+    const sensitiveReadsByUser = logs
+      .filter((log) => ['EXPORT', 'VIEW', 'DOWNLOAD'].includes(log.action_type))
+      .reduce<Record<string, number>>((acc, log) => {
+        const key = log.user_email || 'unknown';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+    const maxSensitiveReadsByUser = Math.max(0, ...Object.values(sensitiveReadsByUser));
+    const abnormalAccessThreshold = 30;
+
+    if (maxSensitiveReadsByUser >= abnormalAccessThreshold) {
+      const [topUser] = Object.entries(sensitiveReadsByUser).sort((a, b) => b[1] - a[1]);
+      alerts.push({
+        id: 'abnormal-sensitive-access',
+        level: 'warning',
+        type: 'abnormal_access',
+        title: 'Abnormal sensitive access pattern detected',
+        description: `${topUser[0]} performed ${topUser[1]} sensitive reads/exports in the last ${lookbackHours} hours.`,
+        observedValue: topUser[1],
+        threshold: abnormalAccessThreshold,
+      });
+    }
+
+    return alerts;
+  } catch (error) {
+    console.error('Error computing security alerts:', error);
+    return [];
   }
 }
 
