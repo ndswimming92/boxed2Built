@@ -94,7 +94,17 @@ export default function PortalJobDetailPage() {
 
   return (
     <PortalLayout title="Job details" subtitle="Project details and customer action requests">
-      <Link to="/portal/jobs" className="mb-4 inline-flex text-sm text-blue-700 hover:underline">← Back to jobs</Link>
+      <div className="mb-4 flex items-center gap-3">
+        <Link to="/portal/jobs" className="inline-flex text-sm text-blue-700 hover:underline">← Back to jobs</Link>
+        {id ? (
+          <Link
+            to={`/portal/support?jobId=${id}&subject=${encodeURIComponent(`Help with ${job?.job_type ?? 'job'}`)}`}
+            className="inline-flex rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+          >
+            Contact support about this job
+          </Link>
+        ) : null}
+      </div>
 
       {loading ? <p className="text-sm text-slate-600">Loading job details...</p> : null}
       {!loading && error ? (

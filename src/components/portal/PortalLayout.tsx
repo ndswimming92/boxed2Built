@@ -15,6 +15,7 @@ const navItems = [
   { to: '/portal/invoices', label: 'Invoices' },
   { to: '/portal/documents', label: 'Documents' },
   { to: '/portal/notifications', label: 'Notifications' },
+  { to: '/portal/support', label: 'Support' },
   { to: '/portal/profile', label: 'Profile' },
   { to: '/portal/link-account', label: 'Link Account' },
 ];
