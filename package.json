@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check:lock-sync": "node scripts/check-lock-sync.mjs"
+    "check:lock-sync": "node scripts/check-lock-sync.mjs",
+    "monitor:synthetic": "node scripts/synthetic-monitor.mjs",
+    "monitor:slo": "node scripts/check-slo-thresholds.mjs synthetic-results.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",

@@ -1,0 +1,24 @@
+name: Synthetic Monitoring
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  synthetic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run synthetic monitor
+        env:
+          SYNTHETIC_BASE_URL: ${{ secrets.SYNTHETIC_BASE_URL }}
+          SYNTHETIC_INVOICE_ID: ${{ secrets.SYNTHETIC_INVOICE_ID }}
+        run: npm run monitor:synthetic > synthetic-results.json
+      - name: Evaluate SLO thresholds
+        run: npm run monitor:slo
