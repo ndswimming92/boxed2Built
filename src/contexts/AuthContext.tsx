@@ -2,7 +2,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { logAction } from '../services/auditLogService';
-import { isUserAuthorized, getAuthorizationError } from '../utils/authorization';
+import {
+  getAuthorizationError,
+  isAdminUser,
+  isClientAuthorized,
+  isUserAuthorized,
+} from '../utils/authorization';
 import { Organization, OrganizationRole } from '../types';
 import { organizationService } from '../services/organizationService';
 
@@ -18,11 +23,41 @@ interface AuthContextType {
   refreshOrganizations: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGoogleForPortal: () => Promise<{ error: Error | null }>;
+  getHomeRouteForUser: (authUser: User | null) => string;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const AUTH_FLOW_KEY = 'authLoginFlow';
+
+type AuthFlow = 'admin' | 'portal';
+
+const setAuthFlow = (flow: AuthFlow) => {
+  localStorage.setItem(AUTH_FLOW_KEY, flow);
+};
+
+const getAuthFlow = (): AuthFlow | null => {
+  const flow = localStorage.getItem(AUTH_FLOW_KEY);
+  if (flow === 'admin' || flow === 'portal') return flow;
+  return null;
+};
+
+const clearAuthFlow = () => {
+  localStorage.removeItem(AUTH_FLOW_KEY);
+};
+
+
+const getOAuthRedirectUri = (type: AuthFlow): string => {
+  if (type === 'admin') {
+    return import.meta.env.VITE_ADMIN_OAUTH_REDIRECT_URI || `${window.location.origin}/admin/login`;
+  }
+
+  return import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI || `${window.location.origin}/portal/login`;
+};
+
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -32,6 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentRole, setCurrentRole] = useState<OrganizationRole | null>(null);
   const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  const getHomeRouteForUser = (authUser: User | null): string => {
+    if (!authUser) return '/';
+    return isAdminUser(authUser) ? '/admin/dashboard' : '/portal/dashboard';
+  };
 
   const loadOrganizations = async (userId: string) => {
     try {
@@ -83,19 +123,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Auth state changed:', event, session?.user?.email);
 
         if (event === 'SIGNED_IN' && session?.user) {
-          if (!isUserAuthorized(session.user)) {
+          const authFlow = getAuthFlow();
+
+          if (authFlow === 'admin' && !isAdminUser(session.user)) {
             const authError = getAuthorizationError(session.user);
-            console.error('Unauthorized access attempt:', authError);
+            console.error('Unauthorized admin access attempt:', authError);
             await logAction({
               actionType: 'LOGIN',
               tableName: 'auth',
               recordIdentifier: session.user.email || 'unknown',
               status: 'error',
-              errorMessage: 'Unauthorized access attempt',
+              errorMessage: 'Unauthorized admin access attempt',
             });
             await supabase.auth.signOut();
             setSession(null);
             setUser(null);
+            clearAuthFlow();
+            return;
+          }
+
+          if (authFlow === 'portal' && !isClientAuthorized(session.user) && !isAdminUser(session.user)) {
+            await logAction({
+              actionType: 'LOGIN',
+              tableName: 'auth',
+              recordIdentifier: session.user.email || 'unknown',
+              status: 'error',
+              errorMessage: 'Unauthorized portal access attempt',
+            });
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            clearAuthFlow();
             return;
           }
 
@@ -107,9 +165,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               tableName: 'auth',
               recordIdentifier: session.user.email || 'google-oauth',
               status: 'success',
-              metadata: { provider: 'google' },
+              metadata: { provider: 'google', flow: authFlow || 'unknown' },
             });
           }
+
+          clearAuthFlow();
         }
 
         if (session?.user && event === 'SIGNED_IN') {
@@ -187,10 +247,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      setAuthFlow('admin');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/admin/login`,
+          redirectTo: getOAuthRedirectUri('admin'),
         },
       });
 
@@ -210,6 +271,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         actionType: 'LOGIN',
         tableName: 'auth',
         recordIdentifier: 'google-oauth',
+        status: 'error',
+        errorMessage: (error as Error).message,
+      });
+      return { error: error as Error };
+    }
+  };
+
+  const signInWithGoogleForPortal = async () => {
+    try {
+      setAuthFlow('portal');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getOAuthRedirectUri('portal'),
+        },
+      });
+
+      if (error) {
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'google-oauth-portal',
+          status: 'error',
+          errorMessage: error.message,
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: 'google-oauth-portal',
         status: 'error',
         errorMessage: (error as Error).message,
       });
@@ -255,6 +349,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshOrganizations,
     signIn,
     signInWithGoogle,
+    signInWithGoogleForPortal,
+    getHomeRouteForUser,
     signOut,
     resetPassword,
   };

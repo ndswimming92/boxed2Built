@@ -6,7 +6,8 @@ import { loadGoogleAnalytics } from './utils/analyticsLoader';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationBarProvider } from './contexts/NotificationBarContext';
 import { ToastProvider } from './contexts/ToastContext';
-import ProtectedRoute from './components/admin/ProtectedRoute';
+import AdminRouteGuard from './components/auth/AdminRouteGuard';
+import PortalRouteGuard from './components/auth/PortalRouteGuard';
 import NotificationBar from './components/NotificationBar';
 import { useNotificationBar } from './hooks/useNotificationBar';
 import { useManifestManager } from './hooks/useManifestManager';
@@ -68,6 +69,8 @@ const FinancesPage = lazy(() => import('./pages/admin/FinancesPage'));
 const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage'));
 const EmailActivityPage = lazy(() => import('./pages/admin/EmailActivityPage'));
+const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
+const PortalDashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -236,7 +239,7 @@ function NotificationBarWrapper() {
     fetchBusinessId();
   }, []);
 
-  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/pay')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/pay')) {
     return null;
   }
 
@@ -248,7 +251,7 @@ function AnalyticsInitializer() {
 
   useEffect(() => {
     // Only initialize analytics scripts on non-admin routes and defer until user interaction.
-    if (location.pathname.startsWith('/admin')) return;
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal')) return;
 
     let isLoaded = false;
 
@@ -287,7 +290,7 @@ function ManifestManager() {
 function ConditionalAuthProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
 
-  if (location.pathname.startsWith('/admin')) {
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal')) {
     return <AuthProvider>{children}</AuthProvider>;
   }
 
@@ -329,7 +332,11 @@ function App() {
                   <Route path="/pay/:invoiceId/thank-you" element={<InvoiceThankYouPage />} />
 
                   <Route path="/admin/login" element={<LoginPage />} />
-                  <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                  <Route path="/portal/login" element={<PortalLoginPage />} />
+                  <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
+                  <Route path="/portal/dashboard" element={<PortalRouteGuard><PortalDashboardPage /></PortalRouteGuard>} />
+
+                  <Route path="/admin" element={<AdminRouteGuard><AdminLayout /></AdminRouteGuard>}>
                     <Route index element={<Navigate to="dashboard" replace />} />
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="goals" element={<GoalsPage />} />

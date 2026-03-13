@@ -10,14 +10,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const { signIn, signInWithGoogle, user } = useAuth();
+  const { signIn, signInWithGoogle, user, getHomeRouteForUser } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate('/admin/dashboard');
+      navigate(getHomeRouteForUser(user), { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, getHomeRouteForUser]);
 
   useEffect(() => {
     const errorDescription = searchParams.get('error_description');

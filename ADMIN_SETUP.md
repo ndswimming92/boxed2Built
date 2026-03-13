@@ -23,6 +23,26 @@ Your admin portal now has enhanced security with email-based authorization. Only
 - No spaces needed around commas
 - Users with emails NOT in this list will be denied access and automatically signed out
 
+
+## Customer Portal OAuth Setup
+
+To enable dedicated customer sign-in flow, configure these environment variables in your deployment and local `.env`:
+
+```
+VITE_AUTHORIZED_CLIENT_EMAILS=client1@example.com,client2@example.com
+VITE_ADMIN_OAUTH_REDIRECT_URI=https://yourdomain.com/admin/login
+VITE_PORTAL_OAUTH_REDIRECT_URI=https://yourdomain.com/portal/login
+```
+
+Then add both redirect URLs in Supabase Auth provider settings (Google OAuth):
+- `https://yourdomain.com/admin/login`
+- `https://yourdomain.com/portal/login`
+
+Notes:
+- Admin emails from `VITE_AUTHORIZED_ADMIN_EMAILS` are always routed to `/admin/dashboard`.
+- Non-admin users are routed to `/portal/dashboard` after successful portal login.
+- If `VITE_AUTHORIZED_CLIENT_EMAILS` is omitted, any non-admin authenticated user can access portal routes.
+
 ## Creating Your Admin Account
 
 To create your admin account, you'll need to use the Supabase Dashboard:
