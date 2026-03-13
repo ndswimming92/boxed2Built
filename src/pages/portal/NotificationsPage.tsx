@@ -16,6 +16,8 @@ const notificationTypeLabels: Record<CustomerNotificationType, string> = {
   invoice_issued: 'Invoice Issued',
   invoice_paid: 'Invoice Paid',
   reminder_sent: 'Reminder Sent',
+  job_action_request_approved: 'Request Approved',
+  job_action_request_rejected: 'Request Rejected',
 };
 
 const formatTimestamp = (value: string) => new Date(value).toLocaleString();
@@ -34,6 +36,10 @@ const getSummaryText = (notification: CustomerNotification) => {
       return `Invoice ${payload.invoice_number ? `#${String(payload.invoice_number)}` : ''} has been paid.`;
     case 'reminder_sent':
       return `A ${String(payload.reminder_type ?? 'service')} reminder was sent.`;
+    case 'job_action_request_approved':
+      return `Your ${String(payload.action_type ?? 'job action')} request was approved.`;
+    case 'job_action_request_rejected':
+      return `Your ${String(payload.action_type ?? 'job action')} request was rejected.`;
     default:
       return 'You have a new account update.';
   }
@@ -139,6 +145,8 @@ export default function PortalNotificationsPage() {
                 <option value="invoice_issued">Invoice Issued</option>
                 <option value="invoice_paid">Invoice Paid</option>
                 <option value="reminder_sent">Reminder Sent</option>
+                <option value="job_action_request_approved">Request Approved</option>
+                <option value="job_action_request_rejected">Request Rejected</option>
               </select>
               <button
                 type="button"
