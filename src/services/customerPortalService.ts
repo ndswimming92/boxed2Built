@@ -45,6 +45,22 @@ export type CustomerPortalJob = {
   updated_at: string;
 };
 
+
+export type CustomerPortalDocument = {
+  id: string;
+  document_type: string;
+  display_name: string;
+  storage_bucket: string;
+  storage_path: string;
+  related_job_id: string | null;
+  related_invoice_id: string | null;
+  metadata: Record<string, unknown>;
+  delete_after_at: string | null;
+  created_at: string;
+};
+
+export type DocumentAccessMode = 'view' | 'download';
+
 export type CustomerPortalInvoice = {
   id: string;
   invoice_number: string;
@@ -138,6 +154,61 @@ export const customerPortalService = {
     }
 
     return data ?? [];
+  },
+
+  async getMyDocuments(): Promise<CustomerPortalDocument[]> {
+    await ensureAuthenticatedSession();
+
+    const { data, error } = await supabase
+      .from('portal_documents')
+      .select('id, document_type, display_name, storage_bucket, storage_path, related_job_id, related_invoice_id, metadata, delete_after_at, created_at')
+      .is('deleted_at', null)
+      .eq('is_visible_to_customer', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw normalizePortalError(error, `Failed to fetch documents: ${error.message}`);
+    }
+
+    return (data ?? []) as CustomerPortalDocument[];
+  },
+
+  async getDocumentSignedUrl(documentId: string, mode: DocumentAccessMode): Promise<string> {
+    await ensureAuthenticatedSession();
+
+    const { data: documentRow, error: documentError } = await supabase
+      .from('portal_documents')
+      .select('id, storage_bucket, storage_path')
+      .eq('id', documentId)
+      .single();
+
+    if (documentError) {
+      throw normalizePortalError(documentError, `Failed to locate document: ${documentError.message}`);
+    }
+
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
+
+    const { error: auditError } = await supabase.rpc('record_portal_document_access', {
+      p_document_id: documentId,
+      p_event_type: mode,
+      p_user_agent: userAgent,
+    });
+
+    if (auditError) {
+      throw normalizePortalError(auditError, `Failed to audit document access: ${auditError.message}`);
+    }
+
+    const { data, error } = await supabase.storage
+      .from(documentRow.storage_bucket)
+      .createSignedUrl(documentRow.storage_path, 120, {
+        download: mode === 'download',
+      });
+
+    if (error || !data?.signedUrl) {
+      throw new PortalServiceError('UNKNOWN', `Failed to create secure document URL: ${error?.message ?? 'Unknown storage error.'}`);
+    }
+
+    return data.signedUrl;
   },
 
   async getMyProfile(): Promise<CustomerPortalProfile> {

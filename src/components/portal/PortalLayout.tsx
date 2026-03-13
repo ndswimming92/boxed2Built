@@ -12,6 +12,7 @@ interface PortalLayoutProps {
 const navItems = [
   { to: '/portal/dashboard', label: 'Dashboard' },
   { to: '/portal/jobs', label: 'Jobs' },
+  { to: '/portal/documents', label: 'Documents' },
   { to: '/portal/notifications', label: 'Notifications' },
   { to: '/portal/profile', label: 'Profile' },
   { to: '/portal/link-account', label: 'Link Account' },

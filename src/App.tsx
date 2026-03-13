@@ -74,6 +74,7 @@ const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
 const PortalCallbackPage = lazy(() => import('./pages/portal/CallbackPage'));
 const PortalJobsPage = lazy(() => import('./pages/portal/JobsPage'));
+const PortalDocumentsPage = lazy(() => import('./pages/portal/DocumentsPage'));
 const PortalJobDetailPage = lazy(() => import('./pages/portal/JobDetailPage'));
 const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
 const PortalLinkAccountPage = lazy(() => import('./pages/portal/LinkAccountPage'));
@@ -344,6 +345,7 @@ function App() {
                   <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
                   <Route path="/portal/dashboard" element={<PortalRouteGuard><PortalDashboardPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs" element={<PortalRouteGuard><PortalJobsPage /></PortalRouteGuard>} />
+                  <Route path="/portal/documents" element={<PortalRouteGuard><PortalDocumentsPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs/:id" element={<PortalRouteGuard><PortalJobDetailPage /></PortalRouteGuard>} />
                   <Route path="/portal/notifications" element={<PortalRouteGuard><PortalNotificationsPage /></PortalRouteGuard>} />
                   <Route path="/portal/profile" element={<PortalRouteGuard><PortalProfilePage /></PortalRouteGuard>} />
