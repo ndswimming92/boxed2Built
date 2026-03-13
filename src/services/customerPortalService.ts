@@ -61,6 +61,11 @@ export type CustomerPortalDocument = {
 
 export type DocumentAccessMode = 'view' | 'download';
 
+
+export type PortalCheckoutSessionResponse = {
+  url: string;
+};
+
 export type CustomerPortalInvoice = {
   id: string;
   invoice_number: string;
@@ -154,6 +159,28 @@ export const customerPortalService = {
     }
 
     return data ?? [];
+  },
+
+
+  async createInvoiceCheckoutSession(invoiceId: string): Promise<string> {
+    const session = await ensureAuthenticatedSession();
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ invoiceId, source: 'portal' }),
+    });
+
+    const data = (await response.json().catch(() => ({}))) as Partial<PortalCheckoutSessionResponse> & { error?: string };
+
+    if (!response.ok || !data.url) {
+      throw new PortalServiceError('UNKNOWN', data.error || 'Unable to start secure checkout session.');
+    }
+
+    return data.url;
   },
 
   async getMyDocuments(): Promise<CustomerPortalDocument[]> {
