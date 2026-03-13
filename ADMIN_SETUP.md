@@ -30,6 +30,8 @@ To enable dedicated customer sign-in flow, configure these environment variables
 
 ```
 VITE_AUTHORIZED_CLIENT_EMAILS=client1@example.com,client2@example.com
+VITE_AUTHORIZED_ADMIN_DOMAINS=boxed2built.com
+VITE_AUTHORIZED_CLIENT_DOMAINS=example.com
 VITE_ADMIN_OAUTH_REDIRECT_URI=https://yourdomain.com/admin/login
 VITE_PORTAL_OAUTH_REDIRECT_URI=https://yourdomain.com/portal/login
 ```
@@ -42,6 +44,10 @@ Notes:
 - Admin emails from `VITE_AUTHORIZED_ADMIN_EMAILS` are always routed to `/admin/dashboard`.
 - Non-admin users are routed to `/portal/dashboard` after successful portal login.
 - If `VITE_AUTHORIZED_CLIENT_EMAILS` is omitted, any non-admin authenticated user can access portal routes.
+- Domain-based restrictions are optional and only needed when business policy requires them:
+  - `VITE_AUTHORIZED_ADMIN_DOMAINS` (admin fallback when admin email list is empty)
+  - `VITE_AUTHORIZED_CLIENT_DOMAINS` (portal fallback when client email list is empty)
+- OAuth and password-reset redirects must be HTTPS in production.
 
 ## Creating Your Admin Account
 
@@ -144,11 +150,13 @@ You'll be redirected to the admin dashboard where you can manage:
 - **Secure Authentication**: Supabase Auth with email/password and Google OAuth
 - **Protected Routes**: Unauthorized users are automatically signed out and redirected
 - **Session Management**: Automatic logout for unauthorized access attempts
+- **Logout Scopes**: Local sign-out and global "logout all sessions" are both supported
 - **Row Level Security (RLS)**: Database-level security policies
   - Public users: Read-only access to active content
   - Authenticated users: Full CRUD access
 - **Audit Logging**: All login attempts are logged (successful and failed)
 - **Multi-Layer Security**: Authorization checked at authentication AND route level
+- **Account Linking Rules**: Linked identities must resolve to the same normalized email and must not create duplicate provider identities
 
 ## Tips
 
