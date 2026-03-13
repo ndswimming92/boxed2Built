@@ -51,6 +51,14 @@ const normalizeError = (error: { message: string; code?: string } | null, fallba
     return new PortalServiceError('NOT_FOUND', 'Support ticket not found.');
   }
 
+  const lowerMessage = error.message.toLowerCase();
+  if (error.code === '42P01' || error.code === 'PGRST205' || lowerMessage.includes('schema cache') || lowerMessage.includes('could not find the table')) {
+    return new PortalServiceError(
+      'MISCONFIGURED',
+      'Support ticketing is not set up in this environment yet. Run the latest Supabase migrations (for example: `supabase db push`) and refresh the page.'
+    );
+  }
+
   return new PortalServiceError('UNKNOWN', error.message || fallback);
 };
 
