@@ -6,6 +6,7 @@ export type PortalServiceErrorCode =
   | 'UNAUTHORIZED'
   | 'NOT_FOUND'
   | 'SESSION_EXPIRED'
+  | 'MISCONFIGURED'
   | 'UNKNOWN';
 
 export class PortalServiceError extends Error {
@@ -115,6 +116,14 @@ const normalizePortalError = (error: PostgrestError | null, fallbackMessage: str
 
   if (error.code === '42501') {
     return new PortalServiceError('UNAUTHORIZED', 'You are not authorized to access this resource.');
+  }
+
+  const lowerMessage = `${error.message} ${error.details ?? ''}`.toLowerCase();
+  if (error.code === '42P01' || error.code === 'PGRST205' || lowerMessage.includes('schema cache') || lowerMessage.includes('could not find the table')) {
+    return new PortalServiceError(
+      'MISCONFIGURED',
+      'Client portal setup is incomplete. The customer database tables are missing in this environment. Run the latest Supabase migrations (for example: `supabase db push`) and refresh the page.'
+    );
   }
 
   return new PortalServiceError('UNKNOWN', fallbackMessage);
@@ -342,7 +351,7 @@ export const customerPortalService = {
     const { data, error } = await supabase
       .from('customers')
       .update(payload)
-      .eq('id', authData.user.id)
+      .eq('auth_user_id', authData.user.id)
       .select('id, full_name, email, phone, created_at, updated_at')
       .single();
 
