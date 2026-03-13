@@ -1,5 +1,6 @@
 import { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { retryWithBackoff } from '../utils/retry';
 
 export type PortalServiceErrorCode =
   | 'UNAUTHORIZED'
@@ -131,13 +132,22 @@ const ensureAuthenticatedSession = async () => {
 };
 
 export const customerPortalService = {
-  async getMyJobs(): Promise<CustomerPortalJob[]> {
+  async getMyJobs(options?: { page?: number; pageSize?: number }): Promise<CustomerPortalJob[]> {
     await ensureAuthenticatedSession();
 
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('id, job_type, job_description, date_scheduled, date_completed, job_status, quoted_price, final_price, location_city, created_at, updated_at')
-      .order('created_at', { ascending: false });
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 25;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error } = await retryWithBackoff(async () =>
+      supabase
+        .from('jobs')
+        .select('id, job_type, job_description, date_scheduled, date_completed, job_status, quoted_price, final_price, location_city, created_at, updated_at')
+        .order('date_scheduled', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    );
 
     if (error) {
       throw normalizePortalError(error, `Failed to fetch jobs: ${error.message}`);
@@ -200,13 +210,22 @@ export const customerPortalService = {
     return data as CustomerJobActionRequest;
   },
 
-  async getMyInvoices(): Promise<CustomerPortalInvoice[]> {
+  async getMyInvoices(options?: { page?: number; pageSize?: number }): Promise<CustomerPortalInvoice[]> {
     await ensureAuthenticatedSession();
 
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('id, invoice_number, invoice_type, invoice_date, due_date, payment_terms, payment_terms_description, status, subtotal, tax_amount, total_amount, amount_paid, amount_due, sent_at, paid_at, created_at')
-      .order('invoice_date', { ascending: false });
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 25;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error } = await retryWithBackoff(async () =>
+      supabase
+        .from('invoices')
+        .select('id, invoice_number, invoice_type, invoice_date, due_date, payment_terms, payment_terms_description, status, subtotal, tax_amount, total_amount, amount_paid, amount_due, sent_at, paid_at, created_at')
+        .order('invoice_date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    );
 
     if (error) {
       throw normalizePortalError(error, `Failed to fetch invoices: ${error.message}`);
@@ -219,14 +238,14 @@ export const customerPortalService = {
   async createInvoiceCheckoutSession(invoiceId: string): Promise<string> {
     const session = await ensureAuthenticatedSession();
 
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+    const response = await retryWithBackoff(() => fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ invoiceId, source: 'portal' }),
-    });
+    }));
 
     const data = (await response.json().catch(() => ({}))) as Partial<PortalCheckoutSessionResponse> & { error?: string };
 

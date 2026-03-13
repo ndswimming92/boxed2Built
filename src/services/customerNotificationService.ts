@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { PortalServiceError } from './customerPortalService';
+import { retryWithBackoff } from '../utils/retry';
 
 export type CustomerNotificationType =
   | 'job_scheduled'
@@ -38,23 +39,34 @@ const ensureSession = async () => {
 };
 
 export const customerNotificationService = {
-  async getMyNotifications(filter: 'all' | 'unread' | CustomerNotificationType = 'all') {
+  async getMyNotifications(
+    filter: 'all' | 'unread' | CustomerNotificationType = 'all',
+    options?: { page?: number; pageSize?: number }
+  ) {
     await ensureSession();
 
-    let query = supabase
-      .from('customer_notifications')
-      .select('id, customer_id, notification_type, payload, is_read, read_at, is_important, created_at')
-      .order('created_at', { ascending: false });
+    const page = options?.page ?? 0;
+    const pageSize = options?.pageSize ?? 25;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
 
-    if (filter === 'unread') {
-      query = query.eq('is_read', false);
-    }
+    const { data, error } = await retryWithBackoff(async () => {
+      let query = supabase
+        .from('customer_notifications')
+        .select('id, customer_id, notification_type, payload, is_read, read_at, is_important, created_at')
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-    if (filter !== 'all' && filter !== 'unread') {
-      query = query.eq('notification_type', filter);
-    }
+      if (filter === 'unread') {
+        query = query.eq('is_read', false);
+      }
 
-    const { data, error } = await query;
+      if (filter !== 'all' && filter !== 'unread') {
+        query = query.eq('notification_type', filter);
+      }
+
+      return query;
+    });
     if (error) {
       throw new PortalServiceError('UNKNOWN', `Failed to fetch notifications: ${error.message}`);
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PortalLayout from '../../components/portal/PortalLayout';
 import { PortalServiceError } from '../../services/customerPortalService';
 import {
@@ -7,6 +7,7 @@ import {
   type CustomerNotificationType,
 } from '../../services/customerNotificationService';
 import { useNavigate } from 'react-router-dom';
+import { getOfflineFriendlyErrorMessage } from '../../utils/retry';
 
 type FilterValue = 'all' | 'unread' | CustomerNotificationType;
 
@@ -55,17 +56,28 @@ export default function PortalNotificationsPage() {
   const [importantOnly, setImportantOnly] = useState(true);
   const [unsubscribed, setUnsubscribed] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const PAGE_SIZE = 20;
 
-  const loadNotifications = async () => {
-    setLoading(true);
+  const loadNotifications = useCallback(async (nextPage = 0, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
       const [items, preferences] = await Promise.all([
-        customerNotificationService.getMyNotifications(filter),
+        customerNotificationService.getMyNotifications(filter, { page: nextPage, pageSize: PAGE_SIZE }),
         customerNotificationService.getMyPreferences(),
       ]);
-      setNotifications(items);
+      setHasMore(items.length === PAGE_SIZE);
+      setPage(nextPage);
+      setNotifications((previous) => (append ? [...previous, ...items] : items));
       if (preferences) {
         setEmailEnabled(preferences.email_enabled);
         setImportantOnly(preferences.important_only);
@@ -76,33 +88,51 @@ export default function PortalNotificationsPage() {
         navigate('/portal/login?error=session_expired', { replace: true });
         return;
       }
-      setError(err instanceof Error ? err.message : 'Failed to load notifications.');
+      const fallback = err instanceof Error ? err.message : 'Failed to load notifications.';
+      setError(getOfflineFriendlyErrorMessage(fallback));
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [filter, navigate]);
 
   useEffect(() => {
-    void loadNotifications();
-  }, [filter]);
+    void loadNotifications(0, false);
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    if (!sentinelRef.current || loading || loadingMore || !hasMore) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        void loadNotifications(page + 1, true);
+      }
+    }, { rootMargin: '100px' });
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadNotifications, loading, loadingMore, page]);
+
 
   const unreadCount = useMemo(() => notifications.filter((item) => !item.is_read).length, [notifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await customerNotificationService.markAsRead(notificationId);
-      await loadNotifications();
+      await loadNotifications(0, false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update notification.');
+      const fallback = err instanceof Error ? err.message : 'Failed to update notification.';
+      setError(getOfflineFriendlyErrorMessage(fallback));
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
       await customerNotificationService.markAllAsRead();
-      await loadNotifications();
+      await loadNotifications(0, false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update notifications.');
+      const fallback = err instanceof Error ? err.message : 'Failed to update notifications.';
+      setError(getOfflineFriendlyErrorMessage(fallback));
     }
   };
 
@@ -117,7 +147,8 @@ export default function PortalNotificationsPage() {
         unsubscribed_at: unsubscribed ? new Date().toISOString() : null,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save email settings.');
+      const fallback = err instanceof Error ? err.message : 'Failed to save email settings.';
+      setError(getOfflineFriendlyErrorMessage(fallback));
     } finally {
       setSavingPrefs(false);
     }
@@ -208,6 +239,11 @@ export default function PortalNotificationsPage() {
 
           {loading ? <p className="mt-2 text-sm text-slate-600">Loading notifications...</p> : null}
           {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+          {error ? (
+            <button type="button" onClick={() => void loadNotifications(page, page > 0)} className="mt-2 rounded-md border border-red-300 px-2 py-1 text-xs font-medium text-red-700">
+              Retry
+            </button>
+          ) : null}
 
           {!loading && notifications.length === 0 ? (
             <p className="mt-3 text-sm text-slate-600">No notifications yet.</p>
@@ -245,6 +281,7 @@ export default function PortalNotificationsPage() {
               ))}
             </ul>
           ) : null}
+          <div ref={sentinelRef} className="mt-3 text-center text-xs text-slate-500">{loadingMore ? 'Loading more…' : hasMore ? 'Scroll to load more' : 'End of notifications'}</div>
         </section>
       </div>
     </PortalLayout>
