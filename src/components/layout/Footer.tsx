@@ -215,6 +215,23 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <InternalLink
+                  href="/portal/login"
+                  className="hover:text-white transition-colors"
+                  trackingCategory="footer_nav"
+                  onClick={() => {
+                    trackEvent('client_login_nav_click', 'footer', {
+                      event_category: 'navigation',
+                      event_label: 'client_login_footer',
+                      action_type: 'click',
+                      action_value: '/portal/login',
+                    });
+                  }}
+                >
+                  Client Login
+                </InternalLink>
+              </li>
+              <li>
+                <InternalLink
                   href="/lookup-request"
                   className="hover:text-white transition-colors"
                   trackingCategory="footer_nav"
