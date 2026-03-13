@@ -88,6 +88,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Email Activity', href: '/admin/email-activity', icon: Mail },
       { name: 'Account Link Review', href: '/admin/account-link-review', icon: Search },
+      { name: 'Privacy Requests', href: '/admin/privacy-requests', icon: ScrollText },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
       { name: 'Test Identifiers', href: '/admin/test-identifiers', icon: FlaskConical },
