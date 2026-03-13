@@ -26,6 +26,11 @@ export type CustomerPortalProfile = {
   updated_at: string;
 };
 
+type CustomerPortalProfileUpdatePayload = {
+  full_name: string | null;
+  phone: string | null;
+};
+
 export type CustomerPortalJob = {
   id: string;
   job_type: string | null;
@@ -145,6 +150,31 @@ export const customerPortalService = {
 
     if (error) {
       throw normalizePortalError(error, `Failed to fetch profile: ${error.message}`);
+    }
+
+    return data;
+  },
+
+  async updateMyProfile(payload: CustomerPortalProfileUpdatePayload): Promise<CustomerPortalProfile> {
+    await ensureAuthenticatedSession();
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      throw new PortalServiceError(
+        'SESSION_EXPIRED',
+        'Your session has expired. Please sign in again to continue.'
+      );
+    }
+
+    const { data, error } = await supabase
+      .from('customers')
+      .update(payload)
+      .eq('id', authData.user.id)
+      .select('id, full_name, email, phone, created_at, updated_at')
+      .single();
+
+    if (error) {
+      throw normalizePortalError(error, `Failed to update profile: ${error.message}`);
     }
 
     return data;

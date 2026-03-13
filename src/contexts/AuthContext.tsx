@@ -55,7 +55,7 @@ const getOAuthRedirectUri = (type: AuthFlow): string => {
     return import.meta.env.VITE_ADMIN_OAUTH_REDIRECT_URI || `${window.location.origin}/admin/login`;
   }
 
-  return import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI || `${window.location.origin}/portal/login`;
+  return import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI || `${window.location.origin}/portal/callback`;
 };
 
 
