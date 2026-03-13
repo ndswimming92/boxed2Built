@@ -119,6 +119,12 @@ export default function PortalInvoicesPage() {
                       <p className="text-xs text-slate-500">of {formatCurrency(invoice.total_amount)}</p>
                     </td>
                     <td className="px-4 py-3 text-right">
+                      <a
+                        href={`/portal/support?invoiceId=${invoice.id}&subject=${encodeURIComponent(`Question about invoice ${invoice.invoice_number}`)}`}
+                        className="mr-2 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                      >
+                        Support
+                      </a>
                       {canPay ? (
                         <button
                           type="button"

@@ -81,7 +81,8 @@ const PortalJobDetailPage = lazy(() => import('./pages/portal/JobDetailPage'));
 const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
 const PortalLinkAccountPage = lazy(() => import('./pages/portal/LinkAccountPage'));
 const PortalNotificationsPage = lazy(() => import('./pages/portal/NotificationsPage'));
-const PortalPrivacyPage = lazy(() => import('./pages/portal/PrivacyPage'));
+const PortalSupportPage = lazy(() => import('./pages/portal/SupportPage'));
+const SupportQueuePage = lazy(() => import('./pages/admin/SupportQueuePage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -352,7 +353,7 @@ function App() {
                   <Route path="/portal/invoices" element={<PortalRouteGuard><PortalInvoicesPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs/:id" element={<PortalRouteGuard><PortalJobDetailPage /></PortalRouteGuard>} />
                   <Route path="/portal/notifications" element={<PortalRouteGuard><PortalNotificationsPage /></PortalRouteGuard>} />
-                  <Route path="/portal/privacy" element={<PortalRouteGuard><PortalPrivacyPage /></PortalRouteGuard>} />
+                  <Route path="/portal/support" element={<PortalRouteGuard><PortalSupportPage /></PortalRouteGuard>} />
                   <Route path="/portal/profile" element={<PortalRouteGuard><PortalProfilePage /></PortalRouteGuard>} />
                   <Route path="/portal/link-account" element={<PortalRouteGuard><PortalLinkAccountPage /></PortalRouteGuard>} />
 
@@ -389,7 +390,7 @@ function App() {
                     <Route path="attributes" element={<AttributesPage />} />
                     <Route path="email-activity" element={<EmailActivityPage />} />
                     <Route path="account-link-review" element={<AccountLinkReviewQueuePage />} />
-                    <Route path="privacy-requests" element={<PrivacyRequestsPage />} />
+                    <Route path="support" element={<SupportQueuePage />} />
                   </Route>
                 </Routes>
               </Suspense>
