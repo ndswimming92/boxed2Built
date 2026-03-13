@@ -70,6 +70,7 @@ const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage'));
 const EmailActivityPage = lazy(() => import('./pages/admin/EmailActivityPage'));
 const AccountLinkReviewQueuePage = lazy(() => import('./pages/admin/AccountLinkReviewQueuePage'));
+const PrivacyRequestsPage = lazy(() => import('./pages/admin/PrivacyRequestsPage'));
 const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
 const PortalCallbackPage = lazy(() => import('./pages/portal/CallbackPage'));
