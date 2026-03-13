@@ -11,6 +11,7 @@ interface InternalLinkProps {
   'aria-label'?: string;
   trackingCategory?: string;
   rel?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
 const InternalLink: React.FC<InternalLinkProps> = ({
@@ -22,16 +23,19 @@ const InternalLink: React.FC<InternalLinkProps> = ({
   'aria-label': ariaLabel,
   trackingCategory = 'internal_link',
   rel,
+  onClick,
   ...props
 }) => {
   const linkPath = to || href || '/';
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     trackEvent('internal-link-click', linkPath, {
       event_category: trackingCategory,
       event_label: linkPath,
       user_engagement: 'internal_navigation'
     });
+
+    onClick?.(event);
   };
 
   return (

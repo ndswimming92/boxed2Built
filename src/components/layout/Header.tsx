@@ -71,6 +71,16 @@ const Header: React.FC = () => {
     });
   };
 
+  const handleClientLoginClick = (location: 'desktop' | 'mobile') => {
+    setIsMenuOpen(false);
+    trackEvent('client_login_nav_click', 'header', {
+      event_category: 'navigation',
+      event_label: `client_login_${location}`,
+      action_type: 'click',
+      action_value: '/portal/login',
+    });
+  };
+
   const isActivePage = (path: string) => {
     if (path === '/services') {
       return location.pathname === '/services' || location.pathname.startsWith('/services/');
@@ -239,8 +249,15 @@ const Header: React.FC = () => {
             </ul>
           </nav>
 
-          {/* Call Button (desktop) */}
-          <div className="hidden md:flex flex-shrink-0">
+          {/* Right-side desktop actions */}
+          <div className="hidden md:flex flex-shrink-0 items-center gap-3">
+            <a
+              href="/portal/login"
+              onClick={() => handleClientLoginClick('desktop')}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+            >
+              Client Login
+            </a>
             <CallButton size="md" pageSection="header" />
           </div>
 
@@ -347,6 +364,14 @@ const Header: React.FC = () => {
                   {item.label}
                 </a>
               ))}
+
+              <a
+                href="/portal/login"
+                onClick={() => handleClientLoginClick('mobile')}
+                className="px-4 py-3 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50"
+              >
+                Client Login
+              </a>
 
               <div className="mt-4 pt-4 border-t">
                 <CallButton
