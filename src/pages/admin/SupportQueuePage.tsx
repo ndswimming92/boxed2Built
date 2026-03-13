@@ -6,6 +6,7 @@ import {
   type SupportTicketPriority,
   type SupportTicketStatus,
 } from '../../services/supportTicketService';
+import { PortalServiceError } from '../../services/customerPortalService';
 
 const statusOptions: SupportTicketStatus[] = ['open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed'];
 
@@ -20,21 +21,32 @@ export default function SupportQueuePage() {
   const [reply, setReply] = useState('');
   const [internalReply, setInternalReply] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [setupRequired, setSetupRequired] = useState(false);
 
   const activeTicket = useMemo(() => tickets.find((ticket) => ticket.id === activeTicketId) ?? null, [tickets, activeTicketId]);
 
   const loadQueue = async () => {
     setError(null);
+    setSetupRequired(false);
+
     try {
       const data = await supportTicketService.getAdminQueue(filter);
       setTickets(data);
       setActiveTicketId((current) => current ?? data[0]?.id ?? null);
     } catch (err) {
+      if (err instanceof PortalServiceError && err.code === 'MISCONFIGURED') {
+        setSetupRequired(true);
+        setTickets([]);
+        setMessages([]);
+        setActiveTicketId(null);
+      }
+
       setError(err instanceof Error ? err.message : 'Unable to load support queue.');
     }
   };
 
   const loadMessages = async (ticketId: string) => {
+    if (setupRequired) return;
     try {
       const data = await supportTicketService.getAdminTicketMessages(ticketId);
       setMessages(data);
@@ -58,7 +70,7 @@ export default function SupportQueuePage() {
   }, [activeTicketId, tickets]);
 
   const handleStatusUpdate = async () => {
-    if (!activeTicketId) return;
+    if (!activeTicketId || setupRequired) return;
     try {
       await supportTicketService.updateAdminTicketStatus({ ticketId: activeTicketId, status, note, priority });
       setNote('');
@@ -70,7 +82,7 @@ export default function SupportQueuePage() {
   };
 
   const handleReply = async () => {
-    if (!activeTicketId) return;
+    if (!activeTicketId || setupRequired) return;
     try {
       await supportTicketService.addAdminMessage(activeTicketId, reply, internalReply);
       setReply('');
@@ -86,12 +98,14 @@ export default function SupportQueuePage() {
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-900">Support Queue</h1>
-          <select value={filter} onChange={(e) => setFilter(e.target.value as SupportTicketStatus | 'all')} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+          <select value={filter} onChange={(e) => setFilter(e.target.value as SupportTicketStatus | 'all')} className="rounded-md border border-slate-300 px-3 py-2 text-sm" disabled={setupRequired}>
             <option value="all">All</option>
             {statusOptions.map((value) => <option key={value} value={value}>{value.replace('_', ' ')}</option>)}
           </select>
         </div>
-        {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+        {error ? (
+          <p className={`mt-2 text-sm ${setupRequired ? 'text-amber-700' : 'text-red-700'}`}>{error}</p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[320px,1fr]">
