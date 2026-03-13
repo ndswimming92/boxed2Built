@@ -45,6 +45,22 @@ export type CustomerPortalJob = {
   updated_at: string;
 };
 
+export type JobActionRequestType = 'request_reschedule' | 'cancel_request' | 'add_note';
+export type JobActionRequestState = 'pending' | 'approved' | 'rejected';
+
+export type CustomerJobActionRequest = {
+  id: string;
+  job_id: string;
+  action_type: JobActionRequestType;
+  request_message: string | null;
+  requested_schedule_date: string | null;
+  request_state: JobActionRequestState;
+  moderation_note: string | null;
+  moderated_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 
 export type CustomerPortalDocument = {
   id: string;
@@ -144,6 +160,44 @@ export const customerPortalService = {
     }
 
     return data;
+  },
+
+  async getMyJobActionRequests(jobId: string): Promise<CustomerJobActionRequest[]> {
+    await ensureAuthenticatedSession();
+
+    const { data, error } = await supabase
+      .from('job_customer_action_requests')
+      .select('id, job_id, action_type, request_message, requested_schedule_date, request_state, moderation_note, moderated_at, created_at, updated_at')
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw normalizePortalError(error, `Failed to fetch job action requests: ${error.message}`);
+    }
+
+    return (data ?? []) as CustomerJobActionRequest[];
+  },
+
+  async submitJobActionRequest(payload: {
+    jobId: string;
+    actionType: JobActionRequestType;
+    requestMessage?: string | null;
+    requestedScheduleDate?: string | null;
+  }): Promise<CustomerJobActionRequest> {
+    await ensureAuthenticatedSession();
+
+    const { data, error } = await supabase.rpc('submit_job_customer_action_request', {
+      p_job_id: payload.jobId,
+      p_action_type: payload.actionType,
+      p_request_message: payload.requestMessage ?? null,
+      p_requested_schedule_date: payload.requestedScheduleDate ?? null,
+    });
+
+    if (error) {
+      throw normalizePortalError(error, `Failed to submit request: ${error.message}`);
+    }
+
+    return data as CustomerJobActionRequest;
   },
 
   async getMyInvoices(): Promise<CustomerPortalInvoice[]> {

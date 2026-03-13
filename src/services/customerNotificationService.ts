@@ -6,7 +6,9 @@ export type CustomerNotificationType =
   | 'job_completed'
   | 'invoice_issued'
   | 'invoice_paid'
-  | 'reminder_sent';
+  | 'reminder_sent'
+  | 'job_action_request_approved'
+  | 'job_action_request_rejected';
 
 export type CustomerNotification = {
   id: string;
