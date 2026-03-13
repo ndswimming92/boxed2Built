@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { invoiceId } = await req.json();
+    const { invoiceId, source } = await req.json();
 
     if (!invoiceId) {
       return new Response(JSON.stringify({ error: "invoiceId is required" }), {
@@ -28,9 +28,26 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : null;
+
+    let authenticatedCustomerId: string | null = null;
+    if (token) {
+      const { data: userData } = await supabase.auth.getUser(token);
+      const authUserId = userData.user?.id ?? null;
+      if (authUserId) {
+        const { data: customer } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("auth_user_id", authUserId)
+          .maybeSingle();
+        authenticatedCustomerId = customer?.id ?? null;
+      }
+    }
+
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .select("*, invoice_line_items(*)")
+      .select("id, customer_id, business_id, invoice_number, client_name, client_email, amount_due, status")
       .eq("id", invoiceId)
       .eq("is_active", true)
       .maybeSingle();
@@ -42,6 +59,15 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (source === "portal") {
+      if (!authenticatedCustomerId || invoice.customer_id !== authenticatedCustomerId) {
+        return new Response(JSON.stringify({ error: "Unauthorized invoice access" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     if (invoice.status === "paid" || invoice.status === "cancelled") {
       return new Response(JSON.stringify({ error: "Invoice is not payable" }), {
         status: 400,
@@ -51,7 +77,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: bizData } = await supabase
       .from("business_info")
-      .select("business_name, logo_url")
+      .select("business_name")
       .eq("id", invoice.business_id)
       .maybeSingle();
 
@@ -91,6 +117,8 @@ Deno.serve(async (req: Request) => {
         invoice_id: invoiceId,
         invoice_number: invoice.invoice_number,
         client_name: invoice.client_name,
+        checkout_source: source || "public_payment_link",
+        customer_id: invoice.customer_id || "",
       },
       success_url: `${appUrl}/pay/${invoiceId}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pay/${invoiceId}`,
@@ -98,7 +126,11 @@ Deno.serve(async (req: Request) => {
 
     await supabase
       .from("invoices")
-      .update({ stripe_session_id: session.id })
+      .update({
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+        stripe_payment_status: session.payment_status || "unpaid",
+      })
       .eq("id", invoiceId);
 
     return new Response(JSON.stringify({ url: session.url }), {
