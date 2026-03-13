@@ -1,13 +1,16 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
+import { customerPortalService } from '../../services/customerPortalService';
 
 export default function PortalCallbackPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const hasTrackedLogin = useRef(false);
 
   const callbackError = useMemo(() => {
     const errorDescription = searchParams.get('error_description');
@@ -29,6 +32,13 @@ export default function PortalCallbackPage() {
     if (isAdminUser(user)) {
       navigate('/admin/dashboard', { replace: true });
       return;
+    }
+
+    if (!hasTrackedLogin.current) {
+      hasTrackedLogin.current = true;
+      void customerPortalService.trackFunnelEvent('login', {
+        source: 'oauth_callback',
+      }).catch(() => undefined);
     }
 
     navigate('/portal/dashboard', { replace: true });
