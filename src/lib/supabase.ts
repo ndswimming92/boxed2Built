@@ -20,6 +20,8 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: 'pkce',
+    storageKey: 'boxed2built.auth.token',
   },
   // db: { schema: 'public' }, // uncomment if you use a non-default schema
 });

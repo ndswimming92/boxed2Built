@@ -6,11 +6,18 @@ publish = "dist"
 NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
 
+[[redirects]]
+from = "http://*"
+to = "https://:splat"
+status = 301
+force = true
+
 [[headers]]
 for = "/*"
 
 [headers.values]
 X-Robots-Tag = "index, follow"
+Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
 [[headers]]
 for = "/partners"

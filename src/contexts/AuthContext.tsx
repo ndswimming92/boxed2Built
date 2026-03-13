@@ -3,11 +3,13 @@ import { supabase } from '../lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { logAction } from '../services/auditLogService';
 import {
+  getAccountLinkingError,
   getAuthorizationError,
   isAdminUser,
   isClientAuthorized,
   isUserAuthorized,
 } from '../utils/authorization';
+import { getSecureAuthRedirectUrl } from '../utils/authHardening';
 import { Organization, OrganizationRole } from '../types';
 import { organizationService } from '../services/organizationService';
 
@@ -26,6 +28,7 @@ interface AuthContextType {
   signInWithGoogleForPortal: () => Promise<{ error: Error | null }>;
   getHomeRouteForUser: (authUser: User | null) => string;
   signOut: () => Promise<void>;
+  signOutAllSessions: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
 
@@ -52,10 +55,10 @@ const clearAuthFlow = () => {
 
 const getOAuthRedirectUri = (type: AuthFlow): string => {
   if (type === 'admin') {
-    return import.meta.env.VITE_ADMIN_OAUTH_REDIRECT_URI || `${window.location.origin}/admin/login`;
+    return getSecureAuthRedirectUrl('/admin/login', import.meta.env.VITE_ADMIN_OAUTH_REDIRECT_URI);
   }
 
-  return import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI || `${window.location.origin}/portal/callback`;
+  return getSecureAuthRedirectUrl('/portal/callback', import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI);
 };
 
 
@@ -151,6 +154,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               errorMessage: 'Unauthorized portal access attempt',
             });
             await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            clearAuthFlow();
+            return;
+          }
+
+          const accountLinkingError = getAccountLinkingError(session.user);
+          if (accountLinkingError) {
+            await logAction({
+              actionType: 'LOGIN',
+              tableName: 'auth',
+              recordIdentifier: session.user.email || 'unknown',
+              status: 'error',
+              errorMessage: accountLinkingError,
+            });
+            await supabase.auth.signOut({ scope: 'global' });
             setSession(null);
             setUser(null);
             clearAuthFlow();
@@ -323,13 +342,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error logging logout:', error);
     }
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
+  };
+
+  const signOutAllSessions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await logAction({
+        actionType: 'LOGOUT',
+        tableName: 'auth',
+        recordIdentifier: user?.email || 'unknown',
+        status: 'success',
+        metadata: { scope: 'global' },
+      });
+    } catch (error) {
+      console.error('Error logging global logout:', error);
+    }
+
+    await supabase.auth.signOut({ scope: 'global' });
   };
 
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/admin/reset-password`,
+        redirectTo: getSecureAuthRedirectUrl('/admin/reset-password'),
       });
       return { error };
     } catch (error) {
@@ -352,6 +388,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogleForPortal,
     getHomeRouteForUser,
     signOut,
+    signOutAllSessions,
     resetPassword,
   };
 
