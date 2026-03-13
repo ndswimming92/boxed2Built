@@ -13,6 +13,7 @@ const navItems = [
   { to: '/portal/dashboard', label: 'Dashboard' },
   { to: '/portal/jobs', label: 'Jobs' },
   { to: '/portal/profile', label: 'Profile' },
+  { to: '/portal/link-account', label: 'Link Account' },
 ];
 
 export default function PortalLayout({ title, subtitle, children }: PortalLayoutProps) {
