@@ -30,15 +30,13 @@ const footerLinkSections = [
   },
   {
     title: 'Support',
-    links: [
-      { href: '/faq', label: 'FAQ' },
-      { href: '/lookup-request', label: 'Look Up Request' },
-    ],
+    links: [{ href: '/faq', label: 'FAQ' }],
   },
-  {
-    title: 'Client Access',
-    links: [{ href: '/portal/login', label: 'Client Login' }],
-  },
+];
+
+const clientAccessLinks = [
+  { href: '/portal/login', label: 'Client Login' },
+  { href: '/lookup-request', label: 'Look Up Request' },
 ];
 
 const formatTime = (time: string): string => {
@@ -209,18 +207,6 @@ const Footer: React.FC = () => {
                           href={link.href}
                           className="hover:text-white transition-colors"
                           trackingCategory="footer_nav"
-                          onClick={
-                            link.href === '/portal/login'
-                              ? () => {
-                                  trackEvent('client_login_nav_click', 'footer', {
-                                    event_category: 'navigation',
-                                    event_label: 'client_login_footer',
-                                    action_type: 'click',
-                                    action_value: '/portal/login',
-                                  });
-                                }
-                              : undefined
-                          }
                         >
                           {link.label}
                         </InternalLink>
@@ -229,6 +215,42 @@ const Footer: React.FC = () => {
                   </ul>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-6 border-t border-gray-700/80 pt-4 bg-gray-800/40 rounded-lg px-4 py-3">
+              <h3 className="font-semibold text-blue-100 mb-2 text-xs uppercase tracking-[0.16em]">Client Access</h3>
+              <ul className="space-y-2 text-sm text-gray-200">
+                {clientAccessLinks.map((link) => (
+                  <li key={link.href}>
+                    <InternalLink
+                      href={link.href}
+                      className="inline-flex items-center hover:text-white transition-colors"
+                      trackingCategory="footer_nav"
+                      onClick={() => {
+                        if (link.href === '/portal/login') {
+                          trackEvent('client_login_nav_click', 'footer', {
+                            event_category: 'navigation',
+                            event_label: 'client_login_footer',
+                            action_type: 'click',
+                            action_value: '/portal/login',
+                          });
+                        }
+
+                        if (link.href === '/lookup-request') {
+                          trackEvent('request_lookup_nav_click', 'footer', {
+                            event_category: 'navigation',
+                            event_label: 'request_lookup_footer',
+                            action_type: 'click',
+                            action_value: '/lookup-request',
+                          });
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </InternalLink>
+                  </li>
+                ))}
+              </ul>
             </div>
           </nav>
 
