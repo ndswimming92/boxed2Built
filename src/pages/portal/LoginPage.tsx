@@ -27,6 +27,11 @@ export default function PortalLoginPage() {
     const errorCode = searchParams.get('error_code');
     const oauthError = searchParams.get('error');
 
+    if (searchParams.get('error') === 'session_expired') {
+      setError('Your session expired. Please sign in again.');
+      return;
+    }
+
     if (errorDescription) {
       setError(decodeURIComponent(errorDescription));
       return;

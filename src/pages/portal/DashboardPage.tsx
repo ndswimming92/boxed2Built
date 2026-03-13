@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PortalLayout from '../../components/portal/PortalLayout';
 import {
   customerPortalService,
   PortalServiceError,
@@ -8,8 +9,13 @@ import {
   type CustomerPortalProfile,
 } from '../../services/customerPortalService';
 
+const formatDate = (value: string | null) => {
+  if (!value) return 'N/A';
+  return new Date(value).toLocaleDateString();
+};
+
 export default function PortalDashboardPage() {
-  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<CustomerPortalProfile | null>(null);
   const [jobs, setJobs] = useState<CustomerPortalJob[]>([]);
   const [invoices, setInvoices] = useState<CustomerPortalInvoice[]>([]);
@@ -32,65 +38,87 @@ export default function PortalDashboardPage() {
         setJobs(myJobs);
         setInvoices(myInvoices);
       } catch (err) {
-        if (err instanceof PortalServiceError) {
-          setError(err.message);
-        } else {
-          setError('Something went wrong while loading your portal data.');
+        if (err instanceof PortalServiceError && err.code === 'SESSION_EXPIRED') {
+          navigate('/portal/login?error=session_expired', { replace: true });
+          return;
         }
+
+        setError(err instanceof Error ? err.message : 'Something went wrong while loading your portal data.');
       } finally {
         setLoading(false);
       }
     };
 
     void loadPortalData();
-  }, []);
+  }, [navigate]);
+
+  const latestActivity = useMemo(() => {
+    const entries = [
+      ...jobs.map((job) => ({
+        id: job.id,
+        timestamp: job.updated_at,
+        label: `Job ${job.job_type || 'project'} marked ${job.job_status.replace('_', ' ')}`,
+      })),
+      ...invoices.map((invoice) => ({
+        id: invoice.id,
+        timestamp: invoice.created_at,
+        label: `Invoice ${invoice.invoice_number} is ${invoice.status.replace('_', ' ')}`,
+      })),
+    ];
+
+    return entries
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 3);
+  }, [jobs, invoices]);
+
+  const scheduledJobsCount = jobs.filter((job) => ['scheduled', 'in_progress'].includes(job.job_status)).length;
+  const completedJobsCount = jobs.filter((job) => job.job_status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Portal Dashboard</h1>
-              <p className="text-slate-600 mt-1">Welcome back{user?.email ? `, ${user.email}` : ''}.</p>
+    <PortalLayout
+      title={`Welcome${profile?.full_name ? `, ${profile.full_name}` : ''}`}
+      subtitle="Track your project progress and recent account activity"
+    >
+      {loading ? <p className="text-sm text-slate-600">Loading dashboard summary...</p> : null}
+
+      {!loading && error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      ) : null}
+
+      {!loading && !error ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Total jobs</p>
+              <p className="mt-1 text-3xl font-semibold text-slate-900">{jobs.length}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800"
-            >
-              Sign out
-            </button>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Active jobs</p>
+              <p className="mt-1 text-3xl font-semibold text-slate-900">{scheduledJobsCount}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-sm text-slate-500">Completed jobs</p>
+              <p className="mt-1 text-3xl font-semibold text-slate-900">{completedJobsCount}</p>
+            </div>
           </div>
 
-          {error && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-
-          {loading ? (
-            <p className="text-slate-700">Loading your portal data...</p>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-slate-700">
-                Signed in as <strong>{profile?.full_name || user?.email || 'Customer'}</strong>.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg border border-slate-200 p-4">
-                  <h2 className="text-sm font-medium text-slate-500">My Jobs</h2>
-                  <p className="text-2xl font-semibold text-slate-900">{jobs.length}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 p-4">
-                  <h2 className="text-sm font-medium text-slate-500">My Invoices</h2>
-                  <p className="text-2xl font-semibold text-slate-900">{invoices.length}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-900">Latest activity</h3>
+            {latestActivity.length === 0 ? (
+              <p className="mt-2 text-sm text-slate-600">No recent activity yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {latestActivity.map((activity) => (
+                  <li key={activity.id} className="rounded-md border border-slate-200 p-3">
+                    <p className="text-sm font-medium text-slate-800">{activity.label}</p>
+                    <p className="text-xs text-slate-500">{formatDate(activity.timestamp)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      ) : null}
+    </PortalLayout>
   );
 }

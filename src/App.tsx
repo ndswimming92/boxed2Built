@@ -71,6 +71,10 @@ const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage
 const EmailActivityPage = lazy(() => import('./pages/admin/EmailActivityPage'));
 const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
+const PortalCallbackPage = lazy(() => import('./pages/portal/CallbackPage'));
+const PortalJobsPage = lazy(() => import('./pages/portal/JobsPage'));
+const PortalJobDetailPage = lazy(() => import('./pages/portal/JobDetailPage'));
+const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -333,8 +337,12 @@ function App() {
 
                   <Route path="/admin/login" element={<LoginPage />} />
                   <Route path="/portal/login" element={<PortalLoginPage />} />
+                  <Route path="/portal/callback" element={<PortalCallbackPage />} />
                   <Route path="/portal" element={<Navigate to="/portal/dashboard" replace />} />
                   <Route path="/portal/dashboard" element={<PortalRouteGuard><PortalDashboardPage /></PortalRouteGuard>} />
+                  <Route path="/portal/jobs" element={<PortalRouteGuard><PortalJobsPage /></PortalRouteGuard>} />
+                  <Route path="/portal/jobs/:id" element={<PortalRouteGuard><PortalJobDetailPage /></PortalRouteGuard>} />
+                  <Route path="/portal/profile" element={<PortalRouteGuard><PortalProfilePage /></PortalRouteGuard>} />
 
                   <Route path="/admin" element={<AdminRouteGuard><AdminLayout /></AdminRouteGuard>}>
                     <Route index element={<Navigate to="dashboard" replace />} />
