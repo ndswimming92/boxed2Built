@@ -69,12 +69,14 @@ const FinancesPage = lazy(() => import('./pages/admin/FinancesPage'));
 const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = lazy(() => import('./pages/admin/TestIdentifiersPage'));
 const EmailActivityPage = lazy(() => import('./pages/admin/EmailActivityPage'));
+const AccountLinkReviewQueuePage = lazy(() => import('./pages/admin/AccountLinkReviewQueuePage'));
 const PortalLoginPage = lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
 const PortalCallbackPage = lazy(() => import('./pages/portal/CallbackPage'));
 const PortalJobsPage = lazy(() => import('./pages/portal/JobsPage'));
 const PortalJobDetailPage = lazy(() => import('./pages/portal/JobDetailPage'));
 const PortalProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
+const PortalLinkAccountPage = lazy(() => import('./pages/portal/LinkAccountPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -343,6 +345,7 @@ function App() {
                   <Route path="/portal/jobs" element={<PortalRouteGuard><PortalJobsPage /></PortalRouteGuard>} />
                   <Route path="/portal/jobs/:id" element={<PortalRouteGuard><PortalJobDetailPage /></PortalRouteGuard>} />
                   <Route path="/portal/profile" element={<PortalRouteGuard><PortalProfilePage /></PortalRouteGuard>} />
+                  <Route path="/portal/link-account" element={<PortalRouteGuard><PortalLinkAccountPage /></PortalRouteGuard>} />
 
                   <Route path="/admin" element={<AdminRouteGuard><AdminLayout /></AdminRouteGuard>}>
                     <Route index element={<Navigate to="dashboard" replace />} />
@@ -376,6 +379,7 @@ function App() {
                     <Route path="utm-link-builder" element={<UTMLinkBuilderPage />} />
                     <Route path="attributes" element={<AttributesPage />} />
                     <Route path="email-activity" element={<EmailActivityPage />} />
+                    <Route path="account-link-review" element={<AccountLinkReviewQueuePage />} />
                   </Route>
                 </Routes>
               </Suspense>

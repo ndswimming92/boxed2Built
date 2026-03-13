@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
 import {
   customerPortalService,
@@ -21,11 +21,13 @@ export default function PortalDashboardPage() {
   const [invoices, setInvoices] = useState<CustomerPortalInvoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [needsAccountLinking, setNeedsAccountLinking] = useState(false);
 
   useEffect(() => {
     const loadPortalData = async () => {
       setLoading(true);
       setError(null);
+      setNeedsAccountLinking(false);
 
       try {
         const [myProfile, myJobs, myInvoices] = await Promise.all([
@@ -40,6 +42,11 @@ export default function PortalDashboardPage() {
       } catch (err) {
         if (err instanceof PortalServiceError && err.code === 'SESSION_EXPIRED') {
           navigate('/portal/login?error=session_expired', { replace: true });
+          return;
+        }
+
+        if (err instanceof PortalServiceError && err.code === 'NOT_FOUND') {
+          setNeedsAccountLinking(true);
           return;
         }
 
@@ -85,6 +92,16 @@ export default function PortalDashboardPage() {
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       ) : null}
 
+
+      {!loading && needsAccountLinking ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+          <p className="font-medium">No linked records found for this portal account yet.</p>
+          <p className="mt-1">Use the secure account-linking flow to connect your existing customer history.</p>
+          <Link to="/portal/link-account" className="mt-3 inline-flex rounded-md bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
+            Link my account
+          </Link>
+        </div>
+      ) : null}
       {!loading && !error ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
