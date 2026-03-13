@@ -83,6 +83,7 @@ const PortalLinkAccountPage = lazy(() => import('./pages/portal/LinkAccountPage'
 const PortalNotificationsPage = lazy(() => import('./pages/portal/NotificationsPage'));
 const PortalSupportPage = lazy(() => import('./pages/portal/SupportPage'));
 const SupportQueuePage = lazy(() => import('./pages/admin/SupportQueuePage'));
+const PortalAdoptionPage = lazy(() => import('./pages/admin/PortalAdoptionPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -391,6 +392,7 @@ function App() {
                     <Route path="email-activity" element={<EmailActivityPage />} />
                     <Route path="account-link-review" element={<AccountLinkReviewQueuePage />} />
                     <Route path="support" element={<SupportQueuePage />} />
+                    <Route path="portal-adoption" element={<PortalAdoptionPage />} />
                   </Route>
                 </Routes>
               </Suspense>

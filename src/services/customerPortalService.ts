@@ -18,6 +18,8 @@ export class PortalServiceError extends Error {
   }
 }
 
+export type PortalFunnelEventType = 'login' | 'first_job_view' | 'walkthrough_completed';
+
 export type CustomerPortalProfile = {
   id: string;
   full_name: string | null;
@@ -349,5 +351,18 @@ export const customerPortalService = {
     }
 
     return data;
+  },
+
+  async trackFunnelEvent(eventType: PortalFunnelEventType, metadata?: Record<string, unknown>) {
+    await ensureAuthenticatedSession();
+
+    const { error } = await supabase.rpc('track_portal_funnel_event', {
+      p_event_type: eventType,
+      p_metadata: metadata ?? {},
+    });
+
+    if (error) {
+      throw normalizePortalError(error, `Failed to track portal funnel event: ${error.message}`);
+    }
   },
 };

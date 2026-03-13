@@ -16,6 +16,7 @@ export default function PortalJobsPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const hasTrackedFirstJobView = useRef(false);
 
   const loadJobs = useCallback(async (nextPage: number, append = false) => {
     setError(null);
@@ -30,6 +31,14 @@ export default function PortalJobsPage() {
       setHasMore(data.length === PAGE_SIZE);
       setPage(nextPage);
       setJobs((prev) => (append ? [...prev, ...data] : data));
+
+      if (!append && data.length > 0 && !hasTrackedFirstJobView.current) {
+        hasTrackedFirstJobView.current = true;
+        void customerPortalService.trackFunnelEvent('first_job_view', {
+          source: 'jobs_page',
+          visible_jobs_count: data.length,
+        }).catch(() => undefined);
+      }
     } catch (err) {
       if (err instanceof PortalServiceError && err.code === 'SESSION_EXPIRED') {
         navigate('/portal/login?error=session_expired', { replace: true });
