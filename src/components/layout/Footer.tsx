@@ -9,6 +9,38 @@ import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
 
+const footerLinkSections = [
+  {
+    title: 'Services',
+    links: [
+      { href: '/services', label: 'Services & Pricing' },
+      { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
+      { href: '/services/tv-mounting', label: 'TV Mounting' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { href: '/', label: 'Home' },
+      { href: '/about', label: 'About' },
+      { href: '/partners', label: 'Partners' },
+      { href: '/gallery', label: 'Gallery' },
+      { href: '/contact', label: 'Contact' },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { href: '/faq', label: 'FAQ' },
+      { href: '/lookup-request', label: 'Look Up Request' },
+    ],
+  },
+  {
+    title: 'Client Access',
+    links: [{ href: '/portal/login', label: 'Client Login' }],
+  },
+];
+
 const formatTime = (time: string): string => {
   const [hours, minutes] = time.split(':');
   const hour = parseInt(hours, 10);
@@ -166,80 +198,38 @@ const Footer: React.FC = () => {
 
           {/* Navigation */}
           <nav aria-label="Footer navigation">
-            <h3 className="font-semibold text-white mb-3 text-base">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li>
-                <InternalLink href="/" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Home
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/services" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Services & Pricing
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/services/furniture-assembly" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Furniture Assembly
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/services/tv-mounting" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  TV Mounting
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/gallery" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Gallery
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/faq" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  FAQ
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/partners" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Partners
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/about" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  About
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink href="/contact" className="hover:text-white transition-colors" trackingCategory="footer_nav">
-                  Contact
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink
-                  href="/portal/login"
-                  className="hover:text-white transition-colors"
-                  trackingCategory="footer_nav"
-                  onClick={() => {
-                    trackEvent('client_login_nav_click', 'footer', {
-                      event_category: 'navigation',
-                      event_label: 'client_login_footer',
-                      action_type: 'click',
-                      action_value: '/portal/login',
-                    });
-                  }}
-                >
-                  Client Login
-                </InternalLink>
-              </li>
-              <li>
-                <InternalLink
-                  href="/lookup-request"
-                  className="hover:text-white transition-colors"
-                  trackingCategory="footer_nav"
-                >
-                  Look Up Request
-                </InternalLink>
-              </li>
-            </ul>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-5 md:gap-x-10">
+              {footerLinkSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">{section.title}</h3>
+                  <ul className="space-y-2 text-sm text-gray-300">
+                    {section.links.map((link) => (
+                      <li key={link.href}>
+                        <InternalLink
+                          href={link.href}
+                          className="hover:text-white transition-colors"
+                          trackingCategory="footer_nav"
+                          onClick={
+                            link.href === '/portal/login'
+                              ? () => {
+                                  trackEvent('client_login_nav_click', 'footer', {
+                                    event_category: 'navigation',
+                                    event_label: 'client_login_footer',
+                                    action_type: 'click',
+                                    action_value: '/portal/login',
+                                  });
+                                }
+                              : undefined
+                          }
+                        >
+                          {link.label}
+                        </InternalLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </nav>
 
           {/* Hours + Areas + Payment */}
