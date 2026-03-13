@@ -9,15 +9,16 @@ import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
 
+const serviceLinksSection = {
+  title: 'Services',
+  links: [
+    { href: '/services', label: 'Services & Pricing' },
+    { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
+    { href: '/services/tv-mounting', label: 'TV Mounting' },
+  ],
+};
+
 const footerLinkSections = [
-  {
-    title: 'Services',
-    links: [
-      { href: '/services', label: 'Services & Pricing' },
-      { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
-      { href: '/services/tv-mounting', label: 'TV Mounting' },
-    ],
-  },
   {
     title: 'Company',
     links: [
@@ -196,7 +197,26 @@ const Footer: React.FC = () => {
 
           {/* Navigation */}
           <nav aria-label="Footer navigation">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-5 md:gap-x-10">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-x-10">
+              <div className="rounded-lg border border-blue-500/30 bg-blue-950/30 p-4 sm:col-span-2 lg:col-span-1">
+                <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">
+                  {serviceLinksSection.title}
+                </h3>
+                <ul className="space-y-2 text-sm text-gray-200">
+                  {serviceLinksSection.links.map((link) => (
+                    <li key={link.href}>
+                      <InternalLink
+                        href={link.href}
+                        className="hover:text-white transition-colors"
+                        trackingCategory="footer_nav"
+                      >
+                        {link.label}
+                      </InternalLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               {footerLinkSections.map((section) => (
                 <div key={section.title}>
                   <h3 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">{section.title}</h3>
