@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   synthetic:
@@ -14,11 +17,30 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+
+      - name: Check synthetic monitor configuration
+        id: config
+        env:
+          SYNTHETIC_BASE_URL: ${{ secrets.SYNTHETIC_BASE_URL }}
+        run: |
+          if [ -z "$SYNTHETIC_BASE_URL" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "SYNTHETIC_BASE_URL secret is not configured. Skipping synthetic monitor."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.config.outputs.enabled == 'true'
+        run: npm ci
+
       - name: Run synthetic monitor
+        if: steps.config.outputs.enabled == 'true'
         env:
           SYNTHETIC_BASE_URL: ${{ secrets.SYNTHETIC_BASE_URL }}
           SYNTHETIC_INVOICE_ID: ${{ secrets.SYNTHETIC_INVOICE_ID }}
         run: npm run monitor:synthetic > synthetic-results.json
+
       - name: Evaluate SLO thresholds
+        if: steps.config.outputs.enabled == 'true'
         run: npm run monitor:slo
