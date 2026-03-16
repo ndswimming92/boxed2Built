@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { customerPortalService, PortalServiceError, type CustomerPortalProfile } from '../../services/customerPortalService';
 
 interface PortalLayoutProps {
   title: string;
@@ -21,8 +22,38 @@ const navItems = [
 ];
 
 export default function PortalLayout({ title, subtitle, children }: PortalLayoutProps) {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
+  const [profile, setProfile] = useState<CustomerPortalProfile | null>(null);
+
+  useEffect(() => {
+    const determineAccountLinking = async () => {
+      try {
+        const myProfile = await customerPortalService.getMyProfile();
+        setProfile(myProfile);
+        setAccountLinked(true);
+      } catch (error) {
+        if (error instanceof PortalServiceError && error.code === 'NOT_FOUND') {
+          setAccountLinked(false);
+          return;
+        }
+
+        // Keep navigation available if portal profile endpoint is unavailable.
+        setAccountLinked(false);
+      }
+    };
+
+    void determineAccountLinking();
+  }, []);
+
+  const displayName = useMemo(() => {
+    const metadataName = user?.user_metadata?.full_name || user?.user_metadata?.name;
+    return profile?.full_name || metadataName || user?.email?.split('@')[0] || 'Customer';
+  }, [profile?.full_name, user?.email, user?.user_metadata?.full_name, user?.user_metadata?.name]);
+
+  const displayEmail = profile?.email || user?.email || 'Unknown email';
+  const visibleNavItems = navItems.filter((item) => item.to !== '/portal/link-account' || accountLinked === false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -40,7 +71,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
 
           <div className="flex items-center gap-3">
             <nav className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -56,6 +87,13 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
                 </NavLink>
               ))}
             </nav>
+
+            <div className="hidden rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 lg:block">
+              <p>
+                Logged in as <span className="font-semibold text-slate-900">{displayName}</span>
+              </p>
+              <p className="text-slate-500">{displayEmail}</p>
+            </div>
 
             <button
               type="button"
