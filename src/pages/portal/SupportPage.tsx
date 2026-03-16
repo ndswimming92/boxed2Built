@@ -9,6 +9,7 @@ import {
   type SupportTicketPriority,
   type SupportTicketStatus,
 } from '../../services/supportTicketService';
+import { hasUnreadSupportUpdate, markSupportTicketAsSeen } from '../../utils/supportUnread';
 
 const statusLabel: Record<SupportTicketStatus, string> = {
   open: 'Open',
@@ -35,6 +36,7 @@ export default function PortalSupportPage() {
   const [newMessage, setNewMessage] = useState(searchParams.get('message') ?? '');
   const [priority, setPriority] = useState<SupportTicketPriority>('normal');
   const [replyMessage, setReplyMessage] = useState('');
+  const [, setSeenStateVersion] = useState(0);
 
   const relatedJobId = searchParams.get('jobId');
   const relatedInvoiceId = searchParams.get('invoiceId');
@@ -82,6 +84,12 @@ export default function PortalSupportPage() {
       setError(err instanceof Error ? err.message : 'Unable to load ticket thread.');
     }
   };
+
+  useEffect(() => {
+    if (!activeTicket) return;
+    markSupportTicketAsSeen(activeTicket.id, activeTicket.last_admin_message_at);
+    setSeenStateVersion((value) => value + 1);
+  }, [activeTicket?.id, activeTicket?.last_admin_message_at]);
 
   useEffect(() => {
     void loadTickets();
@@ -179,6 +187,9 @@ export default function PortalSupportPage() {
                 >
                   <p className="font-medium text-slate-900">{ticket.subject}</p>
                   <p className="text-xs text-slate-500">{statusLabel[ticket.status]} • {formatDateTime(ticket.updated_at)}</p>
+                  {hasUnreadSupportUpdate(ticket.id, ticket.last_admin_message_at) ? (
+                    <p className="mt-1 text-xs font-medium text-amber-700">● New admin update</p>
+                  ) : null}
                 </button>
               </li>
             ))}

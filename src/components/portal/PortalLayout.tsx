@@ -3,6 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { customerPortalService, PortalServiceError, type CustomerPortalProfile } from '../../services/customerPortalService';
+import { supportTicketService } from '../../services/supportTicketService';
+import { hasUnreadSupportUpdate } from '../../utils/supportUnread';
 
 interface PortalLayoutProps {
   title: string;
@@ -26,6 +28,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
   const navigate = useNavigate();
   const [accountLinked, setAccountLinked] = useState<boolean | null>(null);
   const [profile, setProfile] = useState<CustomerPortalProfile | null>(null);
+  const [hasUnreadSupportMessages, setHasUnreadSupportMessages] = useState(false);
 
   useEffect(() => {
     const determineAccountLinking = async () => {
@@ -45,6 +48,34 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
     };
 
     void determineAccountLinking();
+  }, []);
+
+  useEffect(() => {
+    const loadSupportUnreadState = async () => {
+      try {
+        const myTickets = await supportTicketService.getMyTickets();
+        setHasUnreadSupportMessages(myTickets.some((ticket) => hasUnreadSupportUpdate(ticket.id, ticket.last_admin_message_at)));
+      } catch {
+        setHasUnreadSupportMessages(false);
+      }
+    };
+
+    const handleStorage = () => {
+      void loadSupportUnreadState();
+    };
+
+    void loadSupportUnreadState();
+    const interval = window.setInterval(() => {
+      void loadSupportUnreadState();
+    }, 60000);
+    window.addEventListener('focus', handleStorage);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', handleStorage);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   const displayName = useMemo(() => {
@@ -104,7 +135,12 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
                     }`
                   }
                 >
-                  {item.label}
+                  <span className="inline-flex items-center gap-1.5">
+                    {item.label}
+                    {item.to === '/portal/support' && hasUnreadSupportMessages ? (
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500" aria-label="Unread support update" />
+                    ) : null}
+                  </span>
                 </NavLink>
               ))}
             </nav>
