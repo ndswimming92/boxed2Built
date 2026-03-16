@@ -15,7 +15,6 @@ export default function PortalLinkAccountPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [verificationLink, setVerificationLink] = useState<string | null>(null);
 
   const verifyMode = useMemo(() => Boolean(token), [token]);
 
@@ -26,7 +25,6 @@ export default function PortalLinkAccountPage() {
     setLoading(true);
     setMessage(null);
     setError(null);
-    setVerificationLink(null);
 
     try {
       const result = await portalAccountLinkingService.startLinkRequest(email, verificationMethod);
@@ -47,37 +45,24 @@ export default function PortalLinkAccountPage() {
       }
 
       const linkUrl = `${appBaseUrl}/portal/link-account?token=${encodeURIComponent(result.token)}`;
-      setVerificationLink(linkUrl);
-
       if (verificationMethod === 'email') {
         openEmailClient(
           result.deliveryTarget,
           'Verify your Boxed2Built portal account',
           `Use this secure link to connect your portal account: ${linkUrl}\n\nThis link expires in 15 minutes and can only be used once.`
         );
-        setMessage('We opened your email app with a prefilled message. If no app opened, copy the verification link below and send it manually.');
       } else {
         openSMSClient(
           result.deliveryTarget,
           `Your Boxed2Built verification link: ${linkUrl} (expires in 15 minutes).`
         );
-        setMessage('We opened your messaging app with a prefilled SMS. If it did not open, copy the verification link below and send it manually.');
       }
+
+      setMessage(`Verification link prepared for ${verificationMethod.toUpperCase()}. Complete verification to finish linking.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start account linking.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCopyLink = async () => {
-    if (!verificationLink) return;
-
-    try {
-      await navigator.clipboard.writeText(verificationLink);
-      setMessage('Verification link copied. Open it on this device to complete account linking.');
-    } catch {
-      setError('Unable to copy automatically. Please select and copy the link manually.');
     }
   };
 
@@ -177,26 +162,6 @@ export default function PortalLinkAccountPage() {
 
         {message ? <p className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{message}</p> : null}
         {error ? <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-
-        {verificationLink ? (
-          <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Verification link</p>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-              <input
-                readOnly
-                value={verificationLink}
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700"
-              />
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Copy link
-              </button>
-            </div>
-          </div>
-        ) : null}
 
         <div className="mt-6 border-t border-slate-200 pt-4 text-sm">
           <Link to="/portal/dashboard" className="text-blue-700 hover:underline">Return to dashboard</Link>
