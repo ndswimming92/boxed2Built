@@ -87,12 +87,20 @@ const navigationGroups: NavigationGroup[] = [
     items: [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { name: 'Email Activity', href: '/admin/email-activity', icon: Mail },
-      { name: 'Account Link Review', href: '/admin/account-link-review', icon: Search },
-      { name: 'Support Queue', href: '/admin/support', icon: MessageSquare },
-      { name: 'Portal Adoption', href: '/admin/portal-adoption', icon: Users },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
       { name: 'Test Identifiers', href: '/admin/test-identifiers', icon: FlaskConical },
+    ],
+  },
+  {
+    id: 'client-admin',
+    name: 'Client Admin',
+    icon: Users,
+    defaultExpanded: false,
+    items: [
+      { name: 'Account Link Review', href: '/admin/account-link-review', icon: Search },
+      { name: 'Support Queue', href: '/admin/support', icon: MessageSquare },
+      { name: 'Portal Adoption', href: '/admin/portal-adoption', icon: Users },
     ],
   },
 ];
