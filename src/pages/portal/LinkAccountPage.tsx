@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { openSMSClient } from '../../services/communicationService';
 import {
@@ -96,6 +96,16 @@ export default function PortalLinkAccountPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!verifyMode || !token) {
+      return;
+    }
+
+    void handleConsumeToken();
+  // Only auto-run when a tokenized verification link is opened.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verifyMode, token]);
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-12">

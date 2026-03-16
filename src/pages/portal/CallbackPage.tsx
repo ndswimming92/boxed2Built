@@ -5,6 +5,16 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
 import { customerPortalService } from '../../services/customerPortalService';
 
+const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
+
+const getSafeNextPath = (value: string | null): string => {
+  if (!value || !value.startsWith('/portal')) {
+    return '/portal/dashboard';
+  }
+
+  return value;
+};
+
 export default function PortalCallbackPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -41,7 +51,12 @@ export default function PortalCallbackPage() {
       }).catch(() => undefined);
     }
 
-    navigate('/portal/dashboard', { replace: true });
+    const storedPath = window.sessionStorage.getItem(PORTAL_POST_LOGIN_PATH_KEY);
+    if (storedPath) {
+      window.sessionStorage.removeItem(PORTAL_POST_LOGIN_PATH_KEY);
+    }
+
+    navigate(getSafeNextPath(storedPath), { replace: true });
   }, [loading, user, callbackError, navigate]);
 
   if (callbackError) {
