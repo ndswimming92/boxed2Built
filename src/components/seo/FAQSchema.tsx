@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 export interface FAQ {
   question: string;
@@ -59,15 +59,33 @@ const FAQSchema: React.FC<FAQSchemaProps> = ({ faqs, maxItems = 50 }) => {
     };
   }, [faqs, maxItems]);
 
-  if (!schemaData) return null;
+  useEffect(() => {
+    const schemaId = 'faq-schema-jsonld';
+    const existing = document.getElementById(schemaId);
 
-  return (
-    <script
-      type="application/ld+json"
-      // JSON.stringify is safe here because we're injecting JSON, not HTML.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-    />
-  );
+    if (!schemaData) {
+      existing?.remove();
+      return;
+    }
+
+    const script = existing || document.createElement('script');
+    script.id = schemaId;
+    script.setAttribute('type', 'application/ld+json');
+    script.textContent = JSON.stringify(schemaData);
+
+    if (!existing) {
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      const current = document.getElementById(schemaId);
+      if (current && current.textContent === JSON.stringify(schemaData)) {
+        current.remove();
+      }
+    };
+  }, [schemaData]);
+
+  return null;
 };
 
 export default FAQSchema;
