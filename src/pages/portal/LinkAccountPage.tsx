@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { openEmailClient, openSMSClient } from '../../services/communicationService';
+import { openSMSClient } from '../../services/communicationService';
 import {
   portalAccountLinkingService,
   type VerificationMethod,
@@ -46,11 +46,11 @@ export default function PortalLinkAccountPage() {
 
       const linkUrl = `${appBaseUrl}/portal/link-account?token=${encodeURIComponent(result.token)}`;
       if (verificationMethod === 'email') {
-        openEmailClient(
-          result.deliveryTarget,
-          'Verify your Boxed2Built portal account',
-          `Use this secure link to connect your portal account: ${linkUrl}\n\nThis link expires in 15 minutes and can only be used once.`
-        );
+        await portalAccountLinkingService.sendVerificationEmail({
+          email: result.deliveryTarget,
+          linkUrl,
+          expiresAt: result.expiresAt,
+        });
       } else {
         openSMSClient(
           result.deliveryTarget,
@@ -58,7 +58,11 @@ export default function PortalLinkAccountPage() {
         );
       }
 
-      setMessage(`Verification link prepared for ${verificationMethod.toUpperCase()}. Complete verification to finish linking.`);
+      setMessage(
+        verificationMethod === 'email'
+          ? 'Verification email sent. Check your inbox and click the secure link to finish linking.'
+          : 'Verification link prepared for SMS. Complete verification to finish linking.'
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start account linking.');
     } finally {
@@ -92,6 +96,16 @@ export default function PortalLinkAccountPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!verifyMode || !token) {
+      return;
+    }
+
+    void handleConsumeToken();
+  // Only auto-run when a tokenized verification link is opened.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verifyMode, token]);
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-12">

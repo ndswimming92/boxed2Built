@@ -20,6 +20,12 @@ export interface ConsumeLinkResult {
   linkedInvoices: number;
 }
 
+interface SendPortalVerificationEmailPayload {
+  email: string;
+  linkUrl: string;
+  expiresAt: string | null;
+}
+
 const getUserAgent = () => (typeof navigator !== 'undefined' ? navigator.userAgent : null);
 
 export const portalAccountLinkingService = {
@@ -63,5 +69,24 @@ export const portalAccountLinkingService = {
       linkedJobs: row?.linked_jobs ?? 0,
       linkedInvoices: row?.linked_invoices ?? 0,
     };
+  },
+
+  async sendVerificationEmail(payload: SendPortalVerificationEmailPayload): Promise<void> {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-portal-link-email`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.success) {
+      const message = typeof data?.error === 'string'
+        ? data.error
+        : 'Failed to send verification email.';
+      throw new Error(message);
+    }
   },
 };

@@ -10,6 +10,16 @@ const PORTAL_BENEFITS = [
   'Download important documents and receipts anytime',
 ];
 
+const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
+
+const getSafeNextPath = (value: string | null): string => {
+  if (!value || !value.startsWith('/portal')) {
+    return '/portal/dashboard';
+  }
+
+  return value;
+};
+
 export default function PortalLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,13 +30,15 @@ export default function PortalLoginPage() {
   useEffect(() => {
     if (!user) return;
 
+    const nextPath = getSafeNextPath(searchParams.get('next'));
+
     if (isAdminUser(user)) {
       navigate('/admin/dashboard', { replace: true });
       return;
     }
 
-    navigate('/portal/dashboard', { replace: true });
-  }, [user, navigate]);
+    navigate(nextPath, { replace: true });
+  }, [user, navigate, searchParams]);
 
   useEffect(() => {
     const errorDescription = searchParams.get('error_description');
@@ -56,6 +68,9 @@ export default function PortalLoginPage() {
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
+
+    const nextPath = getSafeNextPath(searchParams.get('next'));
+    window.sessionStorage.setItem(PORTAL_POST_LOGIN_PATH_KEY, nextPath);
 
     const { error } = await signInWithGoogleForPortal();
 
