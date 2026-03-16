@@ -22,6 +22,7 @@ export default function SupportQueuePage() {
   const [internalReply, setInternalReply] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupRequired, setSetupRequired] = useState(false);
+  const [customerNamesById, setCustomerNamesById] = useState<Record<string, string>>({});
 
   const activeTicket = useMemo(() => tickets.find((ticket) => ticket.id === activeTicketId) ?? null, [tickets, activeTicketId]);
 
@@ -33,12 +34,15 @@ export default function SupportQueuePage() {
       const data = await supportTicketService.getAdminQueue(filter);
       setTickets(data);
       setActiveTicketId((current) => current ?? data[0]?.id ?? null);
+      const customerNames = await supportTicketService.getCustomerNames(data.map((ticket) => ticket.customer_id));
+      setCustomerNamesById(customerNames);
     } catch (err) {
       if (err instanceof PortalServiceError && err.code === 'MISCONFIGURED') {
         setSetupRequired(true);
         setTickets([]);
         setMessages([]);
         setActiveTicketId(null);
+        setCustomerNamesById({});
       }
 
       setError(err instanceof Error ? err.message : 'Unable to load support queue.');
@@ -93,6 +97,15 @@ export default function SupportQueuePage() {
     }
   };
 
+
+  const getCustomerName = (customerId: string) => customerNamesById[customerId] || `Customer ${customerId.slice(0, 8)}`;
+
+  const getMessageAuthorLabel = (message: SupportTicketMessage) => {
+    if (message.author_role === 'customer') return getCustomerName(message.customer_id);
+    if (message.author_role === 'admin') return 'Admin';
+    return 'System';
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -115,7 +128,7 @@ export default function SupportQueuePage() {
               <li key={ticket.id}>
                 <button type="button" onClick={() => setActiveTicketId(ticket.id)} className={`w-full rounded-md border px-3 py-2 text-left ${ticket.id === activeTicketId ? 'border-slate-900 bg-slate-100' : 'border-slate-200'}`}>
                   <p className="text-sm font-semibold text-slate-900">{ticket.subject}</p>
-                  <p className="text-xs text-slate-500">{ticket.status.replace('_', ' ')} • {new Date(ticket.updated_at).toLocaleString()}</p>
+                  <p className="text-xs text-slate-500">{getCustomerName(ticket.customer_id)} • {ticket.status.replace('_', ' ')} • {new Date(ticket.updated_at).toLocaleString()}</p>
                 </button>
               </li>
             ))}
@@ -126,7 +139,7 @@ export default function SupportQueuePage() {
           {!activeTicket ? <p className="text-sm text-slate-600">Select a ticket from the queue.</p> : (
             <>
               <h2 className="text-lg font-semibold text-slate-900">{activeTicket.subject}</h2>
-              <p className="text-xs text-slate-500">Customer ID: {activeTicket.customer_id}</p>
+              <p className="text-xs text-slate-500">Customer: {getCustomerName(activeTicket.customer_id)} (ID: {activeTicket.customer_id})</p>
               <p className="text-xs text-slate-500">Context: Job {activeTicket.related_job_id ?? '—'} / Invoice {activeTicket.related_invoice_id ?? '—'}</p>
 
               <div className="mt-4 grid gap-3 rounded-md border border-slate-200 p-3 md:grid-cols-3">
@@ -149,7 +162,7 @@ export default function SupportQueuePage() {
               <ul className="mt-4 space-y-2">
                 {messages.map((message) => (
                   <li key={message.id} className={`rounded-md border p-3 ${message.is_internal ? 'border-amber-200 bg-amber-50' : 'border-slate-200'}`}>
-                    <p className="text-xs font-semibold uppercase text-slate-500">{message.author_role}{message.is_internal ? ' • internal' : ''}</p>
+                    <p className="text-xs font-semibold text-slate-500">{getMessageAuthorLabel(message)}{message.is_internal ? ' • internal' : ''}</p>
                     <p className="mt-1 text-sm text-slate-800">{message.message_body}</p>
                   </li>
                 ))}
