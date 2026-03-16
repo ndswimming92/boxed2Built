@@ -63,6 +63,24 @@ const normalizeError = (error: { message: string; code?: string } | null, fallba
 };
 
 export const supportTicketService = {
+  async getCustomerNames(customerIds: string[]): Promise<Record<string, string>> {
+    const uniqueCustomerIds = Array.from(new Set(customerIds.filter(Boolean)));
+    if (uniqueCustomerIds.length === 0) return {};
+
+    const { data, error } = await supabase
+      .from('customers')
+      .select('id, full_name')
+      .in('id', uniqueCustomerIds);
+
+    if (error) throw normalizeError(error, 'Failed to fetch customer names.');
+
+    return (data ?? []).reduce<Record<string, string>>((acc, customer) => {
+      const customerName = typeof customer.full_name === 'string' ? customer.full_name.trim() : '';
+      acc[customer.id] = customerName || `Customer ${customer.id.slice(0, 8)}`;
+      return acc;
+    }, {});
+  },
+
   async getMyTickets(): Promise<SupportTicket[]> {
     const { data, error } = await supabase
       .from('support_tickets')
