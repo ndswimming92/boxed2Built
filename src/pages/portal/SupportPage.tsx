@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
-import { PortalServiceError } from '../../services/customerPortalService';
+import { customerPortalService, PortalServiceError } from '../../services/customerPortalService';
 import {
   supportTicketService,
   type SupportTicket,
@@ -31,6 +31,7 @@ export default function PortalSupportPage() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [customerName, setCustomerName] = useState('Customer');
 
   const [subject, setSubject] = useState(searchParams.get('subject') ?? '');
   const [newMessage, setNewMessage] = useState(searchParams.get('message') ?? '');
@@ -85,6 +86,17 @@ export default function PortalSupportPage() {
     }
   };
 
+
+  const loadProfileName = async () => {
+    try {
+      const profile = await customerPortalService.getMyProfile();
+      const fullName = typeof profile.full_name === 'string' ? profile.full_name.trim() : '';
+      if (fullName) setCustomerName(fullName);
+    } catch {
+      setCustomerName('Customer');
+    }
+  };
+
   useEffect(() => {
     if (!activeTicket) return;
     markSupportTicketAsSeen(activeTicket.id, activeTicket.last_admin_message_at);
@@ -93,6 +105,7 @@ export default function PortalSupportPage() {
 
   useEffect(() => {
     void loadTickets();
+    void loadProfileName();
   }, [navigate]);
 
   useEffect(() => {
@@ -123,6 +136,12 @@ export default function PortalSupportPage() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const getMessageAuthorLabel = (message: SupportTicketMessage) => {
+    if (message.author_role === 'customer') return customerName;
+    if (message.author_role === 'admin') return 'Admin';
+    return 'System';
   };
 
   const handleReply = async () => {
@@ -216,7 +235,7 @@ export default function PortalSupportPage() {
               <ul className="mt-4 space-y-3">
                 {messages.map((message) => (
                   <li key={message.id} className={`rounded-md border p-3 ${message.author_role === 'customer' ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-white'}`}>
-                    <p className="text-xs font-semibold uppercase text-slate-500">{message.author_role}</p>
+                    <p className="text-xs font-semibold text-slate-500">{getMessageAuthorLabel(message)}</p>
                     <p className="mt-1 text-sm text-slate-800">{message.message_body}</p>
                     <p className="mt-1 text-xs text-slate-500">{formatDateTime(message.created_at)}</p>
                   </li>
