@@ -58,7 +58,9 @@ export default function AccountLinkReviewQueuePage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Account Link Review Queue</h1>
-        <p className="text-sm text-slate-600">Review ambiguous customer matches from portal first-login account-link requests.</p>
+        <p className="text-sm text-slate-600">
+          Review first-login account-link requests when a portal email matches more than one customer record.
+        </p>
       </div>
 
       {loading ? <p className="text-sm text-slate-600">Loading review queue...</p> : null}
@@ -71,14 +73,16 @@ export default function AccountLinkReviewQueuePage() {
               <tr>
                 <th className="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Candidate customer IDs</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-700">Possible matching customer IDs</th>
                 <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-slate-500">No ambiguous account-link requests pending review.</td>
+                  <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                    No account-link requests need manual review right now.
+                  </td>
                 </tr>
               ) : (
                 items.map((item) => {
