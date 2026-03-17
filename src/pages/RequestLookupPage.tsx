@@ -11,6 +11,7 @@ import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const RequestLookupPage: React.FC = () => {
 
