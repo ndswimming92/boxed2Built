@@ -4,6 +4,7 @@ import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
 import { customerPortalService } from '../../services/customerPortalService';
+import { portalAccountLinkingService } from '../../services/portalAccountLinkingService';
 
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
 
@@ -46,9 +47,21 @@ export default function PortalCallbackPage() {
 
     if (!hasTrackedLogin.current) {
       hasTrackedLogin.current = true;
-      void customerPortalService.trackFunnelEvent('login', {
-        source: 'oauth_callback',
-      }).catch(() => undefined);
+
+      void (async () => {
+        const userEmail = user.email?.toLowerCase() ?? '';
+        if (userEmail.endsWith('@gmail.com')) {
+          try {
+            await portalAccountLinkingService.autoLinkGmailAccount(userEmail);
+          } catch {
+            // best-effort auto-linking; do not block sign-in flow
+          }
+        }
+
+        await customerPortalService.trackFunnelEvent('login', {
+          source: 'oauth_callback',
+        }).catch(() => undefined);
+      })();
     }
 
     const storedPath = window.sessionStorage.getItem(PORTAL_POST_LOGIN_PATH_KEY);

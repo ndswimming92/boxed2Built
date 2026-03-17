@@ -4,6 +4,7 @@ export type VerificationMethod = 'email' | 'sms';
 
 export type StartLinkStatus = 'token_created' | 'no_match' | 'ambiguous';
 export type ConsumeLinkStatus = 'linked' | 'invalid_token' | 'already_linked';
+export type GmailAutoLinkStatus = 'linked' | 'not_gmail' | 'no_match' | 'ambiguous' | 'already_linked';
 
 export interface StartLinkResult {
   status: StartLinkStatus;
@@ -15,6 +16,13 @@ export interface StartLinkResult {
 
 export interface ConsumeLinkResult {
   status: ConsumeLinkStatus;
+  customerId: string | null;
+  linkedJobs: number;
+  linkedInvoices: number;
+}
+
+export interface GmailAutoLinkResult {
+  status: GmailAutoLinkStatus;
   customerId: string | null;
   linkedJobs: number;
   linkedInvoices: number;
@@ -88,5 +96,25 @@ export const portalAccountLinkingService = {
         : 'Failed to send verification email.';
       throw new Error(message);
     }
+  },
+
+  async autoLinkGmailAccount(email: string): Promise<GmailAutoLinkResult> {
+    const { data, error } = await supabase.rpc('auto_link_gmail_portal_account', {
+      p_email: email,
+      p_request_user_agent: getUserAgent(),
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Failed to auto-link Gmail account.');
+    }
+
+    const row = Array.isArray(data) ? data[0] : null;
+
+    return {
+      status: (row?.status ?? 'no_match') as GmailAutoLinkStatus,
+      customerId: row?.customer_id ?? null,
+      linkedJobs: row?.linked_jobs ?? 0,
+      linkedInvoices: row?.linked_invoices ?? 0,
+    };
   },
 };
