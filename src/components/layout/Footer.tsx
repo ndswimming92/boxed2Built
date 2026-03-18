@@ -36,7 +36,7 @@ const footerLinkSections = [
 ];
 
 const clientAccessLinks = [
-  { href: '/portal/login', label: 'Client Login' },
+  { href: '/portal/login', label: 'Customer Login' },
   { href: '/lookup-request', label: 'Look Up Request' },
 ];
 
