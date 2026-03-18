@@ -1,6 +1,9 @@
 import { supabase, SavedRequest } from '../lib/supabase';
 import { generateConfirmationCode } from '../utils/confirmationCode';
 
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+const normalizeConfirmationCode = (code: string) => code.replace(/\s/g, '').toUpperCase();
+
 export interface CreateSavedRequestData {
   business_id: string;
   organization_id: string;
@@ -28,7 +31,8 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
   while (attempts < maxAttempts) {
     const submissionDate = new Date().toISOString();
     const requestId = crypto.randomUUID();
-    const confirmationCode = generateConfirmationCode();
+    const confirmationCode = normalizeConfirmationCode(generateConfirmationCode());
+    const normalizedEmail = normalizeEmail(data.client_email);
 
     const insertPayload = {
       id: requestId,
@@ -37,7 +41,7 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
       inquiry_id: data.inquiry_id || null,
       confirmation_code: confirmationCode,
       client_name: data.client_name,
-      client_email: data.client_email,
+      client_email: normalizedEmail,
       client_phone: data.client_phone || null,
       furniture_type: data.furniture_type,
       pieces: data.pieces,
@@ -87,11 +91,14 @@ export async function getSavedRequestByCode(
   email: string,
   confirmationCode: string
 ): Promise<SavedRequest | null> {
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedConfirmationCode = normalizeConfirmationCode(confirmationCode);
+
   const { data, error } = await supabase
     .from('saved_requests')
     .select('*')
-    .eq('client_email', email)
-    .eq('confirmation_code', confirmationCode)
+    .ilike('client_email', normalizedEmail)
+    .eq('confirmation_code', normalizedConfirmationCode)
     .eq('is_active', true)
     .maybeSingle();
 
@@ -101,7 +108,7 @@ export async function getSavedRequestByCode(
   }
 
   if (data) {
-    await trackRequestAccess(email, confirmationCode);
+    await trackRequestAccess(normalizedEmail, normalizedConfirmationCode);
   }
 
   return data as SavedRequest | null;
@@ -112,9 +119,12 @@ async function trackRequestAccess(
   confirmationCode: string
 ): Promise<void> {
   try {
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedConfirmationCode = normalizeConfirmationCode(confirmationCode);
+
     const { error } = await supabase.rpc('track_saved_request_access', {
-      p_email: email,
-      p_confirmation_code: confirmationCode,
+      p_email: normalizedEmail,
+      p_confirmation_code: normalizedConfirmationCode,
     });
 
     if (error) {
@@ -126,10 +136,12 @@ async function trackRequestAccess(
 }
 
 export async function getSavedRequestsByEmail(email: string): Promise<SavedRequest[]> {
+  const normalizedEmail = normalizeEmail(email);
+
   const { data, error } = await supabase
     .from('saved_requests')
     .select('*')
-    .eq('client_email', email)
+    .ilike('client_email', normalizedEmail)
     .eq('is_active', true)
     .order('submission_date', { ascending: false });
 
