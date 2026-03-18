@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2, Send } from 'lucide-react';
+import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2, Send, MessageSquareQuote } from 'lucide-react';
 import { supabase, Invoice } from '../../lib/supabase';
 import {
   getAllInvoices,
@@ -178,6 +178,53 @@ ${invoice.notes}` : ''}`,
       setTimeout(() => setCopiedLinkId(null), 2500);
     }).catch(() => {
       showToast({ type: 'error', message: 'Failed to copy link.' });
+    });
+  };
+
+  const APPROVAL_FOLLOW_UP_TYPES = ['estimate'];
+  const APPROVAL_FOLLOW_UP_STATUSES = ['sent', 'overdue'];
+
+  const canSendApprovalFollowUp = (invoice: Invoice) => (
+    APPROVAL_FOLLOW_UP_TYPES.includes(invoice.invoice_type) &&
+    APPROVAL_FOLLOW_UP_STATUSES.includes(invoice.status) &&
+    invoice.status !== 'paid' &&
+    invoice.status !== 'cancelled'
+  );
+
+  const getApprovalFollowUpCopy = (invoice: Invoice) => {
+    const typeLabel = invoice.invoice_type === 'estimate' ? 'estimate' : invoice.invoice_type.replace(/_/g, ' ');
+    const statusLabel = formatStatus(invoice.status).toLowerCase();
+    const subject = `Checking in on ${invoice.invoice_number}`;
+    const greetingName = invoice.client_name?.trim() || 'there';
+    const body = [
+      `Hi ${greetingName},`,
+      '',
+      `I wanted to follow up on ${typeLabel} ${invoice.invoice_number}, which is currently marked as ${statusLabel}.`,
+      'When you have a moment, please let me know if you would like to approve it or if you have any questions before moving forward.',
+      '',
+      'Once you approve it, I can confirm the next steps and scheduling details.',
+      '',
+      'Thank you,',
+      'Boxed2Built',
+      invoice.client_email ? `Replying to: ${invoice.client_email}` : '',
+    ].filter(Boolean).join('\n');
+
+    return { subject, body };
+  };
+
+  const handleApprovalFollowUp = (invoice: Invoice) => {
+    const { subject, body } = getApprovalFollowUpCopy(invoice);
+
+    if (invoice.client_email) {
+      window.location.href = `mailto:${encodeURIComponent(invoice.client_email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      showToast({ type: 'success', message: `Approval follow-up drafted for ${invoice.client_name}.` });
+      return;
+    }
+
+    navigator.clipboard.writeText(`${subject}\n\n${body}`).then(() => {
+      showToast({ type: 'success', message: 'Approval follow-up copied to clipboard.' });
+    }).catch(() => {
+      showToast({ type: 'error', message: 'Failed to prepare approval follow-up.' });
     });
   };
 
@@ -535,6 +582,16 @@ ${invoice.notes}` : ''}`,
                         >
                           <Download className="w-4 h-4" />
                         </button>
+                        {canSendApprovalFollowUp(invoice) && (
+                          <button
+                            onClick={() => handleApprovalFollowUp(invoice)}
+                            className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            title="Send Approval Follow-Up"
+                            aria-label={`Send approval follow-up for ${invoice.invoice_number}`}
+                          >
+                            <MessageSquareQuote className="w-4 h-4" />
+                          </button>
+                        )}
                         {['sent', 'overdue', 'partially_paid'].includes(invoice.status) && (
                           <button
                             onClick={() => handleCopyPaymentLink(invoice)}
