@@ -1,4 +1,5 @@
 import { supabase, Invoice, InvoiceLineItem, InvoicePayment, InvoiceSettings, FormInquiry, Job } from '../lib/supabase';
+import { logCommunication } from './inquiryService';
 
 export interface CreateInvoiceData {
   business_id: string;
@@ -509,6 +510,42 @@ export async function markInvoiceAsSent(invoiceId: string): Promise<void> {
     console.error('Error marking invoice as sent:', error);
     throw new Error(`Failed to mark invoice as sent: ${error.message}`);
   }
+}
+
+export async function logInvoiceCommunication(
+  invoiceId: string,
+  method: 'email' | 'sms' | 'phone',
+  notes?: string
+): Promise<Invoice> {
+  const invoice = await getInvoice(invoiceId);
+  if (!invoice) {
+    throw new Error('Invoice not found');
+  }
+
+  const timestamp = new Date().toLocaleString();
+  const newInternalNotes = notes
+    ? invoice.internal_notes
+      ? `${invoice.internal_notes}\n\n[${timestamp}] ${method.toUpperCase()}: ${notes}`
+      : `[${timestamp}] ${method.toUpperCase()}: ${notes}`
+    : invoice.internal_notes;
+
+  const { data, error } = await supabase
+    .from('invoices')
+    .update({ internal_notes: newInternalNotes })
+    .eq('id', invoiceId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error logging invoice communication:', error);
+    throw new Error(`Failed to log invoice communication: ${error.message}`);
+  }
+
+  if (invoice.inquiry_id) {
+    await logCommunication(invoice.inquiry_id, method, notes);
+  }
+
+  return data;
 }
 
 export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
