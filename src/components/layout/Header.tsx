@@ -256,7 +256,7 @@ const Header: React.FC = () => {
               onClick={() => handleClientLoginClick('desktop')}
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors"
             >
-              Client Login
+              Customer Login
             </a>
             <CallButton size="md" pageSection="header" />
           </div>
@@ -370,7 +370,7 @@ const Header: React.FC = () => {
                 onClick={() => handleClientLoginClick('mobile')}
                 className="px-4 py-3 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50"
               >
-                Client Login
+                Customer Login
               </a>
 
               <div className="mt-4 pt-4 border-t">
