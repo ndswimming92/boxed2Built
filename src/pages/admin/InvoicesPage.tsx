@@ -7,6 +7,7 @@ import {
   getInvoiceStats,
   getInvoice,
   deleteInvoice,
+  logInvoiceCommunication,
   markInvoiceAsSent,
   InvoiceStats,
 } from '../../services/invoiceService';
@@ -17,6 +18,10 @@ import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { logAction } from '../../services/auditLogService';
+import {
+  generateEstimateFollowUpTemplate,
+  openEmailClientWithEstimateFollowUp,
+} from '../../services/estimateFollowUpEmailService';
 
 export default function InvoicesPage() {
   const { maskFinancialValue } = usePrivacyMode();
@@ -191,33 +196,22 @@ ${invoice.notes}` : ''}`,
     invoice.status !== 'cancelled'
   );
 
-  const getApprovalFollowUpCopy = (invoice: Invoice) => {
-    const typeLabel = invoice.invoice_type === 'estimate' ? 'estimate' : invoice.invoice_type.replace(/_/g, ' ');
-    const statusLabel = formatStatus(invoice.status).toLowerCase();
-    const subject = `Checking in on ${invoice.invoice_number}`;
-    const greetingName = invoice.client_name?.trim() || 'there';
-    const body = [
-      `Hi ${greetingName},`,
-      '',
-      `I wanted to follow up on ${typeLabel} ${invoice.invoice_number}, which is currently marked as ${statusLabel}.`,
-      'When you have a moment, please let me know if you would like to approve it or if you have any questions before moving forward.',
-      '',
-      'Once you approve it, I can confirm the next steps and scheduling details.',
-      '',
-      'Thank you,',
-      'Boxed2Built',
-      invoice.client_email ? `Replying to: ${invoice.client_email}` : '',
-    ].filter(Boolean).join('\n');
-
-    return { subject, body };
-  };
-
-  const handleApprovalFollowUp = (invoice: Invoice) => {
-    const { subject, body } = getApprovalFollowUpCopy(invoice);
+  const handleApprovalFollowUp = async (invoice: Invoice) => {
+    const { subject, body } = generateEstimateFollowUpTemplate(invoice);
 
     if (invoice.client_email) {
-      window.location.href = `mailto:${encodeURIComponent(invoice.client_email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      showToast({ type: 'success', message: `Approval follow-up drafted for ${invoice.client_name}.` });
+      try {
+        openEmailClientWithEstimateFollowUp(invoice);
+        await logInvoiceCommunication(
+          invoice.id,
+          'email',
+          `Estimate acceptance follow-up sent for ${invoice.invoice_type} ${invoice.invoice_number}.`
+        );
+        showToast({ type: 'success', message: `Approval follow-up drafted for ${invoice.client_name}.` });
+      } catch (error) {
+        console.error('Error preparing approval follow-up:', error);
+        showToast({ type: 'error', message: 'Failed to prepare approval follow-up.' });
+      }
       return;
     }
 
