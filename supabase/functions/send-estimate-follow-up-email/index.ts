@@ -8,6 +8,11 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const FROM_EMAIL = 'team@boxed2built.com';
+const WEBSITE_URL = 'https://boxed2built.com';
+const TERMS_URL = 'https://boxed2built.com/terms-of-service';
+const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
+const CONTACT_PHONE = '615-403-4538';
+const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
 
 type InvoiceType = 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
 
@@ -16,6 +21,10 @@ interface Payload {
   clientName: string;
   invoiceNumber: string;
   invoiceType: InvoiceType;
+  serviceSummary?: string | null;
+  estimateTotal?: string | null;
+  estimatedDuration?: string | null;
+  lookupRequestUrl?: string | null;
 }
 
 function escapeHtml(input: string): string {
@@ -27,39 +36,94 @@ function escapeHtml(input: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function getReferenceLabel(invoiceType: InvoiceType): string {
-  return invoiceType === 'estimate' ? 'estimate' : 'invoice';
-}
-
 function getGreetingName(clientName: string): string {
   return clientName.trim() || 'there';
 }
 
-function buildSubject(invoiceNumber: string, invoiceType: InvoiceType): string {
-  return `Following up on ${getReferenceLabel(invoiceType)} ${invoiceNumber}`;
+function buildSubject(): string {
+  return 'Boxed2Built Estimate Follow-Up';
 }
 
-function buildPlainText(clientName: string, invoiceNumber: string, invoiceType: InvoiceType): string {
-  const greetingName = getGreetingName(clientName);
-  const referenceLabel = getReferenceLabel(invoiceType);
+function normalizeOptional(input?: string | null): string | null {
+  const normalized = input?.trim();
+  return normalized ? normalized : null;
+}
 
-  return [
-    `Hi ${greetingName},`,
+function buildPlainText(payload: Payload): string {
+  const greetingName = getGreetingName(payload.clientName);
+  const serviceSummary = normalizeOptional(payload.serviceSummary);
+  const estimateTotal = normalizeOptional(payload.estimateTotal);
+  const estimatedDuration = normalizeOptional(payload.estimatedDuration);
+  const lookupRequestUrl = normalizeOptional(payload.lookupRequestUrl);
+  const lines = [
+    `Hello ${greetingName},`,
     '',
-    `I wanted to follow up on ${referenceLabel} ${invoiceNumber}.`,
-    'Would you like to proceed with the work, or is there anything you would like to review before we move forward?',
+    `I wanted to follow up on estimate ${payload.invoiceNumber}${serviceSummary ? ` for your ${serviceSummary}` : ''}.`,
     '',
-    'If you are ready to proceed, just reply to this email and I can confirm the next steps and scheduling details.',
+  ];
+
+  const detailLines = [
+    serviceSummary ? `- Service: ${serviceSummary}` : null,
+    estimateTotal ? `- Estimate total: ${estimateTotal}` : null,
+    estimatedDuration ? `- Estimated time: ${estimatedDuration}` : null,
+  ].filter(Boolean);
+
+  if (detailLines.length > 0) {
+    lines.push('Here are the details I have for your project:');
+    lines.push(...detailLines);
+    lines.push('');
+  }
+
+  lines.push(
+    'My goal is to make this as easy and stress-free as possible for you. I\'ll handle the assembly, bring the necessary tools, and clean up all packaging when the job is complete.',
+    '',
+    'If you\'re ready to move forward, just reply to this email and I can confirm the next steps and scheduling details. If you have any questions or want to review anything before moving forward, I\'m happy to help.',
     '',
     'Thank you,',
     'Boxed2Built',
-  ].join('\n');
+    CONTACT_PHONE,
+    CONTACT_EMAIL,
+    '',
+    'Helpful links:',
+    ...(lookupRequestUrl ? [`- View Your Request: ${lookupRequestUrl}`] : []),
+    `- Website: ${WEBSITE_URL}`,
+    `- Terms of Service: ${TERMS_URL}`,
+    `- Privacy Policy: ${PRIVACY_URL}`,
+  );
+
+  return lines.join('\n');
 }
 
-function buildHtml(clientName: string, invoiceNumber: string, invoiceType: InvoiceType): string {
-  const greetingName = escapeHtml(getGreetingName(clientName));
-  const referenceLabel = escapeHtml(getReferenceLabel(invoiceType));
-  const safeInvoiceNumber = escapeHtml(invoiceNumber);
+function buildDetailRow(label: string, value: string): string {
+  return `
+    <tr>
+      <td style="padding:0 0 10px;vertical-align:top;color:#64748b;font-size:14px;line-height:1.6;font-weight:600;white-space:nowrap;">${escapeHtml(label)}:</td>
+      <td style="padding:0 0 10px 12px;vertical-align:top;color:#1f2937;font-size:14px;line-height:1.6;">${escapeHtml(value)}</td>
+    </tr>`;
+}
+
+function buildFooterLink(label: string, url: string): string {
+  return `<a href="${escapeHtml(url)}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">${escapeHtml(label)}</a>`;
+}
+
+function buildHtml(payload: Payload): string {
+  const greetingName = escapeHtml(getGreetingName(payload.clientName));
+  const safeInvoiceNumber = escapeHtml(payload.invoiceNumber);
+  const serviceSummary = normalizeOptional(payload.serviceSummary);
+  const estimateTotal = normalizeOptional(payload.estimateTotal);
+  const estimatedDuration = normalizeOptional(payload.estimatedDuration);
+  const lookupRequestUrl = normalizeOptional(payload.lookupRequestUrl);
+  const detailRows = [
+    serviceSummary ? buildDetailRow('Service', serviceSummary) : '',
+    estimateTotal ? buildDetailRow('Estimate total', estimateTotal) : '',
+    estimatedDuration ? buildDetailRow('Estimated time', estimatedDuration) : '',
+  ].filter(Boolean).join('');
+  const footerLinks = [
+    lookupRequestUrl ? buildFooterLink('View Your Request', lookupRequestUrl) : '',
+    buildFooterLink('Website', WEBSITE_URL),
+    buildFooterLink('Terms of Service', TERMS_URL),
+    buildFooterLink('Privacy Policy', PRIVACY_URL),
+  ].filter(Boolean).join('');
 
   return `<!DOCTYPE html>
 <html>
@@ -74,21 +138,36 @@ function buildHtml(clientName: string, invoiceNumber: string, invoiceType: Invoi
           <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
             <tr>
               <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Approval follow-up</h1>
+                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Boxed2Built Estimate Follow-Up</h1>
                 <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;">Estimate ${safeInvoiceNumber}</p>
               </td>
             </tr>
             <tr>
               <td style="background:#ffffff;padding:32px;">
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Hi ${greetingName},</p>
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">I wanted to follow up on ${referenceLabel} <strong>${safeInvoiceNumber}</strong>.</p>
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Would you like to proceed with the work, or is there anything you would like to review before we move forward?</p>
-                <p style="margin:0;color:#374151;font-size:15px;line-height:1.7;">If you are ready to proceed, just reply to this email and I can confirm the next steps and scheduling details.</p>
+                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Hello ${greetingName},</p>
+                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">I wanted to follow up on estimate <strong>${safeInvoiceNumber}</strong>${serviceSummary ? ` for your <strong>${escapeHtml(serviceSummary)}</strong>` : ''}.</p>
+                ${detailRows ? `
+                <div style="margin:0 0 20px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                  <p style="margin:0 0 12px;color:#1f2937;font-size:15px;line-height:1.7;font-weight:600;">Here are the details I have for your project:</p>
+                  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${detailRows}
+                  </table>
+                </div>` : ''}
+                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">My goal is to make this as easy and stress-free as possible for you. I’ll handle the assembly, bring the necessary tools, and clean up all packaging when the job is complete.</p>
+                <p style="margin:0;color:#374151;font-size:15px;line-height:1.7;">If you’re ready to move forward, just reply to this email and I can confirm the next steps and scheduling details. If you have any questions or want to review anything before moving forward, I’m happy to help.</p>
               </td>
             </tr>
             <tr>
-              <td style="background:#ffffff;padding:0 32px 32px;color:#374151;font-size:15px;line-height:1.7;">
-                <p style="margin:0;">Thank you,<br />Boxed2Built</p>
+              <td style="background:#ffffff;padding:0 32px 24px;color:#374151;font-size:15px;line-height:1.7;">
+                <p style="margin:0;">Thank you,<br />Boxed2Built<br />${CONTACT_PHONE}<br /><a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;padding:0 32px 32px;border-radius:0 0 12px 12px;">
+                <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
+                  <p style="margin:0 0 12px;color:#1e3a5f;font-size:13px;line-height:1.6;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">Helpful links</p>
+                  <div style="margin:0 0 14px;font-size:14px;line-height:1.8;">${footerLinks}</div>
+                  <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">Questions? Call or text <a href="tel:${CONTACT_PHONE}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_PHONE}</a> or email <a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a>.</p>
+                </div>
               </td>
             </tr>
           </table>
@@ -151,9 +230,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const subject = buildSubject(body.invoiceNumber, body.invoiceType);
-    const text = buildPlainText(body.clientName ?? '', body.invoiceNumber, body.invoiceType);
-    const html = buildHtml(body.clientName ?? '', body.invoiceNumber, body.invoiceType);
+    const subject = buildSubject();
+    const text = buildPlainText(body);
+    const html = buildHtml(body);
 
     await sendEmail(body.email, subject, html, text);
 
