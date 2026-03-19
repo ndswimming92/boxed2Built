@@ -104,6 +104,7 @@ function Analytics() {
     let analytics: AnalyticsModule | null = null;
 
     const run = async () => {
+      await loadGoogleAnalytics();
       analytics = await loadAnalyticsModule();
 
       // Reset tracking for new page
@@ -111,10 +112,10 @@ function Analytics() {
       pageStartTime = Date.now();
       engagementTracked = false;
 
-      // Track page views with Google Analytics
+      // Track page views with Google Analytics after the GA runtime has been initialized.
       analytics.trackPageView(location.pathname, document.title);
 
-    // Additional GA4 specific tracking
+      // Additional GA4 specific tracking
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'page_view', {
           page_path: location.pathname,
@@ -263,10 +264,9 @@ function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
-    // Only initialize analytics scripts on public routes so GA4 can capture realtime visitors
-    // even if they do not interact before leaving the page.
-    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal')) return;
-
+    // Initialize GA4 on every route so admin-side verification traffic and
+    // authenticated flows can still appear in Realtime while keeping the
+    // route-specific event tracking logic centralized in the Analytics component.
     void loadGoogleAnalytics();
   }, [location.pathname]);
 
