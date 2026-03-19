@@ -263,10 +263,9 @@ function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
-    // Only initialize analytics scripts on public routes so GA4 can capture realtime visitors
-    // even if they do not interact before leaving the page.
-    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal')) return;
-
+    // Initialize GA4 on every route so admin-side verification traffic and
+    // authenticated flows can still appear in Realtime while keeping the
+    // route-specific event tracking logic centralized in the Analytics component.
     void loadGoogleAnalytics();
   }, [location.pathname]);
 
