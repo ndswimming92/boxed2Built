@@ -46,13 +46,12 @@ const injectGoogleAnalyticsScript = (): Promise<void> => {
 
   return new Promise((resolve) => {
     const script = existingScript || document.createElement('script');
-
-    const handleLoad = () => {
+    const finalizeLoad = () => {
       script.dataset.loaded = 'true';
       resolve();
     };
 
-    script.addEventListener('load', handleLoad, { once: true });
+    script.addEventListener('load', finalizeLoad, { once: true });
     script.addEventListener('error', () => resolve(), { once: true });
 
     if (!existingScript) {
@@ -60,6 +59,11 @@ const injectGoogleAnalyticsScript = (): Promise<void> => {
       script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
       script.dataset.analytics = 'ga4';
       document.head.appendChild(script);
+      return;
+    }
+
+    if (existingScript.src.includes(`id=${GA_MEASUREMENT_ID}`)) {
+      resolve();
     }
   });
 };
