@@ -1,4 +1,5 @@
 import { Invoice, Job } from '../lib/supabase';
+import { getInquiryById } from './inquiryService';
 import { getInvoice } from './invoiceService';
 
 export interface EstimateFollowUpTemplate {
@@ -13,11 +14,18 @@ export interface EstimateFollowUpDetails {
   serviceSummary?: string | null;
   estimateTotal?: string | null;
   estimatedDuration?: string | null;
+  lookupRequestUrl?: string | null;
 }
 
 interface SendEstimateFollowUpEmailPayload extends EstimateFollowUpDetails {
   email: string;
 }
+
+const WEBSITE_URL = 'https://boxed2built.com';
+const TERMS_URL = 'https://boxed2built.com/terms-of-service';
+const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
+const CONTACT_PHONE = '615-403-4538';
+const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
 
 function getGreetingName(clientName: string): string {
   return clientName.trim() || 'there';
@@ -67,11 +75,23 @@ function summarizeService(descriptions: string[]): string | null {
     : `${preview.slice(0, -1).join(', ')}, and ${preview[preview.length - 1]}`;
 }
 
+function buildLookupRequestUrl(email: string, confirmationCode?: string | null): string | null {
+  const normalizedCode = confirmationCode?.trim();
+  const normalizedEmail = email.trim();
+
+  if (!normalizedCode || !normalizedEmail) {
+    return null;
+  }
+
+  return `${WEBSITE_URL}/lookup-request?code=${encodeURIComponent(normalizedCode)}&email=${encodeURIComponent(normalizedEmail)}`;
+}
+
 export function buildEstimateFollowUpDetails(
   invoice: Invoice,
   options?: {
     serviceSummary?: string | null;
     estimatedDuration?: string | null;
+    lookupRequestUrl?: string | null;
   }
 ): EstimateFollowUpDetails {
   return {
@@ -81,6 +101,7 @@ export function buildEstimateFollowUpDetails(
     serviceSummary: options?.serviceSummary?.trim() || null,
     estimateTotal: formatCurrency(invoice.total_amount),
     estimatedDuration: options?.estimatedDuration?.trim() || null,
+    lookupRequestUrl: options?.lookupRequestUrl?.trim() || null,
   };
 }
 
@@ -88,20 +109,27 @@ export async function getEstimateFollowUpDetails(
   invoice: Invoice,
   job?: Job | null
 ): Promise<EstimateFollowUpDetails> {
-  const fullInvoice = await getInvoice(invoice.id).catch(() => null);
+  const [fullInvoice, inquiry] = await Promise.all([
+    getInvoice(invoice.id).catch(() => null),
+    invoice.inquiry_id ? getInquiryById(invoice.inquiry_id).catch(() => null) : Promise.resolve(null),
+  ]);
+
   const serviceSummary = summarizeService(fullInvoice?.lineItems?.map((item) => item.description) || [])
     || job?.job_description?.trim()
+    || inquiry?.furniture_type?.trim()
     || null;
-  const estimatedDuration = formatEstimatedDuration(job?.hours_worked);
+  const estimatedDuration = formatEstimatedDuration(job?.hours_worked) || inquiry?.estimated_time?.trim() || null;
+  const lookupRequestUrl = buildLookupRequestUrl(invoice.client_email, inquiry?.confirmation_code);
 
   return buildEstimateFollowUpDetails(invoice, {
     serviceSummary,
     estimatedDuration,
+    lookupRequestUrl,
   });
 }
 
 export function generateEstimateFollowUpEmailSubject(): string {
-  return 'Approval follow-up';
+  return 'Boxed2Built Estimate Follow-Up';
 }
 
 export function generateEstimateFollowUpEmailPlainText(details: EstimateFollowUpDetails): string {
@@ -132,7 +160,14 @@ export function generateEstimateFollowUpEmailPlainText(details: EstimateFollowUp
     '',
     'Thank you,',
     'Boxed2Built',
-    '615-403-4538',
+    CONTACT_PHONE,
+    CONTACT_EMAIL,
+    '',
+    'Helpful links:',
+    ...(details.lookupRequestUrl ? [`- View Your Request: ${details.lookupRequestUrl}`] : []),
+    `- Website: ${WEBSITE_URL}`,
+    `- Terms of Service: ${TERMS_URL}`,
+    `- Privacy Policy: ${PRIVACY_URL}`,
   );
 
   return lines.join('\n');

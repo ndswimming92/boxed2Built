@@ -8,6 +8,11 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const FROM_EMAIL = 'team@boxed2built.com';
+const WEBSITE_URL = 'https://boxed2built.com';
+const TERMS_URL = 'https://boxed2built.com/terms-of-service';
+const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
+const CONTACT_PHONE = '615-403-4538';
+const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
 
 type InvoiceType = 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
 
@@ -19,6 +24,7 @@ interface Payload {
   serviceSummary?: string | null;
   estimateTotal?: string | null;
   estimatedDuration?: string | null;
+  lookupRequestUrl?: string | null;
 }
 
 function escapeHtml(input: string): string {
@@ -35,7 +41,7 @@ function getGreetingName(clientName: string): string {
 }
 
 function buildSubject(): string {
-  return 'Approval follow-up';
+  return 'Boxed2Built Estimate Follow-Up';
 }
 
 function normalizeOptional(input?: string | null): string | null {
@@ -48,6 +54,7 @@ function buildPlainText(payload: Payload): string {
   const serviceSummary = normalizeOptional(payload.serviceSummary);
   const estimateTotal = normalizeOptional(payload.estimateTotal);
   const estimatedDuration = normalizeOptional(payload.estimatedDuration);
+  const lookupRequestUrl = normalizeOptional(payload.lookupRequestUrl);
   const lines = [
     `Hello ${greetingName},`,
     '',
@@ -74,7 +81,14 @@ function buildPlainText(payload: Payload): string {
     '',
     'Thank you,',
     'Boxed2Built',
-    '615-403-4538',
+    CONTACT_PHONE,
+    CONTACT_EMAIL,
+    '',
+    'Helpful links:',
+    ...(lookupRequestUrl ? [`- View Your Request: ${lookupRequestUrl}`] : []),
+    `- Website: ${WEBSITE_URL}`,
+    `- Terms of Service: ${TERMS_URL}`,
+    `- Privacy Policy: ${PRIVACY_URL}`,
   );
 
   return lines.join('\n');
@@ -88,16 +102,27 @@ function buildDetailRow(label: string, value: string): string {
     </tr>`;
 }
 
+function buildFooterLink(label: string, url: string): string {
+  return `<a href="${escapeHtml(url)}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">${escapeHtml(label)}</a>`;
+}
+
 function buildHtml(payload: Payload): string {
   const greetingName = escapeHtml(getGreetingName(payload.clientName));
   const safeInvoiceNumber = escapeHtml(payload.invoiceNumber);
   const serviceSummary = normalizeOptional(payload.serviceSummary);
   const estimateTotal = normalizeOptional(payload.estimateTotal);
   const estimatedDuration = normalizeOptional(payload.estimatedDuration);
+  const lookupRequestUrl = normalizeOptional(payload.lookupRequestUrl);
   const detailRows = [
     serviceSummary ? buildDetailRow('Service', serviceSummary) : '',
     estimateTotal ? buildDetailRow('Estimate total', estimateTotal) : '',
     estimatedDuration ? buildDetailRow('Estimated time', estimatedDuration) : '',
+  ].filter(Boolean).join('');
+  const footerLinks = [
+    lookupRequestUrl ? buildFooterLink('View Your Request', lookupRequestUrl) : '',
+    buildFooterLink('Website', WEBSITE_URL),
+    buildFooterLink('Terms of Service', TERMS_URL),
+    buildFooterLink('Privacy Policy', PRIVACY_URL),
   ].filter(Boolean).join('');
 
   return `<!DOCTYPE html>
@@ -113,7 +138,7 @@ function buildHtml(payload: Payload): string {
           <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
             <tr>
               <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Approval follow-up</h1>
+                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Boxed2Built Estimate Follow-Up</h1>
                 <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;">Estimate ${safeInvoiceNumber}</p>
               </td>
             </tr>
@@ -132,8 +157,17 @@ function buildHtml(payload: Payload): string {
               </td>
             </tr>
             <tr>
-              <td style="background:#ffffff;padding:0 32px 32px;color:#374151;font-size:15px;line-height:1.7;border-radius:0 0 12px 12px;">
-                <p style="margin:0;">Thank you,<br />Boxed2Built<br />615-403-4538</p>
+              <td style="background:#ffffff;padding:0 32px 24px;color:#374151;font-size:15px;line-height:1.7;">
+                <p style="margin:0;">Thank you,<br />Boxed2Built<br />${CONTACT_PHONE}<br /><a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;padding:0 32px 32px;border-radius:0 0 12px 12px;">
+                <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
+                  <p style="margin:0 0 12px;color:#1e3a5f;font-size:13px;line-height:1.6;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">Helpful links</p>
+                  <div style="margin:0 0 14px;font-size:14px;line-height:1.8;">${footerLinks}</div>
+                  <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">Questions? Call or text <a href="tel:${CONTACT_PHONE}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_PHONE}</a> or email <a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a>.</p>
+                </div>
               </td>
             </tr>
           </table>
