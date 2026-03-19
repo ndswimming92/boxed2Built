@@ -104,6 +104,7 @@ function Analytics() {
     let analytics: AnalyticsModule | null = null;
 
     const run = async () => {
+      await loadGoogleAnalytics();
       analytics = await loadAnalyticsModule();
 
       // Reset tracking for new page
@@ -111,10 +112,10 @@ function Analytics() {
       pageStartTime = Date.now();
       engagementTracked = false;
 
-      // Track page views with Google Analytics
+      // Track page views with Google Analytics after the GA runtime has been initialized.
       analytics.trackPageView(location.pathname, document.title);
 
-    // Additional GA4 specific tracking
+      // Additional GA4 specific tracking
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'page_view', {
           page_path: location.pathname,

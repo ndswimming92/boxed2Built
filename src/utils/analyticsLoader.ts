@@ -1,8 +1,10 @@
 const GA_MEASUREMENT_ID = 'G-ZY3PG1S68G';
+const GA_SCRIPT_SELECTOR = 'script[data-analytics="ga4"]';
 let gaLoadPromise: Promise<void> | null = null;
+let gaConfigured = false;
 
 const configureGoogleAnalytics = () => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag || gaConfigured) return;
 
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, {
@@ -18,17 +20,48 @@ const configureGoogleAnalytics = () => {
     engagement_time_msec: 100,
     debug_mode: false
   });
+
+  gaConfigured = true;
 };
 
-const injectGoogleAnalyticsScript = () => {
-  if (typeof document === 'undefined') return;
-  if (document.querySelector('script[data-analytics="ga4"]')) return;
+const ensureGoogleAnalyticsStub = () => {
+  if (typeof window === 'undefined') return;
 
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  script.dataset.analytics = 'ga4';
-  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+
+  if (!window.gtag) {
+    window.gtag = function gtag(...args: any[]) {
+      window.dataLayer.push(args);
+    };
+  }
+};
+
+const injectGoogleAnalyticsScript = (): Promise<void> => {
+  if (typeof document === 'undefined') return Promise.resolve();
+
+  const existingScript = document.querySelector<HTMLScriptElement>(GA_SCRIPT_SELECTOR);
+  if (existingScript?.dataset.loaded === 'true') {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const script = existingScript || document.createElement('script');
+
+    const handleLoad = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+
+    script.addEventListener('load', handleLoad, { once: true });
+    script.addEventListener('error', () => resolve(), { once: true });
+
+    if (!existingScript) {
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+      script.dataset.analytics = 'ga4';
+      document.head.appendChild(script);
+    }
+  });
 };
 
 export const loadGoogleAnalytics = () => {
@@ -36,23 +69,15 @@ export const loadGoogleAnalytics = () => {
     return Promise.resolve();
   }
 
-  if (window.gtag) {
-    return Promise.resolve();
-  }
-
   if (gaLoadPromise) {
     return gaLoadPromise;
   }
 
-  gaLoadPromise = new Promise((resolve) => {
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function gtag(...args: any[]) {
-      window.dataLayer.push(args);
-    };
+  ensureGoogleAnalyticsStub();
+  configureGoogleAnalytics();
 
-    injectGoogleAnalyticsScript();
+  gaLoadPromise = injectGoogleAnalyticsScript().then(() => {
     configureGoogleAnalytics();
-    resolve();
   });
 
   return gaLoadPromise;
