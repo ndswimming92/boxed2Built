@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Search, Download, CreditCard as Edit, CreditCard, Clock, CheckCircle, Trash2, Briefcase, Wrench, Link2, Send, MessageSquareQuote } from 'lucide-react';
+import { FileText, Plus, Search, Clock, CheckCircle, Briefcase } from 'lucide-react';
 import { supabase, Invoice } from '../../lib/supabase';
 import {
   getAllInvoices,
@@ -13,6 +13,7 @@ import {
 } from '../../services/invoiceService';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
+import InvoiceRowActions from '../../components/admin/InvoiceRowActions';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
@@ -536,79 +537,25 @@ ${invoice.notes}` : ''}`,
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2 relative">
-                        <button
-                          onClick={() => handleEditInvoice(invoice)}
-                          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        {invoice.amount_due > 0 && invoice.status !== 'cancelled' && (
-                          <button
-                            onClick={() => handleRecordPayment(invoice)}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                            title="Record Payment"
-                          >
-                            <CreditCard className="w-4 h-4" />
-                          </button>
-                        )}
-                        {!invoice.job_id && (
-                          <button
-                            onClick={() => handleCreateJobFromInvoice(invoice)}
-                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                            title="Create Job From Invoice"
-                          >
-                            <Wrench className="w-4 h-4" />
-                          </button>
-                        )}
-                        {invoice.status === 'draft' && (
-                          <button
-                            onClick={() => handleMarkAsSent(invoice)}
-                            disabled={markingSentId === invoice.id}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                            title="Mark as Sent"
-                          >
-                            <Send className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDownloadPDF(invoice)}
-                          disabled={downloadingInvoiceId === invoice.id}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Download PDF"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        {canSendApprovalFollowUp(invoice) && (
-                          <button
-                            onClick={() => handleApprovalFollowUp(invoice)}
-                            className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                            title="Send Approval Follow-Up"
-                            aria-label={`Send approval follow-up for ${invoice.invoice_number}`}
-                          >
-                            <MessageSquareQuote className="w-4 h-4" />
-                          </button>
-                        )}
-                        {['sent', 'overdue', 'partially_paid'].includes(invoice.status) && (
-                          <button
-                            onClick={() => handleCopyPaymentLink(invoice)}
-                            className={`p-2 rounded-lg transition-colors ${copiedLinkId === invoice.id ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 hover:bg-slate-100'}`}
-                            title="Copy Payment Link"
-                          >
-                            <Link2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setInvoiceToDelete(invoice)}
-                          disabled={deletingInvoiceId === invoice.id}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Delete Invoice"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 align-middle">
+                      <InvoiceRowActions
+                        invoice={invoice}
+                        isMenuOpen={openMenuId === invoice.id}
+                        onMenuToggle={() => setOpenMenuId((current) => current === invoice.id ? null : invoice.id)}
+                        onMenuClose={() => setOpenMenuId((current) => current === invoice.id ? null : current)}
+                        onViewInvoice={() => handleEditInvoice(invoice)}
+                        onRecordPayment={invoice.amount_due > 0 && invoice.status !== 'cancelled' ? () => handleRecordPayment(invoice) : undefined}
+                        onCreateJob={!invoice.job_id ? () => handleCreateJobFromInvoice(invoice) : undefined}
+                        onMarkAsSent={invoice.status === 'draft' ? () => handleMarkAsSent(invoice) : undefined}
+                        onDownloadPdf={() => handleDownloadPDF(invoice)}
+                        onApprovalFollowUp={canSendApprovalFollowUp(invoice) ? () => handleApprovalFollowUp(invoice) : undefined}
+                        onCopyPaymentLink={['sent', 'overdue', 'partially_paid'].includes(invoice.status) ? () => handleCopyPaymentLink(invoice) : undefined}
+                        onDelete={() => setInvoiceToDelete(invoice)}
+                        isDownloading={downloadingInvoiceId === invoice.id}
+                        isDeleting={deletingInvoiceId === invoice.id}
+                        isMarkingSent={markingSentId === invoice.id}
+                        hasCopiedPaymentLink={copiedLinkId === invoice.id}
+                      />
                     </td>
                   </tr>
                 ))
