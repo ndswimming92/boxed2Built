@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const stripe = new Stripe(Deno.env.get("Stripe_Sandbox_Secret_Key")!, {
+const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!, {
   apiVersion: "2024-04-10",
 });
 
