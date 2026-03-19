@@ -6,7 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0066cc" />
 
-  <!-- Google Analytics is loaded lazily after initial app render. -->
+  <!-- Google Analytics: bootstrap immediately so Realtime receives the first visit hit. -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = window.gtag || gtag;
+    gtag('js', new Date());
+    gtag('config', 'G-ZY3PG1S68G', {
+      send_page_view: true,
+      allow_google_signals: true,
+      allow_ad_personalization_signals: true,
+      cookie_expires: 63072000,
+      custom_map: {
+        custom_parameter_1: 'source_detail',
+        custom_parameter_2: 'user_type',
+        custom_parameter_3: 'service_interest'
+      },
+      engagement_time_msec: 100,
+      debug_mode: false
+    });
+  </script>
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-ZY3PG1S68G"
+    data-analytics="ga4"
+  ></script>
 
   <!-- Enhanced Title and Meta Description -->
   <title>Furniture Assembly Spring Hill TN | Handyman Near Me | Boxed2Built</title>
