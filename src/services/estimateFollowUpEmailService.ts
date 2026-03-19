@@ -5,7 +5,14 @@ export interface EstimateFollowUpTemplate {
   body: string;
 }
 
-function getReferenceLabel(invoice: Invoice): string {
+interface SendEstimateFollowUpEmailPayload {
+  email: string;
+  clientName: string;
+  invoiceNumber: string;
+  invoiceType: Invoice['invoice_type'];
+}
+
+function getReferenceLabel(invoice: Pick<Invoice, 'invoice_type'>): string {
   return invoice.invoice_type === 'estimate' ? 'estimate' : 'invoice';
 }
 
@@ -42,7 +49,32 @@ export function generateEstimateFollowUpTemplate(invoice: Invoice): EstimateFoll
   };
 }
 
-export function openEmailClientWithEstimateFollowUp(invoice: Invoice): void {
-  const { subject, body } = generateEstimateFollowUpTemplate(invoice);
-  window.location.href = `mailto:${invoice.client_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+export async function sendEstimateFollowUpEmail(invoice: Invoice): Promise<void> {
+  if (!invoice.client_email) {
+    throw new Error('Missing customer email address.');
+  }
+
+  const payload: SendEstimateFollowUpEmailPayload = {
+    email: invoice.client_email,
+    clientName: invoice.client_name,
+    invoiceNumber: invoice.invoice_number,
+    invoiceType: invoice.invoice_type,
+  };
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-estimate-follow-up-email`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data?.success) {
+    const message = typeof data?.error === 'string'
+      ? data.error
+      : 'Failed to send approval follow-up email.';
+    throw new Error(message);
+  }
 }

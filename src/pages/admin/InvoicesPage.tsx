@@ -20,7 +20,7 @@ import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { logAction } from '../../services/auditLogService';
 import {
   generateEstimateFollowUpTemplate,
-  openEmailClientWithEstimateFollowUp,
+  sendEstimateFollowUpEmail,
 } from '../../services/estimateFollowUpEmailService';
 
 export default function InvoicesPage() {
@@ -201,16 +201,19 @@ ${invoice.notes}` : ''}`,
 
     if (invoice.client_email) {
       try {
-        openEmailClientWithEstimateFollowUp(invoice);
+        await sendEstimateFollowUpEmail(invoice);
         await logInvoiceCommunication(
           invoice.id,
           'email',
-          `Estimate acceptance follow-up sent for ${invoice.invoice_type} ${invoice.invoice_number}.`
+          `Estimate acceptance follow-up email sent for ${invoice.invoice_type} ${invoice.invoice_number}.`
         );
-        showToast({ type: 'success', message: `Approval follow-up drafted for ${invoice.client_name}.` });
+        showToast({ type: 'success', message: `Approval follow-up sent to ${invoice.client_name}.` });
       } catch (error) {
-        console.error('Error preparing approval follow-up:', error);
-        showToast({ type: 'error', message: 'Failed to prepare approval follow-up.' });
+        console.error('Error sending approval follow-up:', error);
+        showToast({
+          type: 'error',
+          message: error instanceof Error ? error.message : 'Failed to send approval follow-up.',
+        });
       }
       return;
     }
