@@ -1,4 +1,5 @@
 import React, { FormEvent, useEffect, useState } from 'react';
+import { Check, Copy, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
 import { customerPortalService, PortalServiceError, type CustomerPortalProfile } from '../../services/customerPortalService';
@@ -12,6 +13,7 @@ export default function PortalProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -36,6 +38,18 @@ export default function PortalProfilePage() {
 
     void loadProfile();
   }, [navigate]);
+
+  const handleCopyReferralCode = async () => {
+    if (!profile?.referral_code || typeof navigator === 'undefined' || !navigator.clipboard) return;
+
+    try {
+      await navigator.clipboard.writeText(profile.referral_code);
+      setCopySuccess(true);
+      window.setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to copy referral code.');
+    }
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -69,7 +83,36 @@ export default function PortalProfilePage() {
       ) : null}
 
       {!loading && !error && profile ? (
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="space-y-4">
+          <section className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-sm">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-50">
+                  <Gift className="h-4 w-4" />
+                  Referral Program
+                </div>
+                <h2 className="text-xl font-semibold">Share your client referral code</h2>
+                <p className="max-w-2xl text-sm text-blue-50/90">Use this same code shown on the public referral page and in the admin portal when you invite friends and family.</p>
+              </div>
+
+              {profile.referral_code ? (
+                <button
+                  type="button"
+                  onClick={handleCopyReferralCode}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-white px-4 py-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50"
+                >
+                  {copySuccess ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                  {copySuccess ? 'Copied!' : profile.referral_code}
+                </button>
+              ) : (
+                <div className="rounded-lg border border-dashed border-white/40 px-4 py-3 text-sm text-blue-50/90">
+                  Your referral code will appear here once it has been assigned.
+                </div>
+              )}
+            </div>
+          </section>
+
+          <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
           {successMessage ? (
             <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{successMessage}</div>
           ) : null}
@@ -115,6 +158,7 @@ export default function PortalProfilePage() {
             {saving ? 'Saving...' : 'Save changes'}
           </button>
         </form>
+        </div>
       ) : null}
     </PortalLayout>
   );

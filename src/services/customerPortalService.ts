@@ -26,8 +26,17 @@ export type CustomerPortalProfile = {
   full_name: string | null;
   email: string | null;
   phone: string | null;
+  referral_code: string | null;
+  referral_credit_balance: number;
+  referral_credit_used: number;
   created_at: string;
   updated_at: string;
+};
+
+type CustomerPortalReferralSummary = {
+  referral_code: string | null;
+  referral_credit_balance: number;
+  referral_credit_used: number;
 };
 
 type CustomerPortalProfileUpdatePayload = {
@@ -141,6 +150,40 @@ const ensureAuthenticatedSession = async () => {
 
   return data.session;
 };
+
+const getDefaultReferralSummary = (): CustomerPortalReferralSummary => ({
+  referral_code: null,
+  referral_credit_balance: 0,
+  referral_credit_used: 0,
+});
+
+const getMyReferralSummary = async (): Promise<CustomerPortalReferralSummary> => {
+  const { data, error } = await supabase.rpc('get_my_referral_summary');
+
+  if (error) {
+    throw normalizePortalError(error, `Failed to fetch referral summary: ${error.message}`);
+  }
+
+  const referralData = Array.isArray(data) ? data[0] : data;
+
+  if (!referralData) {
+    return getDefaultReferralSummary();
+  }
+
+  return {
+    referral_code: typeof referralData.referral_code === 'string' ? referralData.referral_code : null,
+    referral_credit_balance: Number(referralData.referral_credit_balance ?? 0),
+    referral_credit_used: Number(referralData.referral_credit_used ?? 0),
+  };
+};
+
+const mergeProfileWithReferralSummary = (
+  profile: Omit<CustomerPortalProfile, 'referral_code' | 'referral_credit_balance' | 'referral_credit_used'>,
+  referralSummary: CustomerPortalReferralSummary,
+): CustomerPortalProfile => ({
+  ...profile,
+  ...referralSummary,
+});
 
 export const customerPortalService = {
   async getMyJobs(options?: { page?: number; pageSize?: number }): Promise<CustomerPortalJob[]> {
@@ -334,7 +377,9 @@ export const customerPortalService = {
       throw normalizePortalError(error, `Failed to fetch profile: ${error.message}`);
     }
 
-    return data;
+    const referralSummary = await getMyReferralSummary();
+
+    return mergeProfileWithReferralSummary(data, referralSummary);
   },
 
   async updateMyProfile(payload: CustomerPortalProfileUpdatePayload): Promise<CustomerPortalProfile> {
@@ -359,7 +404,9 @@ export const customerPortalService = {
       throw normalizePortalError(error, `Failed to update profile: ${error.message}`);
     }
 
-    return data;
+    const referralSummary = await getMyReferralSummary();
+
+    return mergeProfileWithReferralSummary(data, referralSummary);
   },
 
   async trackFunnelEvent(eventType: PortalFunnelEventType, metadata?: Record<string, unknown>) {
