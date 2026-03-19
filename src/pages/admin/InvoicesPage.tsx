@@ -20,6 +20,7 @@ import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { logAction } from '../../services/auditLogService';
 import {
   generateEstimateFollowUpTemplate,
+  getEstimateFollowUpDetails,
   sendEstimateFollowUpEmail,
 } from '../../services/estimateFollowUpEmailService';
 
@@ -197,11 +198,12 @@ ${invoice.notes}` : ''}`,
   );
 
   const handleApprovalFollowUp = async (invoice: Invoice) => {
-    const { subject, body } = generateEstimateFollowUpTemplate(invoice);
+    const details = await getEstimateFollowUpDetails(invoice, invoice.job_id ? jobsMap.get(invoice.job_id) ?? null : null);
+    const { subject, body } = generateEstimateFollowUpTemplate(details);
 
     if (invoice.client_email) {
       try {
-        await sendEstimateFollowUpEmail(invoice);
+        await sendEstimateFollowUpEmail(details, invoice.client_email);
         await logInvoiceCommunication(
           invoice.id,
           'email',
