@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14";
 
-const stripe = new Stripe(Deno.env.get("Stripe_Sandbox_Secret_Key")!, {
+const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!, {
   apiVersion: "2024-04-10",
 });
 
