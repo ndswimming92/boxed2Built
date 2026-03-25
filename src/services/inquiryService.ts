@@ -22,6 +22,9 @@ export interface CreateInquiryData {
   source?: string;
   furniture_photo_url?: string;
   furniture_image_path?: string;
+  sms_opt_in?: boolean;
+  sms_consent_text?: string;
+  sms_consent_timestamp?: string;
   is_test?: boolean;
 }
 
@@ -76,11 +79,33 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     is_test: data.is_test ?? false,
     furniture_photo_url: data.furniture_photo_url || null,
     furniture_image_path: data.furniture_image_path || null,
+    sms_opt_in: data.sms_opt_in ?? false,
+    sms_consent_text: data.sms_consent_text || null,
+    sms_consent_timestamp: data.sms_consent_timestamp || null,
   };
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from('form_inquiries')
     .insert(insertPayload);
+
+  const hasMissingSmsColumnsError = !!error && (
+    error.message.includes("sms_consent_text") ||
+    error.message.includes("sms_consent_timestamp") ||
+    error.message.includes("sms_opt_in")
+  );
+
+  if (hasMissingSmsColumnsError) {
+    const legacyPayload = { ...insertPayload } as Record<string, unknown>;
+    delete legacyPayload.sms_opt_in;
+    delete legacyPayload.sms_consent_text;
+    delete legacyPayload.sms_consent_timestamp;
+
+    const retryResult = await supabase
+      .from('form_inquiries')
+      .insert(legacyPayload);
+
+    error = retryResult.error;
+  }
 
   if (error) {
     console.error('Error creating inquiry:', error);
@@ -98,6 +123,9 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     contact_notes: null,
     furniture_photo_url: data.furniture_photo_url || null,
     furniture_image_path: data.furniture_image_path || null,
+    sms_opt_in: data.sms_opt_in ?? false,
+    sms_consent_text: data.sms_consent_text || null,
+    sms_consent_timestamp: data.sms_consent_timestamp || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   } as FormInquiry;
