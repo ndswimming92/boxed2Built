@@ -30,6 +30,9 @@ interface ContactFormPayload {
   furnitureImagePath?: string;
   referralCodeUsed?: string;
   referrerName?: string;
+  smsOptIn?: boolean;
+  smsConsentText?: string;
+  smsConsentTimestamp?: string;
 }
 
 interface QuickContactPayload {
@@ -114,6 +117,20 @@ function ownerNotificationContact(p: ContactFormPayload): string {
           ${p.phone ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.phone}</span></td>
+          </tr>` : ""}
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">SMS Consent</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:${p.smsOptIn ? "#166534" : "#6b7280"};font-size:14px;font-weight:600;">${p.smsOptIn ? "Opted in" : "Not opted in"}</span></td>
+          </tr>
+          ${p.smsOptIn && p.smsConsentTimestamp ? `<tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Consent Timestamp</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${new Date(p.smsConsentTimestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })} CT</span></td>
+          </tr>` : ""}
+          ${p.smsOptIn && p.smsConsentText ? `<tr>
+            <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
+              <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">SMS Consent Language (Proof)</span>
+              <p style="margin:0;color:#111827;font-size:13px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${p.smsConsentText}</p>
+            </td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Furniture Type</span></td>
@@ -253,7 +270,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
               </td>
               <td style="vertical-align:top;padding-bottom:14px;padding-left:12px;">
                 <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We reach out to confirm</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Expect a call or text from us within <strong>24 hours</strong> to lock in your appointment and finalize any details.</p>
+                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Expect ${p.smsOptIn ? "a call, text, or email" : "a call or email"} from us within <strong>24 hours</strong> to lock in your appointment and finalize any details.</p>
               </td>
             </tr>
             <tr>

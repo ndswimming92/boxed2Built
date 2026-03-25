@@ -199,6 +199,20 @@ export default function InquiryDetailModal({
                     <p className="text-sm font-medium text-slate-900">{formatPhoneForDisplay(inquiry.client_phone)}</p>
                   </div>
                 )}
+                <div>
+                  <p className="text-xs text-slate-500">SMS Consent</p>
+                  <p className={`text-sm font-medium ${inquiry.sms_opt_in ? 'text-emerald-700' : 'text-slate-900'}`}>
+                    {inquiry.sms_opt_in ? 'Opted in' : 'Not opted in'}
+                  </p>
+                </div>
+                {inquiry.sms_opt_in && inquiry.sms_consent_timestamp && (
+                  <div>
+                    <p className="text-xs text-slate-500">Consent Timestamp</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {new Date(inquiry.sms_consent_timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                )}
                 {inquiry.user_city && (
                   <div>
                     <p className="text-xs text-slate-500">Location</p>
@@ -268,6 +282,13 @@ export default function InquiryDetailModal({
             <div className="bg-slate-50 p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-slate-700 mb-2">Additional Notes</h3>
               <p className="text-sm text-slate-900 whitespace-pre-wrap">{inquiry.notes}</p>
+            </div>
+          )}
+
+          {inquiry.sms_opt_in && inquiry.sms_consent_text && (
+            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+              <h3 className="text-sm font-semibold text-indigo-900 mb-2">SMS Consent Proof</h3>
+              <p className="text-sm text-indigo-900 whitespace-pre-wrap">{inquiry.sms_consent_text}</p>
             </div>
           )}
 
