@@ -84,9 +84,28 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     sms_consent_timestamp: data.sms_consent_timestamp || null,
   };
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from('form_inquiries')
     .insert(insertPayload);
+
+  const hasMissingSmsColumnsError = !!error && (
+    error.message.includes("sms_consent_text") ||
+    error.message.includes("sms_consent_timestamp") ||
+    error.message.includes("sms_opt_in")
+  );
+
+  if (hasMissingSmsColumnsError) {
+    const legacyPayload = { ...insertPayload } as Record<string, unknown>;
+    delete legacyPayload.sms_opt_in;
+    delete legacyPayload.sms_consent_text;
+    delete legacyPayload.sms_consent_timestamp;
+
+    const retryResult = await supabase
+      .from('form_inquiries')
+      .insert(legacyPayload);
+
+    error = retryResult.error;
+  }
 
   if (error) {
     console.error('Error creating inquiry:', error);

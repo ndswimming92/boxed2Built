@@ -64,9 +64,28 @@ export async function createSavedRequest(data: CreateSavedRequestData): Promise<
       sms_consent_timestamp: data.sms_consent_timestamp || null,
     };
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('saved_requests')
       .insert(insertPayload);
+
+    const hasMissingSmsColumnsError = !!error && (
+      error.message.includes("sms_consent_text") ||
+      error.message.includes("sms_consent_timestamp") ||
+      error.message.includes("sms_opt_in")
+    );
+
+    if (hasMissingSmsColumnsError) {
+      const legacyPayload = { ...insertPayload } as Record<string, unknown>;
+      delete legacyPayload.sms_opt_in;
+      delete legacyPayload.sms_consent_text;
+      delete legacyPayload.sms_consent_timestamp;
+
+      const retryResult = await supabase
+        .from('saved_requests')
+        .insert(legacyPayload);
+
+      error = retryResult.error;
+    }
 
     if (!error) {
       return {
