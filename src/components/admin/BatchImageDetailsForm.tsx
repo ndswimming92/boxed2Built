@@ -14,7 +14,6 @@ interface ImageDetail {
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date: string;
   location: string;
-  amazonLink: string;
   focusX: number;
   focusY: number;
 }
@@ -41,7 +40,6 @@ export default function BatchImageDetailsForm({
       category: 'completed-work' as const,
       date: new Date().toISOString().split('T')[0],
       location: 'Spring Hill, TN',
-      amazonLink: '',
       focusX: 50,
       focusY: 50,
     }))
@@ -109,7 +107,6 @@ export default function BatchImageDetailsForm({
           location: detail.location || undefined,
           width: detail.optimizedImage.width,
           height: detail.optimizedImage.height,
-          amazon_link: detail.amazonLink || undefined,
           display_order: maxDisplayOrder + i + 1,
           is_active: true,
           focus_x: detail.focusX,
@@ -312,15 +309,6 @@ export default function BatchImageDetailsForm({
                         />
                       </FormField>
 
-                      <FormField label="Amazon Affiliate Link">
-                        <input name="amazonLink"
-                          type="url"
-                          value={detail.amazonLink}
-                          onChange={(e) => updateImageDetail(index, 'amazonLink', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                          placeholder="https://amzn.to/..."
-                        />
-                      </FormField>
                     </div>
 
                     <div className="mt-4">

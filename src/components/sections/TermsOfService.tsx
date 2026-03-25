@@ -137,22 +137,11 @@ const TermsOfService = () => {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">9. Affiliate Links and Third-Party Services</h2>
+        <h2 className="text-xl font-semibold mb-2">9. Third-Party Services</h2>
         <div>
-          <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program</h3>
-          <p className="mb-4">
-            Boxed2Built participates in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com. This means:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Some links to Amazon products on our website are affiliate links</li>
-            <li>We may earn a commission if you make a qualifying purchase through these links</li>
-            <li>The price you pay remains the same - there is no additional cost to you</li>
-            <li>We only recommend products we have personally assembled or believe will be valuable to our customers</li>
-          </ul>
-
           <h3 className="text-lg font-semibold mb-2">Third-Party Websites</h3>
           <p className="mb-4">
-            Our website may contain links to third-party websites, including Amazon.com and other retailers. We are not responsible for:
+            Our website may contain links to third-party websites. We are not responsible for:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>The content, products, or services offered by third-party websites</li>

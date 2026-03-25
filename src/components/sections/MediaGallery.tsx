@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, MapPin, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import OptimizedImage from '../ui/OptimizedImage';
 import VideoPlayer from '../ui/VideoPlayer';
-import { trackEvent, trackExternalLink } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 
 export interface MediaItem {
   id: string;
@@ -18,7 +18,6 @@ export interface MediaItem {
   alt?: string;
   width?: number;
   height?: number;
-  amazonLink?: string;
   focusX?: number;
   focusY?: number;
 }
@@ -38,7 +37,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [lightboxItem, setLightboxItem] = useState<MediaItem | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
 
   const categories = [
     { key: 'all', label: 'All Work', count: items.length },
@@ -52,7 +50,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   const openLightbox = (item: MediaItem, index: number) => {
     setLightboxItem(item);
-    setLightboxIndex(index);
     trackEvent('gallery-lightbox-open', item.title);
     document.body.style.overflow = 'hidden';
   };
@@ -72,7 +69,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
       newIndex = currentIndex < filteredItems.length - 1 ? currentIndex + 1 : 0;
     }
     setLightboxItem(filteredItems[newIndex]);
-    setLightboxIndex(newIndex);
     trackEvent(`gallery-lightbox-${direction}`, filteredItems[newIndex].title);
   };
 
@@ -82,15 +78,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
       case 'photos': return '📸';
       default: return '📸';
     }
-  };
-
-  const handleAmazonLinkClick = (productTitle: string, amazonUrl: string) => {
-    trackEvent('amazon-affiliate-click', productTitle, {
-      event_category: 'affiliate',
-      value: 1,
-      user_engagement: 'amazon_click'
-    });
-    trackExternalLink(amazonUrl, `Amazon Product: ${productTitle}`);
   };
 
   return (
@@ -178,28 +165,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                   </div>
                 )}
                 
-                {item.amazonLink && (
-                  <div className="mt-2">
-                    <a
-                      href={item.amazonLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAmazonLinkClick(item.title, item.amazonLink!);
-                      }}
-                      className="inline-flex items-center px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded text-xs shadow-sm hover:shadow-md transition-all duration-200 w-full justify-center"
-                    >
-                      <svg className="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 8.206 3.166 12.758 3.166 2.639 0 5.462-.394 8.29-1.275.232-.072.29-.058.29.145 0 .203-.145.348-.435.435-2.639.87-5.723 1.26-8.726 1.26-4.64 0-9.485-1.26-12.525-3.71zm-.87-2.088c-.116-.145-.029-.348.174-.29 4.262.87 8.697 1.275 12.932 1.275 3.71 0 7.826-.58 11.536-1.74.203-.058.29.029.29.203 0 .174-.116.29-.348.377-3.71 1.16-7.942 1.74-11.652 1.74-4.262 0-8.697-.406-12.932-1.565zm1.74-2.32c-.145-.174-.029-.377.203-.29 3.71.87 7.826 1.275 11.652 1.275 3.71 0 7.42-.406 10.956-1.275.203-.058.29.029.29.203 0 .174-.087.29-.29.348-3.536.87-7.246 1.275-10.956 1.275-3.826 0-7.942-.406-11.652-1.275-.232-.087-.348-.203-.203-.261z"/>
-                      </svg>
-                      Get on Amazon
-                    </a>
-                    <p className="text-xs text-gray-500 mt-1 text-center">
-                      As an Amazon Associate, we earn from qualifying purchases.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -299,25 +264,6 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                     )}
                   </div>
 
-                  {lightboxItem.amazonLink && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <a
-                        href={lightboxItem.amazonLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => handleAmazonLinkClick(lightboxItem.title, lightboxItem.amazonLink!)}
-                        className="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm"
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 8.206 3.166 12.758 3.166 2.639 0 5.462-.394 8.29-1.275.232-.072.29-.058.29.145 0 .203-.145.348-.435.435-2.639.87-5.723 1.26-8.726 1.26-4.64 0-9.485-1.26-12.525-3.71zm-.87-2.088c-.116-.145-.029-.348.174-.29 4.262.87 8.697 1.275 12.932 1.275 3.71 0 7.826-.58 11.536-1.74.203-.058.29.029.29.203 0 .174-.116.29-.348.377-3.71 1.16-7.942 1.74-11.652 1.74-4.262 0-8.697-.406-12.932-1.565zm1.74-2.32c-.145-.174-.029-.377.203-.29 3.71.87 7.826 1.275 11.652 1.275 3.71 0 7.42-.406 10.956-1.275.203-.058.29.029.29.203 0 .174-.087.29-.29.348-3.536.87-7.246 1.275-10.956 1.275-3.826 0-7.942-.406-11.652-1.275-.232-.087-.348-.203-.203-.261z"/>
-                        </svg>
-                        Get This Product on Amazon
-                      </a>
-                      <p className="text-xs text-gray-500 mt-2">
-                        As an Amazon Associate, we earn from qualifying purchases.
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
