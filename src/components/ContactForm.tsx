@@ -951,14 +951,14 @@ const ContactForm: React.FC = () => {
                 <div>
                   <label htmlFor="productUrl" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
                     <Link size={13} />
-                    Product link (Amazon, Wayfair, IKEA, etc.)
+                    Product link (Wayfair, IKEA, etc.)
                   </label>
                   <input
                     id="productUrl"
                     type="url"
                     value={furniturePhotoUrl}
                     onChange={(e) => setFurniturePhotoUrl(e.target.value)}
-                    placeholder="https://www.amazon.com/your-product..."
+                    placeholder="https://www.example.com/product..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                     autoComplete="off"
                     autoCapitalize="none"

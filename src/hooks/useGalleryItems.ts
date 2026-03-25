@@ -57,7 +57,6 @@ export function convertGalleryItemToMediaItem(item: GalleryItem): MediaItem {
     location: item.location || undefined,
     width: item.width || undefined,
     height: item.height || undefined,
-    amazonLink: item.amazon_link || undefined,
     platform: item.platform || undefined,
     focusX: item.focus_x || 50,
     focusY: item.focus_y || 50,

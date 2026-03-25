@@ -154,24 +154,6 @@ const GalleryPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Amazon Affiliate Disclosure Section */}
-        <section className="py-8 bg-gray-100">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-600">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Amazon Affiliate Disclosure</h3>
-                <p className="text-gray-700 mb-2">
-                  <strong>Boxed2Built is a participant in the Amazon Services LLC Associates Program</strong>, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.
-                </p>
-                <p className="text-gray-600 text-sm">
-                  As an Amazon Associate, we earn from qualifying purchases made through the product links on this page. 
-                  These affiliate links help support our furniture assembly business at no extra cost to you. 
-                  We only recommend products that we have personally assembled and believe will be valuable to our customers.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
       <Footer />
     </>

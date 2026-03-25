@@ -61,14 +61,12 @@ const PrivacyPolicy = () => {
           <li>Stripe, Inc. for payment processing when you pay for our services or pay an invoice online</li>
           <li>Google (through Google Analytics 4) for website analytics purposes</li>
                     <li>Third-party analytics providers to help us understand website usage and improve our services</li>
-          <li>Amazon (through the Amazon Services LLC Associates Program) when you click on affiliate links to Amazon products</li>
           <li>Law enforcement if required by Tennessee state law or federal law</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          Note: Stripe, Google Analytics, and Amazon have their own privacy policies and data handling practices. We recommend reviewing their privacy policies for more information about how they process data:
+          Note: Stripe and Google Analytics have their own privacy policies and data handling practices. We recommend reviewing their privacy policies for more information about how they process data:
           <br />• Stripe Privacy Policy: <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">https://stripe.com/privacy</a>
           <br />• Google Analytics privacy policy is available on their website
-          <br />• Amazon's privacy policy governs how they handle data from affiliate link clicks
         </p>
       </section>
 
@@ -137,21 +135,6 @@ const PrivacyPolicy = () => {
               <li>Stripe uses this data to secure transactions and prevent fraudulent activity</li>
               <li>Payment processing data is governed by Stripe's privacy practices</li>
             </ul>
-          </div>
-
-          <h3 className="text-lg font-semibold mb-2">Amazon Affiliate Program:</h3>
-          <div className="mb-4">
-            <p className="mb-2">Boxed2Built participates in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com. We have been a participant in this program for approximately one year, serving customers in Tennessee. When you click on Amazon product links:</p>
-            <ul className="list-disc pl-6 mb-3 space-y-1">
-              <li>Amazon may place cookies on your device to track your activity</li>
-              <li>Amazon may collect information about your browsing and purchasing behavior</li>
-              <li>We may earn a commission if you make a qualifying purchase through our affiliate links</li>
-              <li>Your personal information is subject to Amazon's privacy policy</li>
-            </ul>
-            <p className="text-sm text-gray-600 mb-3">
-              You can learn more about Amazon's privacy practices in{' '}
-              <a href="https://www.amazon.com/gp/help/customer/display.html?nodeId=468496" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 underline">Amazon's Privacy Notice</a>.
-            </p>
           </div>
 
           <h3 className="text-lg font-semibold mb-2">Analytics Services We Use:</h3>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Save, Upload, Video, AlertCircle } from 'lucide-react';
 import { GalleryService, CreateGalleryItemInput, UpdateGalleryItemInput } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
@@ -24,7 +24,6 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     category: item?.category || 'completed-work' as const,
     date: item?.date || new Date().toISOString().split('T')[0],
     location: item?.location || 'Spring Hill, TN',
-    amazonLink: item?.amazon_link || '',
     youtubeUrl: item?.type === 'video' ? item.src : '',
     width: item?.width || undefined,
     height: item?.height || undefined,
@@ -118,7 +117,6 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           category: formData.category,
           date: formData.date || undefined,
           location: formData.location || undefined,
-          amazon_link: formData.amazonLink || undefined,
           width,
           height,
           focus_x: formData.focusX,
@@ -145,7 +143,6 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           location: formData.location || undefined,
           width,
           height,
-          amazon_link: formData.amazonLink || undefined,
           platform: type === 'video' ? 'youtube' : undefined,
           display_order: maxDisplayOrder + 1,
           is_active: true,
@@ -322,15 +319,6 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
               />
             </FormField>
 
-            <FormField label="Amazon Affiliate Link">
-              <input name="amazonLink"
-                type="url"
-                value={formData.amazonLink}
-                onChange={(e) => setFormData({ ...formData, amazonLink: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="https://amzn.to/..."
-              />
-            </FormField>
 
             {type === 'image' && previewUrl && (
               <FocusAreaSelector
