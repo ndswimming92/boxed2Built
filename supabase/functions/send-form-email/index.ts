@@ -50,6 +50,15 @@ interface QuickContactPayload {
 
 type Payload = ContactFormPayload | QuickContactPayload;
 
+interface SavedRequestSmsRecord {
+  client_name: string | null;
+  client_email: string | null;
+  client_phone: string | null;
+  confirmation_code: string | null;
+  sms_opt_in: boolean | null;
+  is_active: boolean | null;
+}
+
 async function sendEmail(to: string | string[], subject: string, html: string, replyTo?: string) {
   const toArray = Array.isArray(to) ? to : [to];
   const body: Record<string, unknown> = {
@@ -112,6 +121,14 @@ function normalizeUsPhoneToE164(phone?: string): string | null {
   }
 
   return null;
+}
+
+function normalizeEmail(email?: string): string {
+  return (email ?? "").trim().toLowerCase();
+}
+
+function normalizeConfirmationCode(code?: string): string {
+  return (code ?? "").replace(/\s/g, "").toUpperCase();
 }
 
 function buildContactSmsBody(p: ContactFormPayload): string {
@@ -198,12 +215,40 @@ async function sendOwnerSmsNotifications(body: string): Promise<boolean> {
   return sentCount > 0;
 }
 
-function buildCustomerConfirmationSmsBody(p: ContactFormPayload): string {
+function buildTrustedCustomerConfirmationSmsBody(record: SavedRequestSmsRecord): string {
+  const firstName = (record.client_name ?? "there").split(" ")[0] || "there";
   return [
-    `Hi ${p.name.split(" ")[0]}, we received your Boxed2Built request.`,
+    `Hi ${firstName}, we received your Boxed2Built request.`,
     "A team member will be reaching out shortly.",
-    `Your request code: ${p.confirmationCode}`,
+    `Your request code: ${record.confirmation_code ?? ""}`,
   ].join(" ");
+}
+
+async function getTrustedSavedRequestForSms(
+  supabase: ReturnType<typeof createClient>,
+  p: ContactFormPayload,
+): Promise<SavedRequestSmsRecord | null> {
+  const normalizedEmail = normalizeEmail(p.email);
+  const normalizedCode = normalizeConfirmationCode(p.confirmationCode);
+
+  if (!normalizedEmail || !normalizedCode) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("saved_requests")
+    .select("client_name, client_email, client_phone, confirmation_code, sms_opt_in, is_active")
+    .eq("client_email", normalizedEmail)
+    .eq("confirmation_code", normalizedCode)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Saved request trust check failed:", error);
+    return null;
+  }
+
+  return (data as SavedRequestSmsRecord | null) ?? null;
 }
 
 function formatTimeSlot(slot?: string): string {
@@ -535,13 +580,13 @@ Deno.serve(async (req: Request) => {
 
     if (payload.formType === "contact") {
       const p = payload as ContactFormPayload;
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
 
       if (p.referralCodeUsed) {
         try {
-          const supabase = createClient(
-            Deno.env.get("SUPABASE_URL")!,
-            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-          );
           const { data: referrer } = await supabase
             .from("clients")
             .select("name")
@@ -586,14 +631,17 @@ Deno.serve(async (req: Request) => {
         console.error("Owner SMS notification failed:", err);
       }
 
-      if (p.smsOptIn) {
-        const recipient = normalizeUsPhoneToE164(p.phone);
-        if (recipient && canSendTwilioSms()) {
+      if (canSendTwilioSms()) {
+        const trustedRequest = await getTrustedSavedRequestForSms(supabase, p);
+        const trustedRecipient = normalizeUsPhoneToE164(trustedRequest?.client_phone ?? undefined);
+        const trustedOptIn = Boolean(trustedRequest?.sms_opt_in);
+
+        if (trustedOptIn && trustedRecipient) {
           try {
-            await sendTwilioSms(recipient, buildCustomerConfirmationSmsBody(p));
+            await sendTwilioSms(trustedRecipient, buildTrustedCustomerConfirmationSmsBody(trustedRequest));
             customerSmsSent = true;
           } catch (err) {
-            console.error(`Customer SMS confirmation failed for ${recipient}:`, err);
+            console.error(`Customer SMS confirmation failed for ${trustedRecipient}:`, err);
           }
         }
       }
