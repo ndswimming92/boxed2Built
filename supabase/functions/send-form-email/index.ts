@@ -89,6 +89,31 @@ function canSendTwilioNotifications(): boolean {
   return hasAuth && hasSender && parseOwnerSmsNumbers().length > 0;
 }
 
+function canSendTwilioSms(): boolean {
+  const hasAuth = Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN);
+  const hasSender = Boolean(TWILIO_MESSAGING_SERVICE_SID || TWILIO_FROM_NUMBER);
+  return hasAuth && hasSender;
+}
+
+function normalizeUsPhoneToE164(phone?: string): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+${digits}`;
+  }
+
+  if (phone.startsWith("+") && digits.length >= 10) {
+    return `+${digits}`;
+  }
+
+  return null;
+}
+
 function buildContactSmsBody(p: ContactFormPayload): string {
   const lines = [
     "New Boxed2Built quote request",
@@ -171,6 +196,14 @@ async function sendOwnerSmsNotifications(body: string): Promise<boolean> {
   }
 
   return sentCount > 0;
+}
+
+function buildCustomerConfirmationSmsBody(p: ContactFormPayload): string {
+  return [
+    `Hi ${p.name.split(" ")[0]}, we received your Boxed2Built request.`,
+    "A team member will be reaching out shortly.",
+    `Your request code: ${p.confirmationCode}`,
+  ].join(" ");
 }
 
 function formatTimeSlot(slot?: string): string {
@@ -498,6 +531,7 @@ Deno.serve(async (req: Request) => {
       client: false,
     };
     let smsNotificationSent = false;
+    let customerSmsSent = false;
 
     if (payload.formType === "contact") {
       const p = payload as ContactFormPayload;
@@ -551,6 +585,18 @@ Deno.serve(async (req: Request) => {
       } catch (err) {
         console.error("Owner SMS notification failed:", err);
       }
+
+      if (p.smsOptIn) {
+        const recipient = normalizeUsPhoneToE164(p.phone);
+        if (recipient && canSendTwilioSms()) {
+          try {
+            await sendTwilioSms(recipient, buildCustomerConfirmationSmsBody(p));
+            customerSmsSent = true;
+          } catch (err) {
+            console.error(`Customer SMS confirmation failed for ${recipient}:`, err);
+          }
+        }
+      }
     } else if (payload.formType === "quick_contact") {
       const p = payload as QuickContactPayload;
 
@@ -588,7 +634,7 @@ Deno.serve(async (req: Request) => {
       throw new Error("Invalid formType");
     }
 
-    return new Response(JSON.stringify({ success: true, emailResults, smsNotificationSent }), {
+    return new Response(JSON.stringify({ success: true, emailResults, smsNotificationSent, customerSmsSent }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
