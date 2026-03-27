@@ -17,6 +17,7 @@ import ConfettiCanvas from './ConfettiCanvas';
 const initialValues = {
   name: { value: '', error: '', touched: false },
   email: { value: '', error: '', touched: false },
+  serviceZip: { value: '', error: '', touched: false },
   phone: { value: '', error: '', touched: false },
   smsConsent: { value: 'false', error: '', touched: false },
   furnitureType: { value: '', error: '', touched: false },
@@ -77,6 +78,19 @@ const validationRules: Record<string, ValidationRule> = {
       }
       return null;
     }
+  },
+  serviceZip: {
+    required: true,
+    pattern: /^\d{5}(?:-\d{4})?$/,
+    custom: (value) => {
+      if (!value) return 'ZIP code is required';
+      const cleaned = value.trim();
+      if (!/^\d{5}(?:-\d{4})?$/.test(cleaned)) {
+        return 'Please enter a valid ZIP code (e.g., 37064)';
+      }
+      return null;
+    },
+    validateOnChange: true
   },
   smsConsent: {
     required: false
@@ -253,7 +267,7 @@ const ContactForm: React.FC = () => {
       return field && field.value && field.value.trim() !== '' && field.valid;
     };
 
-    const requiredFields = ['name', 'email', 'furnitureType', 'pieces'];
+    const requiredFields = ['name', 'email', 'serviceZip', 'furnitureType', 'pieces'];
 
     // Add notes as required if furniture type is "Other"
     const isOtherSelected = fields.furnitureType?.value === 'Other';
@@ -271,6 +285,8 @@ const ContactForm: React.FC = () => {
     fields.name?.valid,
     fields.email?.value,
     fields.email?.valid,
+    fields.serviceZip?.value,
+    fields.serviceZip?.valid,
     fields.furnitureType?.value,
     fields.furnitureType?.valid,
     fields.pieces?.value,
@@ -393,6 +409,7 @@ const ContactForm: React.FC = () => {
         client_name: values.name,
         client_email: values.email,
         client_phone: values.phone || undefined,
+        user_city: values.serviceZip,
         furniture_type: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferred_date: values.preferredDate || undefined,
@@ -417,6 +434,7 @@ const ContactForm: React.FC = () => {
         client_name: values.name,
         client_email: values.email,
         client_phone: values.phone || undefined,
+        user_city: values.serviceZip,
         furniture_type: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferred_date: values.preferredDate || undefined,
@@ -438,6 +456,7 @@ const ContactForm: React.FC = () => {
         clientName: values.name,
         clientEmail: values.email,
         clientPhone: values.phone || undefined,
+        userCity: values.serviceZip,
         furnitureType: values.furnitureType,
         pieces: parseInt(values.pieces) || 1,
         preferredDate: values.preferredDate || undefined,
@@ -472,6 +491,7 @@ const ContactForm: React.FC = () => {
           name: values.name,
           email: values.email,
           phone: values.phone || undefined,
+          userCity: values.serviceZip,
           furnitureType: values.furnitureType,
           pieces: parseInt(values.pieces) || 1,
           preferredDate: values.preferredDate || undefined,
@@ -722,8 +742,33 @@ const ContactForm: React.FC = () => {
               </FormField>
             </div>
 
-            {/* Phone - Optional but prominent */}
+            {/* ZIP code and phone */}
             <div className="mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Service ZIP Code"
+                  required
+                  error={fields.serviceZip?.error}
+                  success={fields.serviceZip?.valid && fields.serviceZip?.touched}
+                  helpText="Used to confirm availability and estimate travel time"
+                >
+                  <input
+                    id="serviceZip"
+                    name="serviceZip"
+                    type="text"
+                    autoComplete="postal-code"
+                    inputMode="numeric"
+                    pattern="[0-9-]*"
+                    maxLength={10}
+                    placeholder="37064"
+                    className={getInputClasses('serviceZip')}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    {...getFieldProps('serviceZip')}
+                  />
+                </FormField>
+
               <FormField
                 label="Phone Number (optional - for faster response)"
                 inputId="phone"
@@ -749,6 +794,7 @@ const ContactForm: React.FC = () => {
                   )}
                 </InputMask>
               </FormField>
+              </div>
             </div>
 
             <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-3">
