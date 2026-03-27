@@ -770,11 +770,11 @@ const ContactForm: React.FC = () => {
                 </FormField>
 
               <FormField
-                label="Phone Number (optional - for faster response)"
+                label="Phone Number (optional)"
                 inputId="phone"
                 error={fields.phone?.error}
                 success={fields.phone?.valid && fields.phone?.touched && fields.phone?.value}
-                helpText="10-digit US phone number"
+                helpText="10-digit US phone number (for faster response)"
               >
                 <InputMask
                   mask="(999) 999-9999"
