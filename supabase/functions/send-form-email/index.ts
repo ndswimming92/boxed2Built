@@ -22,6 +22,7 @@ interface ContactFormPayload {
   name: string;
   email: string;
   phone?: string;
+  userCity?: string;
   furnitureType: string;
   pieces: number;
   preferredDate?: string;
@@ -137,6 +138,7 @@ function buildContactSmsBody(p: ContactFormPayload): string {
     `Name: ${p.name}`,
     `Email: ${p.email}`,
     p.phone ? `Phone: ${p.phone}` : "Phone: Not provided",
+    p.userCity ? `Service ZIP: ${p.userCity}` : "Service ZIP: Not provided",
     `Furniture: ${p.furnitureType} (${p.pieces} pc${p.pieces === 1 ? "" : "s"})`,
     `SMS consent: ${p.smsOptIn ? "Opted in" : "Not opted in"}`,
     `Code: ${p.confirmationCode}`,
@@ -298,6 +300,10 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.phone}</span></td>
           </tr>` : ""}
+          ${p.userCity ? `<tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Service ZIP</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.userCity}</span></td>
+          </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">SMS Consent</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:${p.smsOptIn ? "#166534" : "#6b7280"};font-size:14px;font-weight:600;">${p.smsOptIn ? "Opted in" : "Not opted in"}</span></td>
@@ -410,6 +416,10 @@ function customerConfirmationContact(p: ContactFormPayload): string {
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Pieces</td>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.pieces}</td>
           </tr>
+          ${p.userCity ? `<tr>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Service ZIP</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.userCity}</td>
+          </tr>` : ""}
           ${p.estimatedPrice ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Cost</td>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#15803d;font-size:13px;font-weight:600;">${p.estimatedPrice}</td>
