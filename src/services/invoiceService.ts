@@ -83,6 +83,39 @@ export interface InvoiceStats {
   avgInvoiceAmount: number;
 }
 
+async function resolveCustomerAndClientIds(
+  organizationId: string | null,
+  clientEmail: string | undefined
+): Promise<{ customer_id: string | null; client_id: string | null }> {
+  if (!organizationId || !clientEmail?.trim()) {
+    return { customer_id: null, client_id: null };
+  }
+
+  const [customerResult, clientResult] = await Promise.all([
+    supabase
+      .from('customers')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .ilike('email', clientEmail.trim())
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('clients')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .ilike('email', clientEmail.trim())
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  return {
+    customer_id: customerResult.data?.id ?? null,
+    client_id: clientResult.data?.id ?? null,
+  };
+}
+
 async function getBusinessOrganizationId(businessId: string): Promise<string | null> {
   const { data, error } = await supabase
     .from('business_info')
@@ -177,6 +210,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
   const settings = await getInvoiceSettings(data.business_id);
   const taxRate = data.tax_rate !== undefined ? data.tax_rate : settings?.default_tax_rate || 0;
 
+  const { customer_id, client_id } = await resolveCustomerAndClientIds(organizationId, data.client_email);
+
   const { data: invoice, error } = await supabase
     .from('invoices')
     .insert({
@@ -190,6 +225,8 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
       client_email: data.client_email,
       client_phone: data.client_phone || null,
       client_address: data.client_address || null,
+      customer_id,
+      client_id,
       invoice_date: data.invoice_date,
       due_date: data.due_date,
       payment_terms: data.payment_terms,
