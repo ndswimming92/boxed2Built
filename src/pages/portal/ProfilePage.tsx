@@ -91,8 +91,8 @@ export default function PortalProfilePage() {
                   <Gift className="h-4 w-4" />
                   Referral Program
                 </div>
-                <h2 className="text-xl font-semibold">Share your client referral code</h2>
-                <p className="max-w-2xl text-sm text-blue-50/90">Use this same code shown on the public referral page and in the admin portal when you invite friends and family.</p>
+                <h2 className="text-xl font-semibold">Give $25, Get $25</h2>
+                <p className="max-w-2xl text-sm text-blue-50/90">Share your code with friends and family. When someone uses it to book with Boxed2Built, they get <span className="font-semibold text-white">$25 off</span> their first job — and you'll receive <span className="font-semibold text-white">$25 off</span> your next job with us too.</p>
               </div>
 
               {profile.referral_code ? (
