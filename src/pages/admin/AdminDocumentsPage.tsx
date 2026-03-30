@@ -399,8 +399,16 @@ export default function AdminDocumentsPage() {
                             <p className="text-sm font-medium text-slate-800">{doc.display_name}</p>
                             {(doc.related_job_id || doc.related_invoice_id) && (
                               <p className="text-xs text-slate-400 mt-0.5">
-                                {doc.related_invoice_id ? `Invoice ${doc.related_invoice_id.slice(0, 8)}…` : ''}
-                                {doc.related_job_id ? `Job ${doc.related_job_id.slice(0, 8)}…` : ''}
+                                {doc.related_invoice?.invoice_number
+                                  ? `Invoice #${doc.related_invoice.invoice_number}`
+                                  : null}
+                                {doc.related_job?.job_type
+                                  ? (doc.related_invoice?.invoice_number ? ' · ' : '') +
+                                    doc.related_job.job_type +
+                                    (doc.related_job.date_scheduled
+                                      ? ` (${new Date(doc.related_job.date_scheduled).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`
+                                      : '')
+                                  : null}
                               </p>
                             )}
                           </div>

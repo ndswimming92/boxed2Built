@@ -83,6 +83,8 @@ export type CustomerPortalDocument = {
   storage_path: string;
   related_job_id: string | null;
   related_invoice_id: string | null;
+  related_invoice: { invoice_number: string } | null;
+  related_job: { job_type: string | null; date_scheduled: string | null } | null;
   metadata: Record<string, unknown>;
   delete_after_at: string | null;
   created_at: string;
@@ -315,7 +317,7 @@ export const customerPortalService = {
 
     const { data, error } = await supabase
       .from('portal_documents')
-      .select('id, document_type, display_name, storage_bucket, storage_path, related_job_id, related_invoice_id, metadata, delete_after_at, created_at')
+      .select('id, document_type, display_name, storage_bucket, storage_path, related_job_id, related_invoice_id, related_invoice:invoices!related_invoice_id(invoice_number), related_job:jobs!related_job_id(job_type, date_scheduled), metadata, delete_after_at, created_at')
       .is('deleted_at', null)
       .eq('is_visible_to_customer', true)
       .order('created_at', { ascending: false });

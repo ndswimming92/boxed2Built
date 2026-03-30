@@ -33,6 +33,8 @@ export interface AdminDocument {
     email: string | null;
     phone: string | null;
   };
+  related_invoice?: { invoice_number: string } | null;
+  related_job?: { job_type: string | null; date_scheduled: string | null } | null;
 }
 
 export interface AdminDocumentUploadPayload {
@@ -90,7 +92,9 @@ export async function getDocumentsForAdmin(organizationId: string): Promise<Admi
       metadata,
       created_at,
       updated_at,
-      customer:customers!owner_customer_id(id, full_name, email, phone)
+      customer:customers!owner_customer_id(id, full_name, email, phone),
+      related_invoice:invoices!related_invoice_id(invoice_number),
+      related_job:jobs!related_job_id(job_type, date_scheduled)
     `)
     .eq('organization_id', organizationId)
     .is('deleted_at', null)
