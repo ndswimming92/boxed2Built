@@ -215,6 +215,66 @@ export async function softDeleteDocument(documentId: string, storagePath: string
   await supabase.storage.from(BUCKET).remove([storagePath]);
 }
 
+export async function getCustomerIdForClient(
+  organizationId: string,
+  email: string | null | undefined,
+  phone: string | null | undefined
+): Promise<string | null> {
+  if (email) {
+    const { data } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .ilike('email', email.trim())
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+
+  if (phone) {
+    const normalized = phone.replace(/\D/g, '');
+    const { data } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .ilike('phone', `%${normalized}%`)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+
+  return null;
+}
+
+export async function getDocumentsForCustomer(customerId: string): Promise<AdminDocument[]> {
+  const { data, error } = await supabase
+    .from('portal_documents')
+    .select(`
+      id,
+      organization_id,
+      owner_customer_id,
+      document_type,
+      display_name,
+      storage_bucket,
+      storage_path,
+      related_job_id,
+      related_invoice_id,
+      is_visible_to_customer,
+      is_internal_only,
+      delete_after_at,
+      deleted_at,
+      metadata,
+      created_at,
+      updated_at,
+      related_invoice:invoices!related_invoice_id(invoice_number),
+      related_job:jobs!related_job_id(job_type, date_scheduled)
+    `)
+    .eq('owner_customer_id', customerId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(`Failed to fetch documents: ${error.message}`);
+  return (data ?? []) as AdminDocument[];
+}
+
 export async function getAdminDocumentSignedUrl(storagePath: string, download = false): Promise<string> {
   const { data, error } = await supabase.storage
     .from(BUCKET)

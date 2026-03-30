@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -16,16 +16,31 @@ import {
   addReferralCredit,
   redeemReferralCredit,
 } from '../../services/clientService';
+import {
+  type AdminDocument,
+  type CustomerOption,
+  getCustomerIdForClient,
+  getDocumentsForCustomer,
+  getCustomersForOrg,
+  softDeleteDocument,
+  getAdminDocumentSignedUrl,
+} from '../../services/adminDocumentService';
+import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ClientDetailModalProps {
   client: Client;
   onClose: () => void;
 }
 
+type ActiveTab = 'overview' | 'documents';
+
 export default function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
   const { maskFinancialValue } = usePrivacyMode();
+  const { currentOrganization } = useAuth();
+  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [history, setHistory] = useState<ClientHistory | null>(null);
   const [notes, setNotes] = useState<ClientNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +49,18 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   const [savingNote, setSavingNote] = useState(false);
   const [emailOptIn, setEmailOptIn] = useState(client.marketing_email_opt_in);
   const [smsOptIn, setSmsOptIn] = useState(client.marketing_sms_opt_in);
+
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customerIdLoading, setCustomerIdLoading] = useState(false);
+  const [customerIdResolved, setCustomerIdResolved] = useState(false);
+  const [documents, setDocuments] = useState<AdminDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null);
 
   const [editingInfo, setEditingInfo] = useState(false);
   const [editName, setEditName] = useState(client.name);
@@ -53,6 +80,86 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   useEffect(() => {
     loadClientDetails();
   }, [client.id]);
+
+  useEffect(() => {
+    if (activeTab === 'documents' && !customerIdResolved && currentOrganization) {
+      resolveCustomerId();
+    }
+  }, [activeTab, currentOrganization]);
+
+  const resolveCustomerId = useCallback(async () => {
+    if (!currentOrganization) return;
+    setCustomerIdLoading(true);
+    try {
+      const [cid, allCustomers] = await Promise.all([
+        getCustomerIdForClient(currentOrganization.id, currentClient.email, currentClient.phone),
+        getCustomersForOrg(currentOrganization.id),
+      ]);
+      setCustomerId(cid);
+      setCustomers(allCustomers);
+      setCustomerIdResolved(true);
+      if (cid) {
+        await loadDocuments(cid);
+      }
+    } catch {
+      setCustomerIdResolved(true);
+    } finally {
+      setCustomerIdLoading(false);
+    }
+  }, [currentOrganization, currentClient.email, currentClient.phone]);
+
+  const loadDocuments = useCallback(async (cid: string) => {
+    setDocumentsLoading(true);
+    setDocumentsError(null);
+    try {
+      const docs = await getDocumentsForCustomer(cid);
+      setDocuments(docs);
+    } catch (err) {
+      setDocumentsError(err instanceof Error ? err.message : 'Failed to load documents.');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  }, []);
+
+  async function handleViewDocument(doc: AdminDocument) {
+    setViewingDocId(doc.id);
+    try {
+      const url = await getAdminDocumentSignedUrl(doc.storage_path);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch {
+      // silently fail — signed URL error
+    } finally {
+      setViewingDocId(null);
+    }
+  }
+
+  async function handleDownloadDocument(doc: AdminDocument) {
+    setViewingDocId(doc.id);
+    try {
+      const url = await getAdminDocumentSignedUrl(doc.storage_path, true);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.display_name;
+      a.click();
+    } catch {
+      // silently fail
+    } finally {
+      setViewingDocId(null);
+    }
+  }
+
+  async function handleDeleteDocument(doc: AdminDocument) {
+    setDeletingDocId(doc.id);
+    try {
+      await softDeleteDocument(doc.id, doc.storage_path);
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+    } catch {
+      // silently fail
+    } finally {
+      setDeletingDocId(null);
+      setConfirmDeleteId(null);
+    }
+  }
 
   async function loadClientDetails() {
     try {
@@ -227,8 +334,214 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
     }
   };
 
+  const DOC_TYPE_LABELS: Record<string, string> = {
+    invoice: 'Invoice', receipt: 'Receipt', estimate: 'Estimate',
+    job_report: 'Job Report', photo: 'Photo', agreement: 'Agreement',
+    general: 'General', other: 'Other',
+  };
+
+  const DOC_TYPE_COLORS: Record<string, string> = {
+    invoice: 'bg-blue-100 text-blue-700',
+    receipt: 'bg-green-100 text-green-700',
+    estimate: 'bg-yellow-100 text-yellow-700',
+    job_report: 'bg-orange-100 text-orange-700',
+    photo: 'bg-pink-100 text-pink-700',
+    agreement: 'bg-red-100 text-red-700',
+    general: 'bg-gray-100 text-gray-700',
+    other: 'bg-gray-100 text-gray-600',
+  };
+
   return (
     <Modal isOpen onClose={onClose} title="Client Details" size="large">
+      {/* Tab nav */}
+      <div className="flex items-center gap-1 border-b border-gray-200 mb-6 -mt-2">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
+            activeTab === 'overview'
+              ? 'border-blue-600 text-blue-600 bg-white'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('documents')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
+            activeTab === 'documents'
+              ? 'border-blue-600 text-blue-600 bg-white'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          <FolderOpen className="w-3.5 h-3.5" />
+          Documents
+          {documents.length > 0 && (
+            <span className="ml-0.5 px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+              {documents.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {activeTab === 'documents' && (
+        <div className="space-y-4">
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Client Documents</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Files stored in the secure document vault</p>
+            </div>
+            {customerId && (
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Document
+              </button>
+            )}
+          </div>
+
+          {/* Loading customer resolution */}
+          {(customerIdLoading || (!customerIdResolved)) && (
+            <div className="flex justify-center py-12">
+              <LoadingSpinner />
+            </div>
+          )}
+
+          {/* No customer record found */}
+          {customerIdResolved && !customerId && (
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-gray-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">No portal account linked</p>
+                <p className="text-xs text-gray-500 mt-1 max-w-sm">
+                  Document uploads require a linked customer portal account. This client will be linked once they register or contact you through the portal.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Document list */}
+          {customerIdResolved && customerId && (
+            <>
+              {documentsLoading ? (
+                <div className="flex justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : documentsError ? (
+                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {documentsError}
+                </div>
+              ) : documents.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-14 text-center border-2 border-dashed border-gray-200 rounded-xl">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <FolderOpen className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">No documents yet</p>
+                    <p className="text-xs text-gray-500 mt-1">Upload a file to get started</p>
+                  </div>
+                  <button
+                    onClick={() => setShowUploadModal(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload First Document
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
+                  {documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center gap-3 px-4 py-3.5 bg-white hover:bg-gray-50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-medium text-gray-900 truncate">{doc.display_name}</p>
+                          <span className={`flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${DOC_TYPE_COLORS[doc.document_type] ?? 'bg-gray-100 text-gray-600'}`}>
+                            {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type}
+                          </span>
+                          {doc.is_internal_only ? (
+                            <span className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
+                              <Lock className="w-3 h-3" />
+                              Internal
+                            </span>
+                          ) : doc.is_visible_to_customer ? (
+                            <span className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                              <Eye className="w-3 h-3" />
+                              Visible
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{formatDate(doc.created_at)}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleViewDocument(doc)}
+                          disabled={viewingDocId === doc.id}
+                          title="View"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-40"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadDocument(doc)}
+                          disabled={viewingDocId === doc.id}
+                          title="Download"
+                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-40"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        {confirmDeleteId === doc.id ? (
+                          <div className="flex items-center gap-1 ml-1">
+                            <span className="text-xs text-red-600 font-medium">Delete?</span>
+                            <button
+                              onClick={() => handleDeleteDocument(doc)}
+                              disabled={deletingDocId === doc.id}
+                              className="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {deletingDocId === doc.id ? '...' : 'Yes'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteId(doc.id)}
+                            title="Delete"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Close */}
+          <div className="flex justify-end pt-4 border-t">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'overview' && (
       <div className="space-y-6">
         {/* Client Overview */}
         <div className="p-6 bg-gray-50 rounded-lg">
@@ -712,6 +1025,19 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
           </button>
         </div>
       </div>
+      )}
+
+      {showUploadModal && customerId && (
+        <AdminDocumentUploadModal
+          customers={customers}
+          preselectedCustomerId={customerId}
+          onClose={() => setShowUploadModal(false)}
+          onSuccess={() => {
+            setShowUploadModal(false);
+            loadDocuments(customerId);
+          }}
+        />
+      )}
     </Modal>
   );
 }
