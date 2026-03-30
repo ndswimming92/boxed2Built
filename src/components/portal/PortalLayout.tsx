@@ -98,7 +98,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">Account Center</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">Boxed2Built Account Center</p>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Client Portal</h1>
                 <p className="max-w-xl text-sm text-slate-600">Manage your projects, invoices, and account details in one place.</p>
               </div>
