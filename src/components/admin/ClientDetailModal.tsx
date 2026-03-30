@@ -15,6 +15,7 @@ import {
   getReferredClients,
   addReferralCredit,
   redeemReferralCredit,
+  deleteClient,
 } from '../../services/clientService';
 import {
   type AdminDocument,
@@ -33,11 +34,12 @@ import { useAuth } from '../../contexts/AuthContext';
 interface ClientDetailModalProps {
   client: Client;
   onClose: () => void;
+  onDeleted?: (clientId: string) => void;
 }
 
 type ActiveTab = 'overview' | 'documents';
 
-export default function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
+export default function ClientDetailModal({ client, onClose, onDeleted }: ClientDetailModalProps) {
   const { maskFinancialValue } = usePrivacyMode();
   const { currentOrganization } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
@@ -76,6 +78,11 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
   const [creditAction, setCreditAction] = useState<'add' | 'redeem' | null>(null);
   const [creditLoading, setCreditLoading] = useState(false);
   const [creditMessage, setCreditMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     loadClientDetails();
@@ -231,6 +238,21 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
     setEditAddress(currentClient.address ?? '');
     setSaveInfoError(null);
     setEditingInfo(false);
+  }
+
+  async function handlePermanentDelete() {
+    if (deleteConfirmText !== currentClient.name) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteClient(currentClient.id);
+      onDeleted?.(currentClient.id);
+      onClose();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete client. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function handleAddTag() {
@@ -1014,6 +1036,95 @@ export default function ClientDetailModal({ client, onClose }: ClientDetailModal
             </div>
           </div>
         )}
+
+        {/* Danger Zone */}
+        <div className="border border-red-200 rounded-xl overflow-hidden">
+          <div className="px-5 py-4 bg-red-50 border-b border-red-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-semibold text-red-700">Danger Zone</span>
+            </div>
+            {!showDeleteConfirm && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete Client
+              </button>
+            )}
+          </div>
+
+          {showDeleteConfirm && (
+            <div className="px-5 py-5 bg-white space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">This action is permanent and cannot be undone</p>
+                  <ul className="mt-2 space-y-1 text-sm text-gray-600 list-disc list-inside">
+                    <li>The client record and all notes will be deleted</li>
+                    <li>Jobs and invoices linked to this client will be unlinked but kept</li>
+                    <li>Referral attributions from this client will be cleared</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Type <span className="font-semibold text-gray-900">{currentClient.name}</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={currentClient.name}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  autoComplete="off"
+                />
+              </div>
+
+              {deleteError && (
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={handlePermanentDelete}
+                  disabled={deleteConfirmText !== currentClient.name || deleting}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {deleting ? (
+                    <>
+                      <LoadingSpinner />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Permanently Delete
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmText('');
+                    setDeleteError(null);
+                  }}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Close Button */}
         <div className="flex justify-end pt-4 border-t">

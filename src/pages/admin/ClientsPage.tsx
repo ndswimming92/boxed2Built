@@ -617,6 +617,10 @@ export default function ClientsPage() {
             setSelectedClient(null);
             loadData();
           }}
+          onDeleted={(clientId) => {
+            setClients((prev) => prev.filter((c) => c.id !== clientId));
+            setSelectedClient(null);
+          }}
         />
       )}
 
