@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import Stripe from "npm:stripe@14";
+import Stripe from "npm:stripe@17.7.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,9 +81,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", invoice.business_id)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!, {
-      apiVersion: "2024-04-10",
-    });
+    const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!);
 
     const amountDueCents = Math.round((invoice.amount_due || 0) * 100);
 
@@ -95,6 +93,14 @@ Deno.serve(async (req: Request) => {
     }
 
     const appUrl = req.headers.get("origin") || "https://www.boxed2built.com";
+
+    const successUrl = source === "portal"
+      ? `${appUrl}/portal/invoices?paid=1`
+      : `${appUrl}/pay/${invoiceId}/thank-you?session_id={CHECKOUT_SESSION_ID}`;
+
+    const cancelUrl = source === "portal"
+      ? `${appUrl}/portal/invoices`
+      : `${appUrl}/pay/${invoiceId}`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -120,8 +126,8 @@ Deno.serve(async (req: Request) => {
         checkout_source: source || "public_payment_link",
         customer_id: invoice.customer_id || "",
       },
-      success_url: `${appUrl}/pay/${invoiceId}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/pay/${invoiceId}`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     await supabase
