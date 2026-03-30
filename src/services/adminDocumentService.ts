@@ -220,28 +220,43 @@ export async function getCustomerIdForClient(
   email: string | null | undefined,
   phone: string | null | undefined
 ): Promise<string | null> {
+  const candidates: Array<{ id: string; auth_user_id: string | null; matchType: 'email' | 'phone' }> = [];
+
   if (email) {
     const { data } = await supabase
       .from('customers')
-      .select('id')
+      .select('id, auth_user_id')
       .eq('organization_id', organizationId)
-      .ilike('email', email.trim())
-      .maybeSingle();
-    if (data?.id) return data.id;
+      .ilike('email', email.trim());
+    for (const row of data ?? []) {
+      candidates.push({ id: row.id, auth_user_id: row.auth_user_id, matchType: 'email' });
+    }
   }
 
   if (phone) {
     const normalized = phone.replace(/\D/g, '');
     const { data } = await supabase
       .from('customers')
-      .select('id')
+      .select('id, auth_user_id')
       .eq('organization_id', organizationId)
-      .ilike('phone', `%${normalized}%`)
-      .maybeSingle();
-    if (data?.id) return data.id;
+      .ilike('phone', `%${normalized}%`);
+    for (const row of data ?? []) {
+      if (!candidates.find((c) => c.id === row.id)) {
+        candidates.push({ id: row.id, auth_user_id: row.auth_user_id, matchType: 'phone' });
+      }
+    }
   }
 
-  return null;
+  if (candidates.length === 0) return null;
+
+  const withAuth = candidates.filter((c) => c.auth_user_id);
+  if (withAuth.length > 0) {
+    const emailMatch = withAuth.find((c) => c.matchType === 'email');
+    return emailMatch ? emailMatch.id : withAuth[0].id;
+  }
+
+  const emailMatch = candidates.find((c) => c.matchType === 'email');
+  return emailMatch ? emailMatch.id : candidates[0].id;
 }
 
 export async function getDocumentsForCustomer(customerId: string): Promise<AdminDocument[]> {
