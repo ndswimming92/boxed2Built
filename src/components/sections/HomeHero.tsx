@@ -99,8 +99,8 @@ const HomeHero: React.FC = () => {
               )}
 
               {reviews.length > 0 && (
-                <blockquote className="text-sm md:text-base text-gray-600 italic border-l-2 border-blue-300 pl-3 mb-5 md:mb-8 line-clamp-2">
-                  "{reviews[0]?.review_body?.split('.').slice(0, 2).join('.') || reviews[0]?.review_body}"
+                <blockquote className="text-sm md:text-base text-gray-600 italic border-l-2 border-blue-300 pl-3 mb-5 md:mb-8">
+                  "{reviews[0]?.review_body}"
                   <span className="not-italic font-medium text-gray-800"> — {reviews[0]?.author_name}</span>
                 </blockquote>
               )}
