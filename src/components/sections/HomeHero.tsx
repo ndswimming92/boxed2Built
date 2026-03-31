@@ -99,9 +99,9 @@ const HomeHero: React.FC = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
 
-            <div className="w-full lg:w-1/2 animate-fadeIn">
+            <div className="w-full lg:w-[55%] min-w-0 animate-fadeIn">
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-snug md:leading-tight mb-2 md:mb-4">
                 Furniture Assembly in {locality}, {region}
                 <span className="block text-blue-600 mt-1 md:mt-2 text-xl md:text-3xl lg:text-4xl">
@@ -125,7 +125,7 @@ const HomeHero: React.FC = () => {
                 </blockquote>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-4 md:mb-5">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4 md:mb-5">
                 <Button
                   variant="primary"
                   size="lg"
@@ -170,7 +170,7 @@ const HomeHero: React.FC = () => {
             </div>
 
             {heroImage && (
-              <div className="w-full lg:w-1/2 animate-fadeIn" style={{ animationDelay: '150ms' }}>
+              <div className="w-full lg:w-[45%] min-w-0 animate-fadeIn" style={{ animationDelay: '150ms' }}>
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent z-10 pointer-events-none" />
                   <img
