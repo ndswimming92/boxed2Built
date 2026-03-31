@@ -3,7 +3,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import MediaGallery from '../components/sections/MediaGallery';
-import { Camera, Video, CheckCircle } from 'lucide-react';
+import { Camera, Video, CheckCircle, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
 import { usePageMeta } from '../hooks/usePageMeta';
@@ -124,6 +124,39 @@ const GalleryPage: React.FC = () => {
             className="bg-white"
           />
         )}
+
+        {/* Related Services */}
+        <section className="py-8 bg-gray-50 border-t border-gray-200">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 text-center">
+                Book a Service
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                <a
+                  href="/services/furniture-assembly"
+                  className="group flex items-center justify-between bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg px-5 py-4 shadow-sm transition-colors"
+                >
+                  <div>
+                    <p className="text-gray-900 font-semibold text-sm">Professional Furniture Assembly</p>
+                    <p className="text-gray-500 text-xs mt-0.5">IKEA, Target, Walmart &amp; all brands</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </a>
+                <a
+                  href="/services/tv-mounting"
+                  className="group flex items-center justify-between bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg px-5 py-4 shadow-sm transition-colors"
+                >
+                  <div>
+                    <p className="text-gray-900 font-semibold text-sm">Professional TV Mounting</p>
+                    <p className="text-gray-500 text-xs mt-0.5">All wall types, cable management included</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Call to Action */}
         <section className="py-12 bg-blue-600 text-white">

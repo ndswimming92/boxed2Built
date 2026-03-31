@@ -177,6 +177,42 @@ const FAQPage: React.FC = () => {
           </div>
         </section>
 
+        <section className="py-8 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 text-center">
+                Explore Our Services
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <a
+                  href="/services/furniture-assembly"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                  onClick={() => trackEvent('link_click', 'faq_page', { event_category: 'navigation', event_label: 'faq_to_furniture_assembly', action_value: '/services/furniture-assembly' })}
+                >
+                  <span className="text-blue-800 font-medium text-sm">Furniture Assembly Service</span>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                </a>
+                <a
+                  href="/services/tv-mounting"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                  onClick={() => trackEvent('link_click', 'faq_page', { event_category: 'navigation', event_label: 'faq_to_tv_mounting', action_value: '/services/tv-mounting' })}
+                >
+                  <span className="text-blue-800 font-medium text-sm">TV Mounting Service</span>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                </a>
+                <a
+                  href="/gallery"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                  onClick={() => trackEvent('link_click', 'faq_page', { event_category: 'navigation', event_label: 'faq_to_gallery', action_value: '/gallery' })}
+                >
+                  <span className="text-blue-800 font-medium text-sm">See Our Completed Projects</span>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-12 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
@@ -248,6 +284,30 @@ const FAQPage: React.FC = () => {
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <a
+                    href="/services/furniture-assembly"
+                    className="text-blue-600 hover:text-blue-800 font-medium underline"
+                    onClick={() => trackEvent('link_click', 'faq_page', {
+                      event_category: 'navigation',
+                      event_label: 'faq_to_furniture_assembly',
+                      action_value: '/services/furniture-assembly'
+                    })}
+                  >
+                    Furniture Assembly
+                  </a>
+                  <span className="text-gray-400">•</span>
+                  <a
+                    href="/services/tv-mounting"
+                    className="text-blue-600 hover:text-blue-800 font-medium underline"
+                    onClick={() => trackEvent('link_click', 'faq_page', {
+                      event_category: 'navigation',
+                      event_label: 'faq_to_tv_mounting',
+                      action_value: '/services/tv-mounting'
+                    })}
+                  >
+                    TV Mounting
+                  </a>
+                  <span className="text-gray-400">•</span>
+                  <a
                     href="/services"
                     className="text-blue-600 hover:text-blue-800 font-medium underline"
                     onClick={() => trackEvent('link_click', 'faq_page', {
@@ -256,7 +316,19 @@ const FAQPage: React.FC = () => {
                       action_value: '/services'
                     })}
                   >
-                    View Our Services
+                    All Services &amp; Pricing
+                  </a>
+                  <span className="text-gray-400">•</span>
+                  <a
+                    href="/gallery"
+                    className="text-blue-600 hover:text-blue-800 font-medium underline"
+                    onClick={() => trackEvent('link_click', 'faq_page', {
+                      event_category: 'navigation',
+                      event_label: 'faq_to_gallery',
+                      action_value: '/gallery'
+                    })}
+                  >
+                    View Our Work
                   </a>
                   <span className="text-gray-400">•</span>
                   <a

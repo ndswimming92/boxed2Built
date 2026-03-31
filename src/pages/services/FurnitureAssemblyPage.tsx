@@ -317,6 +317,28 @@ const FurnitureAssemblyPage: React.FC = () => {
           </section>
         )}
 
+        <section className="py-10 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 text-center">
+                Also Available
+              </p>
+              <div className="max-w-sm mx-auto">
+                <Link
+                  to="/services/tv-mounting"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div>
+                    <p className="text-blue-900 font-semibold text-sm">Professional TV Mounting</p>
+                    <p className="text-blue-700 text-xs mt-0.5">All sizes, wall types &amp; cable management</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">

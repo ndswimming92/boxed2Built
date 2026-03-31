@@ -3,7 +3,7 @@ import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusiness
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { CheckCircle, Users, Clock, Award } from 'lucide-react';
+import { CheckCircle, Users, Clock, Award, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
@@ -210,7 +210,11 @@ const AboutPage: React.FC = () => {
                 <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto mb-8">
                   Based in Spring Hill, TN, we proudly serve local families in the surrounding area with honest work and
                   a helpful attitude. Whether it's a single chair or a whole nursery setup, we're here to make your life
-                  a little easier—and your home a lot more comfortable.
+                  a little easier—and your home a lot more comfortable. Browse our{' '}
+                  <a href="/gallery" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                    completed project gallery
+                  </a>{' '}
+                  to see real results from real Spring Hill families.
                 </p>
 
                 {/* Service Areas List */}
@@ -238,6 +242,49 @@ const AboutPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Related Services */}
+        <section className="py-10 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-5 text-center">
+                Our Services
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <a
+                  href="/services/furniture-assembly"
+                  className="group flex items-start gap-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="text-blue-900 font-semibold text-sm mb-1">Furniture Assembly</p>
+                    <p className="text-blue-700 text-xs">IKEA, Target, Walmart &amp; more</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </a>
+                <a
+                  href="/services/tv-mounting"
+                  className="group flex items-start gap-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="text-blue-900 font-semibold text-sm mb-1">TV Mounting</p>
+                    <p className="text-blue-700 text-xs">All sizes &amp; wall types</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </a>
+                <a
+                  href="/services"
+                  className="group flex items-start gap-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="text-blue-900 font-semibold text-sm mb-1">All Services &amp; Pricing</p>
+                    <p className="text-blue-700 text-xs">Transparent, no hidden fees</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                </a>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import TermsOfService from '../components/sections/TermsOfService';
-import { ChevronRight } from 'lucide-react';
+import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
@@ -23,14 +23,35 @@ const TermsOfServicePage: React.FC = () => {
       <main className="pt-20">
         <section className="py-8 bg-gray-50">
           <div className="container mx-auto px-4">
-            <nav className="flex items-center mb-6 text-sm max-w-4xl mx-auto">
-              <a href="/" className="text-blue-700 hover:text-blue-800">Home</a>
-              <ChevronRight size={16} className="mx-2 text-gray-400" />
-              <span className="text-gray-600">Terms of Service</span>
-            </nav>
+            <div className="max-w-4xl mx-auto mb-6">
+              <Breadcrumbs
+                items={[
+                  { label: 'Home', href: '/' },
+                  { label: 'Terms of Service', href: '/terms-of-service', current: true },
+                ]}
+              />
+            </div>
           </div>
         </section>
         <TermsOfService />
+        <section className="py-8 bg-gray-50 border-t border-gray-200">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <p className="text-gray-600 mb-3">
+                Ready to book your furniture assembly service?
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <a href="/contact" className="text-blue-700 hover:text-blue-800 font-medium underline">Get a Free Quote</a>
+                <span className="text-gray-400">•</span>
+                <a href="/services" className="text-blue-700 hover:text-blue-800 font-medium underline">View Our Services</a>
+                <span className="text-gray-400">•</span>
+                <a href="/privacy-policy" className="text-blue-700 hover:text-blue-800 font-medium underline">Privacy Policy</a>
+                <span className="text-gray-400">•</span>
+                <a href="/faq" className="text-blue-700 hover:text-blue-800 font-medium underline">FAQ</a>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

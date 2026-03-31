@@ -183,7 +183,11 @@ const PartnersPage: React.FC = () => {
                   </div>
                   <h3 className="font-semibold mb-2">Closing gift clients actually use</h3>
                   <p className="text-sm text-gray-600">
-                    Professional furniture assembly your buyers will appreciate on day one.
+                    Professional{' '}
+                    <a href="/services/furniture-assembly" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      furniture assembly
+                    </a>{' '}
+                    your buyers will appreciate on day one.
                   </p>
                 </div>
 
@@ -194,6 +198,11 @@ const PartnersPage: React.FC = () => {
                   <h3 className="font-semibold mb-2">Fast help for move-in day</h3>
                   <p className="text-sm text-gray-600">
                     We coordinate directly with closing timelines and buyer schedules.
+                    See our{' '}
+                    <a href="/gallery" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      completed projects
+                    </a>{' '}
+                    for real examples.
                   </p>
                 </div>
 
@@ -204,6 +213,11 @@ const PartnersPage: React.FC = () => {
                   <h3 className="font-semibold mb-2">Discount code tied to your name</h3>
                   <p className="text-sm text-gray-600">
                     Track referrals and provide added value with personalized codes.
+                    View our{' '}
+                    <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      services &amp; pricing
+                    </a>{' '}
+                    to share with clients.
                   </p>
                 </div>
               </div>
