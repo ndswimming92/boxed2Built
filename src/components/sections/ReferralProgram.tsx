@@ -65,7 +65,7 @@ export default function ReferralProgram() {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <p className="text-blue-200 text-sm text-center">
-              Already a client? Your referral code is in your client profile.
+              Already a customer? Your referral code is in your customer profile.
             </p>
           </div>
         </div>
