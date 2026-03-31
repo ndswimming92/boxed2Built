@@ -10,7 +10,7 @@ import { BUSINESS_INFO } from '../../constants/localSEO';
 
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
-  const { image: heroImage } = useHeroImage();
+  const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
 
   const handleContactFormClick = () => {
     trackEvent('cta_click', 'hero', {
@@ -169,23 +169,48 @@ const HomeHero: React.FC = () => {
               </span>
             </div>
 
-            {heroImage && (
+            {heroImages.length > 0 && (
               <div className="w-full lg:w-[45%] min-w-0 animate-fadeIn" style={{ animationDelay: '150ms' }}>
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent z-10 pointer-events-none" />
-                  <img
-                    src={heroImage.src}
-                    alt={heroImage.alt}
-                    width={heroImage.width}
-                    height={heroImage.height}
-                    loading="eager"
-                    decoding="sync"
-                    fetchPriority="high"
-                    className="w-full h-64 sm:h-80 md:h-96 lg:h-[480px] object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    style={{ objectPosition: `${heroImage.focusX}% ${heroImage.focusY}%` }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-                    <p className="text-white text-sm font-medium drop-shadow-lg">{heroImage.title}</p>
+                  <div className="relative h-64 sm:h-80 md:h-96 lg:h-[480px]">
+                    {heroImages.map((img, idx) => (
+                      <img
+                        key={img.src}
+                        src={img.src}
+                        alt={img.alt}
+                        width={img.width}
+                        height={img.height}
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        decoding={idx === 0 ? 'sync' : 'async'}
+                        fetchPriority={idx === 0 ? 'high' : 'low'}
+                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                          idx === activeIndex ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        style={{ objectPosition: `${img.focusX}% ${img.focusY}%` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 z-20 flex items-end justify-between">
+                    <p className="text-white text-sm font-medium drop-shadow-lg">
+                      {heroImages[activeIndex]?.title}
+                    </p>
+                    {heroImages.length > 1 && (
+                      <div className="flex gap-2">
+                        {heroImages.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => goToIndex(idx)}
+                            aria-label={`Show image ${idx + 1}`}
+                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                              idx === activeIndex
+                                ? 'bg-white scale-110'
+                                : 'bg-white/50 hover:bg-white/75'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

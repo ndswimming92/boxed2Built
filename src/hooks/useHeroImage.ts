@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-interface HeroImage {
+export interface HeroImage {
   src: string;
   alt: string;
   title: string;
@@ -11,74 +11,100 @@ interface HeroImage {
   focusY: number;
 }
 
-const HERO_IMAGE_CACHE_KEY = 'boxed2built_hero_image';
-const HERO_IMAGE_CACHE_TTL_MS = 10 * 60 * 1000;
+const HERO_IMAGES_CACHE_KEY = 'boxed2built_hero_images';
+const HERO_IMAGES_CACHE_TTL_MS = 10 * 60 * 1000;
+const HERO_IMAGE_IDS = [
+  '5c800a31-11a7-48b5-8597-a6f52db27030',
+  '263e84e8-a857-46b6-a2f8-479fd2b02e01',
+];
 
-function getCachedImage(): HeroImage | null {
+function getCachedImages(): HeroImage[] | null {
   try {
-    const raw = sessionStorage.getItem(HERO_IMAGE_CACHE_KEY);
+    const raw = sessionStorage.getItem(HERO_IMAGES_CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > HERO_IMAGE_CACHE_TTL_MS) return null;
+    if (Date.now() - ts > HERO_IMAGES_CACHE_TTL_MS) return null;
     return data;
   } catch {
     return null;
   }
 }
 
-function setCachedImage(data: HeroImage) {
+function setCachedImages(data: HeroImage[]) {
   try {
-    sessionStorage.setItem(HERO_IMAGE_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    sessionStorage.setItem(HERO_IMAGES_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
   } catch {
     // ignore quota errors
   }
 }
 
 export function useHeroImage() {
-  const [image, setImage] = useState<HeroImage | null>(getCachedImage);
-  const [loading, setLoading] = useState(!getCachedImage());
+  const cached = getCachedImages();
+  const [images, setImages] = useState<HeroImage[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (image) return;
+    if (images.length > 0) return;
 
     let cancelled = false;
 
-    async function fetchImage() {
+    async function fetchImages() {
       try {
         const { data, error } = await supabase
           .from('gallery_items')
-          .select('src, alt, title, width, height, focus_x, focus_y')
-          .eq('is_active', true)
-          .eq('type', 'image')
-          .eq('category', 'completed-work')
-          .order('display_order', { ascending: true })
-          .limit(1)
-          .maybeSingle();
+          .select('id, src, alt, title, width, height, focus_x, focus_y')
+          .in('id', HERO_IMAGE_IDS)
+          .eq('is_active', true);
 
-        if (error || !data || cancelled) return;
+        if (error || !data || data.length === 0 || cancelled) return;
 
-        const heroImage: HeroImage = {
-          src: data.src,
-          alt: data.alt || data.title || 'Completed furniture assembly by Boxed2Built',
-          title: data.title,
-          width: data.width || 810,
-          height: data.height || 1080,
-          focusX: parseFloat(data.focus_x) || 50,
-          focusY: parseFloat(data.focus_y) || 50,
-        };
+        const orderedData = HERO_IMAGE_IDS
+          .map(id => data.find(item => item.id === id))
+          .filter(Boolean);
 
-        setCachedImage(heroImage);
-        if (!cancelled) setImage(heroImage);
+        const heroImages: HeroImage[] = orderedData.map((item: any) => ({
+          src: item.src,
+          alt: item.alt || item.title || 'Completed furniture assembly by Boxed2Built',
+          title: item.title,
+          width: item.width || 810,
+          height: item.height || 1080,
+          focusX: parseFloat(item.focus_x) || 50,
+          focusY: parseFloat(item.focus_y) || 50,
+        }));
+
+        setCachedImages(heroImages);
+        if (!cancelled) setImages(heroImages);
       } catch {
-        // fail silently — hero still works without the image
+        // fail silently
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    fetchImage();
+    fetchImages();
     return () => { cancelled = true; };
-  }, [image]);
+  }, [images.length]);
 
-  return { image, loading };
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex(prev => (prev + 1) % images.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const goToIndex = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  return {
+    image: images[activeIndex] || null,
+    images,
+    activeIndex,
+    goToIndex,
+    loading,
+  };
 }
