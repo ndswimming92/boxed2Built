@@ -86,7 +86,7 @@ export default function PortalLoginPage() {
         <section className="flex-1 rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
             <ShieldCheck className="h-4 w-4" />
-            Secure Client Access
+            Secure Customer Access
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Welcome to the Client Portal</h1>
           <p className="mt-3 max-w-xl text-slate-600">
