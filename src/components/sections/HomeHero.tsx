@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Star, Clock, MapPin, MessageSquare, Phone } from 'lucide-react';
+import { ArrowRight, Star, Clock, MapPin, Phone } from 'lucide-react';
 import Button from '../ui/Button';
 import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
@@ -35,24 +35,6 @@ const HomeHero: React.FC = () => {
     }
   };
 
-  const handleTextPhotoClick = () => {
-    trackEvent('cta_click', 'hero', {
-      event_category: 'conversion',
-      event_label: 'text_photo_hero',
-      value: 1,
-      user_engagement: 'sms_intent',
-      element_type: 'link',
-      element_location: 'hero',
-      page_section: 'hero',
-      action_type: 'sms',
-      conversion_type: 'sms_intent',
-    });
-    trackConversion('cta_click', 1, 'USD', {
-      page_section: 'hero',
-      conversion_type: 'sms_intent',
-    });
-  };
-
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'hero', {
       event_category: 'contact',
@@ -85,8 +67,6 @@ const HomeHero: React.FC = () => {
   const businessName = businessData?.info?.name || 'Boxed2Built';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
-  const smsNumber = '+16154034538';
-
   const reviews = businessData?.reviews || [];
   const ratingStats = calculateRatingStats(reviews);
 
@@ -140,16 +120,6 @@ const HomeHero: React.FC = () => {
                 </Button>
 
                 <a
-                  href={`sms:${smsNumber}`}
-                  onClick={handleTextPhotoClick}
-                  className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base lg:text-lg px-5 py-3 md:px-8 md:py-4 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition"
-                  aria-label="Text a photo for a fast furniture assembly quote"
-                >
-                  <MessageSquare className="mr-2 w-5 h-5 flex-shrink-0" />
-                  Text a Photo
-                </a>
-
-                <a
                   href="tel:+16154034538"
                   onClick={handlePhoneClick}
                   className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base px-5 py-3 md:px-6 md:py-4 rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
@@ -159,10 +129,6 @@ const HomeHero: React.FC = () => {
                   {BUSINESS_INFO.phoneFormatted}
                 </a>
               </div>
-
-              <p className="text-xs text-gray-500 mb-2 md:mb-0">
-                Send photos + item links for the fastest quote
-              </p>
 
               <span className="sr-only">
                 {businessName} — Serving {locality}, {region}
