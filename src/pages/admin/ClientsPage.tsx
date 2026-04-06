@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -555,8 +555,21 @@ export default function ClientsPage() {
                     <td className="px-4 py-4 text-sm text-gray-600">
                       {client.job_count}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
-                      {formatDate(client.last_contact_date)}
+                    <td className="px-4 py-4">
+                      {client.last_contact_date ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm text-gray-600">{formatDate(client.last_contact_date)}</span>
+                          {client.last_followup_email_sent_at &&
+                            new Date(client.last_followup_email_sent_at) >= new Date(client.last_contact_date) && (
+                            <span className="flex items-center gap-1 text-xs text-sky-600 font-medium">
+                              <Send className="w-3 h-3" />
+                              Follow-up email
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-600">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusBadgeColor(client.client_status)}`}>

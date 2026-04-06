@@ -407,7 +407,10 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const allActivities = [
     ...(history?.inquiries.map(i => ({ type: 'inquiry', date: i.created_at, data: i })) || []),
     ...(history?.jobs.map(j => ({ type: 'job', date: j.created_at, data: j })) || []),
-    ...(history?.invoices.map(inv => ({ type: 'invoice', date: inv.created_at, data: inv })) || [])
+    ...(history?.invoices.map(inv => ({ type: 'invoice', date: inv.created_at, data: inv })) || []),
+    ...(currentClient.last_followup_email_sent_at
+      ? [{ type: 'followup_email', date: currentClient.last_followup_email_sent_at, data: null }]
+      : [])
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const getStatusBadgeColor = (status: string): string => {
@@ -1048,11 +1051,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       activity.type === 'inquiry' ? 'bg-blue-100' :
                       activity.type === 'job' ? 'bg-green-100' :
-                      'bg-purple-100'
+                      activity.type === 'followup_email' ? 'bg-sky-100' :
+                      'bg-gray-100'
                     }`}>
                       {activity.type === 'inquiry' ? <Mail className="w-4 h-4 text-blue-600" /> :
                        activity.type === 'job' ? <Briefcase className="w-4 h-4 text-green-600" /> :
-                       <DollarSign className="w-4 h-4 text-purple-600" />}
+                       activity.type === 'followup_email' ? <Send className="w-4 h-4 text-sky-600" /> :
+                       <DollarSign className="w-4 h-4 text-gray-600" />}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1060,11 +1065,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                       {activity.type === 'inquiry' && 'Form Inquiry'}
                       {activity.type === 'job' && `Job: ${activity.data.job_type || 'General'}`}
                       {activity.type === 'invoice' && `Invoice ${activity.data.invoice_number || ''}`}
+                      {activity.type === 'followup_email' && 'Thank-You Email Sent'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       {activity.type === 'inquiry' && `${activity.data.furniture_type || 'General inquiry'} - ${activity.data.pieces || 0} pieces`}
                       {activity.type === 'job' && `${activity.data.job_description || 'No description'} - ${activity.data.job_status || 'pending'}`}
                       {activity.type === 'invoice' && `${activity.data.status} - ${formatCurrency(activity.data.total_amount || 0)}`}
+                      {activity.type === 'followup_email' && 'Post-job follow-up email delivered'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">{formatDateTime(activity.date)}</p>
                   </div>
