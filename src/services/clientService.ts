@@ -32,6 +32,7 @@ export interface Client {
   referral_credit_balance: number;
   referral_credit_used: number;
   last_followup_email_sent_at: string | null;
+  last_invoice_email_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }

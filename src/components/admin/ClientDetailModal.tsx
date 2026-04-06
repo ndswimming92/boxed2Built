@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send } from 'lucide-react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -27,6 +27,7 @@ import {
   getAdminDocumentSignedUrl,
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
+import InvoiceFormModal from './InvoiceFormModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -90,6 +91,19 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [followupCooldownRemaining, setFollowupCooldownRemaining] = useState<number>(0);
   const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Invoice email state
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [invoiceForEdit, setInvoiceForEdit] = useState<any | null>(null);
+  const [invoiceReviewed, setInvoiceReviewed] = useState(false);
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [invoiceEmailOverride, setInvoiceEmailOverride] = useState('');
+  const [invoiceSending, setInvoiceSending] = useState(false);
+  const [invoiceMessage, setInvoiceMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [invoiceCooldownRemaining, setInvoiceCooldownRemaining] = useState<number>(0);
+  const invoiceCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
+
   const startCooldownTimer = useCallback((sentAt: string | null) => {
     if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     if (!sentAt) { setFollowupCooldownRemaining(0); return; }
@@ -112,6 +126,29 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     startCooldownTimer(currentClient.last_followup_email_sent_at);
     return () => { if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current); };
   }, [currentClient.last_followup_email_sent_at, startCooldownTimer]);
+
+  const startInvoiceCooldownTimer = useCallback((sentAt: string | null) => {
+    if (invoiceCooldownTimerRef.current) clearInterval(invoiceCooldownTimerRef.current);
+    if (!sentAt) { setInvoiceCooldownRemaining(0); return; }
+    const elapsed = Date.now() - new Date(sentAt).getTime();
+    const remaining = Math.max(0, COOLDOWN_MS - elapsed);
+    setInvoiceCooldownRemaining(Math.ceil(remaining / 1000));
+    if (remaining <= 0) return;
+    invoiceCooldownTimerRef.current = setInterval(() => {
+      setInvoiceCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          if (invoiceCooldownTimerRef.current) clearInterval(invoiceCooldownTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [COOLDOWN_MS]);
+
+  useEffect(() => {
+    startInvoiceCooldownTimer(currentClient.last_invoice_email_sent_at ?? null);
+    return () => { if (invoiceCooldownTimerRef.current) clearInterval(invoiceCooldownTimerRef.current); };
+  }, [currentClient.last_invoice_email_sent_at, startInvoiceCooldownTimer]);
 
   useEffect(() => {
     loadClientDetails();
@@ -301,6 +338,91 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setFollowupMessage({ type: 'error', text: 'Failed to send follow-up email. Please try again.' });
     } finally {
       setFollowupSending(false);
+    }
+  }
+
+  async function resolveBusinessId(): Promise<string | null> {
+    if (businessId) return businessId;
+    const { supabase } = await import('../../lib/supabase');
+    const { data } = await supabase
+      .from('business_info')
+      .select('id')
+      .eq('organization_id', currentClient.organization_id)
+      .eq('is_active', true)
+      .maybeSingle();
+    const bid = data?.id ?? null;
+    setBusinessId(bid);
+    return bid;
+  }
+
+  async function handleJobSelected(jobId: string) {
+    setSelectedJobId(jobId);
+    setSelectedInvoiceId(null);
+    setInvoiceForEdit(null);
+    setInvoiceReviewed(false);
+    setInvoiceMessage(null);
+    if (!jobId) return;
+    const { supabase } = await import('../../lib/supabase');
+    const { data } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('job_id', jobId)
+      .eq('is_active', true)
+      .not('status', 'in', '("cancelled")')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setSelectedInvoiceId(data.id);
+      setInvoiceForEdit(data);
+    }
+    await resolveBusinessId();
+  }
+
+  async function handleSendInvoiceEmail() {
+    const emailToUse = currentClient.email || invoiceEmailOverride.trim();
+    if (!selectedInvoiceId || !invoiceReviewed || invoiceSending || invoiceCooldownRemaining > 0 || !emailToUse) return;
+    setInvoiceSending(true);
+    setInvoiceMessage(null);
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const payload: Record<string, string> = {
+        clientId: currentClient.id,
+        organizationId: currentClient.organization_id,
+        invoiceId: selectedInvoiceId,
+      };
+      if (!currentClient.email && invoiceEmailOverride.trim()) {
+        payload.overrideEmail = invoiceEmailOverride.trim();
+      }
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-invoice-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        if (json.error === 'cooldown') {
+          startInvoiceCooldownTimer(new Date(Date.now() - (COOLDOWN_MS - json.remainingSeconds * 1000)).toISOString());
+          setInvoiceMessage({ type: 'error', text: 'Invoice email was sent recently. Please wait before sending again.' });
+        } else {
+          setInvoiceMessage({ type: 'error', text: json.error ?? 'Failed to send invoice email.' });
+        }
+        return;
+      }
+      setCurrentClient((prev) => ({ ...prev, last_invoice_email_sent_at: json.sentAt }));
+      setInvoiceMessage({ type: 'success', text: 'Invoice email sent successfully.' });
+      setSelectedJobId('');
+      setSelectedInvoiceId(null);
+      setInvoiceReviewed(false);
+    } catch {
+      setInvoiceMessage({ type: 'error', text: 'Failed to send invoice email. Please try again.' });
+    } finally {
+      setInvoiceSending(false);
     }
   }
 
@@ -824,6 +946,126 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           </div>
         )}
 
+        {/* Send Invoice by Email */}
+        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-4">
+            <Receipt className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Send Invoice by Email</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Select a job, review or edit the invoice, then send a payment link</p>
+            </div>
+          </div>
+
+          {history && history.jobs.length > 0 ? (
+            <div className="space-y-3">
+              {/* Job selector */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Select Job</label>
+                <div className="relative">
+                  <select
+                    value={selectedJobId}
+                    onChange={(e) => handleJobSelected(e.target.value)}
+                    disabled={invoiceCooldownRemaining > 0}
+                    className="w-full appearance-none px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">— Choose a job —</option>
+                    {history.jobs.map((job: any) => (
+                      <option key={job.id} value={job.id}>
+                        {job.job_type || 'Job'} — {job.job_status} — {formatDate(job.created_at)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Invoice status hint */}
+              {selectedJobId && (
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${selectedInvoiceId ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                  <FileText className="w-4 h-4 flex-shrink-0" />
+                  {selectedInvoiceId
+                    ? 'Existing invoice found. Review or edit it before sending.'
+                    : 'No invoice found for this job. Create one using the Review / Edit Invoice button.'}
+                </div>
+              )}
+
+              {/* Email override when no client email */}
+              {selectedJobId && !currentClient.email && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Recipient Email <span className="text-red-500">*</span>
+                    <span className="ml-1 text-gray-400 font-normal">(client has no email on file)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={invoiceEmailOverride}
+                    onChange={(e) => setInvoiceEmailOverride(e.target.value)}
+                    placeholder="customer@example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Action buttons */}
+              {selectedJobId && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={async () => { await resolveBusinessId(); setShowInvoiceForm(true); }}
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    {selectedInvoiceId ? 'Review / Edit Invoice' : 'Create Invoice'}
+                  </button>
+                  {invoiceReviewed && (
+                    <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
+                      <Check className="w-3.5 h-3.5" />
+                      Invoice reviewed
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Send button */}
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={handleSendInvoiceEmail}
+                  disabled={
+                    !selectedInvoiceId ||
+                    !invoiceReviewed ||
+                    invoiceSending ||
+                    invoiceCooldownRemaining > 0 ||
+                    (!currentClient.email && !invoiceEmailOverride.trim())
+                  }
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {invoiceSending
+                    ? 'Sending...'
+                    : invoiceCooldownRemaining > 0
+                    ? `Available in ${invoiceCooldownRemaining >= 60 ? `${Math.ceil(invoiceCooldownRemaining / 60)}m` : `${invoiceCooldownRemaining}s`}`
+                    : 'Send Invoice Email'}
+                </button>
+              </div>
+
+              {invoiceMessage && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${invoiceMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                  {invoiceMessage.text}
+                </div>
+              )}
+              {invoiceCooldownRemaining > 0 && !invoiceMessage && (
+                <p className="text-xs text-gray-500">
+                  Last sent {currentClient.last_invoice_email_sent_at ? formatDateTime(currentClient.last_invoice_email_sent_at) : ''}. Can resend after cooldown.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              No jobs found for this client. Jobs are required to send an invoice email.
+            </div>
+          )}
+        </div>
+
         {/* Referral Program */}
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-2 mb-4">
@@ -1254,6 +1496,41 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           onSuccess={() => {
             setShowUploadModal(false);
             loadDocuments(customerId);
+          }}
+        />
+      )}
+
+      {showInvoiceForm && businessId && (
+        <InvoiceFormModal
+          businessId={businessId}
+          invoice={invoiceForEdit}
+          jobId={invoiceForEdit ? undefined : selectedJobId}
+          initialData={invoiceForEdit ? undefined : {
+            client_name: currentClient.name,
+            client_email: currentClient.email ?? undefined,
+            client_phone: currentClient.phone ?? undefined,
+            client_address: currentClient.address ?? undefined,
+          }}
+          onClose={() => setShowInvoiceForm(false)}
+          onSaved={async () => {
+            setShowInvoiceForm(false);
+            setInvoiceReviewed(true);
+            if (selectedJobId) {
+              const { supabase } = await import('../../lib/supabase');
+              const { data } = await supabase
+                .from('invoices')
+                .select('*')
+                .eq('job_id', selectedJobId)
+                .eq('is_active', true)
+                .not('status', 'in', '("cancelled")')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+              if (data) {
+                setSelectedInvoiceId(data.id);
+                setInvoiceForEdit(data);
+              }
+            }
           }}
         />
       )}
