@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -83,6 +83,35 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const COOLDOWN_MS = 10 * 60 * 1000;
+  const [followupSending, setFollowupSending] = useState(false);
+  const [followupMessage, setFollowupMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [followupCooldownRemaining, setFollowupCooldownRemaining] = useState<number>(0);
+  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startCooldownTimer = useCallback((sentAt: string | null) => {
+    if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    if (!sentAt) { setFollowupCooldownRemaining(0); return; }
+    const elapsed = Date.now() - new Date(sentAt).getTime();
+    const remaining = Math.max(0, COOLDOWN_MS - elapsed);
+    setFollowupCooldownRemaining(Math.ceil(remaining / 1000));
+    if (remaining <= 0) return;
+    cooldownTimerRef.current = setInterval(() => {
+      setFollowupCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    startCooldownTimer(currentClient.last_followup_email_sent_at);
+    return () => { if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current); };
+  }, [currentClient.last_followup_email_sent_at, startCooldownTimer]);
 
   useEffect(() => {
     loadClientDetails();
@@ -238,6 +267,41 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     setEditAddress(currentClient.address ?? '');
     setSaveInfoError(null);
     setEditingInfo(false);
+  }
+
+  async function handleSendFollowup() {
+    if (!currentClient.email || followupCooldownRemaining > 0 || followupSending) return;
+    setFollowupSending(true);
+    setFollowupMessage(null);
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-followup-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ clientId: currentClient.id, organizationId: currentClient.organization_id }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        if (json.error === 'cooldown') {
+          startCooldownTimer(new Date(Date.now() - (10 * 60 * 1000 - json.remainingSeconds * 1000)).toISOString());
+          setFollowupMessage({ type: 'error', text: 'This email was sent very recently. Please wait before sending again.' });
+        } else {
+          setFollowupMessage({ type: 'error', text: json.error ?? 'Failed to send follow-up email.' });
+        }
+        return;
+      }
+      setCurrentClient((prev) => ({ ...prev, last_followup_email_sent_at: json.sentAt }));
+      setFollowupMessage({ type: 'success', text: 'Follow-up email sent successfully.' });
+    } catch {
+      setFollowupMessage({ type: 'error', text: 'Failed to send follow-up email. Please try again.' });
+    } finally {
+      setFollowupSending(false);
+    }
   }
 
   async function handlePermanentDelete() {
@@ -719,6 +783,43 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.average_job_value)}</p>
           </div>
         </div>
+
+        {/* Follow-Up Email */}
+        {currentClient.email && (
+          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">Post-Job Follow-Up</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">Send a thank-you email with a Google review link</p>
+                </div>
+              </div>
+              <button
+                onClick={handleSendFollowup}
+                disabled={followupSending || followupCooldownRemaining > 0}
+                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {followupSending
+                  ? 'Sending...'
+                  : followupCooldownRemaining > 0
+                  ? `Available in ${followupCooldownRemaining >= 60 ? `${Math.ceil(followupCooldownRemaining / 60)}m` : `${followupCooldownRemaining}s`}`
+                  : 'Send Follow-Up'}
+              </button>
+            </div>
+            {followupMessage && (
+              <div className={`mt-3 px-3 py-2 rounded-lg text-sm ${followupMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                {followupMessage.text}
+              </div>
+            )}
+            {followupCooldownRemaining > 0 && !followupMessage && (
+              <p className="mt-2 text-xs text-gray-500">
+                Last sent {currentClient.last_followup_email_sent_at ? formatDateTime(currentClient.last_followup_email_sent_at) : ''}. Can resend after cooldown.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Referral Program */}
         <div className="p-6 bg-white border border-gray-200 rounded-lg">
