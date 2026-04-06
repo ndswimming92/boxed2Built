@@ -36,7 +36,45 @@ function escapeHtml(input: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function buildHtml(clientName: string): string {
+function buildReferralBlock(referralCode: string | null): string {
+  if (!referralCode) return '';
+  const code = escapeHtml(referralCode);
+  return `
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+          <p style="margin:0 0 6px;color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Your Personal Referral Code</p>
+          <p style="margin:0 0 14px;font-size:32px;font-weight:800;color:#15803d;font-family:monospace;letter-spacing:3px;">${code}</p>
+          <p style="margin:0 0 14px;color:#374151;font-size:14px;line-height:1.6;">Know someone who needs furniture assembled or a TV mounted? Share your code with them — when they book with Boxed2Built and mention your code, <strong>you both get a discount on your next service</strong>.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+            <tr>
+              <td style="vertical-align:top;padding-bottom:10px;width:28px;">
+                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">1</div>
+              </td>
+              <td style="vertical-align:top;padding-bottom:10px;padding-left:10px;">
+                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">Share your code with a friend, neighbor, or coworker</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align:top;padding-bottom:10px;width:28px;">
+                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">2</div>
+              </td>
+              <td style="vertical-align:top;padding-bottom:10px;padding-left:10px;">
+                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">They mention your code when they submit a request at <a href="${CONTACT_URL}" style="color:#1d4ed8;text-decoration:none;">boxed2built.com/contact</a></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align:top;width:28px;">
+                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">3</div>
+              </td>
+              <td style="vertical-align:top;padding-left:10px;">
+                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">You both save — it's that simple</p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:0;color:#15803d;font-size:12px;font-weight:600;">No limit on how many friends you can refer. The more you share, the more you save.</p>
+        </div>`;
+}
+
+function buildHtml(clientName: string, referralCode: string | null): string {
   const firstName = escapeHtml((clientName.trim() || 'there').split(' ')[0] || 'there');
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -97,6 +135,7 @@ function buildHtml(clientName: string): string {
           </div>
         </div>
 
+        ${buildReferralBlock(referralCode)}
         <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions or need to reach us directly? Call or text <span style="color:#111827;font-weight:600;">(615) 403-4538</span> anytime.</p>
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
       </td></tr>
@@ -121,9 +160,9 @@ function buildHtml(clientName: string): string {
 </body></html>`;
 }
 
-function buildPlainText(clientName: string): string {
+function buildPlainText(clientName: string, referralCode: string | null): string {
   const firstName = (clientName.trim() || 'there').split(' ')[0] || 'there';
-  return [
+  const lines = [
     `Hi ${firstName},`,
     '',
     'It was a genuine pleasure working with you. We hope everything looks and feels exactly the way you imagined.',
@@ -138,6 +177,21 @@ function buildPlainText(clientName: string): string {
     'Fill out our quick request form at:',
     CONTACT_URL,
     '',
+  ];
+
+  if (referralCode) {
+    lines.push(
+      '--- Your Personal Referral Code ---',
+      `Your code: ${referralCode}`,
+      '',
+      'Share it with a friend, neighbor, or coworker. When they book with Boxed2Built and mention your code, you both get a discount on your next service.',
+      '',
+      'No limit on how many friends you can refer.',
+      '',
+    );
+  }
+
+  lines.push(
     'Questions? Call or text us at (615) 403-4538 or email ' + CONTACT_EMAIL,
     '',
     '— The Boxed2Built Team',
@@ -146,7 +200,9 @@ function buildPlainText(clientName: string): string {
     '',
     'Privacy Policy: ' + WEBSITE_URL + '/privacy-policy',
     'Terms of Service: ' + WEBSITE_URL + '/terms-of-service',
-  ].join('\n');
+  );
+
+  return lines.join('\n');
 }
 
 Deno.serve(async (req) => {
@@ -182,7 +238,7 @@ Deno.serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, last_followup_email_sent_at')
+      .select('id, name, email, last_followup_email_sent_at, referral_code')
       .eq('id', body.clientId)
       .eq('organization_id', body.organizationId)
       .maybeSingle();
@@ -221,8 +277,8 @@ Deno.serve(async (req) => {
     }
 
     const subject = 'Thank You from Boxed2Built';
-    const html = buildHtml(client.name);
-    const text = buildPlainText(client.name);
+    const html = buildHtml(client.name, client.referral_code ?? null);
+    const text = buildPlainText(client.name, client.referral_code ?? null);
 
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
