@@ -158,7 +158,7 @@ function buildHtml(
 
       <tr><td style="background:#ffffff;padding:32px;">
         <p style="margin:0 0 6px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Please find your ${typeLabel.toLowerCase()} details below. You can pay securely online using the button at the bottom of this email.</p>
+        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Please find your ${typeLabel.toLowerCase()} invoice details below. You can pay securely online using the button at the bottom of this email.</p>
 
         <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
           <table width="100%" cellpadding="0" cellspacing="0">
