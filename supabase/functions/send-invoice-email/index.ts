@@ -153,7 +153,7 @@ function buildHtml(
 
       <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
         <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Your Invoice from ${escapeHtml(businessName)}</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Hi ${firstName} — your ${typeLabel.toLowerCase()} is ready for review.</p>
+        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Hi ${firstName} — your ${typeLabel.toLowerCase()} invoice is ready for review.</p>
       </td></tr>
 
       <tr><td style="background:#ffffff;padding:32px;">
