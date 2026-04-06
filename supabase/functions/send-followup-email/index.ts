@@ -37,89 +37,115 @@ function escapeHtml(input: string): string {
 }
 
 function buildHtml(clientName: string): string {
-  const greetingName = escapeHtml(clientName.trim() || 'there');
+  const firstName = escapeHtml((clientName.trim() || 'there').split(' ')[0] || 'there');
 
-  return `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-  </head>
-  <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
-      <tr>
-        <td align="center">
-          <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
+        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Thank you for choosing Boxed2Built!</h1>
+        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">We really enjoyed working with you, ${firstName}.</p>
+      </td></tr>
+
+      <tr><td style="background:#ffffff;padding:32px;">
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">It was a genuine pleasure working with you. We hope everything looks and feels exactly the way you imagined. Your satisfaction means everything to us.</p>
+        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Whenever you need another piece assembled, a TV mounted, or anything else set up — we're just one message away. We'd love to help again.</p>
+
+        <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+          <p style="margin:0 0 6px;color:#1e3a5f;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Enjoyed the experience?</p>
+          <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.6;">Reviews are the lifeblood of a small business. If we earned it, a quick Google review makes a huge difference — it only takes 30 seconds.</p>
+          <a href="${REVIEW_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Leave a Google Review &rarr;</a>
+        </div>
+
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+          <p style="margin:0 0 14px;color:#111827;font-size:14px;font-weight:700;">Need us again in the future?</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Thank You from Boxed2Built</h1>
-                <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;">We appreciate your business</p>
+              <td style="vertical-align:top;padding-bottom:12px;width:28px;">
+                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">1</div>
+              </td>
+              <td style="vertical-align:top;padding-bottom:12px;padding-left:10px;">
+                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">Fill out our quick request form</p>
+                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Takes less than 2 minutes at <a href="${CONTACT_URL}" style="color:#1d4ed8;text-decoration:none;">boxed2built.com/contact</a>.</p>
               </td>
             </tr>
             <tr>
-              <td style="background:#ffffff;padding:32px;">
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Hi ${greetingName},</p>
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Thank you for choosing Boxed2Built! It was a pleasure working with you and we hope everything looks great.</p>
-                <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">If you need anything assembled, mounted, or set up in the future — we're just a message or call away. We'd love to help again.</p>
-
-                <div style="margin:0 0 24px;padding:20px 24px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;text-align:center;">
-                  <p style="margin:0 0 8px;color:#1e3a5f;font-size:14px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Enjoyed the service?</p>
-                  <p style="margin:0 0 16px;color:#64748b;font-size:14px;line-height:1.6;">A quick review goes a long way and helps us continue doing what we love.</p>
-                  <a href="${REVIEW_URL}" style="display:inline-block;padding:12px 28px;background:#1e3a5f;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">Leave a Google Review</a>
-                </div>
-
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Ready to book your next project?</p>
-                <p style="margin:0;font-size:15px;">
-                  <a href="${CONTACT_URL}" style="display:inline-block;padding:12px 28px;background:#f0f7ff;color:#1e3a5f;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;border:1px solid #bfdbfe;">Schedule Another Job</a>
-                </p>
+              <td style="vertical-align:top;padding-bottom:12px;width:28px;">
+                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">2</div>
+              </td>
+              <td style="vertical-align:top;padding-bottom:12px;padding-left:10px;">
+                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We confirm your appointment</p>
+                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">We'll reach out within 24 hours to lock in a time that works for you.</p>
               </td>
             </tr>
             <tr>
-              <td style="background:#ffffff;padding:0 32px 24px;color:#374151;font-size:15px;line-height:1.7;">
-                <p style="margin:0;">Thank you again,<br /><strong>Boxed2Built</strong><br /><a href="tel:${CONTACT_PHONE}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_PHONE}</a><br /><a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a></p>
+              <td style="vertical-align:top;width:28px;">
+                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">3</div>
               </td>
-            </tr>
-            <tr>
-              <td style="background:#ffffff;padding:0 32px 32px;border-radius:0 0 12px 12px;">
-                <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
-                  <div style="font-size:14px;line-height:1.8;">
-                    <a href="${WEBSITE_URL}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">Website</a>
-                    <a href="${CONTACT_URL}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">Contact Us</a>
-                    <a href="${REVIEW_URL}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">Leave a Review</a>
-                  </div>
-                  <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">Questions? Call or text <a href="tel:${CONTACT_PHONE}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_PHONE}</a> or email <a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a>.</p>
-                </div>
+              <td style="vertical-align:top;padding-left:10px;">
+                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We show up and handle everything</p>
+                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Pay only when the job is done and you're satisfied.</p>
               </td>
             </tr>
           </table>
-        </td>
-      </tr>
+          <div style="margin-top:18px;text-align:center;">
+            <a href="${CONTACT_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Book Your Next Job &rarr;</a>
+          </div>
+        </div>
+
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions or need to reach us directly? Call or text <span style="color:#111827;font-weight:600;">(615) 403-4538</span> anytime.</p>
+        <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
+      </td></tr>
+
+      <tr><td style="background:#f9fafb;padding:20px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;">
+        <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;text-align:center;">
+          Boxed2Built &bull; Spring Hill, TN &bull;
+          <a href="${WEBSITE_URL}" style="color:#9ca3af;text-decoration:underline;">boxed2built.com</a>
+        </p>
+        <p style="margin:0;color:#9ca3af;font-size:11px;text-align:center;line-height:1.7;">
+          <a href="${WEBSITE_URL}/privacy-policy" style="color:#9ca3af;text-decoration:underline;">Privacy Policy</a>
+          &nbsp;&bull;&nbsp;
+          <a href="${WEBSITE_URL}/terms-of-service" style="color:#9ca3af;text-decoration:underline;">Terms of Service</a>
+          &nbsp;&bull;&nbsp;
+          <a href="mailto:${CONTACT_EMAIL}" style="color:#9ca3af;text-decoration:underline;">${CONTACT_EMAIL}</a>
+        </p>
+      </td></tr>
+
     </table>
-  </body>
-</html>`;
+  </td></tr>
+</table>
+</body></html>`;
 }
 
 function buildPlainText(clientName: string): string {
-  const greetingName = clientName.trim() || 'there';
+  const firstName = (clientName.trim() || 'there').split(' ')[0] || 'there';
   return [
-    `Hi ${greetingName},`,
+    `Hi ${firstName},`,
     '',
-    'Thank you for choosing Boxed2Built! It was a pleasure working with you and we hope everything looks great.',
+    'It was a genuine pleasure working with you. We hope everything looks and feels exactly the way you imagined.',
     '',
-    'If you need anything assembled, mounted, or set up in the future — we\'re just a message or call away. We\'d love to help again.',
+    'Whenever you need another piece assembled, a TV mounted, or anything else set up — we\'re just one message away.',
     '',
-    'If you enjoyed the service, a quick Google review goes a long way:',
+    '--- Leave a Google Review ---',
+    'If we earned it, a quick review makes a huge difference:',
     REVIEW_URL,
     '',
-    'Ready to book your next project? Visit us at:',
+    '--- Book Your Next Job ---',
+    'Fill out our quick request form at:',
     CONTACT_URL,
     '',
-    'Thank you again,',
-    'Boxed2Built',
-    CONTACT_PHONE,
-    CONTACT_EMAIL,
+    'Questions? Call or text us at (615) 403-4538 or email ' + CONTACT_EMAIL,
     '',
-    'Website: ' + WEBSITE_URL,
+    '— The Boxed2Built Team',
+    'Boxed2Built | Spring Hill, TN',
+    WEBSITE_URL,
+    '',
+    'Privacy Policy: ' + WEBSITE_URL + '/privacy-policy',
+    'Terms of Service: ' + WEBSITE_URL + '/terms-of-service',
   ].join('\n');
 }
 
