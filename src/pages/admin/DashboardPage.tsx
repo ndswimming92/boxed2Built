@@ -266,10 +266,10 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">
           Welcome back!
         </h1>
-        <p className="text-slate-600">
+        <p className="text-sm sm:text-base text-slate-600">
           {businessName ? `Managing ${businessName}` : 'Manage your business content'}
         </p>
       </div>

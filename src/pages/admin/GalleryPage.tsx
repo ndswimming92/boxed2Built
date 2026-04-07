@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Video, Plus, Edit2, Trash2, Eye, EyeOff, Upload, Search, Filter } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, Filter } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
@@ -127,18 +127,19 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Gallery Management</h1>
-          <p className="text-slate-600 mt-1">Manage images and videos for the public gallery</p>
+          <p className="text-sm sm:text-base text-slate-600 mt-1">Manage images and videos for the public gallery</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
           <Button
             onClick={() => setShowBatchUpload(true)}
             variant="primary"
           >
-            <Upload size={18} className="mr-2" />
-            Upload Images
+            <Upload size={16} className="mr-1.5" />
+            <span className="hidden sm:inline">Upload Images</span>
+            <span className="sm:hidden">Upload</span>
           </Button>
           <Button
             onClick={() => {
@@ -147,8 +148,9 @@ export default function GalleryPage() {
             }}
             variant="outline"
           >
-            <Plus size={18} className="mr-2" />
-            Add Single Item
+            <Plus size={16} className="mr-1.5" />
+            <span className="hidden sm:inline">Add Single Item</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>

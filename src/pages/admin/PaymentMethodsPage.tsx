@@ -123,10 +123,10 @@ export default function PaymentMethodsPage() {
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Payment Methods</h1>
-        <p className="text-slate-600">Manage accepted payment methods</p>
+    <div className="max-w-4xl px-0">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Payment Methods</h1>
+        <p className="text-sm sm:text-base text-slate-600">Manage accepted payment methods</p>
       </div>
 
       {message && (

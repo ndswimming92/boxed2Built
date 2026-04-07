@@ -107,10 +107,10 @@ export default function BusinessHoursPage() {
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Hours</h1>
-        <p className="text-slate-600">Set your operating hours for each day</p>
+    <div className="max-w-4xl px-0">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Business Hours</h1>
+        <p className="text-sm sm:text-base text-slate-600">Set your operating hours for each day</p>
       </div>
 
       {message && (
@@ -165,11 +165,11 @@ export default function BusinessHoursPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-6 sm:mt-8 flex justify-end">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/50 transition-all disabled:opacity-50 flex items-center gap-2"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/50 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Save className="w-5 h-5" />
           {saving ? 'Saving...' : 'Save Hours'}

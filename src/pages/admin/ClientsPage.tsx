@@ -280,21 +280,21 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Clients</h1>
           <p className="mt-1 text-sm text-gray-600">
             Manage your client relationships and marketing campaigns
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={handleRefreshMetrics}
             disabled={refreshing}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
           >
             {refreshing
-              ? `Refreshing ${refreshProgress.processed}/${refreshProgress.total} (${refreshPercent}%)`
+              ? `${refreshProgress.processed}/${refreshProgress.total} (${refreshPercent}%)`
               : 'Refresh Metrics'}
           </button>
           {selectedClients.size > 0 && (
@@ -303,10 +303,10 @@ export default function ClientsPage() {
                 setShowExportModal(true);
                 logAction({ actionType: 'EXPORT', tableName: 'clients', recordIdentifier: `${selectedClients.size} clients` });
               }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 whitespace-nowrap"
             >
               <Download className="w-4 h-4" />
-              Export Selected ({selectedClients.size})
+              Export ({selectedClients.size})
             </button>
           )}
         </div>
@@ -326,66 +326,66 @@ export default function ClientsPage() {
 
       {/* Stats Dashboard */}
       {stats && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="p-3 sm:p-6 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Clients</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.total_clients}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Clients</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{stats.total_clients}</p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-500">
-              {maskFinancialValue(formatCurrency(stats.total_revenue))} total revenue
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
+              {maskFinancialValue(formatCurrency(stats.total_revenue))} revenue
             </p>
           </div>
 
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <div className="p-3 sm:p-6 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Repeat Customers</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.repeat_customers}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Repeat Customers</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{stats.repeat_customers}</p>
               </div>
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <TrendingUp className="w-6 h-6 text-yellow-600" />
+              <div className="p-2 sm:p-3 bg-yellow-100 rounded-full">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
               {stats.total_clients > 0
                 ? Math.round((stats.repeat_customers / stats.total_clients) * 100)
-                : 0}% of total clients
+                : 0}% of clients
             </p>
           </div>
 
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <div className="p-3 sm:p-6 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">High-Value Clients</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{stats.high_value_clients}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">High-Value</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{stats.high_value_clients}</p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <Star className="w-6 h-6 text-purple-600" />
+              <div className="p-2 sm:p-3 bg-amber-100 rounded-full">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
               Top revenue generators
             </p>
           </div>
 
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+          <div className="p-3 sm:p-6 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Need Attention</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{dormantHighValueCount}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Need Attention</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{dormantHighValueCount}</p>
               </div>
-              <div className="p-3 bg-orange-100 rounded-full">
-                <UserX className="w-6 h-6 text-orange-600" />
+              <div className="p-2 sm:p-3 bg-orange-100 rounded-full">
+                <UserX className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-500">
-              Dormant high-value clients
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
+              Dormant high-value
             </p>
           </div>
         </div>

@@ -100,12 +100,12 @@ export default function InvoiceSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Settings className="w-8 h-8 text-emerald-600" />
-          <h1 className="text-3xl font-bold text-slate-900">Invoice Settings</h1>
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+          <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Invoice Settings</h1>
         </div>
-        <p className="text-slate-600">Configure your invoice defaults and preferences</p>
+        <p className="text-sm sm:text-base text-slate-600">Configure your invoice defaults and preferences</p>
       </div>
 
       {message && (
@@ -356,7 +356,7 @@ export default function InvoiceSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>

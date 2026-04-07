@@ -1,22 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  Download,
-  Plus,
-  Filter,
-  Search,
-  Receipt,
-  Edit,
-  Trash2,
-  ChevronDown,
-  PieChart as PieChartIcon,
-  BarChart3,
-  AlertCircle,
-} from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, Download, Plus, Filter, Search, Receipt, CreditCard as Edit, Trash2, ChevronDown, PieChart as PieChartIcon, BarChart3, AlertCircle } from 'lucide-react';
 import {
   getExpenses,
   createExpense,
@@ -237,8 +221,8 @@ export default function FinancesPage() {
     <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
       <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Finances</h1>
-          <p className="text-slate-600">Track expenses and monitor tax impact</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Business Finances</h1>
+          <p className="text-sm sm:text-base text-slate-600">Track expenses and monitor tax impact</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -305,53 +289,53 @@ export default function FinancesPage() {
       )}
 
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <TrendingDown className="w-5 h-5 text-slate-400" />
+              <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-600 mb-1">Total Expenses</p>
-            <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.totalExpenses)}</p>
+            <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Expenses</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900">{formatCurrency(stats.totalExpenses)}</p>
             <p className="text-xs text-slate-500 mt-1">{stats.expenseCount} expenses</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <Receipt className="w-6 h-6 text-emerald-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Receipt className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
-              <TrendingUp className="w-5 h-5 text-emerald-500" />
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
             </div>
-            <p className="text-sm text-slate-600 mb-1">Tax Deductible</p>
-            <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.deductibleExpenses)}</p>
+            <p className="text-xs sm:text-sm text-slate-600 mb-1">Tax Deductible</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900">{formatCurrency(stats.deductibleExpenses)}</p>
             <p className="text-xs text-slate-500 mt-1">
               {((stats.deductibleExpenses / stats.totalExpenses) * 100).toFixed(0)}% of total
             </p>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-amber-600" />
+          <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
               </div>
             </div>
-            <p className="text-sm text-slate-600 mb-1">Avg per Expense</p>
-            <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.avgExpenseAmount)}</p>
+            <p className="text-xs sm:text-sm text-slate-600 mb-1">Avg per Expense</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900">{formatCurrency(stats.avgExpenseAmount)}</p>
             <p className="text-xs text-slate-500 mt-1">Year {selectedYear}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl border border-emerald-200 p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
+          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl border border-emerald-200 p-3 sm:p-6">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <p className="text-sm text-emerald-800 mb-1 font-medium">Est. Tax Savings</p>
-            <p className="text-2xl font-bold text-emerald-900">{formatCurrency(taxSavings)}</p>
-            <p className="text-xs text-emerald-700 mt-1">~30% of deductible expenses</p>
+            <p className="text-xs sm:text-sm text-emerald-800 mb-1 font-medium">Est. Tax Savings</p>
+            <p className="text-lg sm:text-2xl font-bold text-emerald-900">{formatCurrency(taxSavings)}</p>
+            <p className="text-xs text-emerald-700 mt-1">~30% deductible</p>
           </div>
         </div>
       )}

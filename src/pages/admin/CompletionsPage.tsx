@@ -125,9 +125,9 @@ export default function CompletionsPage() {
 
   return (
     <div className="max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Job Completions</h1>
-        <p className="text-slate-600">View all completed jobs with customer signatures</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Job Completions</h1>
+        <p className="text-sm sm:text-base text-slate-600">View all completed jobs with customer signatures</p>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
@@ -169,25 +169,25 @@ export default function CompletionsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+      <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Completions</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Completions</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{completions.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{completions.length}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Star className="w-5 h-5 text-green-600" />
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Satisfied Customers</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Satisfied</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">
             {completions.filter(c => c.is_customer_satisfied).length}
           </p>
           <p className="text-xs text-slate-500 mt-1">
@@ -197,14 +197,14 @@ export default function CompletionsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Completed Value</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Total Value</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">
             ${completions.reduce((sum, c) => sum + (c.final_price || 0), 0).toLocaleString()}
           </p>
         </div>

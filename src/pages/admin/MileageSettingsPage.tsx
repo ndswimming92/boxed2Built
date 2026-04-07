@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { MileageSettings } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X, DollarSign, Calendar, Info } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info } from 'lucide-react';
 
 export default function MileageSettingsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -162,14 +162,14 @@ export default function MileageSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mileage Settings</h1>
-          <p className="text-gray-600 mt-1">Configure IRS mileage rates for tax deductions</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mileage Settings</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Configure IRS mileage rates for tax deductions</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
           <span>Add Mileage Rate</span>
@@ -194,7 +194,7 @@ export default function MileageSettingsPage() {
             <div>
               <h3 className="text-lg font-semibold text-blue-900 mb-2">Current IRS Mileage Rate</h3>
               <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-bold text-blue-900">${currentRate.rate_per_mile.toFixed(3)}</span>
+                <span className="text-2xl sm:text-4xl font-bold text-blue-900">${currentRate.rate_per_mile.toFixed(3)}</span>
                 <span className="text-gray-600">per mile</span>
               </div>
               <p className="text-sm text-gray-600 mt-2">

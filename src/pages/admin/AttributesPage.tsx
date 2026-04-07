@@ -88,10 +88,10 @@ export default function AttributesPage() {
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Business Attributes</h1>
-        <p className="text-slate-600">Add custom key-value pairs for your business</p>
+    <div className="max-w-4xl px-0">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Business Attributes</h1>
+        <p className="text-sm sm:text-base text-slate-600">Add custom key-value pairs for your business</p>
       </div>
 
       {message && (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, SocialMedia } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X, Share2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Share2, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function SocialMediaPage() {
   const [socialMedia, setSocialMedia] = useState<SocialMedia[]>([]);
@@ -106,16 +106,16 @@ export default function SocialMediaPage() {
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="max-w-4xl px-0">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Social Media</h1>
-          <p className="text-slate-600">Manage your social media profiles</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Social Media</h1>
+          <p className="text-sm sm:text-base text-slate-600">Manage your social media profiles</p>
         </div>
         {!isAdding && !editingId && (
           <button
             onClick={() => { setIsAdding(true); setFormData({ ...emptyProfile, display_order: socialMedia.length }); }}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto"
           >
             <Plus className="w-5 h-5" />
             Add Profile

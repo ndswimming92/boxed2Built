@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, ServiceArea } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle, MapPin } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, AlertCircle, CheckCircle, MapPin } from 'lucide-react';
 
 export default function ServiceAreasPage() {
   const [areas, setAreas] = useState<ServiceArea[]>([]);
@@ -111,16 +111,16 @@ export default function ServiceAreasPage() {
   }
 
   return (
-    <div className="max-w-6xl">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="max-w-6xl px-0">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Service Areas</h1>
-          <p className="text-slate-600">Manage locations where you provide services</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Service Areas</h1>
+          <p className="text-sm sm:text-base text-slate-600">Manage locations where you provide services</p>
         </div>
         {!isAdding && !editingId && (
           <button
             onClick={() => { setIsAdding(true); setFormData({ ...emptyArea, priority: areas.length }); }}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto"
           >
             <Plus className="w-5 h-5" />
             Add Area

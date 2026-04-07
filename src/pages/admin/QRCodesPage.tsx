@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  QrCode,
-  Plus,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Copy,
-  Power,
-  Trash2,
-  ExternalLink,
-  BarChart3
-} from 'lucide-react';
+import { QrCode, Plus, Search, Filter, Eye, CreditCard as Edit, Copy, Power, Trash2, ExternalLink, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
   getAllQRCodes,
@@ -177,21 +165,21 @@ export default function QRCodesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-0 sm:p-6">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <QrCode className="w-8 h-8 text-emerald-600" />
+              <QrCode className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
               QR Code Manager
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Create and manage QR codes with time-based redirects
             </p>
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors self-start sm:self-auto"
           >
             <Plus className="w-5 h-5" />
             Create QR Code
@@ -199,51 +187,51 @@ export default function QRCodesPage() {
         </div>
 
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <QrCode className="w-6 h-6 text-blue-600" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+                  <QrCode className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total QR Codes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total_codes}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total QR Codes</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total_codes}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Power className="w-6 h-6 text-green-600" />
+            <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+                  <Power className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Active</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.active_codes}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Active</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.active_codes}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 rounded-lg">
-                  <Power className="w-6 h-6 text-gray-600" />
+            <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-gray-100 rounded-lg">
+                  <Power className="w-4 h-4 sm:w-6 sm:h-6 text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Inactive</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.inactive_codes}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Inactive</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.inactive_codes}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-purple-600" />
+            <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-amber-100 rounded-lg">
+                  <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Scans</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total_scans}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total Scans</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total_scans}</p>
                 </div>
               </div>
             </div>

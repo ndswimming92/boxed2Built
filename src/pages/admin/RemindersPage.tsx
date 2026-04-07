@@ -214,9 +214,9 @@ export default function RemindersPage() {
 
   return (
     <div className="max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Follow-up Reminders</h1>
-        <p className="text-slate-600">Manage customer follow-up reminders and warranty checks</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Follow-up Reminders</h1>
+        <p className="text-sm sm:text-base text-slate-600">Manage customer follow-up reminders and warranty checks</p>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
@@ -259,45 +259,45 @@ export default function RemindersPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="w-5 h-5 text-blue-600" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Reminders</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Total</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{reminders.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{reminders.length}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <Bell className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Due Today</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Due Today</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{todayReminders.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{todayReminders.length}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-600" />
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Overdue</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Overdue</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{overdueReminders.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{overdueReminders.length}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Completed</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Completed</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">
             {reminders.filter(r => r.status === 'completed').length}
           </p>
         </div>

@@ -376,10 +376,10 @@ export default function ForecastingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
             {nextMonthForecast && (
-              <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
                   <div className="p-2 bg-emerald-100 rounded-lg">
                     <Calendar className="w-5 h-5 text-emerald-600" />
                   </div>
@@ -390,7 +390,7 @@ export default function ForecastingPage() {
                     </p>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-slate-900 mb-2">
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                   {formatCurrency(nextMonthForecast.predictedRevenue)}
                 </p>
                 <div className="flex items-center justify-between text-sm">
@@ -403,8 +403,8 @@ export default function ForecastingPage() {
             )}
 
             {nextQuarterForecast && (
-              <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <DollarSign className="w-5 h-5 text-blue-600" />
                   </div>
@@ -413,7 +413,7 @@ export default function ForecastingPage() {
                     <p className="text-xs text-slate-500">3 months ahead</p>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-slate-900 mb-2">
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                   {formatCurrency(nextQuarterForecast.revenue)}
                 </p>
                 <p className="text-sm text-slate-600">{nextQuarterForecast.jobs} jobs</p>
@@ -421,8 +421,8 @@ export default function ForecastingPage() {
             )}
 
             {nextYearForecast && (
-              <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <div className="flex items-center gap-3 mb-4">
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
                   <div className="p-2 bg-amber-100 rounded-lg">
                     <Briefcase className="w-5 h-5 text-amber-600" />
                   </div>
@@ -431,7 +431,7 @@ export default function ForecastingPage() {
                     <p className="text-xs text-slate-500">Annual forecast</p>
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-slate-900 mb-2">
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                   {formatCurrency(nextYearForecast.revenue)}
                 </p>
                 <p className="text-sm text-slate-600">{nextYearForecast.jobs} jobs</p>
