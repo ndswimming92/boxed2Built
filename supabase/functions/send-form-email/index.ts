@@ -17,6 +17,15 @@ const FROM_EMAIL = "team@boxed2built.com";
 const OWNER_EMAIL = "boxed2builtco@gmail.com";
 const OWNER_CC = "team@boxed2built.com";
 
+function escapeHtml(input: string): string {
+  return input
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 interface ContactFormPayload {
   formType: "contact";
   name: string;
@@ -272,6 +281,18 @@ function formatDate(dateStr?: string): string {
 
 function ownerNotificationContact(p: ContactFormPayload): string {
   const testBadge = p.isTest ? `<div style="background:#fef08a;border:1px solid #ca8a04;color:#713f12;padding:8px 12px;border-radius:6px;margin-bottom:16px;font-size:13px;font-weight:600;">TEST SUBMISSION — No action required</div>` : "";
+  const safeName = escapeHtml(p.name);
+  const safeEmail = escapeHtml(p.email);
+  const safePhone = p.phone ? escapeHtml(p.phone) : null;
+  const safeCity = p.userCity ? escapeHtml(p.userCity) : null;
+  const safeCode = escapeHtml(p.confirmationCode);
+  const safeFurnitureType = escapeHtml(p.furnitureType);
+  const safeEstimatedPrice = p.estimatedPrice ? escapeHtml(p.estimatedPrice) : null;
+  const safeEstimatedTime = p.estimatedTime ? escapeHtml(p.estimatedTime) : null;
+  const safeNotes = p.notes ? escapeHtml(p.notes) : null;
+  const safeConsentText = p.smsConsentText ? escapeHtml(p.smsConsentText) : null;
+  const safeReferralCode = p.referralCodeUsed ? escapeHtml(p.referralCodeUsed) : null;
+  const safeReferrerName = p.referrerName ? escapeHtml(p.referrerName) : null;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -286,23 +307,23 @@ function ownerNotificationContact(p: ContactFormPayload): string {
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Confirmation Code</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#1e3a5f;font-size:14px;font-weight:700;font-family:monospace;">${p.confirmationCode}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#1e3a5f;font-size:14px;font-weight:700;font-family:monospace;">${safeCode}</span></td>
           </tr>
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Name</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.name}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeName}</span></td>
           </tr>
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="mailto:${p.email}" style="color:#1d4ed8;font-size:14px;">${p.email}</a></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="mailto:${safeEmail}" style="color:#1d4ed8;font-size:14px;">${safeEmail}</a></td>
           </tr>
-          ${p.phone ? `<tr>
+          ${safePhone ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Phone</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.phone}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safePhone}</span></td>
           </tr>` : ""}
-          ${p.userCity ? `<tr>
+          ${safeCity ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Service ZIP</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.userCity}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeCity}</span></td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">SMS Consent</span></td>
@@ -312,27 +333,27 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Consent Timestamp</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${new Date(p.smsConsentTimestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })} CT</span></td>
           </tr>` : ""}
-          ${p.smsOptIn && p.smsConsentText ? `<tr>
+          ${safeConsentText ? `<tr>
             <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
               <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">SMS Consent Language (Proof)</span>
-              <p style="margin:0;color:#111827;font-size:13px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${p.smsConsentText}</p>
+              <p style="margin:0;color:#111827;font-size:13px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${safeConsentText}</p>
             </td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Furniture Type</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.furnitureType}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeFurnitureType}</span></td>
           </tr>
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Pieces</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.pieces}</span></td>
           </tr>
-          ${p.estimatedPrice ? `<tr>
+          ${safeEstimatedPrice ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Est. Price</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#15803d;font-size:14px;font-weight:600;">${p.estimatedPrice}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#15803d;font-size:14px;font-weight:600;">${safeEstimatedPrice}</span></td>
           </tr>` : ""}
-          ${p.estimatedTime ? `<tr>
+          ${safeEstimatedTime ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Est. Time</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.estimatedTime}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeEstimatedTime}</span></td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Preferred Date</span></td>
@@ -342,26 +363,26 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Preferred Time</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${formatTimeSlot(p.preferredTimeSlot)}</span></td>
           </tr>
-          ${p.notes ? `<tr>
+          ${safeNotes ? `<tr>
             <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
               <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Notes</span>
-              <p style="margin:0;color:#111827;font-size:14px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${p.notes}</p>
+              <p style="margin:0;color:#111827;font-size:14px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${safeNotes}</p>
             </td>
           </tr>` : ""}
           ${p.furniturePhotoUrl ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Product Link</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${p.furniturePhotoUrl}" style="color:#1d4ed8;font-size:14px;word-break:break-all;" target="_blank">View Product</a></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${escapeHtml(p.furniturePhotoUrl)}" style="color:#1d4ed8;font-size:14px;word-break:break-all;" target="_blank">View Product</a></td>
           </tr>` : ""}
           ${p.furnitureImagePath ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Uploaded Photo</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/furniture-photos/${p.furnitureImagePath}" style="color:#1d4ed8;font-size:14px;" target="_blank">View Photo</a></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${escapeHtml(Deno.env.get("SUPABASE_URL") ?? "")}/storage/v1/object/public/furniture-photos/${escapeHtml(p.furnitureImagePath)}" style="color:#1d4ed8;font-size:14px;" target="_blank">View Photo</a></td>
           </tr>` : ""}
-          ${p.referralCodeUsed ? `<tr>
+          ${safeReferralCode ? `<tr>
             <td colspan="2" style="padding:12px 0;">
               <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 14px;">
                 <span style="color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Referral Code Used</span>
-                <span style="color:#166534;font-size:15px;font-weight:800;font-family:monospace;">${p.referralCodeUsed}</span>
-                ${p.referrerName ? `<span style="color:#15803d;font-size:13px;display:block;margin-top:4px;">Referred by: ${p.referrerName}</span>` : `<span style="color:#6b7280;font-size:13px;display:block;margin-top:4px;">Referrer not found in system</span>`}
+                <span style="color:#166534;font-size:15px;font-weight:800;font-family:monospace;">${safeReferralCode}</span>
+                ${safeReferrerName ? `<span style="color:#15803d;font-size:13px;display:block;margin-top:4px;">Referred by: ${safeReferrerName}</span>` : `<span style="color:#6b7280;font-size:13px;display:block;margin-top:4px;">Referrer not found in system</span>`}
               </div>
             </td>
           </tr>` : `<tr>
@@ -387,6 +408,13 @@ function ownerNotificationContact(p: ContactFormPayload): string {
 }
 
 function customerConfirmationContact(p: ContactFormPayload): string {
+  const firstName = escapeHtml(p.name.split(" ")[0] || "there");
+  const safeCode = escapeHtml(p.confirmationCode);
+  const safeFurnitureType = escapeHtml(p.furnitureType);
+  const safeCity = p.userCity ? escapeHtml(p.userCity) : null;
+  const safeEstimatedPrice = p.estimatedPrice ? escapeHtml(p.estimatedPrice) : null;
+  const safeEstimatedTime = p.estimatedTime ? escapeHtml(p.estimatedTime) : null;
+  const safeNotes = p.notes ? escapeHtml(p.notes) : null;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -394,15 +422,15 @@ function customerConfirmationContact(p: ContactFormPayload): string {
     <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
       <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
         <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">We got your request!</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Thanks for reaching out, ${p.name.split(" ")[0]}. We'll be in touch shortly.</p>
+        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Thanks for reaching out, ${firstName}. We'll be in touch shortly.</p>
       </td></tr>
       <tr><td style="background:#ffffff;padding:32px;">
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Hi ${p.name.split(" ")[0]},</p>
+        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
         <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Your quote request has been received and saved. Here's a summary of what you submitted:</p>
 
         <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:20px;margin-bottom:24px;">
           <p style="margin:0 0 12px;color:#1e3a5f;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Your Confirmation Code</p>
-          <p style="margin:0 0 10px;font-size:28px;font-weight:800;color:#1e3a5f;font-family:monospace;letter-spacing:2px;">${p.confirmationCode}</p>
+          <p style="margin:0 0 10px;font-size:28px;font-weight:800;color:#1e3a5f;font-family:monospace;letter-spacing:2px;">${safeCode}</p>
           <p style="margin:0 0 14px;color:#6b7280;font-size:12px;">Keep this handy — you can use it to look up your request at any time.</p>
           <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 20px;border-radius:6px;">View My Request &rarr;</a>
         </div>
@@ -410,23 +438,23 @@ function customerConfirmationContact(p: ContactFormPayload): string {
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
           <tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:40%;">Furniture Type</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.furnitureType}</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeFurnitureType}</td>
           </tr>
           <tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Pieces</td>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.pieces}</td>
           </tr>
-          ${p.userCity ? `<tr>
+          ${safeCity ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Service ZIP</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.userCity}</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeCity}</td>
           </tr>` : ""}
-          ${p.estimatedPrice ? `<tr>
+          ${safeEstimatedPrice ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Cost</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#15803d;font-size:13px;font-weight:600;">${p.estimatedPrice}</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#15803d;font-size:13px;font-weight:600;">${safeEstimatedPrice}</td>
           </tr>` : ""}
-          ${p.estimatedTime ? `<tr>
+          ${safeEstimatedTime ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Time</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.estimatedTime}</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeEstimatedTime}</td>
           </tr>` : ""}
           ${p.preferredDate ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Preferred Date</td>
@@ -436,9 +464,9 @@ function customerConfirmationContact(p: ContactFormPayload): string {
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Preferred Time</td>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${formatTimeSlot(p.preferredTimeSlot)}</td>
           </tr>` : ""}
-          ${p.notes ? `<tr>
+          ${safeNotes ? `<tr>
             <td style="padding:8px 0;color:#6b7280;font-size:13px;vertical-align:top;">Notes</td>
-            <td style="padding:8px 0;color:#111827;font-size:13px;font-weight:500;">${p.notes}</td>
+            <td style="padding:8px 0;color:#111827;font-size:13px;font-weight:500;">${safeNotes}</td>
           </tr>` : ""}
         </table>
 
@@ -499,6 +527,9 @@ function customerConfirmationContact(p: ContactFormPayload): string {
 
 function ownerNotificationQuick(p: QuickContactPayload): string {
   const testBadge = p.isTest ? `<div style="background:#fef08a;border:1px solid #ca8a04;color:#713f12;padding:8px 12px;border-radius:6px;margin-bottom:16px;font-size:13px;font-weight:600;">TEST SUBMISSION — No action required</div>` : "";
+  const safeName = escapeHtml(p.name);
+  const safeEmail = escapeHtml(p.email);
+  const safeMessage = escapeHtml(p.message);
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -513,16 +544,16 @@ function ownerNotificationQuick(p: QuickContactPayload): string {
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Name</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${p.name}</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeName}</span></td>
           </tr>
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Email</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="mailto:${p.email}" style="color:#1d4ed8;font-size:14px;">${p.email}</a></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="mailto:${safeEmail}" style="color:#1d4ed8;font-size:14px;">${safeEmail}</a></td>
           </tr>
           <tr>
             <td colspan="2" style="padding:12px 0;">
               <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Message</span>
-              <p style="margin:0;color:#111827;font-size:14px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${p.message}</p>
+              <p style="margin:0;color:#111827;font-size:14px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${safeMessage}</p>
             </td>
           </tr>
         </table>
@@ -537,6 +568,8 @@ function ownerNotificationQuick(p: QuickContactPayload): string {
 }
 
 function customerConfirmationQuick(p: QuickContactPayload): string {
+  const firstName = escapeHtml(p.name.split(" ")[0] || "there");
+  const safeMessage = escapeHtml(p.message);
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -544,15 +577,15 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
     <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
       <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
         <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Message received!</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Thanks for reaching out, ${p.name.split(" ")[0]}.</p>
+        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Thanks for reaching out, ${firstName}.</p>
       </td></tr>
       <tr><td style="background:#ffffff;padding:32px;">
-        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Hi ${p.name.split(" ")[0]},</p>
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
         <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">We've received your message and will get back to you within <strong>24 hours</strong>.</p>
 
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:24px;">
           <p style="margin:0 0 8px;color:#6b7280;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Your message</p>
-          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic;">"${p.message}"</p>
+          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic;">&ldquo;${safeMessage}&rdquo;</p>
         </div>
 
         <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call or text us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span>.</p>
@@ -569,6 +602,44 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
 </body></html>`;
 }
 
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+
+async function checkRateLimit(
+  supabase: ReturnType<typeof createClient>,
+  ipKey: string,
+): Promise<boolean> {
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  try {
+    const { count } = await supabase
+      .from("admin_audit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("action", "form_submission_rate_limit_check")
+      .eq("entity_type", "ip")
+      .eq("entity_id", ipKey)
+      .gte("created_at", windowStart);
+    return (count ?? 0) < RATE_LIMIT_MAX;
+  } catch {
+    return true;
+  }
+}
+
+async function recordSubmission(
+  supabase: ReturnType<typeof createClient>,
+  ipKey: string,
+): Promise<void> {
+  try {
+    await supabase.from("admin_audit_logs").insert({
+      action: "form_submission_rate_limit_check",
+      entity_type: "ip",
+      entity_id: ipKey,
+      details: {},
+    });
+  } catch {
+    // non-fatal
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -578,6 +649,27 @@ Deno.serve(async (req: Request) => {
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY is not configured");
     }
+
+    const ipKey = (
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown"
+    ).split(",")[0].trim();
+
+    const rateLimitSupabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const allowed = await checkRateLimit(rateLimitSupabase, ipKey);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    await recordSubmission(rateLimitSupabase, ipKey);
 
     const payload: Payload = await req.json();
 

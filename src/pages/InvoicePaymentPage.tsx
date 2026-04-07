@@ -54,7 +54,7 @@ interface InvoiceData {
 }
 
 export default function InvoicePaymentPage() {
-  const { invoiceId } = useParams<{ invoiceId: string }>();
+  const { invoiceId, paymentToken } = useParams<{ invoiceId: string; paymentToken: string }>();
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [branding, setBranding] = useState<BusinessBranding | null>(null);
   const [address, setAddress] = useState<BusinessAddress | null>(null);
@@ -63,8 +63,9 @@ export default function InvoicePaymentPage() {
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
-    if (invoiceId) fetchInvoice();
-  }, [invoiceId]);
+    if (invoiceId && paymentToken) fetchInvoice();
+    else { setError('Invalid payment link.'); setLoading(false); }
+  }, [invoiceId, paymentToken]);
 
   const fetchInvoice = async () => {
     try {
@@ -72,6 +73,7 @@ export default function InvoicePaymentPage() {
         .from('invoices')
         .select('*')
         .eq('id', invoiceId)
+        .eq('payment_access_token', paymentToken)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -122,7 +124,7 @@ export default function InvoicePaymentPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${supabaseAnonKey}`,
         },
-        body: JSON.stringify({ invoiceId }),
+        body: JSON.stringify({ invoiceId, paymentToken }),
       });
 
       const data = await res.json();

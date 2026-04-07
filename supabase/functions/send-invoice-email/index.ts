@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
-      .select('id, invoice_number, invoice_type, client_name, client_email, invoice_date, due_date, subtotal, tax_rate, tax_amount, total_amount, amount_paid, amount_due, notes, status, payment_terms, business_id')
+      .select('id, invoice_number, invoice_type, client_name, client_email, invoice_date, due_date, subtotal, tax_rate, tax_amount, total_amount, amount_paid, amount_due, notes, status, payment_terms, business_id, payment_access_token')
       .eq('id', body.invoiceId)
       .eq('is_active', true)
       .maybeSingle();
@@ -353,7 +353,7 @@ Deno.serve(async (req) => {
 
     const businessName = bizData?.name || 'Boxed2Built';
 
-    const payUrl = `${APP_URL}/pay/${invoice.id}`;
+    const payUrl = `${APP_URL}/pay/${invoice.id}/${(invoice as Invoice & { payment_access_token: string }).payment_access_token}`;
 
     const subject = `Invoice ${invoice.invoice_number} — ${formatCurrency(invoice.amount_due)} Due`;
     const html = buildHtml(client.name, invoice as Invoice, (lineItems || []) as LineItem[], payUrl, businessName);

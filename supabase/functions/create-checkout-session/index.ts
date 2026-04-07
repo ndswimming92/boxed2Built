@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { invoiceId, source } = await req.json();
+    const { invoiceId, paymentToken, source } = await req.json();
 
     if (!invoiceId) {
       return new Response(JSON.stringify({ error: "invoiceId is required" }), {
@@ -47,7 +47,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .select("id, customer_id, business_id, invoice_number, client_name, client_email, amount_due, status")
+      .select("id, customer_id, business_id, invoice_number, client_name, client_email, amount_due, status, payment_access_token")
       .eq("id", invoiceId)
       .eq("is_active", true)
       .maybeSingle();
@@ -57,6 +57,15 @@ Deno.serve(async (req: Request) => {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (source !== "portal") {
+      if (!paymentToken || paymentToken !== invoice.payment_access_token) {
+        return new Response(JSON.stringify({ error: "Invalid payment link" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     if (source === "portal") {
@@ -92,15 +101,15 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const appUrl = req.headers.get("origin") || "https://www.boxed2built.com";
+    const appUrl = "https://www.boxed2built.com";
 
     const successUrl = source === "portal"
       ? `${appUrl}/portal/invoices?paid=1`
-      : `${appUrl}/pay/${invoiceId}/thank-you?session_id={CHECKOUT_SESSION_ID}`;
+      : `${appUrl}/pay/${invoiceId}/${invoice.payment_access_token}/thank-you?session_id={CHECKOUT_SESSION_ID}`;
 
     const cancelUrl = source === "portal"
       ? `${appUrl}/portal/invoices`
-      : `${appUrl}/pay/${invoiceId}`;
+      : `${appUrl}/pay/${invoiceId}/${invoice.payment_access_token}`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

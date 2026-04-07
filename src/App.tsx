@@ -321,8 +321,8 @@ function App() {
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                   <Route path="/lookup-request" element={<RequestLookupPage />} />
                   <Route path="/go/:slug" element={<QRRedirectPage />} />
-                  <Route path="/pay/:invoiceId" element={<InvoicePaymentPage />} />
-                  <Route path="/pay/:invoiceId/thank-you" element={<InvoiceThankYouPage />} />
+                  <Route path="/pay/:invoiceId/:paymentToken" element={<InvoicePaymentPage />} />
+                  <Route path="/pay/:invoiceId/:paymentToken/thank-you" element={<InvoiceThankYouPage />} />
 
                   <Route path="/admin/login" element={<LoginPage />} />
                   <Route path="/portal/login" element={<PortalLoginPage />} />
