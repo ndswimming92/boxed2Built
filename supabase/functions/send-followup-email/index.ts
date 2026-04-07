@@ -43,34 +43,8 @@ function buildReferralBlock(referralCode: string | null): string {
         <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
           <p style="margin:0 0 6px;color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Your Personal Referral Code</p>
           <p style="margin:0 0 14px;font-size:32px;font-weight:800;color:#15803d;font-family:monospace;letter-spacing:3px;">${code}</p>
-          <p style="margin:0 0 14px;color:#374151;font-size:14px;line-height:1.6;">Know someone who needs furniture assembled or a TV mounted? Share your code with them — when they book with Boxed2Built and mention your code, <strong>you both get a discount on your next service</strong>.</p>
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
-            <tr>
-              <td style="vertical-align:top;padding-bottom:10px;width:28px;">
-                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">1</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:10px;padding-left:10px;">
-                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">Share your code with a friend, neighbor, or coworker</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;padding-bottom:10px;width:28px;">
-                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">2</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:10px;padding-left:10px;">
-                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">They mention your code when they submit a request at <a href="${CONTACT_URL}" style="color:#1d4ed8;text-decoration:none;">boxed2built.com/contact</a></p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;width:28px;">
-                <div style="width:20px;height:20px;background:#15803d;border-radius:50%;text-align:center;line-height:20px;color:#ffffff;font-size:10px;font-weight:700;">3</div>
-              </td>
-              <td style="vertical-align:top;padding-left:10px;">
-                <p style="margin:0;color:#374151;font-size:13px;line-height:1.5;">You both save — it's that simple</p>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:0;color:#15803d;font-size:12px;font-weight:600;">No limit on how many friends you can refer. The more you share, the more you save.</p>
+          <p style="margin:0 0 10px;color:#374151;font-size:14px;line-height:1.6;">Know someone who could use a hand? If they book a job and mention your code, <strong>you both get $25 off</strong> — no strings attached.</p>
+          <p style="margin:0;color:#15803d;font-size:12px;font-weight:600;">No limit on how many people you can refer.</p>
         </div>`;
 }
 
@@ -84,60 +58,34 @@ function buildHtml(clientName: string, referralCode: string | null): string {
     <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
       <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Thank you for choosing Boxed2Built!</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">We really enjoyed working with you, ${firstName}.</p>
+        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Thanks for trusting me with your home, ${firstName}!</h1>
+        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">It was genuinely great working with you.</p>
       </td></tr>
 
       <tr><td style="background:#ffffff;padding:32px;">
         <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
-        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">It was a genuine pleasure working with you. We hope everything looks and feels exactly the way you imagined. Your satisfaction means everything to us.</p>
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Whenever you need another piece assembled, a TV mounted, or anything else set up — we're just one message away. We'd love to help again.</p>
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">I really appreciate you choosing Boxed2Built. I hope the space feels exactly the way you imagined — one less thing on your plate and your home feeling a little more complete.</p>
 
         <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
-          <p style="margin:0 0 6px;color:#1e3a5f;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Enjoyed the experience?</p>
-          <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.6;">Reviews are the lifeblood of a small business. If we earned it, a quick Google review makes a huge difference — it only takes 30 seconds.</p>
+          <p style="margin:0 0 6px;color:#1e3a5f;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Would you leave me a Google review?</p>
+          <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.6;">As a small local business, reviews mean everything to me. If I earned it, a quick review takes less than 30 seconds and helps more than you know.</p>
           <a href="${REVIEW_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Leave a Google Review &rarr;</a>
         </div>
 
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
-          <p style="margin:0 0 14px;color:#111827;font-size:14px;font-weight:700;">Need us again in the future?</p>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="vertical-align:top;padding-bottom:12px;width:28px;">
-                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">1</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:12px;padding-left:10px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">Fill out our quick request form</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Takes less than 2 minutes at <a href="${CONTACT_URL}" style="color:#1d4ed8;text-decoration:none;">boxed2built.com/contact</a>.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;padding-bottom:12px;width:28px;">
-                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">2</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:12px;padding-left:10px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We confirm your appointment</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">We'll reach out within 24 hours to lock in a time that works for you.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;width:28px;">
-                <div style="width:22px;height:22px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:22px;color:#ffffff;font-size:11px;font-weight:700;">3</div>
-              </td>
-              <td style="vertical-align:top;padding-left:10px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We show up and handle everything</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Pay only when the job is done and you're satisfied.</p>
-              </td>
-            </tr>
-          </table>
-          <div style="margin-top:18px;text-align:center;">
-            <a href="${CONTACT_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Book Your Next Job &rarr;</a>
+          <p style="margin:0 0 12px;color:#111827;font-size:14px;font-weight:700;">Need help again down the road?</p>
+          <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.7;">Whether it's another piece of furniture, a TV to mount, or anything else you need set up — just reply to this email or request a quote anytime. I'm always happy to come back.</p>
+          <div style="text-align:center;">
+            <a href="${CONTACT_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Request a Quote &rarr;</a>
           </div>
         </div>
 
         ${buildReferralBlock(referralCode)}
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions or need to reach us directly? Call or text <span style="color:#111827;font-weight:600;">(615) 403-4538</span> anytime.</p>
-        <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Feel free to save my number in case you need help again down the road: <span style="color:#111827;font-weight:600;">(615) 403-4538</span></p>
+        <p style="margin:0 0 4px;color:#374151;font-size:15px;font-weight:600;">Nicholas Davidson</p>
+        <p style="margin:0 0 2px;color:#6b7280;font-size:14px;">Owner, Boxed2Built</p>
+        <p style="margin:0 0 2px;color:#6b7280;font-size:14px;">(615) 403-4538</p>
+        <p style="margin:0;color:#6b7280;font-size:14px;"><a href="mailto:${CONTACT_EMAIL}" style="color:#6b7280;text-decoration:underline;">${CONTACT_EMAIL}</a></p>
       </td></tr>
 
       <tr><td style="background:#f9fafb;padding:20px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;">
@@ -165,16 +113,14 @@ function buildPlainText(clientName: string, referralCode: string | null): string
   const lines = [
     `Hi ${firstName},`,
     '',
-    'It was a genuine pleasure working with you. We hope everything looks and feels exactly the way you imagined.',
+    'I really appreciate you choosing Boxed2Built. I hope the space feels exactly the way you imagined — one less thing on your plate and your home feeling a little more complete.',
     '',
-    'Whenever you need another piece assembled, a TV mounted, or anything else set up — we\'re just one message away.',
-    '',
-    '--- Leave a Google Review ---',
-    'If we earned it, a quick review makes a huge difference:',
+    '--- Would you leave me a Google review? ---',
+    'As a small local business, reviews mean everything to me. If I earned it, it only takes 30 seconds:',
     REVIEW_URL,
     '',
-    '--- Book Your Next Job ---',
-    'Fill out our quick request form at:',
+    '--- Need help again down the road? ---',
+    'Whether it\'s another piece of furniture, a TV to mount, or anything else you need set up — just reply to this email or request a quote anytime:',
     CONTACT_URL,
     '',
   ];
@@ -184,17 +130,21 @@ function buildPlainText(clientName: string, referralCode: string | null): string
       '--- Your Personal Referral Code ---',
       `Your code: ${referralCode}`,
       '',
-      'Share it with a friend, neighbor, or coworker. When they book with Boxed2Built and mention your code, you both get a discount on your next service.',
+      'Know someone who could use a hand? If they book a job and mention your code, you both get $25 off — no strings attached.',
       '',
-      'No limit on how many friends you can refer.',
+      'No limit on how many people you can refer.',
       '',
     );
   }
 
   lines.push(
-    'Questions? Call or text us at (615) 403-4538 or email ' + CONTACT_EMAIL,
+    'Feel free to save my number in case you need help again down the road: (615) 403-4538',
     '',
-    '— The Boxed2Built Team',
+    'Nicholas Davidson',
+    'Owner, Boxed2Built',
+    '(615) 403-4538',
+    CONTACT_EMAIL,
+    '',
     'Boxed2Built | Spring Hill, TN',
     WEBSITE_URL,
     '',
