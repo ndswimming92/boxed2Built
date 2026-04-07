@@ -275,17 +275,17 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl p-6 border border-slate-200 animate-pulse">
-              <div className="h-12 w-12 bg-slate-200 rounded-lg mb-4"></div>
-              <div className="h-4 bg-slate-200 rounded w-24 mb-2"></div>
-              <div className="h-8 bg-slate-200 rounded w-16"></div>
+            <div key={i} className="bg-white rounded-xl p-3 md:p-6 border border-slate-200 animate-pulse">
+              <div className="h-8 w-8 md:h-12 md:w-12 bg-slate-200 rounded-lg mb-2 md:mb-4"></div>
+              <div className="h-3 md:h-4 bg-slate-200 rounded w-20 mb-1 md:mb-2"></div>
+              <div className="h-5 md:h-8 bg-slate-200 rounded w-12 md:w-16"></div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {statCards.map((card) => {
             const Icon = card.icon;
             const isHighlighted = 'highlight' in card && card.highlight;
@@ -293,28 +293,28 @@ export default function DashboardPage() {
               <Link
                 key={card.name}
                 to={card.link}
-                className={`bg-white rounded-xl p-6 border transition-all group ${
+                className={`bg-white rounded-xl p-3 md:p-6 border transition-all group ${
                   isHighlighted
                     ? 'border-orange-300 shadow-md hover:shadow-lg'
                     : 'border-slate-200 hover:shadow-lg hover:border-emerald-300'
                 }`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 ${card.color} rounded-lg`}>
-                    <Icon className="w-6 h-6 text-white" />
+                <div className="flex items-start justify-between mb-2 md:mb-4">
+                  <div className={`p-2 md:p-3 ${card.color} rounded-lg`}>
+                    <Icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
                   </div>
                   {isHighlighted && (
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                      Action Needed
+                    <span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 leading-tight">
+                      Action
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-medium text-slate-600 mb-1">{card.name}</p>
-                <p className="text-3xl font-bold text-slate-900">{card.value}</p>
+                <p className="text-xs md:text-sm font-medium text-slate-600 mb-0.5 md:mb-1">{card.name}</p>
+                <p className="text-xl md:text-3xl font-bold text-slate-900">{card.value}</p>
                 {'subtitle' in card && card.subtitle && (
-                  <p className="text-xs text-slate-500 mt-2">{card.subtitle}</p>
+                  <p className="text-xs text-slate-500 mt-1 md:mt-2">{card.subtitle}</p>
                 )}
-                <p className="text-sm text-emerald-600 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="text-xs md:text-sm text-emerald-600 mt-1 md:mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   Manage →
                 </p>
               </Link>
