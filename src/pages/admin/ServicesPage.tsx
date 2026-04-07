@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, Service } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Briefcase, Minus } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Briefcase, Minus } from 'lucide-react';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -149,17 +149,17 @@ export default function ServicesPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Services</h1>
-          <p className="text-slate-600">Manage your service offerings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Services</h1>
+          <p className="text-sm sm:text-base text-slate-600">Manage your service offerings</p>
         </div>
         {!isAdding && !editingId && (
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto flex-shrink-0"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Service
           </button>
         )}
@@ -435,9 +435,9 @@ export default function ServicesPage() {
                 !service.is_active ? 'opacity-60' : ''
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="text-lg font-semibold text-slate-900">{service.name}</h3>
                     {service.is_featured && (
                       <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
@@ -490,10 +490,10 @@ export default function ServicesPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => handleToggleActive(service)}
-                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                    className={`px-2.5 py-1 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
                       service.is_active
                         ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                         : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
@@ -505,13 +505,13 @@ export default function ServicesPage() {
                     onClick={() => handleEdit(service)}
                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                   >
-                    <Edit2 className="w-5 h-5" />
+                    <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   <button
                     onClick={() => handleDelete(service.id)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </div>

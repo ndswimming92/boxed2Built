@@ -325,56 +325,56 @@ ${invoice.notes}` : ''}`,
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <FileText className="w-8 h-8 text-emerald-600" />
+            <FileText className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 flex-shrink-0" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Invoices</h1>
-              <p className="text-slate-600">Manage customer invoices and payments</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Invoices</h1>
+              <p className="text-sm sm:text-base text-slate-600">Manage customer invoices and payments</p>
             </div>
           </div>
           <button
             onClick={handleCreateInvoice}
-            className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto flex-shrink-0"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             New Invoice
           </button>
         </div>
       </div>
 
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
-                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Invoices</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.total}</p>
               </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Draft Total</p>
-                <p className="text-2xl font-bold text-slate-600">{formatCurrency(stats.totalDraft)}</p>
-                <p className="text-xs text-slate-500 mt-1">{stats.draft} unsent invoices</p>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Draft Total</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-600">{formatCurrency(stats.totalDraft)}</p>
+                <p className="text-xs text-slate-500 mt-1">{stats.draft} unsent</p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg">
-                <FileText className="w-6 h-6 text-slate-600" />
+              <div className="p-2 sm:p-3 bg-slate-50 rounded-lg">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Outstanding</p>
-                <p className="text-2xl font-bold text-orange-600">{formatCurrency(stats.totalOutstanding)}</p>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Outstanding</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-600">{formatCurrency(stats.totalOutstanding)}</p>
                 <p className="text-xs text-slate-500 mt-1">
                   {stats.sent + stats.partiallyPaid + stats.overdue} invoices
                   {stats.overdue > 0 && (
@@ -382,21 +382,21 @@ ${invoice.notes}` : ''}`,
                   )}
                 </p>
               </div>
-              <div className="p-3 bg-orange-50 rounded-lg">
-                <Clock className="w-6 h-6 text-orange-600" />
+              <div className="p-2 sm:p-3 bg-orange-50 rounded-lg">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalPaid)}</p>
-                <p className="text-xs text-slate-500 mt-1">{stats.paid} paid invoices</p>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Paid</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(stats.totalPaid)}</p>
+                <p className="text-xs text-slate-500 mt-1">{stats.paid} paid</p>
               </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-2 sm:p-3 bg-green-50 rounded-lg">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
           </div>

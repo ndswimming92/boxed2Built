@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Plus, Search, Edit, Trash2, Check, Archive, TrendingUp, X } from 'lucide-react';
+import { Target, Plus, Search, CreditCard as Edit, Trash2, Check, Archive, TrendingUp, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Goal } from '../../lib/supabase';
 import {
@@ -248,20 +248,20 @@ export default function GoalsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
           <div className="flex items-center gap-3">
-            <Target className="w-8 h-8 text-emerald-600" />
-            <h1 className="text-3xl font-bold text-slate-900">Business Goals</h1>
+            <Target className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 flex-shrink-0" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Business Goals</h1>
           </div>
           <button
             onClick={handleCreateGoal}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto flex-shrink-0"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             New Goal
           </button>
         </div>
-        <p className="text-slate-600">Track and manage your business objectives</p>
+        <p className="text-sm sm:text-base text-slate-600">Track and manage your business objectives</p>
       </div>
 
       {message && (
@@ -410,11 +410,11 @@ export default function GoalsPage() {
                     {goal.description && (
                       <p className="text-sm text-slate-600 mb-3">{goal.description}</p>
                     )}
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600">
                       <span className="capitalize">{goal.category.replace('_', ' ')}</span>
                       {goal.due_date && (
                         <>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span className={goal.status !== 'completed' && (isDueSoon || isOverdue) ? 'text-red-600 font-medium' : ''}>
                             Due {new Date(goal.due_date).toLocaleDateString()}
                             {daysRemaining !== null && goal.status !== 'completed' && (
@@ -464,9 +464,9 @@ export default function GoalsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm">
                     <span className="text-slate-600">Progress</span>
-                    <span className="font-semibold text-slate-900">
+                    <span className="font-semibold text-slate-900 text-xs sm:text-sm break-words">
                       {formatUnitValue(goal.current_value, goal.unit_type, goal.unit_label)} /{' '}
                       {formatUnitValue(goal.target_value, goal.unit_type, goal.unit_label)}
                     </span>

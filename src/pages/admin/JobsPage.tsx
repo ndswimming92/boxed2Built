@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -271,26 +271,26 @@ export default function JobsPage() {
 
   return (
     <div className="max-w-7xl">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Jobs</h1>
-          <p className="text-slate-600">Track and manage all your completed jobs</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Jobs</h1>
+          <p className="text-sm sm:text-base text-slate-600">Track and manage all your completed jobs</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleExportJobs}
-            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="px-3 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 text-sm"
             title="Export jobs to CSV"
           >
-            <Upload className="w-5 h-5" />
+            <Upload className="w-4 h-4" />
             Export
           </button>
           <button
             onClick={() => setShowImportModal(true)}
-            className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="px-3 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 text-sm"
             title="Import jobs from CSV"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 h-4" />
             Import
           </button>
           <button
@@ -300,9 +300,9 @@ export default function JobsPage() {
               setCopyingJob(null);
               setShowModal(true);
             }}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+            className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-1.5 text-sm"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Add Job
           </button>
         </div>
@@ -334,45 +334,45 @@ export default function JobsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Briefcase className="w-5 h-5 text-blue-600" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Jobs</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Total Jobs</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{stats.totalJobs}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.totalJobs}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Revenue</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Revenue</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalRevenue))}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalRevenue))}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-violet-100 rounded-lg">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Profit</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Profit</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalProfit))}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.totalProfit))}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-amber-100 rounded-lg">
-              <Clock className="w-5 h-5 text-amber-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-amber-100 rounded-lg">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Avg Hourly Rate</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Avg Rate</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.avgHourlyRate))}/hr</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{maskFinancialValue(formatCurrency(stats.avgHourlyRate))}/hr</p>
         </div>
       </div>
 

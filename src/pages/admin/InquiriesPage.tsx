@@ -321,15 +321,15 @@ export default function InquiriesPage() {
   return (
     <div className="max-w-7xl">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Form Inquiries</h1>
-            <p className="text-slate-600">Manage customer inquiries from your website contact form</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Form Inquiries</h1>
+            <p className="text-sm sm:text-base text-slate-600">Manage customer inquiries from your website contact form</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => setShowTestData(!showTestData)}
-              className={`px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 border ${
+              className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm ${
                 showTestData
                   ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
                   : 'border-slate-300 text-slate-600 hover:bg-slate-50'
@@ -337,19 +337,19 @@ export default function InquiriesPage() {
               title={showTestData ? 'Hide test submissions' : 'Show test submissions'}
             >
               <FlaskConical className="w-4 h-4" />
-              <span className="text-sm">{showTestData ? 'Hide Tests' : 'Show Tests'}</span>
+              <span>{showTestData ? 'Hide Tests' : 'Show Tests'}</span>
             </button>
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing}
-              className={`relative px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              className={`relative px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 text-sm ${
                 isRefreshing
                   ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                   : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow-md'
               }`}
               title="Check for new form submissions"
             >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>Check for New</span>
             </button>
           </div>
@@ -379,45 +379,45 @@ export default function InquiriesPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Inbox className="w-5 h-5 text-blue-600" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+              <Inbox className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Total Inquiries</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Total</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.total}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-yellow-100 rounded-lg">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Pending</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Pending</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{stats.pending}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.pending}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Converted</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Converted</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{stats.converted}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.converted}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <ExternalLink className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="p-1.5 sm:p-2 bg-teal-100 rounded-lg">
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
             </div>
-            <p className="text-sm font-medium text-slate-600">Conversion Rate</p>
+            <p className="text-xs sm:text-sm font-medium text-slate-600">Conv. Rate</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{stats.conversionRate}%</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.conversionRate}%</p>
         </div>
       </div>
 
