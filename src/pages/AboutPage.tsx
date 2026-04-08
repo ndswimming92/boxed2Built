@@ -82,7 +82,7 @@ const AboutPage: React.FC = () => {
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Meet the Owner</h2>
                   <p className="text-xl text-gray-700 mb-6 font-medium">
-                    Hi, I'm Nicholas Davidson, the hands (and heart) behind Boxed2Built.
+                    Hi, I'm Nicholas Davidson, the hands behind Boxed2Built.
                   </p>
                   <p className="text-gray-700 mb-6 leading-relaxed">
                     Ever since I was a kid, I've loved opening a new box of furniture and figuring out how it all fits together. 
