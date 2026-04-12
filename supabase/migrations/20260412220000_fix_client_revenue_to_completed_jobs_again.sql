@@ -34,7 +34,7 @@ BEGIN
   WHERE id = client_id_input;
 
   -- Revenue should reflect completed work, independent of invoice payment status.
-  SELECT COALESCE(SUM(final_price), 0)
+  SELECT COALESCE(SUM(COALESCE(final_price, quoted_price, 0)), 0)
   INTO v_total_revenue
   FROM jobs
   WHERE client_id = client_id_input
