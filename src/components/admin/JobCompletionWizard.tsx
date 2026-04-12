@@ -174,7 +174,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         completed_by: user?.id || null,
         signature_data: signatureData,
         completion_checklist: checklist,
-        completion_photos: photos.map(p => p.dataUrl),
+        completion_photos: [],
         admin_notes: adminNotes,
         device_info: {
           userAgent: navigator.userAgent,
@@ -193,6 +193,18 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         .single();
 
       if (completionError) throw completionError;
+
+      if (photos.length > 0) {
+        const completionPhotos = photos.map(photo => photo.dataUrl);
+        const { error: completionPhotosError } = await supabase
+          .from('job_completions')
+          .update({ completion_photos: completionPhotos })
+          .eq('id', completion.id);
+
+        if (completionPhotosError) {
+          console.error('Error saving completion photos:', completionPhotosError);
+        }
+      }
 
       if (satisfactionComment.trim()) {
         const reviewData = {
