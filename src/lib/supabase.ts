@@ -58,6 +58,7 @@ export type BusinessInfo = {
   currencies_accepted: string;
   logo_url: string | null;
   image_url: string | null;
+  total_client_hours_saved: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -694,6 +695,7 @@ const zBusinessInfo = z.object({
   currencies_accepted: z.string(),
   logo_url: z.string().nullable(),
   image_url: z.string().nullable(),
+  total_client_hours_saved: z.number().nullable(),
   is_active: z.boolean(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -831,7 +833,7 @@ const T = {
 
 const COLS = {
   info:
-    'id,name,alternate_name,description,slogan,phone,email,website,founded_year,founder_name,price_range,currencies_accepted,logo_url,image_url,is_active,created_at,updated_at',
+    'id,name,alternate_name,description,slogan,phone,email,website,founded_year,founder_name,price_range,currencies_accepted,logo_url,image_url,total_client_hours_saved,is_active,created_at,updated_at',
   address:
     'id,business_id,street_address,address_locality,address_region,postal_code,address_country,latitude,longitude,created_at,updated_at',
   serviceArea:

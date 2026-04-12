@@ -4,6 +4,7 @@ import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
 import Header from '../components/layout/Header';
 import HomeHero from '../components/sections/HomeHero';
+import ClientHoursSavedStat from '../components/sections/ClientHoursSavedStat';
 import HomeServices from '../components/sections/HomeServices';
 import HomeFAQ from '../components/sections/HomeFAQ';
 import ContactForm from '../components/ContactForm';
@@ -76,6 +77,7 @@ const HomePage: React.FC = () => {
       <Header />
       <main className="pt-16">
         <HomeHero />
+        <ClientHoursSavedStat totalHoursSaved={businessData.info.total_client_hours_saved} />
 
         <section id="contact-form-section" className="py-12 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">

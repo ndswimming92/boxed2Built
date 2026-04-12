@@ -172,6 +172,7 @@ const buildFallbackData = (): CompleteBusinessData => ({
     currencies_accepted: 'USD',
     logo_url: 'https://boxed2built.com/black_boxed2built_logo.png',
     image_url: 'https://boxed2built.com/black_boxed2built_logo.png',
+    total_client_hours_saved: 0,
     is_active: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
