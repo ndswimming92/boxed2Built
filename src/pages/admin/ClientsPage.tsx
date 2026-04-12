@@ -15,6 +15,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { logAction } from '../../services/auditLogService';
+import { supabase } from '../../lib/supabase';
 
 type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads' | 'referrals';
 
@@ -43,6 +44,45 @@ export default function ClientsPage() {
     loadData();
   }, [organizationId, selectedSegment]);
 
+  async function hydrateClientsWithLiveRevenue(clientsList: Client[]): Promise<Client[]> {
+    if (clientsList.length === 0) return clientsList;
+
+    const clientIds = clientsList.map(client => client.id);
+    const { data: completedJobs, error } = await supabase
+      .from('jobs')
+      .select('client_id, final_price, quoted_price')
+      .in('client_id', clientIds)
+      .eq('job_status', 'completed');
+
+    if (error) {
+      console.error('Error loading live client revenue from jobs:', error);
+      return clientsList;
+    }
+
+    const revenueByClient = new Map<string, { revenue: number; completedJobs: number }>();
+
+    for (const job of completedJobs || []) {
+      if (!job.client_id) continue;
+      const existing = revenueByClient.get(job.client_id) || { revenue: 0, completedJobs: 0 };
+      const jobRevenue = Number(job.final_price ?? job.quoted_price ?? 0);
+      revenueByClient.set(job.client_id, {
+        revenue: existing.revenue + jobRevenue,
+        completedJobs: existing.completedJobs + 1
+      });
+    }
+
+    return clientsList.map((client) => {
+      const liveMetrics = revenueByClient.get(client.id);
+      if (!liveMetrics) return client;
+
+      return {
+        ...client,
+        total_revenue: liveMetrics.revenue,
+        job_count: liveMetrics.completedJobs
+      };
+    });
+  }
+
   async function loadData() {
     if (!organizationId) {
       setClients([]);
@@ -61,7 +101,8 @@ export default function ClientsPage() {
         getClientSegmentStats(organizationId)
       ]);
 
-      setClients(clientsData);
+      const hydratedClients = await hydrateClientsWithLiveRevenue(clientsData);
+      setClients(hydratedClients);
       setStats(statsData);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -77,7 +118,8 @@ export default function ClientsPage() {
     if (term.trim()) {
       try {
         const results = await searchClients(organizationId, term);
-        setClients(results);
+        const hydratedResults = await hydrateClientsWithLiveRevenue(results);
+        setClients(hydratedResults);
       } catch (error) {
         console.error('Error searching clients:', error);
       }
