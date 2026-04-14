@@ -1,26 +1,106 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
 import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink } from 'lucide-react';
 import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
 
+const PAGE_SIZE = 25;
+
 export default function CompletionsPage() {
   const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
-  const [filteredCompletions, setFilteredCompletions] = useState<(JobCompletion & { job: any })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [satisfactionFilter, setSatisfactionFilter] = useState<'all' | 'satisfied' | 'unsatisfied'>('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
   const [selectedCompletionDetail, setSelectedCompletionDetail] = useState<(JobCompletion & { job: any }) | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const fetchData = useCallback(async (targetPage: number, reset = false) => {
+    const start = (targetPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE - 1;
+
+    if (targetPage === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      let query = supabase
+        .from('job_completions')
+        .select(`
+          id,
+          completed_at,
+          customer_name,
+          is_customer_satisfied,
+          final_price,
+          completion_checklist,
+          completion_photos,
+          job_id,
+          job:jobs!job_id (
+            client_phone,
+            final_price,
+            payment_date,
+            job_type
+          )
+        `, { count: 'exact' })
+        .order('completed_at', { ascending: false })
+        .range(start, end);
+
+      if (searchTerm.trim()) {
+        const term = searchTerm.trim();
+        query = query.or(`customer_name.ilike.%${term}%,job.client_phone.ilike.%${term}%`);
+      }
+
+      if (satisfactionFilter === 'satisfied') {
+        query = query.eq('is_customer_satisfied', true);
+      } else if (satisfactionFilter === 'unsatisfied') {
+        query = query.eq('is_customer_satisfied', false);
+      }
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        console.error('Error fetching completions:', error);
+        throw error;
+      }
+
+      if (typeof count === 'number') {
+        setTotalCount(count);
+        setHasMore(end + 1 < count);
+      } else {
+        setHasMore((data?.length || 0) === PAGE_SIZE);
+      }
+
+      if (data) {
+        if (reset) {
+          setCompletions(data);
+        } else {
+          setCompletions(prev => [...prev, ...data]);
+        }
+      } else if (reset) {
+        setCompletions([]);
+      }
+
+      setPage(targetPage);
+    } catch (error) {
+      console.error('Error fetching completions:', error);
+    } finally {
+      if (targetPage === 1) {
+        setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
+    }
+  }, [searchTerm, satisfactionFilter]);
 
   useEffect(() => {
-    applyFilters();
-  }, [completions, searchTerm, satisfactionFilter]);
+    fetchData(1, true);
+  }, [fetchData]);
 
   useEffect(() => {
     if (!selectedCompletion?.id) {
@@ -79,61 +159,10 @@ export default function CompletionsPage() {
     fetchCompletionDetail();
   }, [selectedCompletion?.id]);
 
-  const fetchData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('job_completions')
-        .select(`
-          id,
-          completed_at,
-          customer_name,
-          is_customer_satisfied,
-          final_price,
-          completion_checklist,
-          completion_photos,
-          job_id,
-          job:jobs!job_id (
-            client_phone,
-            final_price,
-            payment_date,
-            job_type
-          )
-        `)
-        .order('completed_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching completions:', error);
-        throw error;
-      }
-
-      if (data) {
-        setCompletions(data);
-      }
-    } catch (error) {
-      console.error('Error fetching completions:', error);
-    } finally {
-      setLoading(false);
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchData(page + 1);
     }
-  };
-
-  const applyFilters = () => {
-    let filtered = [...completions];
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(completion =>
-        completion.customer_name?.toLowerCase().includes(term) ||
-        completion.job?.client_phone?.toLowerCase().includes(term)
-      );
-    }
-
-    if (satisfactionFilter === 'satisfied') {
-      filtered = filtered.filter(c => c.is_customer_satisfied);
-    } else if (satisfactionFilter === 'unsatisfied') {
-      filtered = filtered.filter(c => !c.is_customer_satisfied);
-    }
-
-    setFilteredCompletions(filtered);
   };
 
   const formatDate = (dateString: string) => {
@@ -250,7 +279,7 @@ export default function CompletionsPage() {
             </div>
             <p className="text-xs sm:text-sm font-medium text-slate-600">Completions</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900">{completions.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{totalCount}</p>
         </div>
 
         <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
@@ -283,16 +312,20 @@ export default function CompletionsPage() {
         </div>
       </div>
 
+      <div className="mb-3 text-sm text-slate-600">
+        Showing {completions.length} of {totalCount} completions
+      </div>
+
       <div className="space-y-4">
-        {filteredCompletions.length === 0 ? (
+        {completions.length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
             <CheckCircle2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-600">
-              {completions.length === 0 ? 'No completed jobs yet' : 'No completions match your filters'}
+              No completions match your filters
             </p>
           </div>
         ) : (
-          filteredCompletions.map((completion) => {
+          completions.map((completion) => {
             const checklist = getCheckedCount(completion.completion_checklist);
             return (
               <div
@@ -377,6 +410,18 @@ export default function CompletionsPage() {
           })
         )}
       </div>
+
+      {hasMore && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {loadingMore ? 'Loading...' : 'Load more'}
+          </button>
+        </div>
+      )}
 
       {selectedCompletion && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
