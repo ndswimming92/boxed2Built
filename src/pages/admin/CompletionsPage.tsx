@@ -7,10 +7,12 @@ export default function CompletionsPage() {
   const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
   const [filteredCompletions, setFilteredCompletions] = useState<(JobCompletion & { job: any })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [satisfactionFilter, setSatisfactionFilter] = useState<'all' | 'satisfied' | 'unsatisfied'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
+  const [selectedCompletionDetail, setSelectedCompletionDetail] = useState<(JobCompletion & { job: any }) | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -20,13 +22,82 @@ export default function CompletionsPage() {
     applyFilters();
   }, [completions, searchTerm, satisfactionFilter]);
 
+  useEffect(() => {
+    if (!selectedCompletion?.id) {
+      setSelectedCompletionDetail(null);
+      setDetailLoading(false);
+      return;
+    }
+
+    const fetchCompletionDetail = async () => {
+      setDetailLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('job_completions')
+          .select(`
+            id,
+            job_id,
+            completed_at,
+            completed_by,
+            signature_data,
+            signature_url,
+            completion_checklist,
+            completion_photos,
+            admin_notes,
+            device_info,
+            customer_name,
+            final_price,
+            is_customer_satisfied,
+            location_captured,
+            created_at,
+            updated_at,
+            job:jobs!job_id (
+              client_phone,
+              final_price,
+              payment_date,
+              job_type
+            )
+          `)
+          .eq('id', selectedCompletion.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching completion detail:', error);
+          return;
+        }
+
+        if (data) {
+          setSelectedCompletionDetail(data);
+        }
+      } catch (error) {
+        console.error('Error fetching completion detail:', error);
+      } finally {
+        setDetailLoading(false);
+      }
+    };
+
+    fetchCompletionDetail();
+  }, [selectedCompletion?.id]);
+
   const fetchData = async () => {
     try {
       const { data, error } = await supabase
         .from('job_completions')
         .select(`
-          *,
-          job:jobs!job_id (*)
+          id,
+          completed_at,
+          customer_name,
+          is_customer_satisfied,
+          final_price,
+          completion_checklist,
+          completion_photos,
+          job_id,
+          job:jobs!job_id (
+            client_phone,
+            final_price,
+            payment_date,
+            job_type
+          )
         `)
         .order('completed_at', { ascending: false });
 
@@ -122,6 +193,8 @@ export default function CompletionsPage() {
       </div>
     );
   }
+
+  const modalCompletion = selectedCompletionDetail ?? selectedCompletion;
 
   return (
     <div className="max-w-7xl">
@@ -310,11 +383,14 @@ export default function CompletionsPage() {
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{selectedCompletion.customer_name}</h2>
-                <p className="text-sm text-slate-600 mt-1">Completed on {formatDate(selectedCompletion.completed_at)}</p>
+                <h2 className="text-2xl font-bold text-slate-900">{modalCompletion?.customer_name}</h2>
+                <p className="text-sm text-slate-600 mt-1">Completed on {modalCompletion?.completed_at ? formatDate(modalCompletion.completed_at) : 'N/A'}</p>
               </div>
               <button
-                onClick={() => setSelectedCompletion(null)}
+                onClick={() => {
+                  setSelectedCompletion(null);
+                  setSelectedCompletionDetail(null);
+                }}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -322,6 +398,11 @@ export default function CompletionsPage() {
             </div>
 
             <div className="p-6 space-y-6">
+              {detailLoading && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                  Loading full completion details...
+                </div>
+              )}
               <div className="bg-slate-50 rounded-xl p-6">
                 <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-emerald-600" />
@@ -331,12 +412,12 @@ export default function CompletionsPage() {
                   <div>
                     <p className="text-slate-600">Final Price</p>
                     <p className="font-semibold text-slate-900">
-                      {selectedCompletion.job?.final_price != null ? `$${Number(selectedCompletion.job.final_price).toLocaleString()}` : 'N/A'}
+                      {modalCompletion?.job?.final_price != null ? `$${Number(modalCompletion.job.final_price).toLocaleString()}` : 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-slate-600">Payment Status</p>
-                    {selectedCompletion.job?.payment_date ? (
+                    {modalCompletion?.job?.payment_date ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                         <CheckCircle2 className="w-3 h-3" />
                         Paid
@@ -349,8 +430,8 @@ export default function CompletionsPage() {
                   </div>
                   <div>
                     <p className="text-slate-600">Customer Satisfied</p>
-                    <p className={`font-semibold ${selectedCompletion.is_customer_satisfied ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {selectedCompletion.is_customer_satisfied ? 'Yes' : 'No'}
+                    <p className={`font-semibold ${modalCompletion?.is_customer_satisfied ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {modalCompletion?.is_customer_satisfied ? 'Yes' : 'No'}
                     </p>
                   </div>
                   <div>
@@ -362,19 +443,19 @@ export default function CompletionsPage() {
                   </div>
                   <div>
                     <p className="text-slate-600">Job Type</p>
-                    <p className="font-semibold text-slate-900">{selectedCompletion.job?.job_type || 'N/A'}</p>
+                    <p className="font-semibold text-slate-900">{modalCompletion?.job?.job_type || 'N/A'}</p>
                   </div>
                 </div>
               </div>
 
-              {Array.isArray(selectedCompletion.completion_checklist) && selectedCompletion.completion_checklist.length > 0 && (
+              {Array.isArray(modalCompletion?.completion_checklist) && modalCompletion.completion_checklist.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                     Completion Checklist
                   </h3>
                   <div className="space-y-2">
-                    {selectedCompletion.completion_checklist.map((item: any, index: number) => (
+                    {modalCompletion.completion_checklist.map((item: any, index: number) => (
                       <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
                         <CheckCircle2 className={`w-5 h-5 ${item.checked ? 'text-emerald-600' : 'text-slate-300'}`} />
                         <span className={`text-sm ${item.checked ? 'text-slate-900' : 'text-slate-500'}`}>
@@ -389,24 +470,30 @@ export default function CompletionsPage() {
               <div>
                 <h3 className="font-semibold text-slate-900 mb-3">Customer Signature</h3>
                 <div className="bg-slate-50 rounded-xl p-6 border-2 border-slate-200">
-                  <img
-                    src={selectedCompletion.signature_data}
-                    alt="Customer signature"
-                    className="max-w-full h-48 mx-auto"
-                  />
+                  {modalCompletion?.signature_data ? (
+                    <img
+                      src={modalCompletion.signature_data}
+                      alt="Customer signature"
+                      className="max-w-full h-48 mx-auto"
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-600 text-center py-10">
+                      {detailLoading ? 'Loading signature...' : 'No signature available.'}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {selectedCompletion.completion_photos && selectedCompletion.completion_photos.length > 0 && (
+              {modalCompletion?.completion_photos && modalCompletion.completion_photos.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                       <ImageIcon className="w-5 h-5 text-emerald-600" />
-                      Completion Photos ({selectedCompletion.completion_photos.length})
+                      Completion Photos ({modalCompletion.completion_photos.length})
                     </h3>
                     {!isIOS() && (
                       <button
-                        onClick={() => handleDownloadAllPhotos(selectedCompletion)}
+                        onClick={() => handleDownloadAllPhotos(modalCompletion)}
                         className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
                       >
                         <Download className="w-4 h-4" />
@@ -423,7 +510,7 @@ export default function CompletionsPage() {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedCompletion.completion_photos.map((photo, index) => (
+                    {modalCompletion.completion_photos.map((photo, index) => (
                       <div key={index} className="bg-slate-50 rounded-lg overflow-hidden">
                         <img
                           src={photo}
@@ -433,7 +520,7 @@ export default function CompletionsPage() {
                         <div className="p-2 flex gap-2 flex-wrap">
                           {canShare() && (
                             <button
-                              onClick={() => handleSharePhoto(photo, selectedCompletion, index)}
+                              onClick={() => handleSharePhoto(photo, modalCompletion, index)}
                               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors"
                             >
                               <Share2 className="w-3.5 h-3.5" />
@@ -450,7 +537,7 @@ export default function CompletionsPage() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleDownloadPhoto(photo, selectedCompletion, index)}
+                              onClick={() => handleDownloadPhoto(photo, modalCompletion, index)}
                               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-600 text-white rounded text-xs font-semibold hover:bg-emerald-700 transition-colors"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -464,11 +551,11 @@ export default function CompletionsPage() {
                 </div>
               )}
 
-              {selectedCompletion.admin_notes && (
+              {modalCompletion?.admin_notes && (
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-3">Admin Notes</h3>
                   <p className="text-sm text-slate-700 bg-slate-50 p-4 rounded-lg">
-                    {selectedCompletion.admin_notes}
+                    {modalCompletion.admin_notes}
                   </p>
                 </div>
               )}
@@ -476,7 +563,10 @@ export default function CompletionsPage() {
 
             <div className="p-6 border-t border-slate-200">
               <button
-                onClick={() => setSelectedCompletion(null)}
+                onClick={() => {
+                  setSelectedCompletion(null);
+                  setSelectedCompletionDetail(null);
+                }}
                 className="w-full px-6 py-3 bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
               >
                 Close
