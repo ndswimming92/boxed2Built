@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Star, Clock, MapPin, Phone } from 'lucide-react';
+import { ArrowRight, Star, Clock, MapPin, Phone, Clock3, Heart } from 'lucide-react';
 import Button from '../ui/Button';
 import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
@@ -155,6 +155,42 @@ const HomeHero: React.FC = () => {
                   {BUSINESS_INFO.phoneFormatted}
                 </a>
               </div>
+
+              {(() => {
+                const rawHours = Number(businessData?.info?.total_client_hours_saved) || 0;
+                if (rawHours <= 0) return null;
+                const formattedHours = rawHours.toFixed(1);
+                const fullDays = Math.floor(rawHours / 8);
+                const contextLine = fullDays >= 2
+                  ? `That is more than ${fullDays} full days given back to our neighbors.`
+                  : `Every hour we work is one you get to spend on what matters most.`;
+                return (
+                  <div className="mt-5 md:mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-4 md:p-5 shadow-lg">
+                    <div className="flex items-start gap-3 md:gap-4">
+                      <div className="flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-xl bg-white/15 flex items-center justify-center">
+                        <Clock3 className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold tracking-widest uppercase text-blue-200 mb-0.5">
+                          Hours Given Back to Clients
+                        </p>
+                        <p className="text-3xl md:text-4xl font-bold text-white leading-none">
+                          {formattedHours} <span className="text-xl md:text-2xl font-semibold text-blue-100">hrs</span>
+                        </p>
+                        <p className="text-sm text-blue-100 mt-1.5 leading-snug">
+                          {contextLine}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <Heart className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
+                          <p className="text-xs text-blue-200">
+                            We take the hard part so you can enjoy the rest of your day.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <span className="sr-only">
                 {businessName} — Serving {locality}, {region}
