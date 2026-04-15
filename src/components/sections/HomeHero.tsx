@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Star, Clock, MapPin, Phone, Clock3, Heart } from 'lucide-react';
+import { ArrowRight, Star, Clock, MapPin, Phone, Clock3 } from 'lucide-react';
 import Button from '../ui/Button';
 import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
@@ -165,26 +165,21 @@ const HomeHero: React.FC = () => {
                   ? `That is more than ${fullDays} full days given back to our customers.`
                   : `Every hour we work is one you get to spend on what matters most.`;
                 return (
-                  <div className="mt-5 md:mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-4 md:p-5 shadow-lg">
-                    <div className="flex items-start gap-3 md:gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-xl bg-white/15 flex items-center justify-center">
-                        <Clock3 className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                  <div className="mt-4 rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Clock3 className="w-4 h-4 text-blue-600" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold tracking-widest uppercase text-blue-200 mb-0.5">
-                          Hours Given Back to Clients
+                        <p className="text-[10px] font-semibold tracking-widest uppercase text-gray-400 leading-none mb-0.5">
+                          Hours Given Back to Customers
                         </p>
-                        <p className="text-3xl md:text-4xl font-bold text-white leading-none">
-                          {formattedHours} <span className="text-xl md:text-2xl font-semibold text-blue-100">hrs</span>
-                        </p>
-                        <p className="text-sm text-blue-100 mt-1.5 leading-snug">
-                          {contextLine}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-2">
-                          <Heart className="w-3.5 h-3.5 text-blue-300 flex-shrink-0" />
-                          <p className="text-xs text-blue-200">
-                            We take the hard part so you can enjoy the rest of your day.
-                          </p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-xl font-bold text-gray-900 leading-none">{formattedHours}</span>
+                          <span className="text-sm font-medium text-gray-500">hrs</span>
+                          {fullDays >= 2 && (
+                            <span className="text-xs text-gray-500">&mdash; {contextLine}</span>
+                          )}
                         </div>
                       </div>
                     </div>

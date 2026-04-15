@@ -93,7 +93,7 @@ export interface JobTypeConversion {
 
 export type TimePeriod = 'current_month' | 'last_3_months' | 'last_6_months' | 'current_year' | 'all_time';
 
-export const CLIENT_TIME_SAVED_TITLE = 'Total Client Hours Saved';
+export const CLIENT_TIME_SAVED_TITLE = 'Hours Given Back to Customers';
 export const CLIENT_TIME_SAVED_SUBTITLE = 'Calculated as the direct sum of completed job hours worked.';
 
 export function calculateClientTimeSaved(hoursWorkedValues: Array<number | null | undefined>): ClientTimeSavedMetric {
