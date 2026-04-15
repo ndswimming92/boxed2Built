@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
 import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink } from 'lucide-react';
 import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
@@ -20,6 +20,7 @@ export default function CompletionsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
   const [selectedCompletionDetail, setSelectedCompletionDetail] = useState<(JobCompletion & { job: any }) | null>(null);
+  const detailCache = useRef<Map<string, JobCompletion & { job: any }>>(new Map());
 
   const fetchData = useCallback(async (
     targetPage: number,
@@ -46,7 +47,6 @@ export default function CompletionsPage() {
           is_customer_satisfied,
           final_price,
           completion_checklist,
-          completion_photos,
           job_id,
           job:jobs!job_id (
             client_phone,
@@ -126,6 +126,13 @@ export default function CompletionsPage() {
       return;
     }
 
+    const cached = detailCache.current.get(selectedCompletion.id);
+    if (cached) {
+      setSelectedCompletionDetail(cached);
+      setDetailLoading(false);
+      return;
+    }
+
     const fetchCompletionDetail = async () => {
       setDetailLoading(true);
       try {
@@ -164,6 +171,7 @@ export default function CompletionsPage() {
         }
 
         if (data) {
+          detailCache.current.set(data.id, data);
           setSelectedCompletionDetail(data);
         }
       } catch (error) {

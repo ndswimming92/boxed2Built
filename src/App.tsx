@@ -102,10 +102,14 @@ function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/pay')) {
+      return;
+    }
+
     let analytics: AnalyticsModule | null = null;
 
     const run = async () => {
-      await loadGoogleAnalytics();
+      void loadGoogleAnalytics();
       analytics = await loadAnalyticsModule();
 
       // Reset tracking for new page
@@ -265,9 +269,9 @@ function AnalyticsInitializer() {
   const location = useLocation();
 
   useEffect(() => {
-    // Initialize GA4 on every route so admin-side verification traffic and
-    // authenticated flows can still appear in Realtime while keeping the
-    // route-specific event tracking logic centralized in the Analytics component.
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/pay')) {
+      return;
+    }
     void loadGoogleAnalytics();
   }, [location.pathname]);
 

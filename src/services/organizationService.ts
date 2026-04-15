@@ -3,25 +3,21 @@ import { Organization, OrganizationMember, OrganizationRole } from '../types';
 
 export const organizationService = {
   async getUserOrganizations(userId: string): Promise<Organization[]> {
-    const { data: memberships, error: membershipsError } = await supabase
+    const { data, error } = await supabase
       .from('organization_members')
-      .select('organization_id')
+      .select('organization:organizations(*)')
       .eq('user_id', userId)
       .eq('is_active', true);
 
-    if (membershipsError) throw membershipsError;
-    if (!memberships || memberships.length === 0) return [];
+    if (error) throw error;
+    if (!data || data.length === 0) return [];
 
-    const orgIds = memberships.map(m => m.organization_id);
-
-    const { data: orgs, error: orgsError } = await supabase
-      .from('organizations')
-      .select('*')
-      .in('id', orgIds)
-      .order('created_at', { ascending: false });
-
-    if (orgsError) throw orgsError;
-    return orgs as Organization[];
+    return data
+      .map((m: any) => m.organization)
+      .filter(Boolean)
+      .sort((a: Organization, b: Organization) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ) as Organization[];
   },
 
   async getOrganizationMembers(organizationId: string): Promise<OrganizationMember[]> {

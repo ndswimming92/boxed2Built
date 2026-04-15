@@ -78,15 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadOrganizations = async (userId: string) => {
     try {
+      const storedOrgId = localStorage.getItem('currentOrganizationId');
       const orgs = await organizationService.getUserOrganizations(userId);
       setUserOrganizations(orgs);
 
-      const storedOrgId = localStorage.getItem('currentOrganizationId');
-      let selectedOrg = orgs.find(org => org.id === storedOrgId) || orgs[0] || null;
+      const selectedOrg = orgs.find(org => org.id === storedOrgId) || orgs[0] || null;
 
       if (selectedOrg) {
-        setCurrentOrganizationState(selectedOrg);
-        const role = await organizationService.getUserRole(userId, selectedOrg.id);
+        const [role] = await Promise.all([
+          organizationService.getUserRole(userId, selectedOrg.id),
+          Promise.resolve(setCurrentOrganizationState(selectedOrg)),
+        ]);
         setCurrentRole(role);
       }
     } catch (error) {
