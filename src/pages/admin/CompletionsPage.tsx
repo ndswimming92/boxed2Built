@@ -47,6 +47,7 @@ export default function CompletionsPage() {
           is_customer_satisfied,
           final_price,
           completion_checklist,
+          photo_count,
           job_id,
           job:jobs!job_id (
             client_phone,
@@ -419,7 +420,7 @@ export default function CompletionsPage() {
                     <p className="text-xs font-medium text-slate-500 mb-1">Photos</p>
                     <p className="text-sm font-semibold text-slate-900 flex items-center gap-1">
                       <ImageIcon className="w-4 h-4" />
-                      {completion.completion_photos?.length || 0}
+                      {(completion as any).photo_count ?? 0}
                     </p>
                   </div>
                   <div>
