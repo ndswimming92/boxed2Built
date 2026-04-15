@@ -4,6 +4,7 @@ import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X,
 import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
 
 const PAGE_SIZE = 25;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function CompletionsPage() {
   const [completions, setCompletions] = useState<(JobCompletion & { job: any })[]>([]);
@@ -11,6 +12,7 @@ export default function CompletionsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [satisfactionFilter, setSatisfactionFilter] = useState<'all' | 'satisfied' | 'unsatisfied'>('all');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -19,7 +21,12 @@ export default function CompletionsPage() {
   const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
   const [selectedCompletionDetail, setSelectedCompletionDetail] = useState<(JobCompletion & { job: any }) | null>(null);
 
-  const fetchData = useCallback(async (targetPage: number, reset = false) => {
+  const fetchData = useCallback(async (
+    targetPage: number,
+    reset = false,
+    activeSearchTerm = '',
+    activeSatisfactionFilter: 'all' | 'satisfied' | 'unsatisfied' = 'all'
+  ) => {
     const start = (targetPage - 1) * PAGE_SIZE;
     const end = start + PAGE_SIZE - 1;
 
@@ -51,14 +58,14 @@ export default function CompletionsPage() {
         .order('completed_at', { ascending: false })
         .range(start, end);
 
-      if (searchTerm.trim()) {
-        const term = searchTerm.trim();
-        query = query.or(`customer_name.ilike.%${term}%,job.client_phone.ilike.%${term}%`);
+      const trimmedSearchTerm = activeSearchTerm.trim();
+      if (trimmedSearchTerm) {
+        query = query.or(`customer_name.ilike.%${trimmedSearchTerm}%,jobs.client_phone.ilike.%${trimmedSearchTerm}%`);
       }
 
-      if (satisfactionFilter === 'satisfied') {
+      if (activeSatisfactionFilter === 'satisfied') {
         query = query.eq('is_customer_satisfied', true);
-      } else if (satisfactionFilter === 'unsatisfied') {
+      } else if (activeSatisfactionFilter === 'unsatisfied') {
         query = query.eq('is_customer_satisfied', false);
       }
 
@@ -96,11 +103,21 @@ export default function CompletionsPage() {
         setLoadingMore(false);
       }
     }
-  }, [searchTerm, satisfactionFilter]);
+  }, []);
 
   useEffect(() => {
-    fetchData(1, true);
-  }, [fetchData]);
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    fetchData(1, true, debouncedSearchTerm, satisfactionFilter);
+  }, [debouncedSearchTerm, fetchData, satisfactionFilter]);
 
   useEffect(() => {
     if (!selectedCompletion?.id) {
@@ -161,7 +178,7 @@ export default function CompletionsPage() {
 
   const handleLoadMore = () => {
     if (!loadingMore && hasMore) {
-      fetchData(page + 1);
+      fetchData(page + 1, false, debouncedSearchTerm, satisfactionFilter);
     }
   };
 
