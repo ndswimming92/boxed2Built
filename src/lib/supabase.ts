@@ -153,6 +153,7 @@ export type CustomerReview = {
   is_featured: boolean;
   is_verified: boolean;
   is_active: boolean;
+  show_in_header: boolean;
   job_completion_id: string | null;
   source: string;
   collected_at_completion: boolean;
@@ -790,6 +791,7 @@ const zCustomerReview = z.object({
   is_featured: z.boolean(),
   is_verified: z.boolean(),
   is_active: z.boolean(),
+  show_in_header: z.boolean(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -847,7 +849,7 @@ const COLS = {
   social:
     'id,business_id,platform,profile_url,is_active,display_order,created_at',
   review:
-    'id,business_id,author_name,review_body,rating_value,date_published,is_featured,is_verified,is_active,created_at,updated_at',
+    'id,business_id,author_name,review_body,rating_value,date_published,is_featured,is_verified,is_active,show_in_header,created_at,updated_at',
   attribute:
     'id,business_id,attribute_name,attribute_value,created_at',
   notificationBar:

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Star, Clock, MapPin, Phone } from 'lucide-react';
 import Button from '../ui/Button';
 import StarRating from '../ui/StarRating';
@@ -11,6 +11,30 @@ import { BUSINESS_INFO } from '../../constants/localSEO';
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
   const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
+
+  const allReviews = businessData?.reviews || [];
+  const headerReviews = allReviews.filter((r) => r.show_in_header);
+  const displayReviews = headerReviews.length > 0 ? headerReviews : allReviews.slice(0, 1);
+
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [fadeIn, setFadeIn] = useState(true);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (displayReviews.length <= 1) return;
+
+    intervalRef.current = setInterval(() => {
+      setFadeIn(false);
+      setTimeout(() => {
+        setActiveReviewIndex((prev) => (prev + 1) % displayReviews.length);
+        setFadeIn(true);
+      }, 600);
+    }, 6000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [displayReviews.length]);
 
   const handleContactFormClick = () => {
     trackEvent('cta_click', 'hero', {
@@ -67,8 +91,7 @@ const HomeHero: React.FC = () => {
   const businessName = businessData?.info?.name || 'Boxed2Built';
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
-  const reviews = businessData?.reviews || [];
-  const ratingStats = calculateRatingStats(reviews);
+  const ratingStats = calculateRatingStats(allReviews);
 
   return (
     <section className="relative pt-10 pb-0 md:pt-20 md:pb-0 bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
@@ -98,10 +121,13 @@ const HomeHero: React.FC = () => {
                 </div>
               )}
 
-              {reviews.length > 0 && (
-                <blockquote className="text-sm md:text-base text-gray-600 italic border-l-2 border-blue-300 pl-3 mb-5 md:mb-8">
-                  "{reviews[0]?.review_body}"
-                  <span className="not-italic font-medium text-gray-800"> — {reviews[0]?.author_name}</span>
+              {displayReviews.length > 0 && (
+                <blockquote
+                  className="text-sm md:text-base text-gray-600 italic border-l-2 border-blue-300 pl-3 mb-5 md:mb-8 transition-opacity duration-500 ease-in-out"
+                  style={{ opacity: fadeIn ? 1 : 0 }}
+                >
+                  "{displayReviews[activeReviewIndex]?.review_body}"
+                  <span className="not-italic font-medium text-gray-800"> — {displayReviews[activeReviewIndex]?.author_name}</span>
                 </blockquote>
               )}
 
