@@ -162,7 +162,7 @@ const HomeHero: React.FC = () => {
                 const formattedHours = rawHours.toFixed(1);
                 const fullDays = Math.floor(rawHours / 8);
                 const contextLine = fullDays >= 2
-                  ? `That is more than ${fullDays} full days given back to our neighbors.`
+                  ? `That is more than ${fullDays} full days given back to our customers.`
                   : `Every hour we work is one you get to spend on what matters most.`;
                 return (
                   <div className="mt-5 md:mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-4 md:p-5 shadow-lg">
