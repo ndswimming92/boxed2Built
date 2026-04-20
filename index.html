@@ -6,6 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0066cc" />
 
+  <!-- Admin branding bootstrap: run synchronously so iOS reads admin metadata
+       before the React app mounts, preventing a flash of main-site identity
+       during "Add to Home Screen". -->
+  <script>
+    (function () {
+      try {
+        if (!/^\/admin(\/|$)/.test(window.location.pathname)) return;
+
+        var defaults = {
+          theme_color: '#1E3A8A',
+          title: 'Boxed2Built Admin',
+          short_name: 'B2B Admin',
+          mark_text: 'Admin',
+          mark_color: '#FFFFFF',
+          status_bar_style: 'black-translucent',
+          icon_url: null
+        };
+        var branding = defaults;
+        try {
+          var raw = localStorage.getItem('b2b.admin-branding');
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.payload) branding = Object.assign({}, defaults, parsed.payload);
+          }
+        } catch (e) {}
+
+        var text = (branding.mark_text || 'Admin').replace(/[<>&]/g, '').slice(0, 16);
+        var fontSize = text.length > 6 ? 88 : 112;
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">' +
+          '<rect width="512" height="512" rx="96" fill="' + branding.theme_color + '"/>' +
+          '<text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" ' +
+          'font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Roboto, Helvetica, Arial, sans-serif" ' +
+          'font-size="' + fontSize + '" font-weight="700" letter-spacing="-2" ' +
+          'fill="' + branding.mark_color + '">' + text + '</text></svg>';
+        var iconHref = branding.icon_url || ('data:image/svg+xml;utf8,' + encodeURIComponent(svg));
+
+        function setMeta(name, content) {
+          var el = document.querySelector('meta[name="' + name + '"]');
+          if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute('name', name);
+            document.head.appendChild(el);
+          }
+          el.setAttribute('content', content);
+        }
+
+        setMeta('theme-color', branding.theme_color);
+        setMeta('apple-mobile-web-app-title', branding.short_name);
+        setMeta('apple-mobile-web-app-status-bar-style', branding.status_bar_style);
+        setMeta('apple-mobile-web-app-capable', 'yes');
+        setMeta('mobile-web-app-capable', 'yes');
+        setMeta('application-name', branding.title);
+
+        // Remove existing icon/manifest links so iOS doesn't capture main-site branding
+        document.querySelectorAll('link[rel="manifest"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel="icon"]').forEach(function (n) {
+          n.parentElement && n.parentElement.removeChild(n);
+        });
+
+        var manifestLink = document.createElement('link');
+        manifestLink.setAttribute('rel', 'manifest');
+        manifestLink.setAttribute('href', '/admin.webmanifest');
+        document.head.appendChild(manifestLink);
+
+        var appleIcon = document.createElement('link');
+        appleIcon.setAttribute('rel', 'apple-touch-icon');
+        appleIcon.setAttribute('sizes', '180x180');
+        appleIcon.setAttribute('href', iconHref);
+        document.head.appendChild(appleIcon);
+
+        var appleIconPre = document.createElement('link');
+        appleIconPre.setAttribute('rel', 'apple-touch-icon-precomposed');
+        appleIconPre.setAttribute('sizes', '180x180');
+        appleIconPre.setAttribute('href', iconHref);
+        document.head.appendChild(appleIconPre);
+
+        var favicon = document.createElement('link');
+        favicon.setAttribute('rel', 'icon');
+        favicon.setAttribute('type', 'image/svg+xml');
+        favicon.setAttribute('href', iconHref);
+        document.head.appendChild(favicon);
+
+        document.title = branding.title;
+      } catch (err) {
+        console.warn('Admin bootstrap failed', err);
+      }
+    })();
+  </script>
+
   <!-- Google Analytics: bootstrap immediately so Realtime receives the first visit hit. -->
   <script>
     window.dataLayer = window.dataLayer || [];

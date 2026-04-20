@@ -5,13 +5,21 @@
   "start_url": "/admin/dashboard",
   "scope": "/admin",
   "display": "standalone",
-  "theme_color": "#60A5FA",
-  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "theme_color": "#1E3A8A",
+  "background_color": "#1E3A8A",
   "icons": [
     {
-      "src": "/black_boxed2built_logo.png",
+      "src": "/admin-icons/admin-icon.svg",
       "sizes": "any",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-icons/admin-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
