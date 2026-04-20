@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
       <main className="pt-16">
         <HomeHero />
 
-        <section id="contact-form-section" className="py-12 bg-gradient-to-b from-gray-50 to-white">
+        <section id="contact-form-section" className="scroll-mt-24 py-12 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
