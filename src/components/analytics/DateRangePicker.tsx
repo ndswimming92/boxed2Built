@@ -381,7 +381,13 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[min(92vw,740px)] sm:w-[740px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+        <>
+          <div
+            className="sm:hidden fixed inset-0 bg-slate-900/40 z-40"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
+        <div className="fixed sm:absolute left-1/2 sm:left-auto top-1/2 sm:top-auto sm:right-0 sm:mt-2 -translate-x-1/2 -translate-y-1/2 sm:translate-x-0 sm:translate-y-0 w-[calc(100vw-1.5rem)] sm:w-[740px] max-h-[90vh] sm:max-h-none overflow-y-auto sm:overflow-hidden bg-white rounded-xl shadow-2xl border border-slate-200 z-50">
           <div className="flex flex-col sm:flex-row">
             <div className="sm:w-40 bg-slate-50 border-b sm:border-b-0 sm:border-r border-slate-200 p-3">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2 px-2">
@@ -514,6 +520,7 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );
