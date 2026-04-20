@@ -59,8 +59,8 @@ import {
   UserCheck,
   Download,
   Upload,
-  ChevronDown,
 } from 'lucide-react';
+import DateRangePicker, { DateRangeValue, formatRangeLabel } from '../../components/analytics/DateRangePicker';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 import ProfitabilityLeaderboard from '../../components/analytics/ProfitabilityLeaderboard';
@@ -79,8 +79,15 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444'
 export default function AnalyticsPage() {
   const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('current_year');
-  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRangeValue>(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), 11, 31);
+    end.setHours(23, 59, 59, 999);
+    return { startDate: start, endDate: end, label: 'This Year' };
+  });
+  const timePeriod: TimePeriod = 'all_time';
   const [showImportModal, setShowImportModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [targetHourlyRate, setTargetHourlyRate] = useState(50);
@@ -126,38 +133,42 @@ export default function AnalyticsPage() {
     setTrackedExpenses(expenses);
   };
 
-  const metrics = useMemo(() => calculateMetrics(jobs, timePeriod), [jobs, timePeriod]);
-  const jobsByType = useMemo(() => getJobsByType(jobs, timePeriod), [jobs, timePeriod]);
-  const locationRevenue = useMemo(() => getLocationRevenue(jobs, timePeriod), [jobs, timePeriod]);
-  const monthlyData = useMemo(() => getMonthlyData(jobs, timePeriod), [jobs, timePeriod]);
-  const referralData = useMemo(() => getReferralSourceData(jobs, timePeriod), [jobs, timePeriod]);
-  const clientTypeData = useMemo(() => getClientTypeData(jobs, timePeriod), [jobs, timePeriod]);
+  const filteredJobs = useMemo(() => {
+    if (!dateRange.startDate || !dateRange.endDate) return jobs;
+    const startMs = dateRange.startDate.getTime();
+    const endMs = dateRange.endDate.getTime();
+    return jobs.filter(job => {
+      if (!job.date_completed) return false;
+      const completedMs = new Date(job.date_completed).getTime();
+      return completedMs >= startMs && completedMs <= endMs;
+    });
+  }, [jobs, dateRange.startDate, dateRange.endDate]);
+
+  const metrics = useMemo(() => calculateMetrics(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const jobsByType = useMemo(() => getJobsByType(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const locationRevenue = useMemo(() => getLocationRevenue(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const monthlyData = useMemo(() => getMonthlyData(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const referralData = useMemo(() => getReferralSourceData(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const clientTypeData = useMemo(() => getClientTypeData(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const healthStatus = useMemo(() => getHealthStatus(metrics), [metrics]);
 
-  const jobTypePerformance = useMemo(() => getJobTypePerformance(jobs, timePeriod), [jobs, timePeriod]);
-  const profitabilityLeaderboard = useMemo(() => getProfitabilityLeaderboard(jobs, timePeriod, 10), [jobs, timePeriod]);
+  const jobTypePerformance = useMemo(() => getJobTypePerformance(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const profitabilityLeaderboard = useMemo(() => getProfitabilityLeaderboard(filteredJobs, timePeriod, 10), [filteredJobs, timePeriod]);
   const pricingRecommendations = useMemo(
-    () => getPricingRecommendations(jobs, timePeriod, targetHourlyRate),
-    [jobs, timePeriod, targetHourlyRate]
+    () => getPricingRecommendations(filteredJobs, timePeriod, targetHourlyRate),
+    [filteredJobs, timePeriod, targetHourlyRate]
   );
-  const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(jobs, timePeriod), [jobs, timePeriod]);
-  const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(jobs, timePeriod), [jobs, timePeriod]);
+  const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
 
-  const conversionMetrics = useMemo(() => calculateConversionMetrics(jobs, timePeriod), [jobs, timePeriod]);
-  const lostDealBreakdown = useMemo(() => getLostDealBreakdown(jobs, timePeriod), [jobs, timePeriod]);
-  const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(jobs, timePeriod), [jobs, timePeriod]);
+  const conversionMetrics = useMemo(() => calculateConversionMetrics(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const lostDealBreakdown = useMemo(() => getLostDealBreakdown(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
 
   const taxCalculation = useMemo(() => {
     if (!taxSettings) {
       return null;
     }
-
-    const filteredJobs = timePeriod === 'current_year'
-      ? jobs.filter(job => {
-          const year = new Date(job.created_at).getFullYear();
-          return year === new Date().getFullYear();
-        })
-      : jobs;
 
     const grossIncome = filteredJobs.reduce((sum, job) => sum + (job.final_price || 0), 0);
     const materialsCosts = filteredJobs.reduce((sum, job) => sum + (job.materials_cost || 0), 0);
@@ -167,7 +178,7 @@ export default function AnalyticsPage() {
     const totalPayments = quarterlyPayments.reduce((sum, payment) => sum + payment.payment_amount, 0);
 
     return calculateTaxes(grossIncome, totalExpenses, taxSettings, totalPayments);
-  }, [jobs, timePeriod, taxSettings, quarterlyPayments, trackedExpenses]);
+  }, [filteredJobs, taxSettings, quarterlyPayments, trackedExpenses]);
 
   const nextQuarterDueDate = useMemo(() => getNextQuarterDueDate(), []);
 
@@ -186,74 +197,8 @@ export default function AnalyticsPage() {
     return `${value.toFixed(1)}%`;
   };
 
-  const getDateRangeText = (period: TimePeriod): string => {
-    const now = new Date();
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-
-    switch (period) {
-      case 'current_month': {
-        return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-      }
-
-      case 'last_3_months': {
-        const months: string[] = [];
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-
-        for (let i = 2; i >= 0; i--) {
-          let month = currentMonth - i;
-          let year = currentYear;
-
-          while (month < 0) {
-            month += 12;
-            year -= 1;
-          }
-
-          months.push(`${monthNames[month]} ${year}`);
-        }
-        return months.join(', ');
-      }
-
-      case 'last_6_months': {
-        const months: string[] = [];
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-
-        for (let i = 5; i >= 0; i--) {
-          let month = currentMonth - i;
-          let year = currentYear;
-
-          while (month < 0) {
-            month += 12;
-            year -= 1;
-          }
-
-          months.push(`${monthNames[month]} ${year}`);
-        }
-        return months.join(', ');
-      }
-
-      case 'current_year': {
-        return `January - December ${now.getFullYear()}`;
-      }
-
-      case 'all_time': {
-        return 'All historical data';
-      }
-
-      default:
-        return '';
-    }
-  };
-
   const handleExportJobs = () => {
-    const jobsToExport = timePeriod === 'current_year'
-      ? jobs.filter(job => {
-          const year = new Date(job.created_at).getFullYear();
-          return year === new Date().getFullYear();
-        })
-      : jobs;
+    const jobsToExport = filteredJobs;
 
     const csv = exportJobsToCSV(jobsToExport);
     const filename = generateExportFilename();
@@ -307,65 +252,7 @@ export default function AnalyticsPage() {
             <Upload className="w-5 h-5" />
             <span className="hidden sm:inline">Import</span>
           </button>
-          <div className="relative">
-            <button
-              onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-              className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 min-w-[140px] sm:min-w-[180px] justify-between text-sm sm:text-base"
-            >
-              <span>
-                {timePeriod === 'current_month' && 'Current Month'}
-                {timePeriod === 'last_3_months' && 'Last 3 Months'}
-                {timePeriod === 'last_6_months' && 'Last 6 Months'}
-                {timePeriod === 'current_year' && 'Current Year'}
-                {timePeriod === 'all_time' && 'All Time'}
-              </span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showPeriodDropdown ? 'rotate-180' : ''}`} />
-            </button>
-            {showPeriodDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-                <button
-                  onClick={() => { setTimePeriod('current_month'); setShowPeriodDropdown(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
-                    timePeriod === 'current_month' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
-                  }`}
-                >
-                  Current Month
-                </button>
-                <button
-                  onClick={() => { setTimePeriod('last_3_months'); setShowPeriodDropdown(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
-                    timePeriod === 'last_3_months' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
-                  }`}
-                >
-                  Last 3 Months
-                </button>
-                <button
-                  onClick={() => { setTimePeriod('last_6_months'); setShowPeriodDropdown(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
-                    timePeriod === 'last_6_months' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
-                  }`}
-                >
-                  Last 6 Months
-                </button>
-                <button
-                  onClick={() => { setTimePeriod('current_year'); setShowPeriodDropdown(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
-                    timePeriod === 'current_year' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
-                  }`}
-                >
-                  Current Year
-                </button>
-                <button
-                  onClick={() => { setTimePeriod('all_time'); setShowPeriodDropdown(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-emerald-50 transition-colors ${
-                    timePeriod === 'all_time' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-slate-700'
-                  }`}
-                >
-                  All Time
-                </button>
-              </div>
-            )}
-          </div>
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </div>
 
@@ -396,7 +283,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="w-4 h-4 text-slate-400" />
               <span className="text-slate-600">Viewing data for:</span>
-              <span className="font-semibold text-slate-900">{getDateRangeText(timePeriod)}</span>
+              <span className="font-semibold text-slate-900">{formatRangeLabel(dateRange)}</span>
             </div>
           </div>
 
@@ -417,7 +304,7 @@ export default function AnalyticsPage() {
             <MetricCard
               title="Total Revenue"
               value={formatCurrency(metrics.totalRevenue)}
-              subtitle={timePeriod === 'current_year' ? 'Year-to-Date' : 'All Time'}
+              subtitle={dateRange.label}
               icon={DollarSign}
               iconColor="text-emerald-600"
               iconBgColor="bg-emerald-100"
@@ -457,7 +344,7 @@ export default function AnalyticsPage() {
             <MetricCard
               title="Total Jobs"
               value={metrics.totalJobs}
-              subtitle={timePeriod === 'current_year' ? 'This year' : 'All time'}
+              subtitle={dateRange.label}
               icon={Briefcase}
               iconColor="text-slate-600"
               iconBgColor="bg-slate-100"
