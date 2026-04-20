@@ -36,6 +36,9 @@ const FAQPage = lazy(() => import('./pages/FAQPage'));
 const QRRedirectPage = lazy(() => import('./pages/QRRedirectPage'));
 const InvoicePaymentPage = lazy(() => import('./pages/InvoicePaymentPage'));
 const InvoiceThankYouPage = lazy(() => import('./pages/InvoiceThankYouPage'));
+const GiftCardsPage = lazy(() => import('./pages/GiftCardsPage'));
+const GiftCardSuccessPage = lazy(() => import('./pages/GiftCardSuccessPage'));
+const RedeemGiftCardPage = lazy(() => import('./pages/RedeemGiftCardPage'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const LoginPage = lazy(() => import('./pages/admin/LoginPage'));
@@ -86,6 +89,7 @@ const SupportQueuePage = lazy(() => import('./pages/admin/SupportQueuePage'));
 const PortalAdoptionPage = lazy(() => import('./pages/admin/PortalAdoptionPage'));
 const AdminDocumentsPage = lazy(() => import('./pages/admin/AdminDocumentsPage'));
 const BrandingPage = lazy(() => import('./pages/admin/BrandingPage'));
+const AdminGiftCardsPage = lazy(() => import('./pages/admin/GiftCardsPage'));
 
 // Scroll depth tracking
 let scrollDepthTracked = {
@@ -328,6 +332,9 @@ function App() {
                   <Route path="/go/:slug" element={<QRRedirectPage />} />
                   <Route path="/pay/:invoiceId/:paymentToken" element={<InvoicePaymentPage />} />
                   <Route path="/pay/:invoiceId/:paymentToken/thank-you" element={<InvoiceThankYouPage />} />
+                  <Route path="/gift-cards" element={<GiftCardsPage />} />
+                  <Route path="/gift-cards/success" element={<GiftCardSuccessPage />} />
+                  <Route path="/redeem-gift-card" element={<RedeemGiftCardPage />} />
 
                   <Route path="/admin/login" element={<LoginPage />} />
                   <Route path="/portal/login" element={<PortalLoginPage />} />
@@ -380,6 +387,7 @@ function App() {
                     <Route path="portal-adoption" element={<PortalAdoptionPage />} />
                     <Route path="documents" element={<AdminDocumentsPage />} />
                     <Route path="branding" element={<BrandingPage />} />
+                    <Route path="gift-cards" element={<AdminGiftCardsPage />} />
                   </Route>
                 </Routes>
               </Suspense>

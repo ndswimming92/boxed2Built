@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift } from 'lucide-react';
+import { formatGiftCardCodeInput } from '../utils/giftCardCode';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -26,6 +28,7 @@ const initialValues = {
   preferredTimeSlot: { value: '', error: '', touched: false },
   notes: { value: '', error: '', touched: false },
   referralCode: { value: '', error: '', touched: false },
+  giftCardCode: { value: '', error: '', touched: false },
 };
 
 const SMS_CONSENT_DISCLOSURE = 'By checking this box, you agree to receive SMS updates from Boxed2Built about your service request, including confirmation, scheduling, arrival, and follow-up messages. Message frequency varies. Message and data rates may apply. Reply STOP to opt out and HELP for help.';
@@ -151,6 +154,17 @@ const validationRules: Record<string, ValidationRule> = {
       }
       return null;
     }
+  },
+  giftCardCode: {
+    required: false,
+    custom: (value) => {
+      if (!value) return null;
+      const cleaned = value.trim().toUpperCase();
+      if (cleaned.length > 0 && !/^B2B-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(cleaned)) {
+        return 'Gift card codes look like B2B-XXXX-XXXX';
+      }
+      return null;
+    }
   }
 };
 
@@ -195,6 +209,18 @@ const ContactForm: React.FC = () => {
     validateOnBlur: true,
     debounceMs: 300
   });
+
+  const [searchParams] = useSearchParams();
+
+  // Prefill gift card code from URL (?gift_card_code=...)
+  useEffect(() => {
+    const codeParam = searchParams.get('gift_card_code');
+    if (codeParam) {
+      const formatted = formatGiftCardCodeInput(codeParam);
+      handleFieldChange('giftCardCode', formatted);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Detect iOS
   useEffect(() => {
@@ -419,6 +445,7 @@ const ContactForm: React.FC = () => {
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
         referral_code_used: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
+        gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
         sms_opt_in: smsOptIn,
@@ -1139,6 +1166,39 @@ const ContactForm: React.FC = () => {
             )}
             <p className="text-xs text-gray-500 mt-1">
               Enter a code from a friend and they'll receive $25 credit on their next service.
+            </p>
+          </div>
+
+          {/* Gift Card Code */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Gift size={14} className="text-emerald-700 shrink-0" />
+              <label htmlFor="giftCardCode" className="text-sm font-medium text-gray-700">
+                Redeeming a Gift Card?
+              </label>
+              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
+            </div>
+            <input
+              id="giftCardCode"
+              name="giftCardCode"
+              type="text"
+              placeholder="B2B-XXXX-XXXX"
+              className={`${getInputClasses('giftCardCode')} font-mono tracking-wider`}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck="false"
+              maxLength={14}
+              {...getFieldProps('giftCardCode')}
+              onChange={(e) => {
+                const formatted = formatGiftCardCodeInput(e.target.value);
+                handleFieldChange('giftCardCode', formatted);
+              }}
+            />
+            {fields.giftCardCode?.error && (
+              <p className="text-xs text-red-600 mt-1">{fields.giftCardCode.error}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              We'll apply your credit to the final invoice. Balances never expire and partial amounts roll over.
             </p>
           </div>
 
