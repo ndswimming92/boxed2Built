@@ -178,18 +178,18 @@ function CalendarMonth({ viewDate, startDate, endDate, hoverDate, onSelect, onHo
   const rangeEnd = endDate ?? hoverDate;
 
   return (
-    <div className="flex-1 min-w-[260px]">
+    <div className="flex-1 min-w-0">
       <div className="text-center text-sm font-semibold text-slate-900 mb-3">
         {MONTH_NAMES[month]} {year}
       </div>
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
         {WEEKDAYS.map((w, idx) => (
           <div key={idx} className="text-[11px] font-medium text-slate-400 text-center py-1">
             {w}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0.5">
         {cells.map((cell, idx) => {
           if (!cell) return <div key={idx} />;
           const cellTime = cell.getTime();
@@ -203,7 +203,7 @@ function CalendarMonth({ viewDate, startDate, endDate, hoverDate, onSelect, onHo
           const isPreviewEnd = !endDate && hoverDate && isSameDay(cell, hoverDate);
 
           let classes =
-            'text-sm h-9 w-9 mx-auto flex items-center justify-center rounded-md transition-colors';
+            'text-xs sm:text-sm h-8 w-full max-w-[36px] mx-auto flex items-center justify-center rounded-md transition-colors';
           if (disabled) {
             classes += ' text-slate-300 cursor-not-allowed';
           } else if (isStart || isEnd) {
@@ -381,7 +381,7 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[92vw] sm:w-[640px] max-w-[640px] bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-[min(92vw,740px)] sm:w-[740px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
           <div className="flex flex-col sm:flex-row">
             <div className="sm:w-40 bg-slate-50 border-b sm:border-b-0 sm:border-r border-slate-200 p-3">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2 px-2">
