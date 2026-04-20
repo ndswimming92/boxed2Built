@@ -75,7 +75,7 @@ const HomeHero: React.FC = () => {
 
   if (loading) {
     return (
-      <section className="relative pt-10 pb-6 md:pt-20 md:pb-12 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+      <section className="relative pt-20 pb-6 md:pt-24 md:pb-12 bg-gradient-to-br from-blue-50 via-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto animate-pulse">
             <h1 className="sr-only">Furniture Assembly in Spring Hill, TN</h1>
@@ -94,7 +94,7 @@ const HomeHero: React.FC = () => {
   const ratingStats = calculateRatingStats(allReviews);
 
   return (
-    <section className="relative pt-10 pb-0 md:pt-20 md:pb-0 bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
+    <section className="relative pt-20 pb-0 md:pt-24 md:pb-0 bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden hidden md:block">
         <div className="absolute right-0 top-1/4 w-96 h-96 bg-blue-100 rounded-full opacity-30 blur-3xl transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-80 h-80 bg-green-100 rounded-full opacity-30 blur-3xl transform -translate-x-1/2"></div>
