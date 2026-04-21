@@ -11,16 +11,9 @@ const corsHeaders = {
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const APP_URL = Deno.env.get('APP_BASE_URL') || 'https://www.boxed2built.com';
+const APP_URL = 'https://www.boxed2built.com';
 
-// TODO: Create these Stripe Products/Prices in the Stripe dashboard
-// and set the corresponding env vars in the Supabase project.
-const PRICE_ID_BY_AMOUNT: Record<number, string | undefined> = {
-  2500: Deno.env.get('STRIPE_GIFT_CARD_PRICE_25'),
-  5000: Deno.env.get('STRIPE_GIFT_CARD_PRICE_50'),
-  10000: Deno.env.get('STRIPE_GIFT_CARD_PRICE_100'),
-  20000: Deno.env.get('STRIPE_GIFT_CARD_PRICE_200'),
-};
+const ALLOWED_AMOUNTS_CENTS = new Set([2500, 5000, 10000, 20000]);
 
 interface Payload {
   amount_cents: number;
@@ -69,8 +62,8 @@ Deno.serve(async (req) => {
     const payload = (await req.json()) as Payload;
 
     // Validate
-    if (!PRICE_ID_BY_AMOUNT[payload.amount_cents]) {
-      return json({ error: 'Invalid or unconfigured gift card amount' }, 400);
+    if (!ALLOWED_AMOUNTS_CENTS.has(payload.amount_cents)) {
+      return json({ error: 'Invalid gift card amount' }, 400);
     }
     if (!payload.purchaser_name?.trim()) {
       return json({ error: 'Purchaser name is required' }, 400);
@@ -147,7 +140,18 @@ Deno.serve(async (req) => {
         payment_method_types: ['card'],
         customer_email: payload.purchaser_email.trim().toLowerCase(),
         line_items: [
-          { price: PRICE_ID_BY_AMOUNT[payload.amount_cents]!, quantity: 1 },
+          {
+            quantity: 1,
+            price_data: {
+              currency: 'usd',
+              unit_amount: payload.amount_cents,
+              product_data: {
+                name: `Boxed2Built Gift Card — $${payload.amount_cents / 100}`,
+                description:
+                  'Service credit for Boxed2Built furniture assembly. Balance never expires and rolls over across jobs.',
+              },
+            },
+          },
         ],
         success_url: successUrl,
         cancel_url: cancelUrl,

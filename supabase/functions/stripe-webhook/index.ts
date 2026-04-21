@@ -60,6 +60,13 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  const metadata =
+    ((stripeData as Record<string, unknown>).metadata as Record<string, string> | undefined) ?? {};
+  if (metadata.kind === 'gift_card') {
+    await handleGiftCardEvent(event);
+    return;
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }
@@ -121,6 +128,79 @@ async function handleEvent(event: Stripe.Event) {
         console.error('Error processing one-time payment:', error);
       }
     }
+  }
+}
+
+async function handleGiftCardEvent(event: Stripe.Event) {
+  const obj = event.data.object as Record<string, unknown>;
+  const metadata = (obj?.metadata as Record<string, string> | undefined) ?? {};
+  const giftCardId = metadata.gift_card_id;
+  if (!giftCardId) return;
+
+  if (event.type === 'checkout.session.completed') {
+    const session = obj as unknown as Stripe.Checkout.Session;
+    if (session.payment_status !== 'paid') {
+      console.info(`Gift card session ${session.id} not paid yet`);
+      return;
+    }
+
+    const { data: card } = await supabase
+      .from('gift_cards')
+      .select('id, status')
+      .eq('id', giftCardId)
+      .maybeSingle();
+    if (!card) {
+      console.warn(`Gift card ${giftCardId} not found for webhook`);
+      return;
+    }
+    if (card.status === 'active' || card.status === 'partially_redeemed' || card.status === 'redeemed') {
+      console.info(`Gift card ${giftCardId} already activated`);
+      return;
+    }
+
+    const { error: updErr } = await supabase
+      .from('gift_cards')
+      .update({
+        status: 'active',
+        activated_at: new Date().toISOString(),
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id:
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id || null,
+      })
+      .eq('id', giftCardId);
+    if (updErr) {
+      console.error('Failed to activate gift card:', updErr);
+      return;
+    }
+
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const res = await fetch(`${supabaseUrl}/functions/v1/send-gift-card-email`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ gift_card_id: giftCardId }),
+      });
+      if (!res.ok) {
+        console.error('send-gift-card-email failed:', await res.text());
+      }
+    } catch (e) {
+      console.error('Error invoking send-gift-card-email:', e);
+    }
+  } else if (
+    event.type === 'checkout.session.expired' ||
+    event.type === 'payment_intent.payment_failed'
+  ) {
+    await supabase
+      .from('gift_cards')
+      .update({ status: 'failed' })
+      .eq('id', giftCardId)
+      .eq('status', 'pending');
   }
 }
 

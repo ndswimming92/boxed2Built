@@ -10,11 +10,10 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-// TODO: confirm this address is a verified Resend sender on your domain.
-const FROM_EMAIL = Deno.env.get('GIFT_CARD_FROM_EMAIL') || 'team@boxed2built.com';
+const FROM_EMAIL = 'team@boxed2built.com';
 const BCC_EMAIL = 'boxed2builtco@gmail.com';
 const WEBSITE_URL = 'https://boxed2built.com';
-const APP_URL = Deno.env.get('APP_BASE_URL') || 'https://www.boxed2built.com';
+const APP_URL = 'https://www.boxed2built.com';
 const CONTACT_PHONE = '(615) 403-4538';
 
 function escapeHtml(input: string): string {
