@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, PaymentMethod } from '../../lib/supabase';
-import { Plus, Trash2, CreditCard, CheckCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { Plus, Trash2, CreditCard, CheckCircle, AlertCircle, ToggleLeft, ToggleRight, AlertTriangle, Zap } from 'lucide-react';
+
+type StripeMode = 'live' | 'test';
 
 export default function PaymentMethodsPage() {
+  const { user } = useAuth();
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [newMethod, setNewMethod] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const [stripeMode, setStripeMode] = useState<StripeMode>('live');
+  const [stripeUpdatedAt, setStripeUpdatedAt] = useState<string | null>(null);
+  const [stripeUpdatedBy, setStripeUpdatedBy] = useState<string | null>(null);
+  const [stripeSaving, setStripeSaving] = useState(false);
 
   const fetchOrganizationId = async (activeBusinessId: string): Promise<string | null> => {
     const { data: businessData, error: businessError } = await supabase
@@ -20,7 +29,6 @@ export default function PaymentMethodsPage() {
     if (businessError) throw businessError;
     if (businessData?.organization_id) return businessData.organization_id;
 
-    // Fallback for single-org setups where the active business may not have organization_id populated.
     const { data: orgData, error: orgError } = await supabase
       .from('organizations')
       .select('id')
@@ -60,11 +68,68 @@ export default function PaymentMethodsPage() {
         if (data) {
           setMethods(data);
         }
+
+        const { data: stripeSettings } = await supabase
+          .from('stripe_settings')
+          .select('stripe_mode, updated_at, updated_by')
+          .eq('business_id', businessInfo.id)
+          .maybeSingle();
+
+        if (stripeSettings) {
+          setStripeMode(stripeSettings.stripe_mode as StripeMode);
+          setStripeUpdatedAt(stripeSettings.updated_at);
+          setStripeUpdatedBy(stripeSettings.updated_by || null);
+        }
       }
     } catch (error) {
       console.error('Error fetching payment methods:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleStripeMode = async () => {
+    if (!businessId) return;
+
+    const newMode: StripeMode = stripeMode === 'live' ? 'test' : 'live';
+
+    const confirmMsg = newMode === 'test'
+      ? 'Switch to TEST mode? No real charges will be processed. All payment flows (invoices, gift cards, subscriptions) will use Stripe test keys.'
+      : 'Switch to LIVE mode? Real charges will be processed for all payment flows.';
+
+    if (!confirm(confirmMsg)) return;
+
+    setStripeSaving(true);
+    try {
+      const resolvedOrgId = organizationId ?? await fetchOrganizationId(businessId);
+      const now = new Date().toISOString();
+      const adminEmail = user?.email || '';
+
+      const { error } = await supabase
+        .from('stripe_settings')
+        .upsert({
+          business_id: businessId,
+          organization_id: resolvedOrgId,
+          stripe_mode: newMode,
+          updated_at: now,
+          updated_by: adminEmail,
+        }, { onConflict: 'business_id' });
+
+      if (error) throw error;
+
+      setStripeMode(newMode);
+      setStripeUpdatedAt(now);
+      setStripeUpdatedBy(adminEmail);
+      setMessage({
+        type: 'success',
+        text: `Stripe switched to ${newMode.toUpperCase()} mode`,
+      });
+      setTimeout(() => setMessage(null), 4000);
+    } catch (error) {
+      console.error('Error updating Stripe mode:', error);
+      setMessage({ type: 'error', text: 'Failed to update Stripe mode' });
+    } finally {
+      setStripeSaving(false);
     }
   };
 
@@ -114,6 +179,20 @@ export default function PaymentMethodsPage() {
     }
   };
 
+  const formatDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    } catch {
+      return iso;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -122,11 +201,13 @@ export default function PaymentMethodsPage() {
     );
   }
 
+  const isTestMode = stripeMode === 'test';
+
   return (
     <div className="max-w-4xl px-0">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Payment Methods</h1>
-        <p className="text-sm sm:text-base text-slate-600">Manage accepted payment methods</p>
+        <p className="text-sm sm:text-base text-slate-600">Manage accepted payment methods and Stripe configuration</p>
       </div>
 
       {message && (
@@ -135,6 +216,59 @@ export default function PaymentMethodsPage() {
           <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{message.text}</p>
         </div>
       )}
+
+      {/* Stripe Mode Section */}
+      <div className={`rounded-xl border-2 p-6 mb-6 transition-colors ${isTestMode ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-200'}`}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-slate-900 mb-1 flex items-center gap-2">
+              <Zap className={`w-5 h-5 ${isTestMode ? 'text-amber-600' : 'text-emerald-600'}`} />
+              Stripe Environment
+            </h2>
+            <p className="text-sm text-slate-600 mb-4">
+              Controls which Stripe keys are used for all payment flows including invoices, gift cards, and subscriptions.
+            </p>
+
+            {isTestMode && (
+              <div className="flex items-start gap-2 p-3 bg-amber-100 border border-amber-300 rounded-lg mb-4">
+                <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">TEST MODE ACTIVE</p>
+                  <p className="text-sm text-amber-700">No real charges will be processed. Use Stripe test cards (e.g., 4242 4242 4242 4242) to simulate payments.</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleToggleStripeMode}
+                disabled={stripeSaving}
+                className="flex items-center gap-2 group"
+              >
+                {isTestMode ? (
+                  <ToggleRight className="w-12 h-12 text-amber-600 group-hover:text-amber-700 transition-colors" />
+                ) : (
+                  <ToggleLeft className="w-12 h-12 text-emerald-600 group-hover:text-emerald-700 transition-colors" />
+                )}
+                <span className={`text-sm font-bold uppercase tracking-wide ${isTestMode ? 'text-amber-700' : 'text-emerald-700'}`}>
+                  {stripeSaving ? 'Switching...' : isTestMode ? 'Test' : 'Live'}
+                </span>
+              </button>
+
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isTestMode ? 'bg-amber-200 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                {isTestMode ? 'TEST' : 'LIVE'}
+              </div>
+            </div>
+
+            {stripeUpdatedAt && (
+              <p className="text-xs text-slate-500 mt-3">
+                Last changed: {formatDate(stripeUpdatedAt)}
+                {stripeUpdatedBy && ` by ${stripeUpdatedBy}`}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">

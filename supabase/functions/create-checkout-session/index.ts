@@ -8,6 +8,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+async function getStripeSecretKey(supabase: ReturnType<typeof createClient>): Promise<string> {
+  const { data } = await supabase
+    .from("stripe_settings")
+    .select("stripe_mode")
+    .limit(1)
+    .maybeSingle();
+  const mode = data?.stripe_mode ?? "live";
+  return mode === "test"
+    ? (Deno.env.get("Stripe_Sandbox_Secret_Key") ?? Deno.env.get("Stripe_Live_Secret_Key")!)
+    : Deno.env.get("Stripe_Live_Secret_Key")!;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -90,7 +102,8 @@ Deno.serve(async (req: Request) => {
       .eq("id", invoice.business_id)
       .maybeSingle();
 
-    const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!);
+    const stripeKey = await getStripeSecretKey(supabase);
+    const stripe = new Stripe(stripeKey);
 
     const amountDueCents = Math.round((invoice.amount_due || 0) * 100);
 

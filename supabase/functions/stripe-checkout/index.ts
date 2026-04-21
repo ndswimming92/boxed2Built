@@ -3,13 +3,18 @@ import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
-const stripeSecret = Deno.env.get('Stripe_Live_Secret_Key')!;
-const stripe = new Stripe(stripeSecret, {
-  appInfo: {
-    name: 'Bolt Integration',
-    version: '1.0.0',
-  },
-});
+
+async function getStripeSecretKey(): Promise<string> {
+  const { data } = await supabase
+    .from('stripe_settings')
+    .select('stripe_mode')
+    .limit(1)
+    .maybeSingle();
+  const mode = data?.stripe_mode ?? 'live';
+  return mode === 'test'
+    ? (Deno.env.get('Stripe_Sandbox_Secret_Key') ?? Deno.env.get('Stripe_Live_Secret_Key')!)
+    : Deno.env.get('Stripe_Live_Secret_Key')!;
+}
 
 // Helper function to create responses with CORS headers
 function corsResponse(body: string | object | null, status = 200) {
@@ -58,6 +63,11 @@ Deno.serve(async (req) => {
     if (error) {
       return corsResponse({ error }, 400);
     }
+
+    const stripeKey = await getStripeSecretKey();
+    const stripe = new Stripe(stripeKey, {
+      appInfo: { name: 'Bolt Integration', version: '1.0.0' },
+    });
 
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');

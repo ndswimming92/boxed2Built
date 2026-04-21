@@ -8,10 +8,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
-const STRIPE_SECRET_KEY = Deno.env.get('Stripe_Live_Secret_Key');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const APP_URL = 'https://www.boxed2built.com';
+
+async function getStripeSecretKey(supabase: ReturnType<typeof createClient>): Promise<string | null> {
+  const { data } = await supabase
+    .from('stripe_settings')
+    .select('stripe_mode')
+    .limit(1)
+    .maybeSingle();
+  const mode = data?.stripe_mode ?? 'live';
+  return mode === 'test'
+    ? Deno.env.get('Stripe_Sandbox_Secret_Key') ?? null
+    : Deno.env.get('Stripe_Live_Secret_Key') ?? null;
+}
 
 const ALLOWED_AMOUNTS_CENTS = new Set([2500, 5000, 10000, 20000]);
 
@@ -55,10 +66,6 @@ Deno.serve(async (req) => {
     if (req.method !== 'POST') {
       return json({ error: 'Method not allowed' }, 405);
     }
-    if (!STRIPE_SECRET_KEY) {
-      return json({ error: 'Stripe is not configured' }, 500);
-    }
-
     const payload = (await req.json()) as Payload;
 
     // Validate
@@ -84,7 +91,11 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const stripe = new Stripe(STRIPE_SECRET_KEY, {
+    const stripeKey = await getStripeSecretKey(supabase);
+    if (!stripeKey) {
+      return json({ error: 'Stripe is not configured' }, 500);
+    }
+    const stripe = new Stripe(stripeKey, {
       appInfo: { name: 'Boxed2Built Gift Cards', version: '1.0.0' },
     });
 

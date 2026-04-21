@@ -2,15 +2,22 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14";
 
-const stripe = new Stripe(Deno.env.get("Stripe_Live_Secret_Key")!, {
-  apiVersion: "2024-04-10",
-});
-
 Deno.serve(async () => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
+
+  const { data: settings } = await supabase
+    .from("stripe_settings")
+    .select("stripe_mode")
+    .limit(1)
+    .maybeSingle();
+  const stripeMode = settings?.stripe_mode ?? "live";
+  const stripeKey = stripeMode === "test"
+    ? (Deno.env.get("Stripe_Sandbox_Secret_Key") ?? Deno.env.get("Stripe_Live_Secret_Key")!)
+    : Deno.env.get("Stripe_Live_Secret_Key")!;
+  const stripe = new Stripe(stripeKey, { apiVersion: "2024-04-10" });
 
   const { data: invoices, error } = await supabase
     .from("invoices")

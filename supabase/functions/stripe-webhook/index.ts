@@ -2,20 +2,22 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
-const stripeSecret = Deno.env.get('Stripe_Live_Secret_Key')!;
-const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
-const stripe = new Stripe(stripeSecret, {
-  appInfo: {
-    name: 'Bolt Integration',
-    version: '1.0.0',
-  },
-});
+const liveWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
+const testWebhookSecret = Deno.env.get('STRIPE_TEST_WEBHOOK_SECRET') ?? '';
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+function createStripeClient(isTestMode: boolean): Stripe {
+  const key = isTestMode
+    ? (Deno.env.get('Stripe_Sandbox_Secret_Key') ?? Deno.env.get('Stripe_Live_Secret_Key')!)
+    : Deno.env.get('Stripe_Live_Secret_Key')!;
+  return new Stripe(key, {
+    appInfo: { name: 'Bolt Integration', version: '1.0.0' },
+  });
+}
+
 Deno.serve(async (req) => {
   try {
-    // Handle OPTIONS request for CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, { status: 204 });
     }
@@ -24,27 +26,38 @@ Deno.serve(async (req) => {
       return new Response('Method not allowed', { status: 405 });
     }
 
-    // get the signature from the header
     const signature = req.headers.get('stripe-signature');
 
     if (!signature) {
       return new Response('No signature found', { status: 400 });
     }
 
-    // get the raw body
     const body = await req.text();
 
-    // verify the webhook signature
     let event: Stripe.Event;
+    let isTestMode = false;
 
+    // Try live webhook secret first, then fall back to test
+    const liveStripe = createStripeClient(false);
     try {
-      event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
-    } catch (error: any) {
-      console.error(`Webhook signature verification failed: ${error.message}`);
-      return new Response(`Webhook signature verification failed: ${error.message}`, { status: 400 });
+      event = await liveStripe.webhooks.constructEventAsync(body, signature, liveWebhookSecret);
+    } catch {
+      if (!testWebhookSecret) {
+        return new Response('Webhook signature verification failed', { status: 400 });
+      }
+      try {
+        const testStripe = createStripeClient(true);
+        event = await testStripe.webhooks.constructEventAsync(body, signature, testWebhookSecret);
+        isTestMode = true;
+      } catch (testError: any) {
+        console.error(`Webhook signature verification failed for both live and test: ${testError.message}`);
+        return new Response(`Webhook signature verification failed: ${testError.message}`, { status: 400 });
+      }
     }
 
-    EdgeRuntime.waitUntil(handleEvent(event));
+    const stripe = isTestMode ? createStripeClient(true) : liveStripe;
+
+    EdgeRuntime.waitUntil(handleEvent(event, stripe));
 
     return Response.json({ received: true });
   } catch (error: any) {
@@ -53,7 +66,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function handleEvent(event: Stripe.Event) {
+async function handleEvent(event: Stripe.Event, stripe: Stripe) {
   const stripeData = event?.data?.object ?? {};
 
   if (!stripeData) {
@@ -95,10 +108,9 @@ async function handleEvent(event: Stripe.Event) {
 
     if (isSubscription) {
       console.info(`Starting subscription sync for customer: ${customerId}`);
-      await syncCustomerFromStripe(customerId);
+      await syncCustomerFromStripe(customerId, stripe);
     } else if (mode === 'payment' && payment_status === 'paid') {
       try {
-        // Extract the necessary information from the session
         const {
           id: checkout_session_id,
           payment_intent,
@@ -107,7 +119,6 @@ async function handleEvent(event: Stripe.Event) {
           currency,
         } = stripeData as Stripe.Checkout.Session;
 
-        // Insert the order into the stripe_orders table
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
           payment_intent_id: payment_intent,
@@ -116,7 +127,7 @@ async function handleEvent(event: Stripe.Event) {
           amount_total,
           currency,
           payment_status,
-          status: 'completed', // assuming we want to mark it as completed since payment is successful
+          status: 'completed',
         });
 
         if (orderError) {
@@ -204,10 +215,8 @@ async function handleGiftCardEvent(event: Stripe.Event) {
   }
 }
 
-// based on the excellent https://github.com/t3dotgg/stripe-recommendations
-async function syncCustomerFromStripe(customerId: string) {
+async function syncCustomerFromStripe(customerId: string, stripe: Stripe) {
   try {
-    // fetch latest subscription data from Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -215,7 +224,6 @@ async function syncCustomerFromStripe(customerId: string) {
       expand: ['data.default_payment_method'],
     });
 
-    // TODO verify if needed
     if (subscriptions.data.length === 0) {
       console.info(`No active subscriptions found for customer: ${customerId}`);
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
@@ -234,10 +242,8 @@ async function syncCustomerFromStripe(customerId: string) {
       }
     }
 
-    // assumes that a customer can only have a single subscription
     const subscription = subscriptions.data[0];
 
-    // store subscription state
     const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
       {
         customer_id: customerId,
