@@ -8,11 +8,6 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-const TWILIO_MESSAGING_SERVICE_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
-const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_FROM_NUMBER");
-const TWILIO_OWNER_NUMBERS = Deno.env.get("TWILIO_OWNER_NUMBERS");
 const FROM_EMAIL = "team@boxed2built.com";
 const OWNER_EMAIL = "boxed2builtco@gmail.com";
 const OWNER_CC = "team@boxed2built.com";
@@ -45,9 +40,6 @@ interface ContactFormPayload {
   furnitureImagePath?: string;
   referralCodeUsed?: string;
   referrerName?: string;
-  smsOptIn?: boolean;
-  smsConsentText?: string;
-  smsConsentTimestamp?: string;
 }
 
 interface QuickContactPayload {
@@ -59,15 +51,6 @@ interface QuickContactPayload {
 }
 
 type Payload = ContactFormPayload | QuickContactPayload;
-
-interface SavedRequestSmsRecord {
-  client_name: string | null;
-  client_email: string | null;
-  client_phone: string | null;
-  confirmation_code: string | null;
-  sms_opt_in: boolean | null;
-  is_active: boolean | null;
-}
 
 async function sendEmail(to: string | string[], subject: string, html: string, replyTo?: string) {
   const toArray = Array.isArray(to) ? to : [to];
@@ -93,173 +76,6 @@ async function sendEmail(to: string | string[], subject: string, html: string, r
     throw new Error(`Resend API error: ${err}`);
   }
   return await res.json();
-}
-
-function parseOwnerSmsNumbers(): string[] {
-  return (TWILIO_OWNER_NUMBERS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-}
-
-function canSendTwilioNotifications(): boolean {
-  const hasAuth = Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN);
-  const hasSender = Boolean(TWILIO_MESSAGING_SERVICE_SID || TWILIO_FROM_NUMBER);
-  return hasAuth && hasSender && parseOwnerSmsNumbers().length > 0;
-}
-
-function canSendTwilioSms(): boolean {
-  const hasAuth = Boolean(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN);
-  const hasSender = Boolean(TWILIO_MESSAGING_SERVICE_SID || TWILIO_FROM_NUMBER);
-  return hasAuth && hasSender;
-}
-
-function normalizeUsPhoneToE164(phone?: string): string | null {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-
-  if (digits.length === 10) {
-    return `+1${digits}`;
-  }
-
-  if (digits.length === 11 && digits.startsWith("1")) {
-    return `+${digits}`;
-  }
-
-  if (phone.startsWith("+") && digits.length >= 10) {
-    return `+${digits}`;
-  }
-
-  return null;
-}
-
-function normalizeEmail(email?: string): string {
-  return (email ?? "").trim().toLowerCase();
-}
-
-function normalizeConfirmationCode(code?: string): string {
-  return (code ?? "").replace(/\s/g, "").toUpperCase();
-}
-
-function buildContactSmsBody(p: ContactFormPayload): string {
-  const lines = [
-    "New Boxed2Built quote request",
-    `Name: ${p.name}`,
-    `Email: ${p.email}`,
-    p.phone ? `Phone: ${p.phone}` : "Phone: Not provided",
-    p.userCity ? `Service ZIP: ${p.userCity}` : "Service ZIP: Not provided",
-    `Furniture: ${p.furnitureType} (${p.pieces} pc${p.pieces === 1 ? "" : "s"})`,
-    `SMS consent: ${p.smsOptIn ? "Opted in" : "Not opted in"}`,
-    `Code: ${p.confirmationCode}`,
-  ];
-
-  if (p.preferredDate) lines.push(`Preferred date: ${formatDate(p.preferredDate)}`);
-  if (p.preferredTimeSlot) lines.push(`Preferred time: ${formatTimeSlot(p.preferredTimeSlot)}`);
-
-  return lines.join("\n");
-}
-
-function buildQuickContactSmsBody(p: QuickContactPayload): string {
-  return [
-    "New Boxed2Built quick contact",
-    `Name: ${p.name}`,
-    `Email: ${p.email}`,
-    `Message: ${p.message}`,
-  ].join("\n");
-}
-
-async function sendTwilioSms(to: string, body: string) {
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
-    throw new Error("Twilio account credentials are not configured");
-  }
-
-  const params = new URLSearchParams();
-  params.set("To", to);
-  params.set("Body", body);
-
-  if (TWILIO_MESSAGING_SERVICE_SID) {
-    params.set("MessagingServiceSid", TWILIO_MESSAGING_SERVICE_SID);
-  } else if (TWILIO_FROM_NUMBER) {
-    params.set("From", TWILIO_FROM_NUMBER);
-  } else {
-    throw new Error("Twilio sender is not configured");
-  }
-
-  const basicAuth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
-  const res = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Basic ${basicAuth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
-    },
-  );
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Twilio API error: ${errorText}`);
-  }
-
-  return await res.json();
-}
-
-async function sendOwnerSmsNotifications(body: string): Promise<boolean> {
-  if (!canSendTwilioNotifications()) {
-    return false;
-  }
-
-  const recipients = parseOwnerSmsNumbers();
-  let sentCount = 0;
-
-  for (const recipient of recipients) {
-    try {
-      await sendTwilioSms(recipient, body);
-      sentCount += 1;
-    } catch (err) {
-      console.error(`Owner SMS notification failed for ${recipient}:`, err);
-    }
-  }
-
-  return sentCount > 0;
-}
-
-function buildTrustedCustomerConfirmationSmsBody(record: SavedRequestSmsRecord): string {
-  const firstName = (record.client_name ?? "there").split(" ")[0] || "there";
-  return [
-    `Hi ${firstName}, we received your Boxed2Built request.`,
-    "A team member will be reaching out shortly.",
-    `Your request code: ${record.confirmation_code ?? ""}`,
-  ].join(" ");
-}
-
-async function getTrustedSavedRequestForSms(
-  supabase: ReturnType<typeof createClient>,
-  p: ContactFormPayload,
-): Promise<SavedRequestSmsRecord | null> {
-  const normalizedEmail = normalizeEmail(p.email);
-  const normalizedCode = normalizeConfirmationCode(p.confirmationCode);
-
-  if (!normalizedEmail || !normalizedCode) {
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from("saved_requests")
-    .select("client_name, client_email, client_phone, confirmation_code, sms_opt_in, is_active")
-    .eq("client_email", normalizedEmail)
-    .eq("confirmation_code", normalizedCode)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Saved request trust check failed:", error);
-    return null;
-  }
-
-  return (data as SavedRequestSmsRecord | null) ?? null;
 }
 
 function formatTimeSlot(slot?: string): string {
@@ -290,7 +106,6 @@ function ownerNotificationContact(p: ContactFormPayload): string {
   const safeEstimatedPrice = p.estimatedPrice ? escapeHtml(p.estimatedPrice) : null;
   const safeEstimatedTime = p.estimatedTime ? escapeHtml(p.estimatedTime) : null;
   const safeNotes = p.notes ? escapeHtml(p.notes) : null;
-  const safeConsentText = p.smsConsentText ? escapeHtml(p.smsConsentText) : null;
   const safeReferralCode = p.referralCodeUsed ? escapeHtml(p.referralCodeUsed) : null;
   const safeReferrerName = p.referrerName ? escapeHtml(p.referrerName) : null;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -324,20 +139,6 @@ function ownerNotificationContact(p: ContactFormPayload): string {
           ${safeCity ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Service ZIP</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeCity}</span></td>
-          </tr>` : ""}
-          <tr>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">SMS Consent</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:${p.smsOptIn ? "#166534" : "#6b7280"};font-size:14px;font-weight:600;">${p.smsOptIn ? "Opted in" : "Not opted in"}</span></td>
-          </tr>
-          ${p.smsOptIn && p.smsConsentTimestamp ? `<tr>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Consent Timestamp</span></td>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${new Date(p.smsConsentTimestamp).toLocaleString("en-US", { timeZone: "America/Chicago" })} CT</span></td>
-          </tr>` : ""}
-          ${safeConsentText ? `<tr>
-            <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
-              <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">SMS Consent Language (Proof)</span>
-              <p style="margin:0;color:#111827;font-size:13px;line-height:1.6;background:#f9fafb;padding:12px;border-radius:6px;border-left:3px solid #1e3a5f;">${safeConsentText}</p>
-            </td>
           </tr>` : ""}
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Furniture Type</span></td>
@@ -488,7 +289,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
               </td>
               <td style="vertical-align:top;padding-bottom:14px;padding-left:12px;">
                 <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We reach out to confirm</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Expect ${p.smsOptIn ? "a call, text, or email" : "a call or email"} from us within <strong>24 hours</strong> to lock in your appointment and finalize any details.</p>
+                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Expect a call or email from us within <strong>24 hours</strong> to lock in your appointment and finalize any details.</p>
               </td>
             </tr>
             <tr>
@@ -512,7 +313,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
           </table>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call or text us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
       </td></tr>
@@ -588,7 +389,7 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
           <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic;">&ldquo;${safeMessage}&rdquo;</p>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call or text us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span>.</p>
         <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">If you're ready for a free quote, you can also <a href="https://boxed2built.com/#contact" style="color:#1d4ed8;">fill out our full request form</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
@@ -677,8 +478,6 @@ Deno.serve(async (req: Request) => {
       owner: false,
       client: false,
     };
-    let smsNotificationSent = false;
-    let customerSmsSent = false;
 
     if (payload.formType === "contact") {
       const p = payload as ContactFormPayload;
@@ -726,27 +525,6 @@ Deno.serve(async (req: Request) => {
         console.error("Client confirmation email failed:", msg);
         emailResults.clientError = msg;
       }
-
-      try {
-        smsNotificationSent = await sendOwnerSmsNotifications(buildContactSmsBody(p));
-      } catch (err) {
-        console.error("Owner SMS notification failed:", err);
-      }
-
-      if (canSendTwilioSms()) {
-        const trustedRequest = await getTrustedSavedRequestForSms(supabase, p);
-        const trustedRecipient = normalizeUsPhoneToE164(trustedRequest?.client_phone ?? undefined);
-        const trustedOptIn = Boolean(trustedRequest?.sms_opt_in);
-
-        if (trustedOptIn && trustedRecipient) {
-          try {
-            await sendTwilioSms(trustedRecipient, buildTrustedCustomerConfirmationSmsBody(trustedRequest));
-            customerSmsSent = true;
-          } catch (err) {
-            console.error(`Customer SMS confirmation failed for ${trustedRecipient}:`, err);
-          }
-        }
-      }
     } else if (payload.formType === "quick_contact") {
       const p = payload as QuickContactPayload;
 
@@ -774,17 +552,11 @@ Deno.serve(async (req: Request) => {
         console.error("Client confirmation email failed:", msg);
         emailResults.clientError = msg;
       }
-
-      try {
-        smsNotificationSent = await sendOwnerSmsNotifications(buildQuickContactSmsBody(p));
-      } catch (err) {
-        console.error("Owner SMS notification failed:", err);
-      }
     } else {
       throw new Error("Invalid formType");
     }
 
-    return new Response(JSON.stringify({ success: true, emailResults, smsNotificationSent, customerSmsSent }), {
+    return new Response(JSON.stringify({ success: true, emailResults }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

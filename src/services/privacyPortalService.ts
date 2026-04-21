@@ -54,7 +54,6 @@ export type CustomerMarketingConsent = {
   customer_id: string;
   organization_id: string;
   email_marketing_enabled: boolean;
-  sms_marketing_enabled: boolean;
   consent_source: string;
   consented_at: string | null;
   revoked_at: string | null;
@@ -152,11 +151,10 @@ export const privacyPortalService = {
     return (data ?? null) as CustomerMarketingConsent | null;
   },
 
-  async upsertMyMarketingConsent(payload: { emailEnabled: boolean; smsEnabled: boolean }) {
+  async upsertMyMarketingConsent(payload: { emailEnabled: boolean }) {
     await ensureSession();
     const { data, error } = await supabase.rpc('upsert_my_marketing_consent', {
       p_email_marketing_enabled: payload.emailEnabled,
-      p_sms_marketing_enabled: payload.smsEnabled,
       p_consent_source: 'portal_privacy_center',
     });
 

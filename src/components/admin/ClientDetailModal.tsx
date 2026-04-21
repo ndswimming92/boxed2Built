@@ -51,7 +51,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [newTag, setNewTag] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [emailOptIn, setEmailOptIn] = useState(client.marketing_email_opt_in);
-  const [smsOptIn, setSmsOptIn] = useState(client.marketing_sms_opt_in);
 
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerIdLoading, setCustomerIdLoading] = useState(false);
@@ -270,7 +269,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
 
   async function handleUpdatePreferences() {
     try {
-      await updateMarketingPreferences(currentClient.id, emailOptIn, smsOptIn);
+      await updateMarketingPreferences(currentClient.id, emailOptIn);
     } catch (error) {
       console.error('Error updating preferences:', error);
     }
@@ -1232,30 +1231,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     emailOptIn ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Phone className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-900">SMS Marketing</p>
-                  <p className="text-sm text-gray-600">Receive text messages</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setSmsOptIn(!smsOptIn);
-                  handleUpdatePreferences();
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  smsOptIn ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    smsOptIn ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>

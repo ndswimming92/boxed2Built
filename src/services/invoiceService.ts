@@ -551,7 +551,7 @@ export async function markInvoiceAsSent(invoiceId: string): Promise<void> {
 
 export async function logInvoiceCommunication(
   invoiceId: string,
-  method: 'email' | 'sms' | 'phone',
+  method: 'email' | 'phone',
   notes?: string
 ): Promise<Invoice> {
   const invoice = await getInvoice(invoiceId);

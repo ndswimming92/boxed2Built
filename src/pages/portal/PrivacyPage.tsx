@@ -15,7 +15,6 @@ export default function PortalPrivacyPage() {
   const [requests, setRequests] = useState<CustomerPrivacyRequest[]>([]);
   const [jobs, setJobs] = useState<CustomerPrivacyExportJob[]>([]);
   const [emailConsent, setEmailConsent] = useState(false);
-  const [smsConsent, setSmsConsent] = useState(false);
   const [gracePeriodDays, setGracePeriodDays] = useState(30);
   const [confirmRequestId, setConfirmRequestId] = useState('');
   const [confirmToken, setConfirmToken] = useState('');
@@ -37,7 +36,6 @@ export default function PortalPrivacyPage() {
       setRequests(privacyRequests);
       setJobs(exportJobs);
       setEmailConsent(consent?.email_marketing_enabled ?? false);
-      setSmsConsent(consent?.sms_marketing_enabled ?? false);
     } catch (err) {
       if (err instanceof PortalServiceError && err.code === 'SESSION_EXPIRED') {
         navigate('/portal/login?error=session_expired', { replace: true });
@@ -167,23 +165,19 @@ export default function PortalPrivacyPage() {
 
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="text-base font-semibold text-slate-900">Marketing consent</h3>
-          <p className="mt-1 text-sm text-slate-600">Control promotional email and SMS permissions.</p>
+          <p className="mt-1 text-sm text-slate-600">Control promotional email permissions.</p>
 
           <div className="mt-3 space-y-2 text-sm text-slate-700">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={emailConsent} onChange={(event) => setEmailConsent(event.target.checked)} />
               Email marketing
             </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={smsConsent} onChange={(event) => setSmsConsent(event.target.checked)} />
-              SMS marketing
-            </label>
           </div>
 
           <button
             type="button"
             disabled={busyAction === 'consent'}
-            onClick={() => void runAction('consent', () => privacyPortalService.upsertMyMarketingConsent({ emailEnabled: emailConsent, smsEnabled: smsConsent }).then(() => undefined), 'Marketing consent saved.')}
+            onClick={() => void runAction('consent', () => privacyPortalService.upsertMyMarketingConsent({ emailEnabled: emailConsent }).then(() => undefined), 'Marketing consent saved.')}
             className="mt-3 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {busyAction === 'consent' ? 'Saving…' : 'Save consent'}

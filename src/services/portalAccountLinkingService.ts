@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 
-export type VerificationMethod = 'email' | 'sms';
+export type VerificationMethod = 'email';
 
 export type StartLinkStatus = 'token_created' | 'no_match' | 'ambiguous';
 export type ConsumeLinkStatus = 'linked' | 'invalid_token' | 'already_linked';

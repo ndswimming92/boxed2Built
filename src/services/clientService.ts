@@ -13,7 +13,6 @@ export interface Client {
   client_status: ClientStatus;
   client_value_tier: ClientValueTier;
   marketing_email_opt_in: boolean;
-  marketing_sms_opt_in: boolean;
   opt_in_date: string;
   opt_out_date: string | null;
   last_campaign_date: string | null;
@@ -296,16 +295,13 @@ export async function updateClient(clientId: string, updates: Partial<Client>): 
 // Update marketing preferences
 export async function updateMarketingPreferences(
   clientId: string,
-  emailOptIn: boolean,
-  smsOptIn: boolean
+  emailOptIn: boolean
 ): Promise<void> {
   const updates: any = {
-    marketing_email_opt_in: emailOptIn,
-    marketing_sms_opt_in: smsOptIn
+    marketing_email_opt_in: emailOptIn
   };
 
-  // Set opt_out_date if both are false
-  if (!emailOptIn && !smsOptIn) {
+  if (!emailOptIn) {
     updates.opt_out_date = new Date().toISOString();
   }
 
@@ -320,20 +316,14 @@ export async function updateMarketingPreferences(
 // Get clients for marketing (with opt-in filters)
 export async function getClientsForMarketing(
   organizationId: string,
-  channel: 'email' | 'sms',
   segment?: 'all' | 'repeat' | 'high_value' | 'dormant'
 ): Promise<Client[]> {
   let query = supabase
     .from('clients')
     .select('*')
-    .eq('organization_id', organizationId);
-
-  // Apply opt-in filter based on channel
-  if (channel === 'email') {
-    query = query.eq('marketing_email_opt_in', true).not('email', 'is', null);
-  } else {
-    query = query.eq('marketing_sms_opt_in', true).not('phone', 'is', null);
-  }
+    .eq('organization_id', organizationId)
+    .eq('marketing_email_opt_in', true)
+    .not('email', 'is', null);
 
   // Apply segment filter
   if (segment && segment !== 'all') {
@@ -408,13 +398,6 @@ export function getEmailList(clients: Client[]): string {
     .filter(c => c.email && c.marketing_email_opt_in)
     .map(c => c.email)
     .join(', ');
-}
-
-// Get phone list as formatted array
-export function getPhoneList(clients: Client[]): string[] {
-  return clients
-    .filter(c => c.phone && c.marketing_sms_opt_in)
-    .map(c => c.phone!);
 }
 
 // Calculate client metrics manually (calls database function)

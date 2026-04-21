@@ -107,7 +107,7 @@ export default function PrivacyRequestsPage() {
           <table className="min-w-full text-left text-sm">
             <thead className="text-slate-500">
               <tr>
-                <th className="py-2">Customer</th><th>Email</th><th>SMS</th><th>Updated</th>
+                <th className="py-2">Customer</th><th>Email</th><th>Updated</th>
               </tr>
             </thead>
             <tbody>
@@ -115,7 +115,6 @@ export default function PrivacyRequestsPage() {
                 <tr key={consent.id} className="border-t border-slate-100">
                   <td className="py-2">{consent.customer_id}</td>
                   <td>{consent.email_marketing_enabled ? 'Yes' : 'No'}</td>
-                  <td>{consent.sms_marketing_enabled ? 'Yes' : 'No'}</td>
                   <td>{fmt(consent.updated_at)}</td>
                 </tr>
               ))}

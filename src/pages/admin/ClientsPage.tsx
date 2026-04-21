@@ -626,9 +626,6 @@ export default function ClientsPage() {
                         {client.marketing_email_opt_in && (
                           <Mail className="w-4 h-4 text-green-600" title="Email opt-in" />
                         )}
-                        {client.marketing_sms_opt_in && (
-                          <Phone className="w-4 h-4 text-green-600" title="SMS opt-in" />
-                        )}
                       </div>
                     </td>
                     <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>

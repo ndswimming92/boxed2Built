@@ -21,7 +21,6 @@ const initialValues = {
   email: { value: '', error: '', touched: false },
   serviceZip: { value: '', error: '', touched: false },
   phone: { value: '', error: '', touched: false },
-  smsConsent: { value: 'false', error: '', touched: false },
   furnitureType: { value: '', error: '', touched: false },
   pieces: { value: '1', error: '', touched: false },
   preferredDate: { value: '', error: '', touched: false },
@@ -30,8 +29,6 @@ const initialValues = {
   referralCode: { value: '', error: '', touched: false },
   giftCardCode: { value: '', error: '', touched: false },
 };
-
-const SMS_CONSENT_DISCLOSURE = 'By checking this box, you agree to receive SMS updates from Boxed2Built about your service request, including confirmation, scheduling, arrival, and follow-up messages. Message frequency varies. Message and data rates may apply. Reply STOP to opt out and HELP for help.';
 
 // Enhanced validation rules
 const validationRules: Record<string, ValidationRule> = {
@@ -94,9 +91,6 @@ const validationRules: Record<string, ValidationRule> = {
       return null;
     },
     validateOnChange: true
-  },
-  smsConsent: {
-    required: false
   },
   furnitureType: {
     required: true,
@@ -373,9 +367,6 @@ const ContactForm: React.FC = () => {
 
   const onSubmit = handleValidatedSubmit(async (values) => {
     try {
-      const smsOptIn = values.smsConsent === 'true';
-      const smsConsentTimestamp = smsOptIn ? new Date().toISOString() : undefined;
-
       // Track form completion with detailed parameters
       trackFormInteraction('contact_form', 'complete', {
         page_section: 'contact_form',
@@ -448,9 +439,6 @@ const ContactForm: React.FC = () => {
         gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
-        sms_opt_in: smsOptIn,
-        sms_consent_text: smsOptIn ? SMS_CONSENT_DISCLOSURE : undefined,
-        sms_consent_timestamp: smsConsentTimestamp,
         is_test: isTest,
       });
 
@@ -471,9 +459,6 @@ const ContactForm: React.FC = () => {
         estimated_time: estimatedTime || undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
-        sms_opt_in: smsOptIn,
-        sms_consent_text: smsOptIn ? SMS_CONSENT_DISCLOSURE : undefined,
-        sms_consent_timestamp: smsConsentTimestamp,
         is_test: isTest,
       });
 
@@ -489,9 +474,6 @@ const ContactForm: React.FC = () => {
         preferredDate: values.preferredDate || undefined,
         preferredTimeSlot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
-        smsOptIn,
-        smsConsentText: smsOptIn ? SMS_CONSENT_DISCLOSURE : undefined,
-        smsConsentTimestamp,
         estimatedPrice: estimatedPrice || undefined,
         estimatedTime: estimatedTime || undefined,
         submissionDate: savedRequest.submission_date,
@@ -531,9 +513,6 @@ const ContactForm: React.FC = () => {
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
           referralCodeUsed: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
-          smsOptIn,
-          smsConsentText: smsOptIn ? SMS_CONSENT_DISCLOSURE : undefined,
-          smsConsentTimestamp,
         }),
       }).then(async (res) => {
         const data = await res.json().catch(() => ({}));
@@ -565,8 +544,6 @@ const ContactForm: React.FC = () => {
           pieces: parseInt(values.pieces) || 1,
           estimated_price: estimatedPrice,
           confirmation_code: savedRequest.confirmation_code,
-          sms_opt_in: smsOptIn,
-          sms_consent_timestamp: smsConsentTimestamp || null,
         },
       });
 
@@ -608,7 +585,6 @@ const ContactForm: React.FC = () => {
           form_type: 'contact_form',
           furniture_type: values.furnitureType,
           pieces: parseInt(values.pieces) || 1,
-          sms_opt_in: values.smsConsent === 'true',
           error_details: error instanceof Error ? error.stack : String(error),
         },
       });
@@ -822,26 +798,6 @@ const ContactForm: React.FC = () => {
                 </InputMask>
               </FormField>
               </div>
-            </div>
-
-            <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-3">
-              <label htmlFor="smsConsent" className="flex items-start gap-3 cursor-pointer">
-                <input
-                  id="smsConsent"
-                  name="smsConsent"
-                  type="checkbox"
-                  checked={fields.smsConsent?.value === 'true'}
-                  onChange={(e) => handleFieldChange('smsConsent', e.target.checked ? 'true' : 'false')}
-                  onBlur={() => handleFieldBlur('smsConsent')}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-700 focus:ring-blue-500"
-                />
-                <span className="text-xs text-gray-700 leading-5">
-                  {SMS_CONSENT_DISCLOSURE}
-                </span>
-              </label>
-              <p className="mt-2 text-xs text-gray-500">
-                Optional. Leave unchecked if you only want email/phone follow-up and no text messages.
-              </p>
             </div>
           </div>
 

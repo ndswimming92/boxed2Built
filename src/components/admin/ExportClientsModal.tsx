@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Mail, Phone, Copy, Check } from 'lucide-react';
+import { Download, Mail, Copy, Check } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -7,7 +7,6 @@ import {
   exportClientsToCSV,
   downloadCSV,
   getEmailList,
-  getPhoneList,
   updateLastCampaignDate
 } from '../../services/clientService';
 
@@ -28,11 +27,9 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
     includeRevenue: true,
   });
   const [copiedEmails, setCopiedEmails] = useState(false);
-  const [copiedPhones, setCopiedPhones] = useState(false);
   const [markCampaign, setMarkCampaign] = useState(true);
 
   const emailOptInCount = clients.filter(c => c.email && c.marketing_email_opt_in).length;
-  const smsOptInCount = clients.filter(c => c.phone && c.marketing_sms_opt_in).length;
 
   function handleExportCSV() {
     const csv = exportClientsToCSV(clients, exportOptions);
@@ -57,17 +54,6 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
     }
   }
 
-  async function handleCopyPhones() {
-    const phoneList = getPhoneList(clients);
-    await navigator.clipboard.writeText(phoneList.join(', '));
-    setCopiedPhones(true);
-    setTimeout(() => setCopiedPhones(false), 2000);
-
-    if (markCampaign) {
-      updateLastCampaignDate(clients.filter(c => c.phone && c.marketing_sms_opt_in).map(c => c.id));
-    }
-  }
-
   function toggleOption(key: keyof ClientExportOptions) {
     setExportOptions(prev => ({ ...prev, [key]: !prev[key] }));
   }
@@ -86,10 +72,6 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
             <div>
               <p className="text-blue-700">Email Opt-In</p>
               <p className="text-2xl font-bold text-blue-900">{emailOptInCount}</p>
-            </div>
-            <div>
-              <p className="text-blue-700">SMS Opt-In</p>
-              <p className="text-2xl font-bold text-blue-900">{smsOptInCount}</p>
             </div>
             <div>
               <p className="text-blue-700">Opt-In Rate</p>
@@ -127,26 +109,6 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
             <Copy className="w-5 h-5 text-gray-400" />
           </button>
 
-          <button
-            onClick={handleCopyPhones}
-            disabled={smsOptInCount === 0}
-            className="w-full flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              {copiedPhones ? (
-                <Check className="w-5 h-5 text-green-600" />
-              ) : (
-                <Phone className="w-5 h-5 text-gray-600" />
-              )}
-              <div className="text-left">
-                <p className="font-medium text-gray-900">Copy Phone List</p>
-                <p className="text-sm text-gray-600">
-                  {copiedPhones ? 'Copied to clipboard!' : `${smsOptInCount} phone numbers (opt-in only)`}
-                </p>
-              </div>
-            </div>
-            <Copy className="w-5 h-5 text-gray-400" />
-          </button>
         </div>
 
         {/* CSV Export Options */}
@@ -203,7 +165,6 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• <strong>Mailchimp:</strong> Copy email list and paste into audience import</li>
             <li>• <strong>Constant Contact:</strong> Download CSV and upload to contacts</li>
-            <li>• <strong>SMS Services:</strong> Copy phone list for bulk messaging</li>
             <li>• <strong>CRM Systems:</strong> Download CSV with all fields for import</li>
           </ul>
         </div>

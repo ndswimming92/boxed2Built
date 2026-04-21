@@ -5,10 +5,6 @@ export interface EmailTemplate {
   body: string;
 }
 
-export interface SMSTemplate {
-  message: string;
-}
-
 export const EMAIL_TEMPLATES = {
   quote_followup: (inquiry: FormInquiry): EmailTemplate => ({
     subject: `Your Furniture Assembly Quote - ${inquiry.furniture_type}`,
@@ -85,42 +81,9 @@ Boxed2Built`,
   }),
 };
 
-export const SMS_TEMPLATES = {
-  quick_response: (inquiry: FormInquiry): SMSTemplate => ({
-    message: `Hi ${inquiry.client_name.split(' ')[0]}! Thanks for your furniture assembly inquiry. We'll send you a quote shortly. - Boxed2Built`,
-  }),
-
-  quote_provided: (inquiry: FormInquiry): SMSTemplate => ({
-    message: `Hi ${inquiry.client_name.split(' ')[0]}! Your quote for ${inquiry.pieces} ${inquiry.furniture_type}: ${inquiry.estimated_price || 'TBD'}. Call (615) 403-4538 to schedule. - Boxed2Built`,
-  }),
-
-  schedule_confirmation: (inquiry: FormInquiry, date: string, time: string): SMSTemplate => ({
-    message: `Hi ${inquiry.client_name.split(' ')[0]}! Confirmed: ${date} at ${time} for your ${inquiry.furniture_type} assembly. See you then! - Boxed2Built`,
-  }),
-
-  custom: (): SMSTemplate => ({
-    message: '',
-  }),
-};
-
 export function openEmailClient(to: string, subject: string, body: string): void {
   const mailtoLink = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoLink;
-}
-
-export function openSMSClient(to: string, message: string): void {
-  const normalizedPhone = to.replace(/\D/g, '');
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-
-  if (isIOS || isMac) {
-    window.open(`sms:${normalizedPhone}&body=${encodeURIComponent(message)}`);
-  } else {
-    window.open(`sms:${normalizedPhone}?body=${encodeURIComponent(message)}`);
-  }
 }
 
 export function formatPhoneForDisplay(phone: string | null): string {

@@ -272,9 +272,6 @@ export type FormInquiry = {
   confirmation_code?: string | null;
   furniture_photo_url: string | null;
   furniture_image_path: string | null;
-  sms_opt_in: boolean;
-  sms_consent_text: string | null;
-  sms_consent_timestamp: string | null;
   is_test: boolean;
   is_active: boolean;
   created_at: string;
@@ -302,9 +299,6 @@ export type SavedRequest = {
   access_count: number;
   furniture_photo_url: string | null;
   furniture_image_path: string | null;
-  sms_opt_in: boolean;
-  sms_consent_text: string | null;
-  sms_consent_timestamp: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

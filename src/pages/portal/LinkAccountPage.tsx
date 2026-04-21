@@ -1,17 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { openSMSClient } from '../../services/communicationService';
-import {
-  portalAccountLinkingService,
-  type VerificationMethod,
-} from '../../services/portalAccountLinkingService';
+import { portalAccountLinkingService } from '../../services/portalAccountLinkingService';
 
 export default function PortalLinkAccountPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
   const [email, setEmail] = useState('');
-  const [verificationMethod, setVerificationMethod] = useState<VerificationMethod>('email');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +22,7 @@ export default function PortalLinkAccountPage() {
     setError(null);
 
     try {
-      const result = await portalAccountLinkingService.startLinkRequest(email, verificationMethod);
+      const result = await portalAccountLinkingService.startLinkRequest(email, 'email');
 
       if (result.status === 'no_match') {
         setError('No customer records matched that email. Please verify the address or contact support.');
@@ -45,24 +40,13 @@ export default function PortalLinkAccountPage() {
       }
 
       const linkUrl = `${appBaseUrl}/portal/link-account?token=${encodeURIComponent(result.token)}`;
-      if (verificationMethod === 'email') {
-        await portalAccountLinkingService.sendVerificationEmail({
-          email: result.deliveryTarget,
-          linkUrl,
-          expiresAt: result.expiresAt,
-        });
-      } else {
-        openSMSClient(
-          result.deliveryTarget,
-          `Your Boxed2Built verification link: ${linkUrl} (expires in 15 minutes).`
-        );
-      }
+      await portalAccountLinkingService.sendVerificationEmail({
+        email: result.deliveryTarget,
+        linkUrl,
+        expiresAt: result.expiresAt,
+      });
 
-      setMessage(
-        verificationMethod === 'email'
-          ? 'Verification email sent. Check your inbox and click the secure link to finish linking.'
-          : 'Verification link prepared for SMS. Complete verification to finish linking.'
-      );
+      setMessage('Verification email sent. Check your inbox and click the secure link to finish linking.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start account linking.');
     } finally {
@@ -139,30 +123,6 @@ export default function PortalLinkAccountPage() {
                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
               />
             </label>
-
-            <fieldset>
-              <legend className="text-sm font-medium text-slate-700">Verification method</legend>
-              <div className="mt-2 space-y-2 text-sm text-slate-700">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="verificationMethod"
-                    checked={verificationMethod === 'email'}
-                    onChange={() => setVerificationMethod('email')}
-                  />
-                  Email magic link
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="verificationMethod"
-                    checked={verificationMethod === 'sms'}
-                    onChange={() => setVerificationMethod('sms')}
-                  />
-                  SMS magic link
-                </label>
-              </div>
-            </fieldset>
 
             <button
               type="submit"
