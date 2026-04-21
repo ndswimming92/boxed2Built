@@ -91,7 +91,7 @@ const GiftCardsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
-      <main className="pt-24 pb-20">
+      <main className="pt-40 pb-20">
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4">
