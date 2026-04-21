@@ -1,4 +1,5 @@
 import React from 'react';
+import { Gift, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
@@ -113,6 +114,63 @@ const HomePage: React.FC = () => {
         <Testimonials />
 
         <ReferralProgram />
+
+        <section className="py-16 bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-5xl mx-auto rounded-2xl bg-white border border-gray-200 shadow-lg overflow-hidden">
+              <div className="grid md:grid-cols-[1.1fr_1fr] items-center">
+                <div className="p-8 md:p-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold tracking-wide uppercase mb-4">
+                    <Gift size={14} />
+                    Gift Cards
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-3">
+                    Give the gift of a finished room.
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    A Boxed2Built gift card covers professional furniture assembly for friends, family, or
+                    clients. Pick a fixed amount, send it instantly by email, and the balance never expires —
+                    partial amounts roll over across jobs.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href="/gift-cards"
+                      className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-md hover:shadow-lg transition"
+                    >
+                      Buy a Gift Card
+                      <ArrowRight size={18} className="ml-2" />
+                    </a>
+                    <a
+                      href="/redeem-gift-card"
+                      className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-gray-300 text-gray-800 font-semibold hover:border-emerald-500 hover:text-emerald-800 hover:bg-emerald-50 transition"
+                    >
+                      Check a Balance
+                    </a>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-4">
+                    $25, $50, $100, or $200 denominations. Delivered instantly by email.
+                  </p>
+                </div>
+                <div className="relative bg-gradient-to-br from-emerald-600 to-blue-700 p-8 md:p-10 min-h-[260px] flex items-center justify-center">
+                  <div className="w-full max-w-xs rotate-[-4deg] rounded-2xl bg-white/10 backdrop-blur border border-white/30 p-6 text-white shadow-2xl">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-xs font-semibold uppercase tracking-widest opacity-90">
+                        Boxed2Built
+                      </span>
+                      <Gift size={22} className="opacity-90" />
+                    </div>
+                    <div className="text-4xl font-bold mb-1">$100</div>
+                    <div className="text-xs opacity-80 mb-6">Service credit</div>
+                    <div className="font-mono text-sm tracking-wider opacity-90">
+                      B2B-XXXX-XXXX
+                    </div>
+                    <div className="mt-4 text-[11px] opacity-75">Never expires</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <Pricing />
 

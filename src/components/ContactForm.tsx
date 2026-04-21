@@ -1198,7 +1198,10 @@ const ContactForm: React.FC = () => {
               <p className="text-xs text-red-600 mt-1">{fields.giftCardCode.error}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              We'll apply your credit to the final invoice. Balances never expire and partial amounts roll over.
+              We'll apply your credit to the final invoice. Balances never expire and partial amounts roll over.{' '}
+              <a href="/redeem-gift-card" className="text-emerald-700 hover:text-emerald-800 underline font-medium">
+                Check balance
+              </a>
             </p>
           </div>
 

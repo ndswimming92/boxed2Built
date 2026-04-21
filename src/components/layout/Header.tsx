@@ -225,6 +225,7 @@ const Header: React.FC = () => {
               {[
                 { label: 'Partners', href: '/partners' },
                 { label: 'Gallery', href: '/gallery' },
+                { label: 'Gift Cards', href: '/gift-cards' },
                 { label: 'FAQ', href: '/faq' },
                 { label: 'Contact', href: '/contact' },
               ].map((item) => (
@@ -344,6 +345,7 @@ const Header: React.FC = () => {
               {[
                 { label: 'Partners', href: '/partners' },
                 { label: 'Gallery', href: '/gallery' },
+                { label: 'Gift Cards', href: '/gift-cards' },
                 { label: 'FAQ', href: '/faq' },
                 { label: 'Contact', href: '/contact' },
               ].map((item) => (

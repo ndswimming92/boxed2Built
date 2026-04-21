@@ -30,6 +30,13 @@ const footerLinkSections = [
     ],
   },
   {
+    title: 'Gift Cards',
+    links: [
+      { href: '/gift-cards', label: 'Buy a Gift Card' },
+      { href: '/redeem-gift-card', label: 'Redeem a Gift Card' },
+    ],
+  },
+  {
     title: 'Support',
     links: [{ href: '/faq', label: 'FAQ' }],
   },
