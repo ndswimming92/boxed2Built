@@ -921,7 +921,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.address && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-slate-200 shadow-sm">
                       <MapPin className="w-4 h-4 text-slate-500" />
                     </div>
@@ -931,7 +931,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                         href={getAddressDirectionsUrl(currentClient.address)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-slate-800 truncate underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        className="block text-sm font-medium text-slate-800 break-words underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
                         title="Open directions in Maps"
                       >
                         {currentClient.address}
