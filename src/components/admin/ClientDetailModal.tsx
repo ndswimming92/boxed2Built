@@ -103,6 +103,17 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const invoiceCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [businessId, setBusinessId] = useState<string | null>(null);
 
+  const getAddressDirectionsUrl = useCallback((address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS) {
+      return `https://maps.apple.com/?daddr=${encodedAddress}`;
+    }
+
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+  }, []);
+
   const startCooldownTimer = useCallback((sentAt: string | null) => {
     if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     if (!sentAt) { setFollowupCooldownRemaining(0); return; }
@@ -895,7 +906,15 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Location</p>
-                      <p className="text-sm font-medium text-slate-800 truncate">{currentClient.address}</p>
+                      <a
+                        href={getAddressDirectionsUrl(currentClient.address)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-slate-800 truncate underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        title="Open directions in Maps"
+                      >
+                        {currentClient.address}
+                      </a>
                     </div>
                   </div>
                 )}
