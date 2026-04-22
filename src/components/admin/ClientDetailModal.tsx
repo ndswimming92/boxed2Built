@@ -777,9 +777,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
         <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Header Band */}
           <div className="bg-slate-800 px-6 py-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="text-2xl font-bold text-white tracking-tight truncate">{currentClient.name}</h2>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-2xl font-bold text-white tracking-tight whitespace-normal break-words">{currentClient.name}</h2>
                 <div className="flex items-center gap-2 mt-2.5 flex-wrap">
                   <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md capitalize border ${
                     currentClient.client_status === 'active'
@@ -799,7 +799,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center justify-between gap-3 sm:justify-end sm:shrink-0">
                 <div className="text-right">
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Customer Since</p>
                   <p className="text-base font-semibold text-white mt-0.5">{formatDate(currentClient.first_contact_date)}</p>
