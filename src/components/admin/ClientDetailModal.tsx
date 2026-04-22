@@ -114,6 +114,15 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
   }, []);
 
+  const getEmailHref = useCallback((email: string) => {
+    return `mailto:${encodeURIComponent(email.trim())}`;
+  }, []);
+
+  const getPhoneHref = useCallback((phone: string) => {
+    const normalizedPhone = phone.replace(/[^\d+]/g, '');
+    return `tel:${normalizedPhone}`;
+  }, []);
+
   const startCooldownTimer = useCallback((sentAt: string | null) => {
     if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     if (!sentAt) { setFollowupCooldownRemaining(0); return; }
@@ -884,7 +893,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Email</p>
-                      <p className="text-sm font-medium text-slate-800 truncate">{currentClient.email}</p>
+                      <a
+                        href={getEmailHref(currentClient.email)}
+                        className="text-sm font-medium text-slate-800 truncate underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        title="Send email"
+                      >
+                        {currentClient.email}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -895,7 +910,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Phone</p>
-                      <p className="text-sm font-medium text-slate-800">{currentClient.phone}</p>
+                      <a
+                        href={getPhoneHref(currentClient.phone)}
+                        className="text-sm font-medium text-slate-800 underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        title="Call client"
+                      >
+                        {currentClient.phone}
+                      </a>
                     </div>
                   </div>
                 )}
