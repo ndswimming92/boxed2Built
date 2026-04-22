@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, PaymentMethod } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Plus, Trash2, CreditCard, CheckCircle, AlertCircle, ToggleLeft, ToggleRight, AlertTriangle, Zap } from 'lucide-react';
+import { Plus, Trash2, CreditCard, CheckCircle, AlertCircle, AlertTriangle, Zap, ArrowRightLeft } from 'lucide-react';
 
 type StripeMode = 'live' | 'test';
 
@@ -229,35 +229,43 @@ export default function PaymentMethodsPage() {
               Controls which Stripe keys are used for all payment flows including invoices, gift cards, and subscriptions.
             </p>
 
-            {isTestMode && (
-              <div className="flex items-start gap-2 p-3 bg-amber-100 border border-amber-300 rounded-lg mb-4">
+            <div className={`flex items-start gap-2 p-3 border rounded-lg mb-4 ${isTestMode ? 'bg-amber-100 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
+              {isTestMode ? (
                 <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-amber-800">TEST MODE ACTIVE</p>
-                  <p className="text-sm text-amber-700">No real charges will be processed. Use Stripe test cards (e.g., 4242 4242 4242 4242) to simulate payments.</p>
-                </div>
+              ) : (
+                <CheckCircle className="w-5 h-5 text-emerald-700 mt-0.5 flex-shrink-0" />
+              )}
+              <div>
+                <p className={`text-sm font-semibold ${isTestMode ? 'text-amber-800' : 'text-emerald-800'}`}>
+                  Current Environment: {isTestMode ? 'TEST MODE' : 'LIVE MODE'}
+                </p>
+                <p className={`text-sm ${isTestMode ? 'text-amber-700' : 'text-emerald-700'}`}>
+                  {isTestMode
+                    ? 'No real charges will be processed. Use Stripe test cards (e.g., 4242 4242 4242 4242) to simulate payments.'
+                    : 'Real customer charges are enabled. All payment flows use your Stripe live keys.'}
+                </p>
               </div>
-            )}
+            </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isTestMode ? 'bg-amber-200 text-amber-900' : 'bg-emerald-100 text-emerald-900'}`}>
+                {isTestMode ? 'Current: TEST (no real charges)' : 'Current: LIVE (real charges)'}
+              </div>
+
               <button
                 onClick={handleToggleStripeMode}
                 disabled={stripeSaving}
-                className="flex items-center gap-2 group"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${isTestMode ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-600 text-white hover:bg-amber-700'}`}
               >
-                {isTestMode ? (
-                  <ToggleRight className="w-12 h-12 text-amber-600 group-hover:text-amber-700 transition-colors" />
-                ) : (
-                  <ToggleLeft className="w-12 h-12 text-emerald-600 group-hover:text-emerald-700 transition-colors" />
-                )}
-                <span className={`text-sm font-bold uppercase tracking-wide ${isTestMode ? 'text-amber-700' : 'text-emerald-700'}`}>
-                  {stripeSaving ? 'Switching...' : isTestMode ? 'Test' : 'Live'}
+                <ArrowRightLeft className="w-4 h-4" />
+                <span className="text-sm">
+                  {stripeSaving
+                    ? 'Switching...'
+                    : isTestMode
+                      ? 'Switch to LIVE mode'
+                      : 'Switch to TEST mode'}
                 </span>
               </button>
-
-              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${isTestMode ? 'bg-amber-200 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                {isTestMode ? 'TEST' : 'LIVE'}
-              </div>
             </div>
 
             {stripeUpdatedAt && (
