@@ -533,8 +533,8 @@ export default function InquiriesPage() {
                       : 'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300'
                 }`}
               />
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     {!inquiry.viewed && (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">NEW</span>
@@ -545,7 +545,7 @@ export default function InquiriesPage() {
                         TEST
                       </span>
                     )}
-                    <h3 className="text-xl font-semibold text-slate-900">{inquiry.client_name}</h3>
+                    <h3 className="break-words text-xl font-semibold text-slate-900">{inquiry.client_name}</h3>
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
                       {getStatusLabel(inquiry.status)}
                     </span>
@@ -562,12 +562,12 @@ export default function InquiriesPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                    <span className="flex items-center gap-1.5 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
+                    <span className="flex items-center gap-1.5 break-all bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
                       <Mail className="w-4 h-4 text-slate-500" />
                       {inquiry.client_email}
                     </span>
                     {inquiry.client_phone && (
-                      <span className="flex items-center gap-1.5 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
+                      <span className="flex items-center gap-1.5 break-all bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
                         <MessageSquare className="w-4 h-4 text-slate-500" />
                         {inquiry.client_phone}
                       </span>
@@ -582,7 +582,7 @@ export default function InquiriesPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
                   {inquiry.status !== 'archived' && (
                     <button
                       onClick={(e) => {
