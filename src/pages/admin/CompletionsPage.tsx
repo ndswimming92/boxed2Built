@@ -30,6 +30,23 @@ export default function CompletionsPage() {
     }
 
     try {
+      const term = searchTerm.trim();
+      let matchingJobIds: string[] = [];
+
+      if (term) {
+        const { data: matchingJobs, error: matchingJobsError } = await supabase
+          .from('jobs')
+          .select('id')
+          .ilike('client_phone', `%${term}%`);
+
+        if (matchingJobsError) {
+          console.error('Error fetching matching jobs for search:', matchingJobsError);
+          throw matchingJobsError;
+        }
+
+        matchingJobIds = (matchingJobs || []).map((job: any) => String(job.id));
+      }
+
       let query = supabase
         .from('job_completions')
         .select(`
@@ -51,9 +68,17 @@ export default function CompletionsPage() {
         .order('completed_at', { ascending: false })
         .range(start, end);
 
-      if (searchTerm.trim()) {
-        const term = searchTerm.trim();
-        query = query.or(`customer_name.ilike.%${term}%,job.client_phone.ilike.%${term}%`);
+      if (term) {
+        const escapedTerm = term.replace(/,/g, '\\,');
+
+        if (matchingJobIds.length > 0) {
+          const quotedJobIds = matchingJobIds
+            .map((id) => `"${id.replace(/"/g, '\\"')}"`)
+            .join(',');
+          query = query.or(`customer_name.ilike.%${escapedTerm}%,job_id.in.(${quotedJobIds})`);
+        } else {
+          query = query.ilike('customer_name', `%${term}%`);
+        }
       }
 
       if (satisfactionFilter === 'satisfied') {
