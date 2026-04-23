@@ -895,7 +895,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Email</p>
                       <a
                         href={getEmailHref(currentClient.email)}
-                        className="text-sm font-medium text-slate-800 truncate underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        className="block text-sm font-medium text-slate-800 break-all underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
                         title="Send email"
                       >
                         {currentClient.email}
