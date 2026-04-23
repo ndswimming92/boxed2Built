@@ -774,9 +774,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       {activeTab === 'overview' && (
       <div className="space-y-6">
         {/* Client Overview */}
-        <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-indigo-100 shadow-md shadow-indigo-100/60 overflow-hidden bg-gradient-to-b from-indigo-50 via-white to-cyan-50/40">
           {/* Header Band */}
-          <div className="bg-slate-800 px-6 py-5">
+          <div className="bg-gradient-to-r from-indigo-700 via-violet-700 to-cyan-600 px-6 py-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 <h2 className="text-2xl font-bold text-white tracking-tight whitespace-normal break-words">{currentClient.name}</h2>
@@ -794,20 +794,20 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   }`}>
                     {currentClient.client_status}
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md capitalize bg-slate-600/60 text-slate-300 border border-slate-600">
+                  <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md capitalize bg-white/15 text-indigo-50 border border-white/30">
                     {currentClient.client_value_tier.replace(/_/g, ' ')}
                   </span>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3 sm:justify-end sm:shrink-0">
                 <div className="text-right">
-                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Customer Since</p>
+                  <p className="text-xs font-medium text-indigo-100 uppercase tracking-wider">Customer Since</p>
                   <p className="text-base font-semibold text-white mt-0.5">{formatDate(currentClient.first_contact_date)}</p>
                 </div>
                 {!editingInfo && (
                   <button
                     onClick={() => setEditingInfo(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-700 border border-slate-600 rounded-lg hover:bg-slate-600 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-white border border-indigo-100 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
                   >
                     <Pencil className="w-3 h-3" />
                     Edit
@@ -887,15 +887,15 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {currentClient.email && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-slate-200 shadow-sm">
-                      <Mail className="w-4 h-4 text-slate-500" />
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-50 to-white rounded-xl border border-indigo-100">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-indigo-200 shadow-sm">
+                      <Mail className="w-4 h-4 text-indigo-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Email</p>
+                      <p className="text-xs font-medium text-indigo-400 uppercase tracking-wider leading-none mb-0.5">Email</p>
                       <a
                         href={getEmailHref(currentClient.email)}
-                        className="block text-sm font-medium text-slate-800 break-all underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        className="block text-sm font-medium text-slate-800 break-all underline decoration-indigo-200 hover:text-indigo-700 hover:decoration-indigo-400 transition-colors"
                         title="Send email"
                       >
                         {currentClient.email}
@@ -904,15 +904,15 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-slate-200 shadow-sm">
-                      <Phone className="w-4 h-4 text-slate-500" />
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50 to-white rounded-xl border border-cyan-100">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-cyan-200 shadow-sm">
+                      <Phone className="w-4 h-4 text-cyan-600" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Phone</p>
+                      <p className="text-xs font-medium text-cyan-500 uppercase tracking-wider leading-none mb-0.5">Phone</p>
                       <a
                         href={getPhoneHref(currentClient.phone)}
-                        className="text-sm font-medium text-slate-800 underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        className="text-sm font-medium text-slate-800 underline decoration-cyan-200 hover:text-cyan-700 hover:decoration-cyan-400 transition-colors"
                         title="Call client"
                       >
                         {currentClient.phone}
@@ -921,17 +921,17 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.address && (
-                  <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-slate-200 shadow-sm">
-                      <MapPin className="w-4 h-4 text-slate-500" />
+                  <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-violet-50 to-white rounded-xl border border-violet-100">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-violet-200 shadow-sm">
+                      <MapPin className="w-4 h-4 text-violet-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Location</p>
+                      <p className="text-xs font-medium text-violet-500 uppercase tracking-wider leading-none mb-0.5">Location</p>
                       <a
                         href={getAddressDirectionsUrl(currentClient.address)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block text-sm font-medium text-slate-800 break-words underline decoration-slate-300 hover:text-blue-700 hover:decoration-blue-400 transition-colors"
+                        className="block text-sm font-medium text-slate-800 break-words underline decoration-violet-200 hover:text-violet-700 hover:decoration-violet-400 transition-colors"
                         title="Open directions in Maps"
                       >
                         {currentClient.address}
@@ -940,12 +940,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.source && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-slate-200 shadow-sm">
-                      <FileText className="w-4 h-4 text-slate-500" />
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50 to-white rounded-xl border border-emerald-100">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-emerald-200 shadow-sm">
+                      <FileText className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider leading-none mb-0.5">Lead Source</p>
+                      <p className="text-xs font-medium text-emerald-500 uppercase tracking-wider leading-none mb-0.5">Lead Source</p>
                       <p className="text-sm font-medium text-slate-800 capitalize">{currentClient.source.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
@@ -960,26 +960,26 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
+          <div className="p-4 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/40 border border-emerald-100 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2 text-emerald-700 mb-1">
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Total Revenue</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.total_revenue)}</p>
+            <p className="text-2xl font-bold text-emerald-900">{formatCurrency(currentClient.total_revenue)}</p>
           </div>
-          <div className="p-4 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
+          <div className="p-4 bg-gradient-to-br from-indigo-50 via-white to-indigo-100/40 border border-indigo-100 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2 text-indigo-700 mb-1">
               <Briefcase className="w-4 h-4" />
               <p className="text-sm font-medium">Number of Jobs</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{currentClient.job_count}</p>
+            <p className="text-2xl font-bold text-indigo-900">{currentClient.job_count}</p>
           </div>
-          <div className="p-4 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
+          <div className="p-4 bg-gradient-to-br from-cyan-50 via-white to-cyan-100/40 border border-cyan-100 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2 text-cyan-700 mb-1">
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Avg Job Value</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(currentClient.average_job_value)}</p>
+            <p className="text-2xl font-bold text-cyan-900">{formatCurrency(currentClient.average_job_value)}</p>
           </div>
         </div>
 
