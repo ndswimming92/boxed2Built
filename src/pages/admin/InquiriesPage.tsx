@@ -517,11 +517,22 @@ export default function InquiriesPage() {
           filteredInquiries.map((inquiry) => (
             <div
               key={inquiry.id}
-              className={`bg-white rounded-xl border p-6 hover:shadow-md transition-shadow cursor-pointer ${
-                !inquiry.viewed ? 'border-blue-300 bg-blue-50/30' : 'border-slate-200'
+              className={`group relative rounded-2xl border p-6 cursor-pointer transition-all duration-200 overflow-hidden ${
+                !inquiry.viewed
+                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
+                  : 'border-slate-200 bg-gradient-to-br from-white via-slate-50/40 to-white shadow-sm hover:shadow-md hover:-translate-y-0.5'
               }`}
               onClick={() => handleViewInquiry(inquiry)}
             >
+              <div
+                className={`absolute inset-x-0 top-0 h-1 ${
+                  inquiry.status === 'converted_to_job'
+                    ? 'bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400'
+                    : inquiry.status === 'archived'
+                      ? 'bg-gradient-to-r from-slate-300 via-slate-400 to-slate-300'
+                      : 'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300'
+                }`}
+              />
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -551,19 +562,21 @@ export default function InquiriesPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-4 h-4" />
+                    <span className="flex items-center gap-1.5 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
+                      <Mail className="w-4 h-4 text-slate-500" />
                       {inquiry.client_email}
                     </span>
                     {inquiry.client_phone && (
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4" />
+                      <span className="flex items-center gap-1.5 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
+                        <MessageSquare className="w-4 h-4 text-slate-500" />
                         {inquiry.client_phone}
                       </span>
                     )}
-                    <span className="text-slate-500">{formatDate(inquiry.submission_date)}</span>
+                    <span className="text-slate-500 bg-white/80 border border-slate-200 rounded-lg px-2.5 py-1">
+                      {formatDate(inquiry.submission_date)}
+                    </span>
                     {inquiry.confirmation_code && (
-                      <span className="px-2 py-0.5 text-xs font-mono bg-slate-100 text-slate-600 rounded border border-slate-200">
+                      <span className="px-2.5 py-1 text-xs font-mono bg-white/90 text-slate-700 rounded-lg border border-slate-200 shadow-sm">
                         {inquiry.confirmation_code}
                       </span>
                     )}
@@ -595,33 +608,35 @@ export default function InquiriesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">Furniture Type</p>
-                  <p className="text-sm font-medium text-slate-900">{inquiry.furniture_type}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white/80 border border-slate-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Furniture Type</p>
+                  <p className="text-sm font-semibold text-slate-900">{inquiry.furniture_type}</p>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1">Pieces</p>
-                  <p className="text-sm font-medium text-slate-900">{inquiry.pieces}</p>
+                <div className="bg-white/80 border border-slate-200 rounded-xl p-3">
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Pieces</p>
+                  <p className="text-sm font-semibold text-slate-900">{inquiry.pieces}</p>
                 </div>
                 {inquiry.estimated_price && (
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Est. Price</p>
-                    <p className="text-sm font-medium text-emerald-600">{inquiry.estimated_price}</p>
+                  <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3">
+                    <p className="text-xs font-semibold text-emerald-700 mb-1 uppercase tracking-wide">Est. Price</p>
+                    <p className="text-sm font-bold text-emerald-700">{inquiry.estimated_price}</p>
                   </div>
                 )}
                 {inquiry.estimated_time && (
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Est. Time</p>
-                    <p className="text-sm font-medium text-slate-900">{inquiry.estimated_time}</p>
+                  <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-3">
+                    <p className="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">Est. Time</p>
+                    <p className="text-sm font-bold text-blue-900">{inquiry.estimated_time}</p>
                   </div>
                 )}
               </div>
 
               {inquiry.notes && (
                 <div className="mt-4 pt-4 border-t border-slate-200">
-                  <p className="text-xs font-medium text-slate-500 mb-1">Notes</p>
-                  <p className="text-sm text-slate-700 line-clamp-2">{inquiry.notes}</p>
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Notes</p>
+                  <p className="text-sm text-slate-700 line-clamp-2 bg-white/80 border border-slate-200 rounded-xl px-3 py-2">
+                    {inquiry.notes}
+                  </p>
                 </div>
               )}
             </div>
