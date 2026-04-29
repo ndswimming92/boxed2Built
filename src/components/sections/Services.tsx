@@ -196,7 +196,7 @@ const Services: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
-              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (615) 403-4538 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
+              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (615) 551-1402 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>
