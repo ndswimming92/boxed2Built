@@ -145,7 +145,7 @@ const Services: React.FC = () => {
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
             <a
-              href="tel:+16154034538"
+              href="tel:+16155511402"
               className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
               onClick={handlePhoneClick}
             >
