@@ -188,7 +188,7 @@ const Booking: React.FC = () => {
                 <span className="mr-2">Call</span>
                 <img
                   src="/images/contact/phone-number.svg"
-                  alt="(615) 403-4538"
+                  alt="(615) 551-1402"
                   width="120"
                   height="18"
                   className="inline-block"
