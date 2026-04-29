@@ -276,7 +276,7 @@ export const FAQ_CONTENT = [
     questions: [
       {
         question: "How do I schedule furniture assembly service?",
-        answer: "Scheduling is easy! You can call us at (615) 403-4538, book online through our website, or send us an email at boxed2builtco@gmail.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
+        answer: "Scheduling is easy! You can call us at (615) 551-1402, book online through our website, or send us an email at boxed2builtco@gmail.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
       },
       {
         question: "What are your business hours?",
