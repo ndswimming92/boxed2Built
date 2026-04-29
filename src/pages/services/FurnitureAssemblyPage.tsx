@@ -178,7 +178,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                   {
                     step: '1',
                     title: 'Schedule Your Service',
-                    description: 'Call us at (615) 403-4538 or book online. We offer flexible weekend appointments that work with your schedule.'
+                    description: 'Call us at (615) 551-1402 or book online. We offer flexible weekend appointments that work with your schedule.'
                   },
                   {
                     step: '2',
