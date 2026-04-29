@@ -2,7 +2,7 @@
 
 export const BUSINESS_INFO = {
   name: "Boxed2Built",
-  phone: "+16154034538",
+  phone: "+16155511402",
   phoneFormatted: "(615) 551-1402",
   email: "boxed2builtco@gmail.com",
   website: "https://boxed2built.com",
