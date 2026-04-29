@@ -44,7 +44,7 @@ const CallButton: React.FC<CallButtonProps> = ({
 
   return (
     <a
-      href="tel:+16154034538"
+      href="tel:+16155511402"
       onClick={handlePhoneClick}
       className={`inline-flex items-center justify-center ${sizeClasses[size]} ${baseClasses} font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''}`}
       aria-label="Call Boxed2Built at (615) 403-4538"
