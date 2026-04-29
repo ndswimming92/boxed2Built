@@ -62,7 +62,7 @@ Generates FAQ structured data for improved rich snippet display in search result
 const faqs = [
   {
     question: "How do I schedule furniture assembly service?",
-    answer: "You can schedule by calling (615) 403-4538 or booking online..."
+    answer: "You can schedule by calling (615) 551-1402 or booking online..."
   }
 ];
 
