@@ -145,13 +145,13 @@ const ContactPage: React.FC = () => {
                       <div>
                         <h3 className="text-base font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
-                          href="tel:+16154034538" 
+                          href="tel:+16155511402" 
                           className="text-blue-700 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
                           <img 
                             src="/images/contact/phone-number.svg" 
-                            alt="Boxed2Built Phone Number (615) 403-4538" 
+                            alt="Boxed2Built Phone Number (615) 551-1402" 
                             width="120" 
                             height="18"
                             className="inline-block"
