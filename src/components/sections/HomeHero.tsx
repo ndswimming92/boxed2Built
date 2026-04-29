@@ -149,7 +149,7 @@ const HomeHero: React.FC = () => {
                   href="tel:+16155511402"
                   onClick={handlePhoneClick}
                   className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base px-5 py-3 md:px-6 md:py-4 rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                  aria-label="Call Boxed2Built at (615) 403-4538"
+                  aria-label="Call Boxed2Built at (615) 551-1402"
                 >
                   <Phone className="mr-2 w-5 h-5 flex-shrink-0" />
                   {BUSINESS_INFO.phoneFormatted}
