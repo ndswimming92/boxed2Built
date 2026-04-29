@@ -125,7 +125,7 @@ const PartnersPage: React.FC = () => {
         <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f3f4f6' }}>
           <h1>Partner with Boxed2Built</h1>
           <p>Professional furniture assembly partnerships for realtors and movers in Spring Hill, TN.</p>
-          <p>Call us at (615) 403-4538 or visit our contact page.</p>
+          <p>Call us at (615) 551-1402 or visit our contact page.</p>
         </div>
       </noscript>
 
