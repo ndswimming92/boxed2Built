@@ -67,7 +67,7 @@ ${inquiry.preferred_date && inquiry.preferred_time_slot
 
 You can also book directly online at: https://boxed2built.com/contact
 
-Or give us a call at (615) 403-4538.
+Or give us a call at (615) 551-1402.
 
 Looking forward to helping you with your project!
 
