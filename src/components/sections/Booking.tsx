@@ -180,7 +180,7 @@ const Booking: React.FC = () => {
               </Button>
 
               <a
-                href="tel:+16154034538"
+                href="tel:+16155511402"
                 onClick={handlePhoneClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
