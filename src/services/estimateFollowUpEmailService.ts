@@ -24,7 +24,7 @@ interface SendEstimateFollowUpEmailPayload extends EstimateFollowUpDetails {
 const WEBSITE_URL = 'https://boxed2built.com';
 const TERMS_URL = 'https://boxed2built.com/terms-of-service';
 const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
-const CONTACT_PHONE = '615-403-4538';
+const CONTACT_PHONE = '615-551-1402';
 const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
 
 function getGreetingName(clientName: string): string {
