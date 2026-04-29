@@ -233,8 +233,8 @@ const RequestLookupPage: React.FC = () => {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
                       <p className="text-sm text-blue-900">
                         <strong>Need help?</strong> If you can't find your confirmation code, please contact us at{' '}
-                        <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">
-                          (615) 403-4538
+                        <a href="tel:+16155511402" className="text-blue-700 hover:text-blue-800 underline">
+                          (615) 551-1402
                         </a>{' '}
                         or{' '}
                         <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">
