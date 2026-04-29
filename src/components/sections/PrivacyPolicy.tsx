@@ -117,7 +117,7 @@ const PrivacyPolicy = () => {
           <li>Contact Stripe directly regarding payment data through their customer support</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          To exercise any of these rights, contact us at <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a> or <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">(615) 403-4538</a>.
+          To exercise any of these rights, contact us at <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a> or <a href="tel:+16155511402" className="text-blue-700 hover:text-blue-800 underline">(615) 551-1402</a>.
         </p>
       </section>
 
