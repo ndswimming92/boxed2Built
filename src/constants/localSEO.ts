@@ -157,7 +157,7 @@ export const LOCAL_SEO_CONTENT = {
   contact: {
     title: "Contact Boxed2Built | Spring Hill Furniture Assembly",
     description:
-      "Contact Boxed2Built for fast, reliable furniture assembly in Spring Hill, TN. Call (615) 403-4538 or email us to schedule your build. Serving nearby communities."
+      "Contact Boxed2Built for fast, reliable furniture assembly in Spring Hill, TN. Call (615) 551-1402 or email us to schedule your build. Serving nearby communities."
   },
   faq: {
     title: "Furniture Assembly FAQ | Spring Hill, TN | Boxed2Built",
