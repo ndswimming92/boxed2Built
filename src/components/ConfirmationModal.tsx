@@ -229,7 +229,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-center gap-2 text-sm text-blue-900">
             <Phone size={16} />
-            <span>Questions? Call us at <strong>(615) 403-4538</strong></span>
+            <span>Questions? Call us at <strong>(615) 551-1402</strong></span>
           </div>
         </div>
 
