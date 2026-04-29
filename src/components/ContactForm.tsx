@@ -659,7 +659,7 @@ const ContactForm: React.FC = () => {
                 <p className="mb-1">You can:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Try submitting again</li>
-                  <li>Call us at (615) 403-4538</li>
+                  <li>Call us at (615) 551-1402</li>
                   <li>Email us at boxed2builtco@gmail.com</li>
                 </ul>
               </div>
