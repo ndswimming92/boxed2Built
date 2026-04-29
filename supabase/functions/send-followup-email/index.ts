@@ -81,10 +81,10 @@ function buildHtml(clientName: string, referralCode: string | null): string {
         </div>
 
         ${buildReferralBlock(referralCode)}
-        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Feel free to save my number in case you need help again down the road: <span style="color:#111827;font-weight:600;">(615) 403-4538</span></p>
+        <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Feel free to save my number in case you need help again down the road: <span style="color:#111827;font-weight:600;">(615) 551-1402</span></p>
         <p style="margin:0 0 4px;color:#374151;font-size:15px;font-weight:600;">Nicholas Davidson</p>
         <p style="margin:0 0 2px;color:#6b7280;font-size:14px;">Owner, Boxed2Built</p>
-        <p style="margin:0 0 2px;color:#6b7280;font-size:14px;">(615) 403-4538</p>
+        <p style="margin:0 0 2px;color:#6b7280;font-size:14px;">(615) 551-1402</p>
         <p style="margin:0;color:#6b7280;font-size:14px;"><a href="mailto:${CONTACT_EMAIL}" style="color:#6b7280;text-decoration:underline;">${CONTACT_EMAIL}</a></p>
       </td></tr>
 
