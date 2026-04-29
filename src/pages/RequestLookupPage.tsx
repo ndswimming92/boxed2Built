@@ -439,7 +439,7 @@ const RequestLookupPage: React.FC = () => {
                     href="tel:+1615551402"
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
                   >
-                    Call (615) 403-4538
+                    Call (615) 551-1402
                   </a>
                   <a
                     href="mailto:boxed2builtco@gmail.com"
