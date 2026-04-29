@@ -14,7 +14,7 @@ const FROM_EMAIL = 'team@boxed2built.com';
 const BCC_EMAIL = 'boxed2builtco@gmail.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const APP_URL = 'https://www.boxed2built.com';
-const CONTACT_PHONE = '(615) 403-4538';
+const CONTACT_PHONE = '(615) 551-1402';
 
 function escapeHtml(input: string): string {
   return (input || '')
