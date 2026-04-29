@@ -150,7 +150,7 @@ const Services: React.FC = () => {
               onClick={handlePhoneClick}
             >
               <Phone size={20} className="mr-2" />
-              Call (615) 403-4538
+              Call (615) 551-1402
             </a>
             <a
               href="#"
