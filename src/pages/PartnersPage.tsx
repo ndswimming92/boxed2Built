@@ -54,7 +54,7 @@ const PartnersPage: React.FC = () => {
         provider: {
           '@type': 'LocalBusiness',
           name: 'Boxed2Built',
-          telephone: '+16154034538',
+          telephone: '+16155511402',
           address: {
             '@type': 'PostalAddress',
             addressLocality: 'Spring Hill',
