@@ -16,7 +16,7 @@ const BCC_EMAIL = 'boxed2builtco@gmail.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const CONTACT_URL = 'https://boxed2built.com/contact';
 const REVIEW_URL = 'https://g.page/r/CW-qaf93r1ZuEAI/review';
-const CONTACT_PHONE = '615-403-4538';
+const CONTACT_PHONE = '615-551-1402';
 const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
 
 const COOLDOWN_MINUTES = 10;
