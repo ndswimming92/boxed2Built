@@ -49,7 +49,7 @@ We're here to make your furniture assembly as smooth as possible!
 
 Best regards,
 Boxed2Built
-(615) 403-4538
+(615) 551-1402
 boxed2builtco@gmail.com`,
   }),
 
