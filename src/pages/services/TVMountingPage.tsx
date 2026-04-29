@@ -234,7 +234,7 @@ const TVMountingPage: React.FC = () => {
                   {
                     step: '1',
                     title: 'Schedule Your Installation',
-                    description: 'Call us at (615) 403-4538 or book online. We offer flexible scheduling including same-day service when available.'
+                    description: 'Call us at (615) 551-1402 or book online. We offer flexible scheduling including same-day service when available.'
                   },
                   {
                     step: '2',
