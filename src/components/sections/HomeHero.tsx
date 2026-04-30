@@ -6,7 +6,7 @@ import { trackEvent, trackConversion } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { useHeroImage } from '../../hooks/useHeroImage';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
-import { BUSINESS_INFO } from '../../constants/localSEO';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -92,6 +92,8 @@ const HomeHero: React.FC = () => {
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
   const ratingStats = calculateRatingStats(allReviews);
+  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
 
   return (
     <section className="relative pt-20 pb-0 md:pt-24 md:pb-0 bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
@@ -146,13 +148,13 @@ const HomeHero: React.FC = () => {
                 </Button>
 
                 <a
-                  href="tel:+16155511402"
+                  href={`tel:${phoneRaw}`}
                   onClick={handlePhoneClick}
                   className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base px-5 py-3 md:px-6 md:py-4 rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                  aria-label="Call Boxed2Built at (615) 551-1402"
+                  aria-label={`Call Boxed2Built at ${phoneDisplay}`}
                 >
                   <Phone className="mr-2 w-5 h-5 flex-shrink-0" />
-                  {BUSINESS_INFO.phoneFormatted}
+                  {phoneDisplay}
                 </a>
               </div>
 

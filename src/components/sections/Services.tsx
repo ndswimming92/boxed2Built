@@ -4,9 +4,13 @@ import SkeletonCard from '../ui/SkeletonCard';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const Services: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
 
   const services = businessData?.services.map(service => {
     const startingPrice =
@@ -145,12 +149,12 @@ const Services: React.FC = () => {
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
             <a
-              href="tel:+16155511402"
+              href={`tel:${phoneRaw}`}
               className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
               onClick={handlePhoneClick}
             >
               <Phone size={20} className="mr-2" />
-              Call (615) 551-1402
+              Call {phoneDisplay}
             </a>
             <a
               href="#"
@@ -196,7 +200,7 @@ const Services: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-2">How do I schedule service?</h4>
-              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at (615) 551-1402 or booking online through our website. We offer flexible scheduling to fit your needs.</p>
+              <p className="text-gray-600 text-sm">You can schedule furniture assembly by calling us at {phoneDisplay} or booking online through our website. We offer flexible scheduling to fit your needs.</p>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-2">Do you offer volume discounts?</h4>

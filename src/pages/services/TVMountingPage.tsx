@@ -10,6 +10,7 @@ import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
 
@@ -38,6 +39,7 @@ const TV_MOUNTING_SERVICES = [
 
 const TVMountingPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
 
   usePageMeta({
     title: LOCAL_SEO_CONTENT.tvMounting.title,
@@ -234,7 +236,7 @@ const TVMountingPage: React.FC = () => {
                   {
                     step: '1',
                     title: 'Schedule Your Installation',
-                    description: 'Call us at (615) 551-1402 or book online. We offer flexible scheduling including same-day service when available.'
+                    description: `Call us at ${phoneDisplay} or book online. We offer flexible scheduling including same-day service when available.`
                   },
                   {
                     step: '2',

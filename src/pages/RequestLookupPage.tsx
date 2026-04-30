@@ -12,8 +12,13 @@ import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../services/communicationService';
 
 const RequestLookupPage: React.FC = () => {
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneRaw = businessData?.info?.phone || "+16155511402";
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
 
   usePageMeta({
     title: 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly',
@@ -233,8 +238,8 @@ const RequestLookupPage: React.FC = () => {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
                       <p className="text-sm text-blue-900">
                         <strong>Need help?</strong> If you can't find your confirmation code, please contact us at{' '}
-                        <a href="tel:+16155511402" className="text-blue-700 hover:text-blue-800 underline">
-                          (615) 551-1402
+                        <a href={`tel:${phoneRaw}`} className="text-blue-700 hover:text-blue-800 underline">
+                          {phoneDisplay}
                         </a>{' '}
                         or{' '}
                         <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">
@@ -439,7 +444,7 @@ const RequestLookupPage: React.FC = () => {
                     href="tel:+1615551402"
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
                   >
-                    Call (615) 551-1402
+                    Call {phoneDisplay}
                   </a>
                   <a
                     href="mailto:boxed2builtco@gmail.com"

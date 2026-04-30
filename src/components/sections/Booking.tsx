@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { Calendar, Clock, CheckCircle, Phone, Lock } from 'lucide-react';
 import Button from '../ui/Button';
 import { trackEvent } from '../../utils/analytics';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const Booking: React.FC = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneRaw = businessData?.info?.phone || "+16155511402";
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
 
   const handleBookingClick = () => {
     if (!acceptTerms) {
@@ -180,7 +185,7 @@ const Booking: React.FC = () => {
               </Button>
 
               <a
-                href="tel:+16155511402"
+                href={`tel:${phoneRaw}`}
                 onClick={handlePhoneClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
@@ -188,7 +193,7 @@ const Booking: React.FC = () => {
                 <span className="mr-2">Call</span>
                 <img
                   src="/images/contact/phone-number.svg"
-                  alt="(615) 551-1402"
+                  alt={phoneDisplay}
                   width="120"
                   height="18"
                   className="inline-block"

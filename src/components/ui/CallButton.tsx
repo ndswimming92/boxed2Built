@@ -1,7 +1,8 @@
 import React from 'react';
 import { Phone } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
-import { BUSINESS_INFO } from '../../constants/localSEO';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 
 interface CallButtonProps {
   size?: 'md' | 'lg';
@@ -16,6 +17,10 @@ const CallButton: React.FC<CallButtonProps> = ({
   className = '',
   fullWidth = false
 }) => {
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
+
   const handlePhoneClick = () => {
     trackEvent('phone_click', pageSection, {
       event_category: 'contact',
@@ -44,14 +49,14 @@ const CallButton: React.FC<CallButtonProps> = ({
 
   return (
     <a
-      href="tel:+16155511402"
+      href={`tel:${phoneRaw}`}
       onClick={handlePhoneClick}
       className={`inline-flex items-center justify-center ${sizeClasses[size]} ${baseClasses} font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''}`}
-      aria-label="Call Boxed2Built at (615) 551-1402"
+      aria-label={`Call Boxed2Built at ${phoneDisplay}`}
       itemProp="telephone"
     >
       <Phone size={iconSizes[size]} className="mr-2 group-hover:animate-pulse" />
-      <span className="font-bold">{BUSINESS_INFO.phoneFormatted}</span>
+      <span className="font-bold">{phoneDisplay}</span>
     </a>
   );
 };

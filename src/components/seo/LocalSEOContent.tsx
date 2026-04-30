@@ -1,4 +1,6 @@
 import React from 'react';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 import { MapPin, Clock, Phone, Star } from 'lucide-react';
 
 interface LocalSEOContentProps {
@@ -18,6 +20,8 @@ const LocalSEOContent: React.FC<LocalSEOContentProps> = ({
   serviceAreas,
   className = ''
 }) => {
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
   return (
     <section className={`py-8 bg-gray-50 ${className}`}>
       <div className="container mx-auto px-4">
@@ -71,7 +75,7 @@ const LocalSEOContent: React.FC<LocalSEOContentProps> = ({
                 <Phone className="text-purple-600 mr-3" size={24} />
                 <h3 className="text-lg font-semibold text-gray-900">Local Contact</h3>
               </div>
-              <p className="text-gray-700 font-medium">(615) 551-1402</p>
+              <p className="text-gray-700 font-medium">{phoneDisplay}</p>
               <p className="text-sm text-gray-600 mt-2">
                 Call for immediate service in {city} and surrounding areas.
               </p>
