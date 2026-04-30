@@ -156,16 +156,7 @@ const ContactPage: React.FC = () => {
                           className="text-blue-700 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
-                          <span className="inline-flex items-center gap-2">
-                            <img 
-                              src="/images/contact/phone-number.svg" 
-                              alt="Phone icon" 
-                              width="18" 
-                              height="18"
-                              className="inline-block"
-                            />
-                            <span>{phoneDisplay}</span>
-                          </span>
+                          {phoneDisplay}
                         </a>
                         <p className="text-gray-700 text-sm mt-1">Call for immediate assistance or quotes</p>
                       </div>
