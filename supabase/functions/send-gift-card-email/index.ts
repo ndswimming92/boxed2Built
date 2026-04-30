@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { getBusinessContactPhone } from '../_shared/businessContact.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,6 @@ const FROM_EMAIL = 'team@boxed2built.com';
 const BCC_EMAIL = 'boxed2builtco@gmail.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const APP_URL = 'https://www.boxed2built.com';
-const CONTACT_PHONE = '(615) 551-1402';
 
 function escapeHtml(input: string): string {
   return (input || '')
@@ -47,7 +47,7 @@ interface GiftCardRow {
   status: string;
 }
 
-function buildRecipientHtml(card: GiftCardRow, redeemUrl: string) {
+function buildRecipientHtml(card: GiftCardRow, redeemUrl: string, contactPhone: string | null) {
   const firstName = (card.recipient_name || '').trim().split(' ')[0] || 'there';
   const purchaser = (card.purchaser_name || '').trim() || 'A friend';
   const msg = (card.personal_message || '').trim();
@@ -95,7 +95,7 @@ function buildRecipientHtml(card: GiftCardRow, redeemUrl: string) {
           </ul>
         </div>
 
-        <p style="margin:20px 0 0;color:#6b7280;font-size:13px;">Questions? Call or text ${CONTACT_PHONE}.</p>
+        <p style="margin:20px 0 0;color:#6b7280;font-size:13px;">${contactPhone ? `Questions? Call or text ${contactPhone}.` : ""}</p>
       </td></tr>
       <tr><td style="background:#f9fafb;padding:20px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;text-align:center;">
         <p style="margin:0;color:#9ca3af;font-size:12px;">Boxed2Built &bull; Spring Hill, TN &bull; <a href="${WEBSITE_URL}" style="color:#9ca3af;">boxed2built.com</a></p>
@@ -106,7 +106,7 @@ function buildRecipientHtml(card: GiftCardRow, redeemUrl: string) {
 </body></html>`;
 }
 
-function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string) {
+function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string, contactPhone: string | null) {
   const firstName = (card.purchaser_name || '').trim().split(' ')[0] || 'there';
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -142,7 +142,7 @@ function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string) {
           </ul>
         </div>
 
-        <p style="margin:20px 0 0;color:#6b7280;font-size:13px;">Questions? Call or text ${CONTACT_PHONE}.</p>
+        <p style="margin:20px 0 0;color:#6b7280;font-size:13px;">${contactPhone ? `Questions? Call or text ${contactPhone}.` : ""}</p>
       </td></tr>
       <tr><td style="background:#f9fafb;padding:20px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;text-align:center;">
         <p style="margin:0;color:#9ca3af;font-size:12px;">Boxed2Built &bull; Spring Hill, TN &bull; <a href="${WEBSITE_URL}" style="color:#9ca3af;">boxed2built.com</a></p>
@@ -153,7 +153,7 @@ function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string) {
 </body></html>`;
 }
 
-function buildPlainText(card: GiftCardRow, redeemUrl: string, toRecipient: boolean) {
+function buildPlainText(card: GiftCardRow, redeemUrl: string, toRecipient: boolean, contactPhone: string | null) {
   const greetName = toRecipient
     ? ((card.recipient_name || '').trim().split(' ')[0] || 'there')
     : ((card.purchaser_name || '').trim().split(' ')[0] || 'there');
@@ -170,10 +170,9 @@ function buildPlainText(card: GiftCardRow, redeemUrl: string, toRecipient: boole
     `Redeem: ${redeemUrl}`,
     '',
     'Your credit never expires. Partial balances roll over.',
-    `Questions? Call or text ${CONTACT_PHONE}.`,
-    '',
-    '— The Boxed2Built Team',
   ];
+  if (contactPhone) lines.push(`Questions? Call or text ${contactPhone}.`);
+  lines.push('', '— The Boxed2Built Team');
   return lines.join('\n');
 }
 
@@ -224,15 +223,16 @@ Deno.serve(async (req) => {
     }
 
     const redeemUrl = `${APP_URL}/redeem-gift-card?code=${encodeURIComponent(card.code)}`;
+    const contact = await getBusinessContactPhone(supabase);
     const toRecipient = card.delivery_type === 'recipient' && !!card.recipient_email;
     const toAddress = toRecipient ? card.recipient_email! : card.purchaser_email;
     const subject = toRecipient
       ? `You've received a ${money(card.initial_amount_cents)} Boxed2Built gift card`
       : `Your ${money(card.initial_amount_cents)} Boxed2Built gift card`;
     const html = toRecipient
-      ? buildRecipientHtml(card as GiftCardRow, redeemUrl)
-      : buildPurchaserHtml(card as GiftCardRow, redeemUrl);
-    const text = buildPlainText(card as GiftCardRow, redeemUrl, toRecipient);
+      ? buildRecipientHtml(card as GiftCardRow, redeemUrl, contact.display)
+      : buildPurchaserHtml(card as GiftCardRow, redeemUrl, contact.display);
+    const text = buildPlainText(card as GiftCardRow, redeemUrl, toRecipient, contact.display);
 
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',

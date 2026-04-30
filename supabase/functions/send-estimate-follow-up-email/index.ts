@@ -1,4 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { getBusinessContactPhone } from '../_shared/businessContact.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,8 +13,9 @@ const FROM_EMAIL = 'team@boxed2built.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const TERMS_URL = 'https://boxed2built.com/terms-of-service';
 const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
-const CONTACT_PHONE = '615-551-1402';
 const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 type InvoiceType = 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
 
@@ -49,7 +52,7 @@ function normalizeOptional(input?: string | null): string | null {
   return normalized ? normalized : null;
 }
 
-function buildPlainText(payload: Payload): string {
+function buildPlainText(payload: Payload, contactPhone: string | null): string {
   const greetingName = getGreetingName(payload.clientName);
   const serviceSummary = normalizeOptional(payload.serviceSummary);
   const estimateTotal = normalizeOptional(payload.estimateTotal);
@@ -81,7 +84,7 @@ function buildPlainText(payload: Payload): string {
     '',
     'Thank you,',
     'Boxed2Built',
-    CONTACT_PHONE,
+    ...(contactPhone ? [contactPhone] : []),
     CONTACT_EMAIL,
     '',
     'Helpful links:',
@@ -106,7 +109,7 @@ function buildFooterLink(label: string, url: string): string {
   return `<a href="${escapeHtml(url)}" style="color:#1d4ed8;text-decoration:none;font-weight:600;display:inline-block;margin:0 16px 10px 0;">${escapeHtml(label)}</a>`;
 }
 
-function buildHtml(payload: Payload): string {
+function buildHtml(payload: Payload, contactPhone: { display: string | null; telHref: string | null }): string {
   const greetingName = escapeHtml(getGreetingName(payload.clientName));
   const safeInvoiceNumber = escapeHtml(payload.invoiceNumber);
   const serviceSummary = normalizeOptional(payload.serviceSummary);
@@ -158,7 +161,7 @@ function buildHtml(payload: Payload): string {
             </tr>
             <tr>
               <td style="background:#ffffff;padding:0 32px 24px;color:#374151;font-size:15px;line-height:1.7;">
-                <p style="margin:0;">Thank you,<br />Boxed2Built<br />${CONTACT_PHONE}<br /><a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a></p>
+                <p style="margin:0;">Thank you,<br />Boxed2Built<br />${contactPhone.display ? `${contactPhone.display}<br />` : ""}<a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a></p>
               </td>
             </tr>
             <tr>
@@ -166,7 +169,7 @@ function buildHtml(payload: Payload): string {
                 <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
                   <p style="margin:0 0 12px;color:#1e3a5f;font-size:13px;line-height:1.6;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">Helpful links</p>
                   <div style="margin:0 0 14px;font-size:14px;line-height:1.8;">${footerLinks}</div>
-                  <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">Questions? Call or text <a href="tel:${CONTACT_PHONE}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_PHONE}</a> or email <a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a>.</p>
+                  <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">Questions? ${contactPhone.display && contactPhone.telHref ? `Call or text <a href="tel:${contactPhone.telHref}" style="color:#1d4ed8;text-decoration:none;">${contactPhone.display}</a> or ` : ""}email <a href="mailto:${CONTACT_EMAIL}" style="color:#1d4ed8;text-decoration:none;">${CONTACT_EMAIL}</a>.</p>
                 </div>
               </td>
             </tr>
@@ -230,9 +233,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const contactPhone = await getBusinessContactPhone(supabase);
     const subject = buildSubject();
-    const text = buildPlainText(body);
-    const html = buildHtml(body);
+    const text = buildPlainText(body, contactPhone.display);
+    const html = buildHtml(body, contactPhone);
 
     await sendEmail(body.email, subject, html, text);
 
