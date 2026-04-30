@@ -17,10 +17,12 @@ import {
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../services/communicationService';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.partners.title;
 
@@ -125,7 +127,7 @@ const PartnersPage: React.FC = () => {
         <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f3f4f6' }}>
           <h1>Partner with Boxed2Built</h1>
           <p>Professional furniture assembly partnerships for realtors and movers in Spring Hill, TN.</p>
-          <p>Call us at (615) 551-1402 or visit our contact page.</p>
+          <p>Call us at {phoneDisplay} or visit our contact page.</p>
         </div>
       </noscript>
 

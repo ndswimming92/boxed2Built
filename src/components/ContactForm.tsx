@@ -15,6 +15,8 @@ import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
 import ConfirmationModal from './ConfirmationModal';
 import ConfettiCanvas from './ConfettiCanvas';
+import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../services/communicationService';
 
 const initialValues = {
   name: { value: '', error: '', touched: false },
@@ -171,6 +173,8 @@ const ContactForm: React.FC = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || "+16155511402").replace(/^\+1/, ""));
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formProgress, setFormProgress] = useState(0);
   const [furniturePhotoUrl, setFurniturePhotoUrl] = useState('');
@@ -659,7 +663,7 @@ const ContactForm: React.FC = () => {
                 <p className="mb-1">You can:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Try submitting again</li>
-                  <li>Call us at (615) 551-1402</li>
+                  <li>Call us at {phoneDisplay}</li>
                   <li>Email us at boxed2builtco@gmail.com</li>
                 </ul>
               </div>

@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const PrivacyPolicy = () => {
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneRaw = businessData?.info?.phone || "+16155511402";
+  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.privacyPolicy.title;
 
@@ -117,7 +122,7 @@ const PrivacyPolicy = () => {
           <li>Contact Stripe directly regarding payment data through their customer support</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          To exercise any of these rights, contact us at <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a> or <a href="tel:+16155511402" className="text-blue-700 hover:text-blue-800 underline">(615) 551-1402</a>.
+          To exercise any of these rights, contact us at <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a> or <a href={`tel:${phoneRaw}`} className="text-blue-700 hover:text-blue-800 underline">{phoneDisplay}</a>.
         </p>
       </section>
 
