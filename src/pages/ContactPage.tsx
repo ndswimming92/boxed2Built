@@ -10,7 +10,7 @@ import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { formatPhoneForDisplay } from '../services/communicationService';
+import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 import {
   BUSINESS_INFO,
   ADDRESS_INFO,
@@ -18,15 +18,21 @@ import {
   PRIMARY_SERVICES,
   SOCIAL_MEDIA_URLS,
   CUSTOMER_REVIEWS,
-  LOCAL_SEO_CONTENT
+  LOCAL_SEO_CONTENT,
+  getLocalSeoContentWithPhone
 } from '../constants/localSEO';
 
 const ContactPage: React.FC = () => {
   const { data: businessData, loading: businessLoading } = useBusinessDataWithFallback();
 
+  const phoneRaw = businessData?.info?.phone;
+  const phoneMachine = formatPhoneForSchema(phoneRaw);
+  const phoneDisplay = formatPhoneForDisplay(phoneMachine);
+  const localSeoContent = getLocalSeoContentWithPhone({ phone: phoneMachine, phoneDisplay });
+
   usePageMeta({
     title: LOCAL_SEO_CONTENT.contact.title,
-    description: LOCAL_SEO_CONTENT.contact.description,
+    description: localSeoContent.contact.description,
     canonicalUrl: 'https://boxed2built.com/contact',
     ogTitle: 'Contact Boxed2Built | Free Furniture Assembly Quote',
     ogDescription: 'Contact Boxed2Built to schedule furniture assembly in Spring Hill, TN. Call, email, or submit a quick quote request.',
@@ -75,14 +81,12 @@ const ContactPage: React.FC = () => {
 
   const napData = {
     businessName: BUSINESS_INFO.name,
-    phone: businessData?.info?.phone || BUSINESS_INFO.phone,
+    phone: phoneMachine,
     email: BUSINESS_INFO.email,
     address: ADDRESS_INFO,
     serviceAreas: SERVICE_AREAS,
     website: BUSINESS_INFO.website
   };
-  const phoneRaw = businessData?.info?.phone || '+16155511402';
-  const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
 
   return (
     <>
@@ -148,7 +152,7 @@ const ContactPage: React.FC = () => {
                       <div>
                         <h3 className="text-base font-semibold text-gray-900 mb-1">Phone</h3>
                         <a 
-                          href={`tel:${businessData?.info?.phone || "+16155511402"}`} 
+                          href={`tel:${phoneMachine}`} 
                           className="text-blue-700 hover:text-blue-800 text-lg"
                           onClick={handlePhoneClick}
                         >
