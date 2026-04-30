@@ -10,10 +10,15 @@ import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
+import { LOCAL_SEO_CONTENT, FAQ_CONTENT, getFaqContentWithPhone } from '../constants/localSEO';
+import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 
 const FAQPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+
+  const phone = formatPhoneForSchema(businessData?.info?.phone);
+  const phoneDisplay = formatPhoneForDisplay(phone);
+  const faqContent = getFaqContentWithPhone({ phone, phoneDisplay });
 
   usePageMeta({
     title: LOCAL_SEO_CONTENT.faq.title,
@@ -46,7 +51,7 @@ const FAQPage: React.FC = () => {
     setOpenItem(prev => prev === key ? null : key);
   };
 
-  const allFAQs = FAQ_CONTENT.flatMap(category =>
+  const allFAQs = faqContent.flatMap(category =>
     category.questions.map(q => ({
       question: q.question,
       answer: q.answer
@@ -114,7 +119,7 @@ const FAQPage: React.FC = () => {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              {FAQ_CONTENT.map((category, categoryIndex) => (
+              {faqContent.map((category, categoryIndex) => (
                 <div
                   key={categoryIndex}
                   className="mb-12"

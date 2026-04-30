@@ -1,4 +1,5 @@
 import { FormInquiry } from '../lib/supabase';
+import { formatPhoneForDisplay } from '../utils/phoneFormatting';
 
 export interface EmailTemplate {
   subject: string;
@@ -86,22 +87,6 @@ export function openEmailClient(to: string, subject: string, body: string): void
   window.location.href = mailtoLink;
 }
 
-export function formatPhoneForDisplay(phone: string | null): string {
-  if (!phone) return '';
-
-  const cleaned = phone.replace(/\D/g, '');
-
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-
-  if (cleaned.length === 11 && cleaned[0] === '1') {
-    return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-  }
-
-  return phone;
-}
-
 export function validateEmail(email: string): boolean {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
@@ -111,3 +96,5 @@ export function validatePhone(phone: string): boolean {
   const cleaned = phone.replace(/\D/g, '');
   return cleaned.length === 10 || (cleaned.length === 11 && cleaned[0] === '1');
 }
+
+export { formatPhoneForDisplay };

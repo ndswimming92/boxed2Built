@@ -157,7 +157,7 @@ export const LOCAL_SEO_CONTENT = {
   contact: {
     title: "Contact Boxed2Built | Spring Hill Furniture Assembly",
     description:
-      "Contact Boxed2Built for fast, reliable furniture assembly in Spring Hill, TN. Call (615) 551-1402 or email us to schedule your build. Serving nearby communities."
+      "Contact Boxed2Built for fast, reliable furniture assembly in Spring Hill, TN. Call {{phoneDisplay}} or email us to schedule your build. Serving nearby communities."
   },
   faq: {
     title: "Furniture Assembly FAQ | Spring Hill, TN | Boxed2Built",
@@ -276,7 +276,7 @@ export const FAQ_CONTENT = [
     questions: [
       {
         question: "How do I schedule furniture assembly service?",
-        answer: "Scheduling is easy! You can call us at (615) 551-1402, book online through our website, or send us an email at boxed2builtco@gmail.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
+        answer: "Scheduling is easy! You can call us at {{phoneDisplay}}, book online through our website, or send us an email at boxed2builtco@gmail.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
       },
       {
         question: "What are your business hours?",
@@ -438,3 +438,35 @@ export const GBP_OPTIMIZATION = {
     ]
   }
 };
+
+
+export interface PhoneTemplateValues {
+  phone: string;
+  phoneDisplay: string;
+}
+
+export function withBusinessPhoneCopy(text: string, phoneValues: PhoneTemplateValues): string {
+  return text
+    .replace(/{{phone}}/g, phoneValues.phone)
+    .replace(/{{phoneDisplay}}/g, phoneValues.phoneDisplay);
+}
+
+export function getLocalSeoContentWithPhone(phoneValues: PhoneTemplateValues) {
+  return {
+    ...LOCAL_SEO_CONTENT,
+    contact: {
+      ...LOCAL_SEO_CONTENT.contact,
+      description: withBusinessPhoneCopy(LOCAL_SEO_CONTENT.contact.description, phoneValues),
+    },
+  };
+}
+
+export function getFaqContentWithPhone(phoneValues: PhoneTemplateValues) {
+  return FAQ_CONTENT.map((category) => ({
+    ...category,
+    questions: category.questions.map((question) => ({
+      ...question,
+      answer: withBusinessPhoneCopy(question.answer, phoneValues),
+    })),
+  }));
+}
