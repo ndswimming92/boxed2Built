@@ -144,7 +144,6 @@ This website is built with modern web technologies for optimal performance:
 
 - [Privacy Policy](https://boxed2built.com/privacy-policy)
 - [Terms of Service](https://boxed2built.com/terms-of-service)
-- Licensed and insured furniture assembly service
 - Serving Tennessee communities since 2025
 
 ## 🎯 Local SEO Optimization
