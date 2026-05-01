@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Mail, Phone, Instagram, Star, Youtube, Clock, MapPin, CreditCard } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, Star, Youtube, Linkedin, Clock, MapPin, CreditCard } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import QuickContactForm from '../QuickContactForm';
@@ -348,6 +348,7 @@ const Footer: React.FC = () => {
                   if (platform.includes('facebook')) Icon = Facebook;
                   else if (platform.includes('instagram')) Icon = Instagram;
                   else if (platform.includes('youtube')) Icon = Youtube;
+                  else if (platform.includes('linkedin')) Icon = Linkedin;
 
                   return (
                     <a
