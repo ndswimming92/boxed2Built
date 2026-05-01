@@ -216,7 +216,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   doc.text(`${phone}  |  ${email}  |  boxed2built.com/partners`, pageWidth / 2, footerY + 18, { align: 'center' });
 
   doc.setFontSize(7.5);
-  doc.text('Licensed & Insured  |  Labor-only service (not subject to TN sales tax)', pageWidth / 2, footerY + 24, { align: 'center' });
+  doc.text('Labor-only service (not subject to TN sales tax)', pageWidth / 2, footerY + 24, { align: 'center' });
 
   doc.save('Boxed2Built-Realtor-Partnership-Flyer.pdf');
 }
