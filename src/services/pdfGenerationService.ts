@@ -19,8 +19,17 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
   const doc = new jsPDF();
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
+  const bottomMargin = 30;
   let yPosition = 20;
+
+  function checkPageBreak(needed: number) {
+    if (yPosition + needed > pageHeight - bottomMargin) {
+      doc.addPage();
+      yPosition = 20;
+    }
+  }
 
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
@@ -158,6 +167,7 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
   }
 
   if (data.notes) {
+    checkPageBreak(25);
     yPosition += 15;
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -167,10 +177,12 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const splitNotes = doc.splitTextToSize(data.notes, pageWidth - 2 * margin);
+    checkPageBreak(splitNotes.length * 5 + 5);
     doc.text(splitNotes, margin, yPosition);
     yPosition += splitNotes.length * 5;
   }
 
+  checkPageBreak(55);
   yPosition += 15;
   doc.setFillColor(240, 253, 244);
   doc.rect(margin, yPosition - 5, pageWidth - 2 * margin, 35, 'F');
@@ -195,6 +207,7 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
   yPosition += 5;
   doc.text('4. Our professional team will complete your assembly on time', margin + 5, yPosition);
 
+  checkPageBreak(30);
   yPosition += 20;
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
@@ -214,7 +227,7 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
 
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  const footerY = doc.internal.pageSize.getHeight() - 15;
+  const footerY = pageHeight - 15;
   doc.text('Boxed2Built - Professional Furniture Assembly Service', pageWidth / 2, footerY, { align: 'center' });
   doc.text('Serving Spring Hill, Columbia, Franklin & Surrounding Areas', pageWidth / 2, footerY + 4, { align: 'center' });
 
