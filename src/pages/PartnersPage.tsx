@@ -98,10 +98,8 @@ const PartnersPage: React.FC = () => {
       action_value: 'realtor_flyer_pdf',
     });
 
-    const { default: jsPDF } = await import('jspdf');
-    const pdf = new jsPDF();
-    pdf.text('Boxed2Built Realtor Partnership Program', 20, 20);
-    pdf.save('Boxed2Built-Realtor-Partnership-Program.pdf');
+    const { generateRealtorFlyerPDF } = await import('../utils/realtorFlyerPDF');
+    await generateRealtorFlyerPDF(businessData);
   };
 
   if (loading || !businessData) {
