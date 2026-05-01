@@ -308,6 +308,13 @@ export default function ForecastingPage() {
                 <option value="seasonal">Seasonal Decomposition</option>
                 <option value="ensemble">Ensemble (Combined)</option>
               </select>
+              <p className="text-xs text-slate-500 mt-1.5">
+                {settings.modelPreference === 'auto' && 'Automatically selects the best-performing model by testing each one against your historical data and choosing the most accurate fit.'}
+                {settings.modelPreference === 'linear' && 'Fits a straight trend line through your revenue history. Best for steady, consistent growth without major seasonal swings.'}
+                {settings.modelPreference === 'exponential' && 'Gives more weight to recent months, adapting quickly to changes in your revenue trajectory. Best when recent performance matters most.'}
+                {settings.modelPreference === 'seasonal' && 'Identifies recurring patterns (e.g., busy summers, slow winters) and factors them into predictions. Best with 12+ months of data.'}
+                {settings.modelPreference === 'ensemble' && 'Combines predictions from all models into a weighted average, reducing the risk of any single model being wrong.'}
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Growth Rate Override (%)</label>
