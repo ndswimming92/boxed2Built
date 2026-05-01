@@ -58,8 +58,17 @@ export const UTM_CONFIGS = {
 };
 
 // Helper function to get social media URLs with UTM parameters
-export const getSocialUrl = (platform: keyof typeof UTM_CONFIGS.social, baseUrl: string): string => {
-  const utmParams = UTM_CONFIGS.social[platform];
+export const getSocialUrl = (platform: string, baseUrl: string): string => {
+  const key = platform.toLowerCase().replace(/\s+/g, '') as keyof typeof UTM_CONFIGS.social;
+  const utmParams = UTM_CONFIGS.social[key];
+  if (!utmParams) {
+    return createUTMUrl(baseUrl, {
+      source: 'website',
+      medium: 'social',
+      campaign: 'social_media',
+      content: `${key}_link`,
+    });
+  }
   return createUTMUrl(baseUrl, utmParams);
 };
 
