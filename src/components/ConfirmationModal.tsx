@@ -33,6 +33,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   requestData,
 }) => {
   const [copied, setCopied] = useState(false);
+  const { data: businessData } = useBusinessDataWithFallback();
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
 
   console.log('[ConfirmationModal] Rendered with:', {
     isOpen,
