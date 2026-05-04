@@ -6,9 +6,6 @@ publish = "dist"
 NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
 
-[extension."prerender"]
-enabled = true
-
 [[redirects]]
 from = "http://*"
 to = "https://:splat"
