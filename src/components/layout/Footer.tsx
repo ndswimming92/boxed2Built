@@ -204,8 +204,8 @@ const Footer: React.FC = () => {
 
           {/* Navigation */}
           <nav aria-label="Footer navigation">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-x-10">
-              <div className="rounded-lg border border-blue-500/30 bg-blue-950/30 p-4 sm:col-span-2 lg:col-span-1">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 md:gap-x-6">
+              <div className="rounded-lg border border-blue-500/30 bg-blue-950/30 p-4">
                 <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">
                   {serviceLinksSection.title}
                 </h3>
@@ -214,7 +214,7 @@ const Footer: React.FC = () => {
                     <li key={link.href}>
                       <InternalLink
                         href={link.href}
-                        className="hover:text-white transition-colors"
+                        className="inline-flex items-start hover:text-white transition-colors"
                         trackingCategory="footer_nav"
                       >
                         {link.label}
@@ -225,14 +225,14 @@ const Footer: React.FC = () => {
               </div>
 
               {footerLinkSections.map((section) => (
-                <div key={section.title}>
-                  <h3 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">{section.title}</h3>
-                  <ul className="space-y-2 text-sm text-gray-300">
+                <div key={section.title} className="rounded-lg border border-gray-700/80 bg-gray-800/40 p-4">
+                  <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">{section.title}</h3>
+                  <ul className="space-y-2 text-sm text-gray-200">
                     {section.links.map((link) => (
                       <li key={link.href}>
                         <InternalLink
                           href={link.href}
-                          className="hover:text-white transition-colors"
+                          className="inline-flex items-start hover:text-white transition-colors"
                           trackingCategory="footer_nav"
                         >
                           {link.label}
@@ -242,42 +242,42 @@ const Footer: React.FC = () => {
                   </ul>
                 </div>
               ))}
-            </div>
 
-            <div className="mt-6 border-t border-gray-700/80 pt-4 bg-gray-800/40 rounded-lg px-4 py-3">
-              <h3 className="font-semibold text-blue-100 mb-2 text-xs uppercase tracking-[0.16em]">Client Access</h3>
-              <ul className="space-y-2 text-sm text-gray-200">
-                {clientAccessLinks.map((link) => (
-                  <li key={link.href}>
-                    <InternalLink
-                      href={link.href}
-                      className="inline-flex items-center hover:text-white transition-colors"
-                      trackingCategory="footer_nav"
-                      onClick={() => {
-                        if (link.href === '/portal/login') {
-                          trackEvent('client_login_nav_click', 'footer', {
-                            event_category: 'navigation',
-                            event_label: 'client_login_footer',
-                            action_type: 'click',
-                            action_value: '/portal/login',
-                          });
-                        }
+              <div className="rounded-lg border border-gray-700/80 bg-gray-800/40 p-4 sm:col-span-2 lg:col-span-1">
+                <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">Client Access</h3>
+                <ul className="space-y-2 text-sm text-gray-200">
+                  {clientAccessLinks.map((link) => (
+                    <li key={link.href}>
+                      <InternalLink
+                        href={link.href}
+                        className="inline-flex items-start hover:text-white transition-colors"
+                        trackingCategory="footer_nav"
+                        onClick={() => {
+                          if (link.href === '/portal/login') {
+                            trackEvent('client_login_nav_click', 'footer', {
+                              event_category: 'navigation',
+                              event_label: 'client_login_footer',
+                              action_type: 'click',
+                              action_value: '/portal/login',
+                            });
+                          }
 
-                        if (link.href === '/lookup-request') {
-                          trackEvent('request_lookup_nav_click', 'footer', {
-                            event_category: 'navigation',
-                            event_label: 'request_lookup_footer',
-                            action_type: 'click',
-                            action_value: '/lookup-request',
-                          });
-                        }
-                      }}
-                    >
-                      {link.label}
-                    </InternalLink>
-                  </li>
-                ))}
-              </ul>
+                          if (link.href === '/lookup-request') {
+                            trackEvent('request_lookup_nav_click', 'footer', {
+                              event_category: 'navigation',
+                              event_label: 'request_lookup_footer',
+                              action_type: 'click',
+                              action_value: '/lookup-request',
+                            });
+                          }
+                        }}
+                      >
+                        {link.label}
+                      </InternalLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </nav>
 
