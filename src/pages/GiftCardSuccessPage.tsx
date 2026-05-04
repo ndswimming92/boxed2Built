@@ -11,9 +11,13 @@ import { useToast } from '../contexts/ToastContext';
 
 const GiftCardSuccessPage: React.FC = () => {
   usePageMeta({
-    title: 'Gift Card Purchase Complete',
-    description: 'Thanks for supporting Boxed2Built. Your gift card purchase is confirmed.',
-    canonicalUrl: 'https://www.boxed2built.com/gift-cards/success',
+    title: 'Gift Card Purchase Complete | Boxed2Built',
+    description: 'Thanks for supporting Boxed2Built. Your gift card purchase is confirmed and on its way.',
+    canonicalUrl: 'https://boxed2built.com/gift-cards/success',
+    ogTitle: 'Gift Card Purchase Complete | Boxed2Built',
+    ogDescription: 'Your Boxed2Built gift card purchase is confirmed. The recipient will love stress-free furniture assembly.',
+    twitterTitle: 'Gift Card Purchase Complete | Boxed2Built',
+    twitterDescription: 'Your Boxed2Built gift card purchase is confirmed.',
   });
 
   const [params] = useSearchParams();
@@ -139,7 +143,7 @@ const GiftCardSuccessPage: React.FC = () => {
                 <div className="mx-auto w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
                   <Loader2 className="w-9 h-9 text-amber-600 animate-spin" />
                 </div>
-                <h1 className="mt-5 text-2xl font-bold text-slate-900">Almost there…</h1>
+                <h2 className="mt-5 text-2xl font-bold text-slate-900">Almost there…</h2>
                 <p className="mt-2 text-slate-600">
                   Your payment was received. We're finalizing your gift card — this usually takes just a few seconds.
                   Refresh the page if it doesn't update shortly.

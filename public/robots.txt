@@ -4,8 +4,9 @@
 User-agent: *
 Allow: /
 
-# Block admin and private areas
+# Block admin, portal, and private areas
 Disallow: /admin/
+Disallow: /portal/
 Disallow: /private/
 Disallow: /*.pdf$
 Disallow: /api/
@@ -34,6 +35,10 @@ Allow: /privacy-policy
 Allow: /privacy-policy/
 Allow: /terms-of-service
 Allow: /terms-of-service/
+Allow: /gift-cards
+Allow: /gift-cards/
+Allow: /redeem-gift-card
+Allow: /redeem-gift-card/
 
 # Allow all static assets
 Allow: /images/

@@ -33,10 +33,14 @@ const initialForm: FormState = {
 
 const GiftCardsPage: React.FC = () => {
   usePageMeta({
-    title: 'Boxed2Built Gift Cards',
+    title: 'Boxed2Built Gift Cards | Furniture Assembly Gift Cards in Spring Hill, TN',
     description:
       'Give the gift of a stress-free move-in day. Boxed2Built service credit for furniture assembly and TV mounting in Spring Hill, TN.',
-    canonicalUrl: 'https://www.boxed2built.com/gift-cards',
+    canonicalUrl: 'https://boxed2built.com/gift-cards',
+    ogTitle: 'Boxed2Built Gift Cards | The Perfect Closing or Housewarming Gift',
+    ogDescription: 'Give the gift of professional furniture assembly. Boxed2Built gift cards for stress-free move-in days in Spring Hill, TN.',
+    twitterTitle: 'Boxed2Built Gift Cards | Furniture Assembly in Spring Hill, TN',
+    twitterDescription: 'Give the gift of professional furniture assembly. Perfect for housewarmings and closing gifts.',
   });
 
   const [form, setForm] = useState<FormState>(initialForm);

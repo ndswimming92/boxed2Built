@@ -127,9 +127,7 @@
   <meta name="author" content="Boxed2Built" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-  <!-- Canonical URL (default; dynamically updated per route by React) -->
-  <link rel="canonical" href="https://boxed2built.com/" />
-  <link rel="alternate" hreflang="en-US" href="https://boxed2built.com/" />
+  <!-- Canonical URL is set dynamically per route by React usePageMeta hook -->
 
   <!-- Preload optimization -->
   <link rel="dns-prefetch" href="//images.pexels.com" />
@@ -203,10 +201,79 @@
 
 
   <!-- Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Boxed2Built",
+    "url": "https://boxed2built.com",
+    "logo": "https://boxed2built.com/black_boxed2built_logo.png",
+    "description": "Professional furniture assembly and TV mounting service in Spring Hill, TN. Serving families in Franklin, Columbia, Thompson's Station, and Brentwood.",
+    "foundingDate": "2024",
+    "founder": {
+      "@type": "Person",
+      "name": "Nicholas Davidson"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+1-615-551-1402",
+      "contactType": "customer service",
+      "email": "boxed2builtco@gmail.com",
+      "availableLanguage": "English"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Spring Hill",
+      "addressRegion": "TN",
+      "postalCode": "37174",
+      "addressCountry": "US"
+    },
+    "areaServed": [
+      { "@type": "City", "name": "Spring Hill, TN" },
+      { "@type": "City", "name": "Franklin, TN" },
+      { "@type": "City", "name": "Columbia, TN" },
+      { "@type": "City", "name": "Thompson's Station, TN" },
+      { "@type": "City", "name": "Brentwood, TN" }
+    ]
+  }
+  </script>
 
   <!-- WebSite Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Boxed2Built",
+    "url": "https://boxed2built.com",
+    "description": "Professional furniture assembly and TV mounting in Spring Hill, TN",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://boxed2built.com/faq?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 
-  <!-- SiteNavigationElement Schema (replaces incorrect BreadcrumbList) -->
+  <!-- SiteNavigationElement Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    "name": ["Home", "Services", "Furniture Assembly", "TV Mounting", "About", "Gallery", "Contact", "FAQ", "Partners", "Gift Cards"],
+    "url": [
+      "https://boxed2built.com/",
+      "https://boxed2built.com/services",
+      "https://boxed2built.com/services/furniture-assembly",
+      "https://boxed2built.com/services/tv-mounting",
+      "https://boxed2built.com/about",
+      "https://boxed2built.com/gallery",
+      "https://boxed2built.com/contact",
+      "https://boxed2built.com/faq",
+      "https://boxed2built.com/partners",
+      "https://boxed2built.com/gift-cards"
+    ]
+  }
+  </script>
 
   </head>
   <body>

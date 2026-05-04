@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Wrench, Star, Home, ArrowRight, Monitor, Zap } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
+import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -87,6 +88,11 @@ const TVMountingPage: React.FC = () => {
     <>
       <EnhancedLocalBusinessSchema businessData={businessData} />
       <FAQSchema faqs={tvMountingFAQs} />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: 'https://boxed2built.com/' },
+        { name: 'Services', url: 'https://boxed2built.com/services' },
+        { name: 'TV Mounting', url: 'https://boxed2built.com/services/tv-mounting' },
+      ]} />
       <Header />
 
       <main className="min-h-screen">
@@ -419,9 +425,9 @@ const TVMountingPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 text-center">
-                Also Available
+                Explore More
               </p>
-              <div className="max-w-sm mx-auto">
+              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
                 <Link
                   to="/services/furniture-assembly"
                   className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
@@ -429,6 +435,36 @@ const TVMountingPage: React.FC = () => {
                   <div>
                     <p className="text-blue-900 font-semibold text-sm">Professional Furniture Assembly</p>
                     <p className="text-blue-700 text-xs mt-0.5">IKEA, Target, Walmart &amp; all major brands</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </Link>
+                <Link
+                  to="/gallery"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div>
+                    <p className="text-blue-900 font-semibold text-sm">See Our Completed Projects</p>
+                    <p className="text-blue-700 text-xs mt-0.5">Browse our TV mounting and assembly gallery</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </Link>
+                <Link
+                  to="/about"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div>
+                    <p className="text-blue-900 font-semibold text-sm">About Our Team</p>
+                    <p className="text-blue-700 text-xs mt-0.5">Meet the experts behind Boxed2Built</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                </Link>
+                <Link
+                  to="/gift-cards"
+                  className="group flex items-center justify-between bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-5 py-4 transition-colors"
+                >
+                  <div>
+                    <p className="text-blue-900 font-semibold text-sm">Gift Cards Available</p>
+                    <p className="text-blue-700 text-xs mt-0.5">Give the gift of professional installation</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
                 </Link>

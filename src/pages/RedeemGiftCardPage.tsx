@@ -12,9 +12,13 @@ import type { GiftCardLookupResult } from '../types/giftCard';
 
 const RedeemGiftCardPage: React.FC = () => {
   usePageMeta({
-    title: 'Redeem a Boxed2Built Gift Card',
-    description: 'Check your balance and apply a Boxed2Built gift card to your next service.',
-    canonicalUrl: 'https://www.boxed2built.com/redeem-gift-card',
+    title: 'Redeem a Boxed2Built Gift Card | Check Balance & Apply Credit',
+    description: 'Check your balance and apply a Boxed2Built gift card to your next furniture assembly or TV mounting service in Spring Hill, TN.',
+    canonicalUrl: 'https://boxed2built.com/redeem-gift-card',
+    ogTitle: 'Redeem a Boxed2Built Gift Card',
+    ogDescription: 'Check your gift card balance and apply credit toward your next Boxed2Built furniture assembly service.',
+    twitterTitle: 'Redeem a Boxed2Built Gift Card',
+    twitterDescription: 'Check your gift card balance and apply credit toward your next service.',
   });
 
   const [params] = useSearchParams();

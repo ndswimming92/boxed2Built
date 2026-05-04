@@ -6,6 +6,9 @@ publish = "dist"
 NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
 
+[extension."prerender"]
+enabled = true
+
 [[redirects]]
 from = "http://*"
 to = "https://:splat"
@@ -76,7 +79,27 @@ X-Robots-Tag = "index, follow"
 Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+for = "/gift-cards"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/redeem-gift-card"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
 for = "/admin/*"
+
+[headers.values]
+X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/portal/*"
 
 [headers.values]
 X-Robots-Tag = "noindex, nofollow"
