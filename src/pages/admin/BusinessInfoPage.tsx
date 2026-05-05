@@ -312,7 +312,7 @@ export default function BusinessInfoPage() {
                 name="hours_counter_frame_ms"
                 type="number"
                 min={30}
-                max={250}
+                max={5000}
                 step={5}
                 value={hoursCounterFrameMs}
                 onChange={(e) => setHoursCounterFrameMs(Number(e.target.value))}
