@@ -237,21 +237,28 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Retro split-flap counter */
+/* Retro split-flap counter
+   Each tile uses two halves that clip a centered digit.
+   The digit is positioned at the full tile height center,
+   and each half shows its respective portion. */
 .flip-tile {
+  --tile-w: 3.5rem;
+  --tile-h: 5rem;
+  --tile-r: 0.5rem;
+  --tile-font: 2.75rem;
   position: relative;
-  width: 3.5rem;
-  height: 5rem;
-  border-radius: 0.5rem;
-  background: #3d3d3d;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+  width: var(--tile-w);
+  height: var(--tile-h);
+  border-radius: var(--tile-r);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 @media (min-width: 768px) {
   .flip-tile {
-    width: 5rem;
-    height: 7rem;
-    border-radius: 0.625rem;
+    --tile-w: 5rem;
+    --tile-h: 7rem;
+    --tile-r: 0.625rem;
+    --tile-font: 4rem;
   }
 }
 
@@ -259,7 +266,6 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   border-radius: inherit;
 }
 
@@ -270,53 +276,43 @@ body {
   right: 0;
   height: 50%;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .flip-tile-top {
   top: 0;
-  background: linear-gradient(180deg, #4d4d4d 0%, #424242 100%);
-  border-radius: 0.5rem 0.5rem 0 0;
+  background: linear-gradient(180deg, #4d4d4d 0%, #434343 100%);
+  border-radius: var(--tile-r) var(--tile-r) 0 0;
 }
 
 .flip-tile-bottom {
   bottom: 0;
-  background: linear-gradient(180deg, #383838 0%, #2f2f2f 100%);
-  border-radius: 0 0 0.5rem 0.5rem;
+  background: linear-gradient(180deg, #3a3a3a 0%, #313131 100%);
+  border-radius: 0 0 var(--tile-r) var(--tile-r);
 }
 
-@media (min-width: 768px) {
-  .flip-tile-top { border-radius: 0.625rem 0.625rem 0 0; }
-  .flip-tile-bottom { border-radius: 0 0 0.625rem 0.625rem; }
-}
-
-.flip-tile-top span {
+.flip-tile-top span,
+.flip-tile-bottom span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--tile-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 2.75rem;
+  font-size: var(--tile-font);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
-  position: absolute;
-  top: 50%;
+}
+
+.flip-tile-top span {
+  top: 0;
 }
 
 .flip-tile-bottom span {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 2.75rem;
-  font-weight: 700;
-  color: #f0f0f0;
-  line-height: 1;
-  position: absolute;
-  bottom: 50%;
-}
-
-@media (min-width: 768px) {
-  .flip-tile-top span,
-  .flip-tile-bottom span {
-    font-size: 4rem;
-  }
+  bottom: 0;
+  color: #f5f5f5;
 }
 
 .flip-tile-seam {
@@ -324,8 +320,8 @@ body {
   left: 0;
   right: 0;
   top: 50%;
-  height: 2px;
-  background: rgba(0,0,0,0.6);
+  height: 1.5px;
+  background: rgba(0,0,0,0.55);
   transform: translateY(-50%);
   z-index: 5;
 }
@@ -338,57 +334,47 @@ body {
   right: 0;
   height: 50%;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 10;
   backface-visibility: hidden;
 }
 
 .flip-tile-flap-top {
   top: 0;
-  background: linear-gradient(180deg, #4d4d4d 0%, #424242 100%);
-  border-radius: 0.5rem 0.5rem 0 0;
+  background: linear-gradient(180deg, #4d4d4d 0%, #434343 100%);
+  border-radius: var(--tile-r) var(--tile-r) 0 0;
   transform-origin: bottom center;
 }
 
 .flip-tile-flap-bottom {
   bottom: 0;
-  background: linear-gradient(180deg, #383838 0%, #2f2f2f 100%);
-  border-radius: 0 0 0.5rem 0.5rem;
+  background: linear-gradient(180deg, #3a3a3a 0%, #313131 100%);
+  border-radius: 0 0 var(--tile-r) var(--tile-r);
   transform-origin: top center;
 }
 
-@media (min-width: 768px) {
-  .flip-tile-flap-top { border-radius: 0.625rem 0.625rem 0 0; }
-  .flip-tile-flap-bottom { border-radius: 0 0 0.625rem 0.625rem; }
-}
-
-.flip-tile-flap-top span {
+.flip-tile-flap-top span,
+.flip-tile-flap-bottom span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--tile-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 2.75rem;
+  font-size: var(--tile-font);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
-  position: absolute;
-  top: 50%;
+}
+
+.flip-tile-flap-top span {
+  top: 0;
 }
 
 .flip-tile-flap-bottom span {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 2.75rem;
-  font-weight: 700;
-  color: #f0f0f0;
-  line-height: 1;
-  position: absolute;
-  bottom: 50%;
-}
-
-@media (min-width: 768px) {
-  .flip-tile-flap-top span,
-  .flip-tile-flap-bottom span {
-    font-size: 4rem;
-  }
+  bottom: 0;
+  color: #f5f5f5;
 }
 
 .flip-tile-flap-down {
@@ -397,7 +383,7 @@ body {
 
 .flip-tile-flap-up {
   animation: flipBottomUp 80ms ease-out forwards;
-  animation-delay: 40ms;
+  animation-delay: 30ms;
   transform: rotateX(90deg);
 }
 
@@ -420,17 +406,15 @@ body {
 }
 
 .flip-dot {
-  font-size: 2.75rem;
+  font-size: var(--tile-font, 2.75rem);
   font-weight: 700;
   color: #3d3d3d;
   line-height: 1;
   align-self: center;
-  padding: 0 0.125rem;
 }
 
 @media (min-width: 768px) {
   .flip-dot {
     font-size: 4rem;
-    padding: 0 0.25rem;
   }
 }
