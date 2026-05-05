@@ -60,6 +60,8 @@ export default function BusinessInfoPage() {
     currencies_accepted: 'USD',
     logo_url: '',
     image_url: '',
+    hours_counter_duration_ms: 4500,
+    hours_counter_frame_ms: 70,
   });
 
   const [address, setAddress] = useState<Partial<BusinessAddress>>({
