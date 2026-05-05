@@ -294,8 +294,8 @@ export default function BusinessInfoPage() {
               <input
                 name="hours_counter_duration_ms"
                 type="number"
-                min={1000}
-                max={12000}
+                min={2500}
+                max={8000}
                 step={100}
                 value={hoursCounterDurationMs}
                 onChange={(e) => setHoursCounterDurationMs(Number(e.target.value))}
@@ -311,9 +311,9 @@ export default function BusinessInfoPage() {
               <input
                 name="hours_counter_frame_ms"
                 type="number"
-                min={30}
+                min={80}
                 max={5000}
-                step={5}
+                step={10}
                 value={hoursCounterFrameMs}
                 onChange={(e) => setHoursCounterFrameMs(Number(e.target.value))}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
