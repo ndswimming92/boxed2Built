@@ -10,7 +10,7 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 
 
 
-const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean }> = ({ targetValue, shouldAnimate }) => {
+const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; durationMs?: number | null; frameMs?: number | null }> = ({ targetValue, shouldAnimate, durationMs, frameMs }) => {
   const [displayValue, setDisplayValue] = useState('0.0');
   const [tick, setTick] = useState(0);
 
@@ -22,14 +22,14 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean }>
       return;
     }
 
-    const durationMs = 2600;
-    const frameMs = 45;
+    const clampedDurationMs = Math.min(12000, Math.max(1000, Number(durationMs) || 4500));
+    const clampedFrameMs = Math.min(250, Math.max(30, Number(frameMs) || 70));
     const start = performance.now();
 
     const intervalId = window.setInterval(() => {
       const now = performance.now();
-      const elapsed = Math.min(now - start, durationMs);
-      const progress = elapsed / durationMs;
+      const elapsed = Math.min(now - start, clampedDurationMs);
+      const progress = elapsed / clampedDurationMs;
       const eased = 1 - Math.pow(1 - progress, 3);
       const nextValue = finalValue * eased;
 
@@ -40,10 +40,10 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean }>
         setDisplayValue(finalValue.toFixed(1));
         window.clearInterval(intervalId);
       }
-    }, frameMs);
+    }, clampedFrameMs);
 
     return () => window.clearInterval(intervalId);
-  }, [targetValue, shouldAnimate]);
+  }, [targetValue, shouldAnimate, durationMs, frameMs]);
 
   const chars = displayValue.split('');
 
@@ -262,7 +262,12 @@ const HomeHero: React.FC = () => {
                         </p>
                         <div className="flex items-baseline gap-1.5">
                           <span className="sr-only">{formattedHours} hours</span>
-                          <SplitFlapNumber targetValue={rawHours} shouldAnimate={animateHours} />
+                          <SplitFlapNumber
+                            targetValue={rawHours}
+                            shouldAnimate={animateHours}
+                            durationMs={businessData?.info?.hours_counter_duration_ms}
+                            frameMs={businessData?.info?.hours_counter_frame_ms}
+                          />
                           <span className="text-sm font-medium text-gray-500">hrs</span>
                           {fullDays >= 2 && (
                             <span className="text-xs text-gray-500">&mdash; {contextLine}</span>
