@@ -55,7 +55,7 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; d
               <span
                 className="splitflap-wheel"
                 style={{
-                  transform: `translateY(-${digit * 10}%)`,
+                  transform: `translateY(-${digit * 1.25}em)`,
                   transitionDuration: `${Math.max(120, (Number(frameMs) || 70) * 2)}ms`,
                 }}
               >

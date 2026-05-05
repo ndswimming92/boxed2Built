@@ -145,6 +145,7 @@ body {
 .smooth-splitflap-cell {
   overflow: hidden;
   position: relative;
+  height: 1.25em;
 }
 
 .splitflap-wheel {
@@ -158,8 +159,11 @@ body {
   line-height: 1.25em;
 }
 
+
 .splitflap-wheel > span {
   height: 1.25em;
+  min-height: 1.25em;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
