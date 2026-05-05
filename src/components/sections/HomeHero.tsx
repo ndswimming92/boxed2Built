@@ -8,6 +8,77 @@ import { useHeroImage } from '../../hooks/useHeroImage';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 
+
+
+const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; durationMs?: number | null; frameMs?: number | null }> = ({ targetValue, shouldAnimate, durationMs, frameMs }) => {
+  const [displayValue, setDisplayValue] = useState('0.0');
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const finalValue = Number.isFinite(targetValue) ? Math.max(0, targetValue) : 0;
+
+    if (!shouldAnimate) {
+      setDisplayValue(finalValue.toFixed(1));
+      return;
+    }
+
+    const clampedDurationMs = Math.min(12000, Math.max(1000, Number(durationMs) || 4500));
+    const clampedFrameMs = Math.min(250, Math.max(30, Number(frameMs) || 70));
+    const start = performance.now();
+
+    const intervalId = window.setInterval(() => {
+      const now = performance.now();
+      const elapsed = Math.min(now - start, clampedDurationMs);
+      const progress = elapsed / clampedDurationMs;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextValue = finalValue * eased;
+
+      setDisplayValue(nextValue.toFixed(1));
+      setTick((prev) => prev + 1);
+
+      if (progress >= 1) {
+        setDisplayValue(finalValue.toFixed(1));
+        window.clearInterval(intervalId);
+      }
+    }, clampedFrameMs);
+
+    return () => window.clearInterval(intervalId);
+  }, [targetValue, shouldAnimate, durationMs, frameMs]);
+
+  const chars = displayValue.split('');
+
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden="true">
+      {chars.map((char, index) => {
+        if (/\d/.test(char)) {
+          return (
+            <span
+              key={`digit-${index}-${char}-${tick}`}
+              className="splitflap-cell splitflap-flip smooth-digit-cell splitflap-retro"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <span className="splitflap-top" />
+              <span className="splitflap-bottom" />
+              <span className="splitflap-seam" />
+              <span className="splitflap-tab splitflap-tab-left" />
+              <span className="splitflap-tab splitflap-tab-right" />
+              <span className="splitflap-face">
+                <span>{char}</span>
+              </span>
+            </span>
+          );
+        }
+
+        return (
+          <span key={`sep-${index}-${char}`} className="text-lg md:text-xl font-bold text-gray-900">
+            {char}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
+
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
   const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
@@ -19,6 +90,13 @@ const HomeHero: React.FC = () => {
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hoursStatRef = useRef<HTMLDivElement | null>(null);
+  const [animateHours, setAnimateHours] = useState(false);
+
+  const [hoursAnimationConfig, setHoursAnimationConfig] = useState<{ durationMs: number; frameMs: number }>({
+    durationMs: 4500,
+    frameMs: 70,
+  });
 
   useEffect(() => {
     if (displayReviews.length <= 1) return;
@@ -58,6 +136,38 @@ const HomeHero: React.FC = () => {
       formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  useEffect(() => {
+    const target = hoursStatRef.current;
+    if (!target || animateHours) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setAnimateHours(true);
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [animateHours]);
+
+
+  useEffect(() => {
+    try {
+      const durationFromStorage = Number(window.localStorage.getItem('hours_counter_duration_ms'));
+      const frameFromStorage = Number(window.localStorage.getItem('hours_counter_frame_ms'));
+      setHoursAnimationConfig({
+        durationMs: Number.isFinite(durationFromStorage) && durationFromStorage > 0 ? durationFromStorage : 4500,
+        frameMs: Number.isFinite(frameFromStorage) && frameFromStorage > 0 ? frameFromStorage : 70,
+      });
+    } catch {
+      setHoursAnimationConfig({ durationMs: 4500, frameMs: 70 });
+    }
+  }, []);
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'hero', {
@@ -167,7 +277,7 @@ const HomeHero: React.FC = () => {
                   ? `That is more than ${fullDays} full days given back to our customers.`
                   : `Every hour we work is one you get to spend on what matters most.`;
                 return (
-                  <div className="mt-4 rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2.5">
+                  <div ref={hoursStatRef} className="mt-4 rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2.5">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                         <Clock3 className="w-4 h-4 text-blue-600" />
@@ -177,7 +287,13 @@ const HomeHero: React.FC = () => {
                           Hours Given Back to Customers
                         </p>
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold text-gray-900 leading-none">{formattedHours}</span>
+                          <span className="sr-only">{formattedHours} hours</span>
+                          <SplitFlapNumber
+                            targetValue={rawHours}
+                            shouldAnimate={animateHours}
+                            durationMs={hoursAnimationConfig.durationMs}
+                            frameMs={hoursAnimationConfig.frameMs}
+                          />
                           <span className="text-sm font-medium text-gray-500">hrs</span>
                           {fullDays >= 2 && (
                             <span className="text-xs text-gray-500">&mdash; {contextLine}</span>
