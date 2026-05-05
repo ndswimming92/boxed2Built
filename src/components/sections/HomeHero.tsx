@@ -86,6 +86,11 @@ const HomeHero: React.FC = () => {
   const hoursStatRef = useRef<HTMLDivElement | null>(null);
   const [animateHours, setAnimateHours] = useState(false);
 
+  const [hoursAnimationConfig, setHoursAnimationConfig] = useState<{ durationMs: number; frameMs: number }>({
+    durationMs: 4500,
+    frameMs: 70,
+  });
+
   useEffect(() => {
     if (displayReviews.length <= 1) return;
 
@@ -142,6 +147,20 @@ const HomeHero: React.FC = () => {
 
     return () => observer.disconnect();
   }, [animateHours]);
+
+
+  useEffect(() => {
+    try {
+      const durationFromStorage = Number(window.localStorage.getItem('hours_counter_duration_ms'));
+      const frameFromStorage = Number(window.localStorage.getItem('hours_counter_frame_ms'));
+      setHoursAnimationConfig({
+        durationMs: Number.isFinite(durationFromStorage) && durationFromStorage > 0 ? durationFromStorage : 4500,
+        frameMs: Number.isFinite(frameFromStorage) && frameFromStorage > 0 ? frameFromStorage : 70,
+      });
+    } catch {
+      setHoursAnimationConfig({ durationMs: 4500, frameMs: 70 });
+    }
+  }, []);
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'hero', {
@@ -265,8 +284,8 @@ const HomeHero: React.FC = () => {
                           <SplitFlapNumber
                             targetValue={rawHours}
                             shouldAnimate={animateHours}
-                            durationMs={businessData?.info?.hours_counter_duration_ms}
-                            frameMs={businessData?.info?.hours_counter_frame_ms}
+                            durationMs={hoursAnimationConfig.durationMs}
+                            frameMs={hoursAnimationConfig.frameMs}
                           />
                           <span className="text-sm font-medium text-gray-500">hrs</span>
                           {fullDays >= 2 && (

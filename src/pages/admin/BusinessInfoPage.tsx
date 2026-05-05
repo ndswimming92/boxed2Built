@@ -2,10 +2,44 @@ import React, { useEffect, useState } from 'react';
 import { supabase, BusinessInfo, BusinessAddress } from '../../lib/supabase';
 import { Save, AlertCircle, CheckCircle, Building2, MapPin } from 'lucide-react';
 
+
+const SplitFlapPreview: React.FC<{ value: string; tick: number }> = ({ value, tick }) => {
+  const chars = value.split('');
+
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden="true">
+      {chars.map((char, index) => {
+        if (/\d/.test(char)) {
+          return (
+            <span
+              key={`preview-digit-${index}-${char}-${tick}`}
+              className="splitflap-cell splitflap-flip"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <span className="splitflap-face">{char}</span>
+            </span>
+          );
+        }
+
+        return (
+          <span key={`preview-sep-${index}-${char}`} className="text-xl font-bold text-slate-900">
+            {char}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
+
 export default function BusinessInfoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [hoursCounterDurationMs, setHoursCounterDurationMs] = useState(4500);
+  const [hoursCounterFrameMs, setHoursCounterFrameMs] = useState(70);
+  const [previewValue, setPreviewValue] = useState('0.0');
+  const [previewRunning, setPreviewRunning] = useState(false);
+  const [previewTick, setPreviewTick] = useState(0);
 
   const [businessInfo, setBusinessInfo] = useState<Partial<BusinessInfo>>({
     name: '',
@@ -41,6 +75,10 @@ export default function BusinessInfoPage() {
 
   const fetchData = async () => {
     try {
+      const storedDuration = Number(window.localStorage.getItem('hours_counter_duration_ms'));
+      const storedFrame = Number(window.localStorage.getItem('hours_counter_frame_ms'));
+      if (Number.isFinite(storedDuration) && storedDuration > 0) setHoursCounterDurationMs(storedDuration);
+      if (Number.isFinite(storedFrame) && storedFrame > 0) setHoursCounterFrameMs(storedFrame);
       const { data: info } = await supabase
         .from('business_info')
         .select('*')
@@ -94,6 +132,9 @@ export default function BusinessInfoPage() {
         setBusinessInfo(newBusiness);
       }
 
+      window.localStorage.setItem('hours_counter_duration_ms', String(hoursCounterDurationMs));
+      window.localStorage.setItem('hours_counter_frame_ms', String(hoursCounterFrameMs));
+
       if (address.id) {
         const { error: updateAddrError } = await supabase
           .from('business_address')
@@ -119,6 +160,30 @@ export default function BusinessInfoPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+
+  const runPreviewFlip = () => {
+    const duration = Math.min(12000, Math.max(1000, Number(hoursCounterDurationMs) || 4500));
+    const frame = Math.min(250, Math.max(30, Number(hoursCounterFrameMs) || 70));
+    const target = 54.8;
+
+    setPreviewRunning(true);
+    const startedAt = performance.now();
+
+    const intervalId = window.setInterval(() => {
+      const elapsed = Math.min(performance.now() - startedAt, duration);
+      const progress = elapsed / duration;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setPreviewValue((target * eased).toFixed(1));
+      setPreviewTick((prev) => prev + 1);
+
+      if (progress >= 1) {
+        setPreviewValue(target.toFixed(1));
+        setPreviewRunning(false);
+        window.clearInterval(intervalId);
+      }
+    }, frame);
   };
 
   if (loading) {
@@ -232,11 +297,11 @@ export default function BusinessInfoPage() {
                 min={1000}
                 max={12000}
                 step={100}
-                value={businessInfo.hours_counter_duration_ms ?? 4500}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, hours_counter_duration_ms: Number(e.target.value) })}
+                value={hoursCounterDurationMs}
+                onChange={(e) => setHoursCounterDurationMs(Number(e.target.value))}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <p className="text-xs text-slate-500 mt-1">How long the home page hours flip animation runs.</p>
+              <p className="text-xs text-slate-500 mt-1">How long the home page hours flip animation runs (saved to this browser).</p>
             </div>
 
             <div>
@@ -249,13 +314,36 @@ export default function BusinessInfoPage() {
                 min={30}
                 max={250}
                 step={5}
-                value={businessInfo.hours_counter_frame_ms ?? 70}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, hours_counter_frame_ms: Number(e.target.value) })}
+                value={hoursCounterFrameMs}
+                onChange={(e) => setHoursCounterFrameMs(Number(e.target.value))}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
-              <p className="text-xs text-slate-500 mt-1">Higher number = slower visible digit updates.</p>
+              <p className="text-xs text-slate-500 mt-1">Higher number = slower visible digit updates (saved to this browser).</p>
             </div>
           </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Test Flip Preview</p>
+                <p className="text-xs text-slate-500">Runs a sample {`54.8`} hours animation using your current speed settings.</p>
+              </div>
+              <button
+                type="button"
+                onClick={runPreviewFlip}
+                disabled={previewRunning}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {previewRunning ? 'Running…' : 'Test Flip'}
+              </button>
+            </div>
+            <div className="mt-4 inline-flex items-baseline gap-2">
+              <span className="sr-only">{previewValue} hours</span>
+              <SplitFlapPreview value={previewValue} tick={previewTick} />
+              <span className="text-sm text-slate-500">hrs</span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
