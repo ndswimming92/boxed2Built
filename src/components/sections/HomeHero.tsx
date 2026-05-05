@@ -8,6 +8,35 @@ import { useHeroImage } from '../../hooks/useHeroImage';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 
+
+
+const SplitFlapNumber: React.FC<{ value: string; shouldAnimate: boolean }> = ({ value, shouldAnimate }) => {
+  const chars = value.split('');
+
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden="true">
+      {chars.map((char, index) => {
+        if (/\d/.test(char)) {
+          return (
+            <span
+              key={`digit-${index}-${char}`}
+              className={`splitflap-cell ${shouldAnimate ? 'splitflap-flip' : ''}`}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <span className="splitflap-face">{char}</span>
+            </span>
+          );
+        }
+
+        return (
+          <span key={`sep-${index}-${char}`} className="text-lg md:text-xl font-bold text-gray-900">
+            {char}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
   const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
@@ -19,6 +48,8 @@ const HomeHero: React.FC = () => {
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hoursStatRef = useRef<HTMLDivElement | null>(null);
+  const [animateHours, setAnimateHours] = useState(false);
 
   useEffect(() => {
     if (displayReviews.length <= 1) return;
@@ -58,6 +89,24 @@ const HomeHero: React.FC = () => {
       formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  useEffect(() => {
+    const target = hoursStatRef.current;
+    if (!target || animateHours) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setAnimateHours(true);
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [animateHours]);
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'hero', {
@@ -167,7 +216,7 @@ const HomeHero: React.FC = () => {
                   ? `That is more than ${fullDays} full days given back to our customers.`
                   : `Every hour we work is one you get to spend on what matters most.`;
                 return (
-                  <div className="mt-4 rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2.5">
+                  <div ref={hoursStatRef} className="mt-4 rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2.5">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                         <Clock3 className="w-4 h-4 text-blue-600" />
@@ -177,7 +226,8 @@ const HomeHero: React.FC = () => {
                           Hours Given Back to Customers
                         </p>
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold text-gray-900 leading-none">{formattedHours}</span>
+                          <span className="sr-only">{formattedHours} hours</span>
+                          <SplitFlapNumber value={formattedHours} shouldAnimate={animateHours} />
                           <span className="text-sm font-medium text-gray-500">hrs</span>
                           {fullDays >= 2 && (
                             <span className="text-xs text-gray-500">&mdash; {contextLine}</span>
