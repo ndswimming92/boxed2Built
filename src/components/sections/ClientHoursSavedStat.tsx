@@ -5,6 +5,7 @@ import {
   CLIENT_TIME_SAVED_SUBTITLE,
   CLIENT_TIME_SAVED_TITLE,
 } from '../../services/analyticsService';
+import SplitFlapNumber from '../SplitFlapNumber';
 
 type ClientHoursSavedStatProps = {
   totalHoursSaved?: number | null;
@@ -13,6 +14,9 @@ type ClientHoursSavedStatProps = {
 const ClientHoursSavedStat: React.FC<ClientHoursSavedStatProps> = ({ totalHoursSaved }) => {
   const safeHours = Number(totalHoursSaved) || 0;
   const clientTimeSavedMetric = calculateClientTimeSaved([safeHours]);
+  const metricLabelMatch = clientTimeSavedMetric.label.match(/([\d.]+)\s*(.*)/);
+  const numericPart = metricLabelMatch?.[1] ?? clientTimeSavedMetric.label;
+  const suffix = metricLabelMatch?.[2] ?? '';
 
   return (
     <section className="py-10 bg-white border-b border-gray-100" aria-label="Client time saved">
@@ -28,8 +32,9 @@ const ClientHoursSavedStat: React.FC<ClientHoursSavedStatProps> = ({ totalHoursS
                 <p className="text-sm font-semibold tracking-wide text-blue-700 uppercase">
                   {CLIENT_TIME_SAVED_TITLE}
                 </p>
-                <p className="text-3xl md:text-4xl font-bold text-gray-900 mt-1">
-                  {clientTimeSavedMetric.label}
+                <p className="text-3xl md:text-4xl font-bold text-gray-900 mt-1 inline-flex items-baseline gap-2">
+                  <SplitFlapNumber value={numericPart} />
+                  {suffix ? <span>{suffix}</span> : null}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">{CLIENT_TIME_SAVED_SUBTITLE}</p>
               </div>
