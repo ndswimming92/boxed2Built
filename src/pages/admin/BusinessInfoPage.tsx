@@ -285,8 +285,28 @@ export default function BusinessInfoPage() {
             />
           </div>
 
+          <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-4 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">Homepage Split-Flap Hours Counter</h3>
+                <p className="text-xs text-slate-600 mt-1">
+                  These settings control the new split-flap hours animation in the homepage hero.
+                  Settings are saved per browser.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setHoursCounterDurationMs(4500);
+                  setHoursCounterFrameMs(70);
+                }}
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700"
+              >
+                Reset Defaults
+              </button>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Hours Counter Duration (ms)
@@ -342,6 +362,7 @@ export default function BusinessInfoPage() {
               <SplitFlapPreview value={previewValue} tick={previewTick} />
               <span className="text-sm text-slate-500">hrs</span>
             </div>
+          </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
