@@ -21,6 +21,8 @@ export default function BusinessInfoPage() {
     currencies_accepted: 'USD',
     logo_url: '',
     image_url: '',
+    hours_counter_duration_ms: 4500,
+    hours_counter_frame_ms: 70,
   });
 
   const [address, setAddress] = useState<Partial<BusinessAddress>>({
@@ -218,6 +220,42 @@ export default function BusinessInfoPage() {
             />
           </div>
 
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Hours Counter Duration (ms)
+              </label>
+              <input
+                name="hours_counter_duration_ms"
+                type="number"
+                min={1000}
+                max={12000}
+                step={100}
+                value={businessInfo.hours_counter_duration_ms ?? 4500}
+                onChange={(e) => setBusinessInfo({ ...businessInfo, hours_counter_duration_ms: Number(e.target.value) })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">How long the home page hours flip animation runs.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Hours Counter Tick Speed (ms)
+              </label>
+              <input
+                name="hours_counter_frame_ms"
+                type="number"
+                min={30}
+                max={250}
+                step={5}
+                value={businessInfo.hours_counter_frame_ms ?? 70}
+                onChange={(e) => setBusinessInfo({ ...businessInfo, hours_counter_frame_ms: Number(e.target.value) })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">Higher number = slower visible digit updates.</p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
