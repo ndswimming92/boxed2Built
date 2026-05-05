@@ -59,6 +59,8 @@ export type BusinessInfo = {
   logo_url: string | null;
   image_url: string | null;
   total_client_hours_saved: number | null;
+  hours_counter_duration_ms: number | null;
+  hours_counter_frame_ms: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
