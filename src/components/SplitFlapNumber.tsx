@@ -2,14 +2,23 @@ import React from 'react';
 
 type SplitFlapNumberProps = {
   value: string;
+  shouldAnimate?: boolean;
 };
 
 const isDigit = (char: string) => /^\d$/.test(char);
 
-const SplitFlapNumber: React.FC<SplitFlapNumberProps> = ({ value }) => {
+const placeholderFor = (input: string) =>
+  input
+    .split('')
+    .map((char) => (isDigit(char) ? '0' : char))
+    .join('');
+
+const SplitFlapNumber: React.FC<SplitFlapNumberProps> = ({ value, shouldAnimate = true }) => {
+  const displayValue = shouldAnimate ? value : placeholderFor(value);
+
   return (
     <span className="inline-flex items-center gap-1" aria-label={value}>
-      {value.split('').map((char, index) => {
+      {displayValue.split('').map((char, index) => {
         if (isDigit(char)) {
           return (
             <span key={`${char}-${index}`} className="splitflap-cell inline-flex flex-col rounded-md overflow-hidden border border-gray-200 bg-white shadow-sm" aria-hidden="true">
