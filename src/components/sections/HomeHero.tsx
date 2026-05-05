@@ -54,11 +54,16 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; d
           return (
             <span
               key={`digit-${index}-${char}-${tick}`}
-              className="splitflap-cell splitflap-flip smooth-digit-cell"
+              className="splitflap-cell splitflap-flip smooth-digit-cell splitflap-retro"
               style={{ animationDelay: `${index * 50}ms` }}
             >
+              <span className="splitflap-top" />
+              <span className="splitflap-bottom" />
+              <span className="splitflap-seam" />
+              <span className="splitflap-tab splitflap-tab-left" />
+              <span className="splitflap-tab splitflap-tab-right" />
               <span className="splitflap-face">
-                {char}
+                <span>{char}</span>
               </span>
             </span>
           );

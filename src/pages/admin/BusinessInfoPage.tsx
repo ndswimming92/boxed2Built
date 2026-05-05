@@ -13,10 +13,15 @@ const SplitFlapPreview: React.FC<{ value: string; tick: number }> = ({ value, ti
           return (
             <span
               key={`preview-digit-${index}-${char}-${tick}`}
-              className="splitflap-cell splitflap-flip"
+              className="splitflap-cell splitflap-flip splitflap-retro"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <span className="splitflap-face">{char}</span>
+              <span className="splitflap-top" />
+              <span className="splitflap-bottom" />
+              <span className="splitflap-seam" />
+              <span className="splitflap-tab splitflap-tab-left" />
+              <span className="splitflap-tab splitflap-tab-right" />
+              <span className="splitflap-face"><span>{char}</span></span>
             </span>
           );
         }
