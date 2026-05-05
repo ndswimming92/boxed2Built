@@ -12,7 +12,6 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; durationMs?: number | null; frameMs?: number | null }> = ({ targetValue, shouldAnimate, durationMs, frameMs }) => {
   const [displayValue, setDisplayValue] = useState('0.0');
-  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const finalValue = Number.isFinite(targetValue) ? Math.max(0, targetValue) : 0;
@@ -34,7 +33,6 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; d
       const nextValue = finalValue * eased;
 
       setDisplayValue(nextValue.toFixed(1));
-      setTick((prev) => prev + 1);
 
       if (progress >= 1) {
         setDisplayValue(finalValue.toFixed(1));
@@ -51,13 +49,19 @@ const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean; d
     <span className="inline-flex items-center gap-1" aria-hidden="true">
       {chars.map((char, index) => {
         if (/\d/.test(char)) {
+          const digit = Number(char);
           return (
-            <span
-              key={`digit-${index}-${char}-${tick}`}
-              className="splitflap-cell splitflap-flip"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <span className="splitflap-face">{char}</span>
+            <span key={`digit-${index}`} className="splitflap-cell smooth-splitflap-cell">
+              <span
+                className="splitflap-wheel"
+                style={{
+                  transform: `translateY(-${digit * 10}%)`,
+                  transitionDuration: `${Math.max(120, (Number(frameMs) || 70) * 2)}ms`,
+                }}
+              >
+                <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+                <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+              </span>
             </span>
           );
         }
