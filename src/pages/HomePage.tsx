@@ -12,6 +12,7 @@ import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
+import HoursGivenBackCounter from '../components/sections/HoursGivenBackCounter';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { usePageMeta } from '../hooks/usePageMeta';
 import {
@@ -77,6 +78,8 @@ const HomePage: React.FC = () => {
       <Header />
       <main className="pt-16">
         <HomeHero />
+
+        <HoursGivenBackCounter totalHoursSaved={Number(businessData.info.total_client_hours_saved) || 0} />
 
         <section id="contact-form-section" className="scroll-mt-24 py-12 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
