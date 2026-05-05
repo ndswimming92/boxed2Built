@@ -66,7 +66,7 @@ const ClientHoursSavedStat: React.FC<ClientHoursSavedStatProps> = ({ totalHoursS
                   {CLIENT_TIME_SAVED_TITLE}
                 </p>
                 <p className="text-3xl md:text-4xl font-bold text-gray-900 mt-1 inline-flex items-baseline gap-2">
-                  <SplitFlapNumber value={numericPart} shouldAnimate={shouldAnimate} />
+                  <SplitFlapNumber value={numericPart} shouldAnimate={shouldAnimate} ariaLabel={clientTimeSavedMetric.label} />
                   {suffix ? <span>{suffix}</span> : null}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">{CLIENT_TIME_SAVED_SUBTITLE}</p>
