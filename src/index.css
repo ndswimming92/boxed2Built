@@ -237,155 +237,200 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Retro flip-digit counter */
-.flip-digit-tile {
+/* Retro split-flap counter */
+.flip-tile {
   position: relative;
-  width: 3rem;
-  height: 4.25rem;
-  border-radius: 0.6rem;
-  overflow: hidden;
-  perspective: 300px;
+  width: 3.5rem;
+  height: 5rem;
+  border-radius: 0.5rem;
+  background: #3d3d3d;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 @media (min-width: 768px) {
-  .flip-digit-tile {
-    width: 4.5rem;
-    height: 6.25rem;
-    border-radius: 0.75rem;
+  .flip-tile {
+    width: 5rem;
+    height: 7rem;
+    border-radius: 0.625rem;
   }
 }
 
-.flip-digit-top,
-.flip-digit-bottom {
+.flip-tile-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.flip-tile-top,
+.flip-tile-bottom {
   position: absolute;
   left: 0;
   right: 0;
   height: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
-.flip-digit-top {
+.flip-tile-top {
   top: 0;
-  background: linear-gradient(180deg, #4a4a4a 0%, #3d3d3d 100%);
-  border-radius: 0.6rem 0.6rem 0 0;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, #4d4d4d 0%, #424242 100%);
+  border-radius: 0.5rem 0.5rem 0 0;
 }
 
-.flip-digit-bottom {
+.flip-tile-bottom {
   bottom: 0;
-  background: linear-gradient(180deg, #363636 0%, #2e2e2e 100%);
-  border-radius: 0 0 0.6rem 0.6rem;
+  background: linear-gradient(180deg, #383838 0%, #2f2f2f 100%);
+  border-radius: 0 0 0.5rem 0.5rem;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-top { border-radius: 0.75rem 0.75rem 0 0; }
-  .flip-digit-bottom { border-radius: 0 0 0.75rem 0.75rem; }
+  .flip-tile-top { border-radius: 0.625rem 0.625rem 0 0; }
+  .flip-tile-bottom { border-radius: 0 0 0.625rem 0.625rem; }
 }
 
-.flip-digit-top .flip-digit-num {
-  transform: translateY(50%);
-}
-
-.flip-digit-bottom .flip-digit-num {
-  transform: translateY(-50%);
-}
-
-.flip-digit-num {
-  font-family: 'Inter', 'Arial Narrow', system-ui, sans-serif;
-  font-size: 2.5rem;
+.flip-tile-top span {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 2.75rem;
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
-  letter-spacing: -0.02em;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  position: absolute;
+  top: 50%;
+}
+
+.flip-tile-bottom span {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1;
+  position: absolute;
+  bottom: 50%;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-num {
-    font-size: 3.75rem;
+  .flip-tile-top span,
+  .flip-tile-bottom span {
+    font-size: 4rem;
   }
 }
 
-.flip-digit-seam {
+.flip-tile-seam {
   position: absolute;
   left: 0;
   right: 0;
   top: 50%;
-  height: 1.5px;
-  background: rgba(0,0,0,0.5);
+  height: 2px;
+  background: rgba(0,0,0,0.6);
   transform: translateY(-50%);
   z-index: 5;
-  box-shadow: 0 0.5px 0 rgba(255,255,255,0.05);
 }
 
-.flip-digit-flap-container {
+/* Flap animations */
+.flip-tile-flap-top,
+.flip-tile-flap-bottom {
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
   height: 50%;
-  z-index: 10;
-  perspective: 300px;
-  overflow: visible;
-}
-
-.flip-digit-flap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background: linear-gradient(180deg, #4a4a4a 0%, #3d3d3d 100%);
-  border-radius: 0.6rem 0.6rem 0 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform-origin: bottom center;
+  z-index: 10;
   backface-visibility: hidden;
 }
 
+.flip-tile-flap-top {
+  top: 0;
+  background: linear-gradient(180deg, #4d4d4d 0%, #424242 100%);
+  border-radius: 0.5rem 0.5rem 0 0;
+  transform-origin: bottom center;
+}
+
+.flip-tile-flap-bottom {
+  bottom: 0;
+  background: linear-gradient(180deg, #383838 0%, #2f2f2f 100%);
+  border-radius: 0 0 0.5rem 0.5rem;
+  transform-origin: top center;
+}
+
 @media (min-width: 768px) {
-  .flip-digit-flap { border-radius: 0.75rem 0.75rem 0 0; }
+  .flip-tile-flap-top { border-radius: 0.625rem 0.625rem 0 0; }
+  .flip-tile-flap-bottom { border-radius: 0 0 0.625rem 0.625rem; }
 }
 
-.flip-digit-flap .flip-digit-num {
-  transform: translateY(50%);
+.flip-tile-flap-top span {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  position: absolute;
+  top: 50%;
 }
 
-.flip-digit-flap-animate {
-  animation: flapDown 70ms ease-in forwards;
+.flip-tile-flap-bottom span {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  line-height: 1;
+  position: absolute;
+  bottom: 50%;
 }
 
-@keyframes flapDown {
-  0% {
-    transform: rotateX(0deg);
+@media (min-width: 768px) {
+  .flip-tile-flap-top span,
+  .flip-tile-flap-bottom span {
+    font-size: 4rem;
   }
-  100% {
-    transform: rotateX(-90deg);
-  }
+}
+
+.flip-tile-flap-down {
+  animation: flipTopDown 80ms ease-in forwards;
+}
+
+.flip-tile-flap-up {
+  animation: flipBottomUp 80ms ease-out forwards;
+  animation-delay: 40ms;
+  transform: rotateX(90deg);
+}
+
+@keyframes flipTopDown {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes flipBottomUp {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-digit-flap-animate {
+  .flip-tile-flap-down,
+  .flip-tile-flap-up {
     animation: none;
+    transform: none;
   }
 }
 
-.flip-digit-dot {
-  font-size: 2.5rem;
+.flip-dot {
+  font-size: 2.75rem;
   font-weight: 700;
   color: #3d3d3d;
   line-height: 1;
-  align-self: flex-end;
-  padding-bottom: 0.25rem;
+  align-self: center;
+  padding: 0 0.125rem;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-dot {
-    font-size: 3.75rem;
-    padding-bottom: 0.4rem;
+  .flip-dot {
+    font-size: 4rem;
+    padding: 0 0.25rem;
   }
 }

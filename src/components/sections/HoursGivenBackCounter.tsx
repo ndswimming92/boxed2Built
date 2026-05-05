@@ -11,76 +11,75 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const FLIP_INTERVAL_MS = 90;
-const FLIP_TRANSITION_MS = 70;
+const FLIP_STEP_MS = 100;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
-  const [current, setCurrent] = useState(0);
-  const [flipping, setFlipping] = useState(false);
-  const [prev, setPrev] = useState(0);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startedRef = useRef(false);
+  const [current, setCurrent] = useState<number | null>(null);
+  const [previous, setPrevious] = useState<number | null>(null);
+  const [isFlipping, setIsFlipping] = useState(false);
+  const animatingRef = useRef(false);
 
   useEffect(() => {
-    if (!shouldAnimate || startedRef.current) return;
-    startedRef.current = true;
+    if (!shouldAnimate || animatingRef.current) return;
+    animatingRef.current = true;
 
-    timeoutRef.current = setTimeout(() => {
-      let digit = 0;
+    let digit = 0;
+    const totalSteps = target === 0 ? 10 : target;
 
-      const tick = () => {
-        if (digit === target) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          return;
-        }
+    const startTimeout = setTimeout(() => {
+      let step = 0;
 
-        setPrev(digit);
+      const flip = () => {
+        setPrevious(digit);
         digit = (digit + 1) % 10;
-        setFlipping(true);
+        setCurrent(digit);
+        setIsFlipping(true);
 
         setTimeout(() => {
-          setCurrent(digit);
-          setFlipping(false);
-        }, FLIP_TRANSITION_MS);
+          setIsFlipping(false);
+        }, FLIP_STEP_MS * 0.7);
 
-        if (digit === target) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
+        step++;
+        if (step < totalSteps) {
+          setTimeout(flip, FLIP_STEP_MS);
         }
       };
 
-      intervalRef.current = setInterval(tick, FLIP_INTERVAL_MS);
-      tick();
+      flip();
     }, delay);
 
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => clearTimeout(startTimeout);
   }, [shouldAnimate, target, delay]);
 
-  useEffect(() => {
-    if (!shouldAnimate) {
-      setCurrent(target);
-    }
-  }, [shouldAnimate, target]);
+  const displayDigit = current !== null ? current : target;
+  const prevDigit = previous !== null ? previous : 0;
 
   return (
-    <div className="flip-digit-tile">
-      <div className="flip-digit-top">
-        <span className="flip-digit-num">{flipping ? prev : current}</span>
-      </div>
-      <div className="flip-digit-bottom">
-        <span className="flip-digit-num">{current}</span>
-      </div>
-      <div className="flip-digit-seam" />
-      {flipping && (
-        <div className="flip-digit-flap-container">
-          <div className="flip-digit-flap flip-digit-flap-animate">
-            <span className="flip-digit-num">{current}</span>
-          </div>
+    <div className="flip-tile">
+      <div className="flip-tile-inner">
+        {/* Static top half showing current digit */}
+        <div className="flip-tile-top">
+          <span>{displayDigit}</span>
         </div>
-      )}
+        {/* Static bottom half showing current digit */}
+        <div className="flip-tile-bottom">
+          <span>{displayDigit}</span>
+        </div>
+        {/* Seam line */}
+        <div className="flip-tile-seam" />
+        {/* Animated flap: top half folds down */}
+        {isFlipping && (
+          <div className="flip-tile-flap-top flip-tile-flap-down">
+            <span>{prevDigit}</span>
+          </div>
+        )}
+        {/* Animated flap: bottom half folds up to reveal */}
+        {isFlipping && (
+          <div className="flip-tile-flap-bottom flip-tile-flap-up">
+            <span>{displayDigit}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -128,7 +127,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
     >
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 mb-6">
+          <div className="inline-flex items-center gap-2 mb-8">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Clock3 className="w-5 h-5 text-blue-600" />
             </div>
@@ -137,11 +136,11 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
             </p>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 md:gap-2.5" aria-hidden="true">
+          <div className="flex items-center justify-center gap-2 md:gap-3" aria-hidden="true">
             {chars.map((char, i) => {
               if (char === '.') {
                 return (
-                  <span key={`dot-${i}`} className="flip-digit-dot">
+                  <span key={`dot-${i}`} className="flip-dot">
                     .
                   </span>
                 );
@@ -156,18 +155,18 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
                   key={`digit-${i}`}
                   target={targetDigit}
                   shouldAnimate={shouldAnimate}
-                  delay={currentDigitIndex * 200}
+                  delay={currentDigitIndex * 250}
                 />
               );
             })}
-            <span className="ml-2 md:ml-3 text-2xl md:text-3xl font-semibold text-gray-400 self-end pb-2 md:pb-3">
+            <span className="ml-2 md:ml-4 text-2xl md:text-4xl font-semibold text-gray-400 self-center">
               hrs
             </span>
           </div>
 
           <span className="sr-only">{formatted} hours given back to customers</span>
 
-          <p className="mt-6 text-base md:text-lg text-gray-500">
+          <p className="mt-8 text-base md:text-lg text-gray-500">
             {contextLine}
           </p>
         </div>
