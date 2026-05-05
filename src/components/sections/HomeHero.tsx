@@ -10,8 +10,42 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 
 
 
-const SplitFlapNumber: React.FC<{ value: string; shouldAnimate: boolean }> = ({ value, shouldAnimate }) => {
-  const chars = value.split('');
+const SplitFlapNumber: React.FC<{ targetValue: number; shouldAnimate: boolean }> = ({ targetValue, shouldAnimate }) => {
+  const [displayValue, setDisplayValue] = useState('0.0');
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const finalValue = Number.isFinite(targetValue) ? Math.max(0, targetValue) : 0;
+
+    if (!shouldAnimate) {
+      setDisplayValue(finalValue.toFixed(1));
+      return;
+    }
+
+    const durationMs = 2600;
+    const frameMs = 45;
+    const start = performance.now();
+
+    const intervalId = window.setInterval(() => {
+      const now = performance.now();
+      const elapsed = Math.min(now - start, durationMs);
+      const progress = elapsed / durationMs;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextValue = finalValue * eased;
+
+      setDisplayValue(nextValue.toFixed(1));
+      setTick((prev) => prev + 1);
+
+      if (progress >= 1) {
+        setDisplayValue(finalValue.toFixed(1));
+        window.clearInterval(intervalId);
+      }
+    }, frameMs);
+
+    return () => window.clearInterval(intervalId);
+  }, [targetValue, shouldAnimate]);
+
+  const chars = displayValue.split('');
 
   return (
     <span className="inline-flex items-center gap-1" aria-hidden="true">
@@ -19,9 +53,9 @@ const SplitFlapNumber: React.FC<{ value: string; shouldAnimate: boolean }> = ({ 
         if (/\d/.test(char)) {
           return (
             <span
-              key={`digit-${index}-${char}`}
-              className={`splitflap-cell ${shouldAnimate ? 'splitflap-flip' : ''}`}
-              style={{ animationDelay: `${index * 100}ms` }}
+              key={`digit-${index}-${char}-${tick}`}
+              className="splitflap-cell splitflap-flip"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <span className="splitflap-face">{char}</span>
             </span>
@@ -37,6 +71,7 @@ const SplitFlapNumber: React.FC<{ value: string; shouldAnimate: boolean }> = ({ 
     </span>
   );
 };
+
 const HomeHero: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
   const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
@@ -227,7 +262,7 @@ const HomeHero: React.FC = () => {
                         </p>
                         <div className="flex items-baseline gap-1.5">
                           <span className="sr-only">{formattedHours} hours</span>
-                          <SplitFlapNumber value={formattedHours} shouldAnimate={animateHours} />
+                          <SplitFlapNumber targetValue={rawHours} shouldAnimate={animateHours} />
                           <span className="text-sm font-medium text-gray-500">hrs</span>
                           {fullDays >= 2 && (
                             <span className="text-xs text-gray-500">&mdash; {contextLine}</span>
