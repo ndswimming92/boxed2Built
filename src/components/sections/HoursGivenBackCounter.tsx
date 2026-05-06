@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Clock3 } from 'lucide-react';
+import { ArrowRight, Clock3 } from 'lucide-react';
 
 type HoursGivenBackCounterProps = {
   totalHoursSaved: number;
@@ -110,10 +110,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
   if (!isVisible) return null;
 
   const formatted = rawHours.toFixed(1);
-  const fullDays = Math.floor(rawHours / 8);
-  const contextLine = fullDays >= 2
-    ? `That adds up to more than ${fullDays} full workdays given back to families.`
-    : 'Every hour we work is one you get to spend on what matters most.';
+  const fullDays = Math.ceil(rawHours / 8);
 
   const chars = formatted.split('');
   let digitIndex = 0;
@@ -176,12 +173,26 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
           <span className="sr-only">{formatted} hours given back to customers</span>
 
           <p className="mt-8 text-base md:text-lg text-gray-500">
-            {contextLine}
+            {fullDays >= 2 ? (
+              <>
+                That adds up to <span className="font-bold text-gray-800">nearly {fullDays} full workdays</span> given back to families!
+              </>
+            ) : (
+              'Every hour we work is one you get to spend on what matters most.'
+            )}
           </p>
 
           <p className="mt-6 text-lg md:text-xl text-gray-800 font-semibold italic">
             We turn boxes into comfort so families can focus on what matters most.
           </p>
+
+          <a
+            href="https://boxed2built.com/contact?utm_id=B2B&utm_source=website&utm_medium=cta_button&utm_campaign=hours_given_back&utm_term=furniture+assembly&utm_content=get_your_time_back"
+            className="group inline-flex items-center justify-center w-full sm:w-auto mt-8 px-6 py-3 md:px-8 md:py-4 bg-blue-700 hover:bg-blue-800 text-white font-medium text-base md:text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            Get Your Time Back
+            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </a>
         </div>
       </div>
     </section>
