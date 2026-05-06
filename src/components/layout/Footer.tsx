@@ -424,48 +424,6 @@ const Footer: React.FC = () => {
 
           <div className="text-center text-xs text-gray-300 mt-6 space-y-2">
             <div>&copy; {currentYear} {businessName}. All rights reserved.</div>
-            <div className="text-[11px] text-gray-400">
-              {businessName} is an Amazon Associate and earns from qualifying purchases.
-            </div>
-
-            {/* Keep these as simple links for convenience */}
-            <div className="text-xs">
-              <a
-                href="/privacy-policy"
-                className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
-                onClick={() =>
-                  trackEvent('link_click', 'footer', {
-                    event_category: 'navigation',
-                    event_label: 'privacy_policy',
-                    element_type: 'link',
-                    element_location: 'footer',
-                    page_section: 'footer',
-                    action_type: 'click',
-                    action_value: '/privacy-policy',
-                  })
-                }
-              >
-                Privacy Policy
-              </a>
-              <span className="mx-2 text-gray-500">|</span>
-              <a
-                href="/terms-of-service"
-                className="underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
-                onClick={() =>
-                  trackEvent('link_click', 'footer', {
-                    event_category: 'navigation',
-                    event_label: 'terms_of_service',
-                    element_type: 'link',
-                    element_location: 'footer',
-                    page_section: 'footer',
-                    action_type: 'click',
-                    action_value: '/terms-of-service',
-                  })
-                }
-              >
-                Terms of Service
-              </a>
-            </div>
 
             <div className="mt-4 pt-4 border-t border-gray-700">
               <p className="text-xs text-gray-500 mb-2">Sitemap</p>
