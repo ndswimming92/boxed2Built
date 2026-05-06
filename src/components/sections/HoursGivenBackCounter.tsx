@@ -154,7 +154,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
                   key={`digit-${i}`}
                   target={targetDigit}
                   shouldAnimate={shouldAnimate}
-                  delay={INITIAL_DELAY + currentDigitIndex * 250}
+                  delay={INITIAL_DELAY + currentDigitIndex * 140}
                 />
               );
             })}
