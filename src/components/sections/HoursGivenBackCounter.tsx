@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Clock3 } from 'lucide-react';
 
 type HoursGivenBackCounterProps = {
@@ -81,26 +81,43 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const hasTriggeredRef = useRef(false);
 
-  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && !hasTriggeredRef.current) {
-        hasTriggeredRef.current = true;
-        setShouldAnimate(true);
-      }
-    });
-  }, []);
+  const rawHours = Number.isFinite(totalHoursSaved) ? Math.max(0, totalHoursSaved) : 0;
+  const isVisible = rawHours > 0;
 
   useEffect(() => {
+    if (!isVisible || hasTriggeredRef.current) return;
     const el = sectionRef.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver(observerCallback, { threshold: 0.3 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [observerCallback]);
+    const trigger = () => {
+      if (hasTriggeredRef.current) return;
+      hasTriggeredRef.current = true;
+      setShouldAnimate(true);
+    };
 
-  const rawHours = Number.isFinite(totalHoursSaved) ? Math.max(0, totalHoursSaved) : 0;
-  if (rawHours <= 0) return null;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            trigger();
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+
+    // Fallback: if observer hasn't fired after 500ms, trigger anyway
+    const fallback = setTimeout(trigger, 500);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
+  }, [isVisible]);
+
+  if (!isVisible) return null;
 
   const formatted = rawHours.toFixed(1);
   const fullDays = Math.floor(rawHours / 8);
