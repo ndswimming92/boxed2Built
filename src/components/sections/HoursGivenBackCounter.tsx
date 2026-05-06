@@ -11,8 +11,8 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const STEP_MS = 180;
-const INITIAL_DELAY = 400;
+const STEP_MS = 200;
+const INITIAL_DELAY = 500;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
   const spanRef = useRef<HTMLSpanElement>(null);
