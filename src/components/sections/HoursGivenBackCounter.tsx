@@ -37,7 +37,7 @@ const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) =
 
         setTimeout(() => {
           setIsFlipping(false);
-        }, FLIP_STEP_MS * 0.7);
+        }, FLIP_STEP_MS * 1.2);
 
         step++;
         if (step < totalSteps) {
