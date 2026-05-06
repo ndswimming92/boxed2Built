@@ -170,8 +170,8 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900 text-white pt-10 pb-6">
       <div className="container mx-auto px-4">
-        {/* Top Grid (mobile-first, tight) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-8">
+        {/* Top Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-10">
           {/* Brand + NAP */}
           <div>
             <div className="flex items-center justify-center md:justify-start mb-3">
@@ -219,85 +219,6 @@ const Footer: React.FC = () => {
               </p>
             </div>
           </div>
-
-          {/* Navigation */}
-          <nav aria-label="Footer navigation">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
-              <div>
-                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
-                  {serviceLinksSection.title}
-                </h3>
-                <ul className="space-y-2 text-sm">
-                  {serviceLinksSection.links.map((link) => (
-                    <li key={link.href}>
-                      <InternalLink
-                        href={link.href}
-                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
-                        trackingCategory="footer_nav"
-                      >
-                        {link.label}
-                      </InternalLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {footerLinkSections.map((section) => (
-                <div key={section.title}>
-                  <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">{section.title}</h3>
-                  <ul className="space-y-2 text-sm">
-                    {section.links.map((link) => (
-                      <li key={link.href}>
-                        <InternalLink
-                          href={link.href}
-                          className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
-                          trackingCategory="footer_nav"
-                        >
-                          {link.label}
-                        </InternalLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-
-              <div>
-                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">Client Access</h3>
-                <ul className="space-y-2 text-sm">
-                  {clientAccessLinks.map((link) => (
-                    <li key={link.href}>
-                      <InternalLink
-                        href={link.href}
-                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
-                        trackingCategory="footer_nav"
-                        onClick={() => {
-                          if (link.href === '/portal/login') {
-                            trackEvent('client_login_nav_click', 'footer', {
-                              event_category: 'navigation',
-                              event_label: 'client_login_footer',
-                              action_type: 'click',
-                              action_value: '/portal/login',
-                            });
-                          }
-
-                          if (link.href === '/lookup-request') {
-                            trackEvent('request_lookup_nav_click', 'footer', {
-                              event_category: 'navigation',
-                              event_label: 'request_lookup_footer',
-                              action_type: 'click',
-                              action_value: '/lookup-request',
-                            });
-                          }
-                        }}
-                      >
-                        {link.label}
-                      </InternalLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </nav>
 
           {/* Hours + Areas + Payment */}
           <div>
@@ -351,6 +272,85 @@ const Footer: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Navigation Links */}
+        <nav aria-label="Footer navigation" className="mb-10">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+            <div>
+              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+                {serviceLinksSection.title}
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {serviceLinksSection.links.map((link) => (
+                  <li key={link.href}>
+                    <InternalLink
+                      href={link.href}
+                      className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                      trackingCategory="footer_nav"
+                    >
+                      {link.label}
+                    </InternalLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {footerLinkSections.map((section) => (
+              <div key={section.title}>
+                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">{section.title}</h3>
+                <ul className="space-y-2 text-sm">
+                  {section.links.map((link) => (
+                    <li key={link.href}>
+                      <InternalLink
+                        href={link.href}
+                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                        trackingCategory="footer_nav"
+                      >
+                        {link.label}
+                      </InternalLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+            <div>
+              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">Client Access</h3>
+              <ul className="space-y-2 text-sm">
+                {clientAccessLinks.map((link) => (
+                  <li key={link.href}>
+                    <InternalLink
+                      href={link.href}
+                      className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                      trackingCategory="footer_nav"
+                      onClick={() => {
+                        if (link.href === '/portal/login') {
+                          trackEvent('client_login_nav_click', 'footer', {
+                            event_category: 'navigation',
+                            event_label: 'client_login_footer',
+                            action_type: 'click',
+                            action_value: '/portal/login',
+                          });
+                        }
+
+                        if (link.href === '/lookup-request') {
+                          trackEvent('request_lookup_nav_click', 'footer', {
+                            event_category: 'navigation',
+                            event_label: 'request_lookup_footer',
+                            action_type: 'click',
+                            action_value: '/lookup-request',
+                          });
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </InternalLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </nav>
 
         {/* Social + Contact Row */}
         <div className="border-t border-gray-800 pt-6">
