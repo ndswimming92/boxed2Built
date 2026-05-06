@@ -40,10 +40,6 @@ export default function BusinessInfoPage() {
 
   const fetchData = async () => {
     try {
-      const storedDuration = Number(window.localStorage.getItem('hours_counter_duration_ms'));
-      const storedFrame = Number(window.localStorage.getItem('hours_counter_frame_ms'));
-      if (Number.isFinite(storedDuration) && storedDuration > 0) setHoursCounterDurationMs(storedDuration);
-      if (Number.isFinite(storedFrame) && storedFrame > 0) setHoursCounterFrameMs(storedFrame);
       const { data: info } = await supabase
         .from('business_info')
         .select('*')
