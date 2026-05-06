@@ -47,6 +47,24 @@ const clientAccessLinks = [
   { href: '/lookup-request', label: 'Look Up Request' },
 ];
 
+const sitemapLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/services', label: 'Services & Pricing' },
+  { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
+  { href: '/services/tv-mounting', label: 'TV Mounting' },
+  { href: '/partners', label: 'Partners' },
+  { href: '/gallery', label: 'Gallery' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/gift-cards', label: 'Gift Cards' },
+  { href: '/redeem-gift-card', label: 'Redeem Gift Card' },
+  { href: '/portal/login', label: 'Customer Login' },
+  { href: '/lookup-request', label: 'Look Up Request' },
+  { href: '/privacy-policy', label: 'Privacy Policy' },
+  { href: '/terms-of-service', label: 'Terms of Service' },
+];
+
 const formatTime = (time: string): string => {
   const [hours, minutes] = time.split(':');
   const hour = parseInt(hours, 10);
@@ -447,6 +465,36 @@ const Footer: React.FC = () => {
               >
                 Terms of Service
               </a>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              <p className="text-xs text-gray-500 mb-2">Sitemap</p>
+              <div className="flex flex-wrap justify-center gap-y-1">
+                {sitemapLinks.map((link, index) => (
+                  <React.Fragment key={link.href}>
+                    <a
+                      href={link.href}
+                      className="text-xs text-gray-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+                      onClick={() =>
+                        trackEvent('link_click', 'footer', {
+                          event_category: 'navigation',
+                          event_label: `sitemap_${link.label.toLowerCase().replace(/\s+/g, '_')}`,
+                          element_type: 'link',
+                          element_location: 'footer_sitemap',
+                          page_section: 'footer',
+                          action_type: 'click',
+                          action_value: link.href,
+                        })
+                      }
+                    >
+                      {link.label}
+                    </a>
+                    {index < sitemapLinks.length - 1 && (
+                      <span className="mx-1 text-gray-600">|</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           </div>
         </div>
