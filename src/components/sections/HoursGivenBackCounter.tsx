@@ -126,6 +126,16 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
     >
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            More Time Back in Your Week
+          </h2>
+          <p className="text-base md:text-lg text-gray-600 mb-2">
+            Furniture assembly can turn into hours of sorting parts, reading instructions, tightening bolts, adjusting doors, and cleaning up packaging.
+          </p>
+          <p className="text-base md:text-lg text-gray-700 font-medium mb-10">
+            Boxed2Built takes that stress off your plate.
+          </p>
+
           <div className="inline-flex items-center gap-2 mb-8">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
               <Clock3 className="w-5 h-5 text-blue-600" />
@@ -167,6 +177,10 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
 
           <p className="mt-8 text-base md:text-lg text-gray-500">
             {contextLine}
+          </p>
+
+          <p className="mt-6 text-lg md:text-xl text-gray-800 font-semibold italic">
+            We turn boxes into comfort so families can focus on what matters most.
           </p>
         </div>
       </div>
