@@ -11,67 +11,53 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const FLIP_STEP_MS = 100;
+const STEP_MS = 120;
+const TRANSITION_MS = 100;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
-  const [current, setCurrent] = useState<number>(0);
-  const [previous, setPrevious] = useState<number>(0);
-  const [flipKey, setFlipKey] = useState(0);
+  const [displayDigit, setDisplayDigit] = useState(0);
+  const [animClass, setAnimClass] = useState('');
   const animatingRef = useRef(false);
 
   useEffect(() => {
     if (!shouldAnimate || animatingRef.current) return;
     animatingRef.current = true;
 
-    let digit = 0;
     const totalSteps = target === 0 ? 10 : target;
+    let step = 0;
+    let digit = 0;
 
-    const startTimeout = setTimeout(() => {
-      let step = 0;
+    const tick = () => {
+      setAnimClass('rolling-out');
 
-      const flip = () => {
-        const prev = digit;
+      setTimeout(() => {
         digit = (digit + 1) % 10;
-        setPrevious(prev);
-        setCurrent(digit);
-        setFlipKey((k) => k + 1);
+        setDisplayDigit(digit);
+        setAnimClass('rolling-in');
 
-        step++;
-        if (step < totalSteps) {
-          setTimeout(flip, FLIP_STEP_MS + 40);
-        }
-      };
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setAnimClass('');
+          });
+        });
+      }, TRANSITION_MS);
 
-      flip();
-    }, delay);
+      step++;
+      if (step < totalSteps) {
+        setTimeout(tick, STEP_MS + TRANSITION_MS);
+      }
+    };
 
+    const startTimeout = setTimeout(tick, delay);
     return () => clearTimeout(startTimeout);
   }, [shouldAnimate, target, delay]);
-
-  const displayDigit = shouldAnimate ? current : target;
-  const showFlap = shouldAnimate && flipKey > 0;
 
   return (
     <div className="flip-tile">
       <div className="flip-tile-inner">
-        <div className="flip-tile-top">
-          <span>{displayDigit}</span>
-        </div>
-        <div className="flip-tile-bottom">
-          <span>{displayDigit}</span>
-        </div>
-        <div className="flip-tile-seam" />
-        {showFlap && (
-          <div key={`flap-top-${flipKey}`} className="flip-tile-flap-top flip-tile-flap-down">
-            <span>{previous}</span>
-          </div>
-        )}
-        {showFlap && (
-          <div key={`flap-bot-${flipKey}`} className="flip-tile-flap-bottom flip-tile-flap-up">
-            <span>{displayDigit}</span>
-          </div>
-        )}
+        <span className={animClass}>{displayDigit}</span>
       </div>
+      <div className="flip-tile-seam" />
     </div>
   );
 };

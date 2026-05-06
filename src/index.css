@@ -251,7 +251,8 @@ body {
   height: var(--tile-h);
   border-radius: var(--tile-r);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  perspective: 800px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #4d4d4d 0%, #3a3a3a 50%, #313131 100%);
 }
 
 @media (min-width: 768px) {
@@ -264,57 +265,31 @@ body {
 }
 
 .flip-tile-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  border-radius: inherit;
-}
-
-.flip-tile-top,
-.flip-tile-bottom {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 50%;
-  overflow: hidden;
-}
-
-.flip-tile-top {
-  top: 0;
-  background: linear-gradient(180deg, #4d4d4d 0%, #434343 100%);
-  border-radius: var(--tile-r) var(--tile-r) 0 0;
-}
-
-.flip-tile-bottom {
-  bottom: 0;
-  background: linear-gradient(180deg, #3a3a3a 0%, #313131 100%);
-  border-radius: 0 0 var(--tile-r) var(--tile-r);
-}
-
-.flip-tile-top span,
-.flip-tile-bottom span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--tile-h);
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: inherit;
+}
+
+.flip-tile-inner span {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: var(--tile-font);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
+  transition: transform 100ms ease-in-out, opacity 100ms ease-in-out;
 }
 
-.flip-tile-top span {
-  top: 0;
+.flip-tile-inner span.rolling-out {
+  transform: translateY(-60%);
+  opacity: 0;
 }
 
-.flip-tile-bottom span {
-  bottom: 0;
-  color: #f5f5f5;
+.flip-tile-inner span.rolling-in {
+  transform: translateY(60%);
+  opacity: 0;
 }
 
 .flip-tile-seam {
@@ -326,84 +301,12 @@ body {
   background: rgba(0,0,0,0.55);
   transform: translateY(-50%);
   z-index: 5;
-}
-
-/* Flap animations */
-.flip-tile-flap-top,
-.flip-tile-flap-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 50%;
-  overflow: hidden;
-  z-index: 10;
-  backface-visibility: hidden;
-}
-
-.flip-tile-flap-top {
-  top: 0;
-  background: linear-gradient(180deg, #4d4d4d 0%, #434343 100%);
-  border-radius: var(--tile-r) var(--tile-r) 0 0;
-  transform-origin: bottom center;
-}
-
-.flip-tile-flap-bottom {
-  bottom: 0;
-  background: linear-gradient(180deg, #3a3a3a 0%, #313131 100%);
-  border-radius: 0 0 var(--tile-r) var(--tile-r);
-  transform-origin: top center;
-}
-
-.flip-tile-flap-top span,
-.flip-tile-flap-bottom span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--tile-h);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: var(--tile-font);
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-}
-
-.flip-tile-flap-top span {
-  top: 0;
-}
-
-.flip-tile-flap-bottom span {
-  bottom: 0;
-  color: #f5f5f5;
-}
-
-.flip-tile-flap-down {
-  animation: flipTopDown 120ms ease-in forwards;
-}
-
-.flip-tile-flap-up {
-  animation: flipBottomUp 120ms ease-out forwards;
-  animation-delay: 20ms;
-  transform: rotateX(90deg);
-}
-
-@keyframes flipTopDown {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-90deg); }
-}
-
-@keyframes flipBottomUp {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-tile-flap-down,
-  .flip-tile-flap-up {
-    animation: none;
-    transform: none;
+  .flip-tile-inner span {
+    transition: none;
   }
 }
 
