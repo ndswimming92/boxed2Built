@@ -11,7 +11,7 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const STEP_MS = 200;
+const STEP_MS = 150;
 const INITIAL_DELAY = 500;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
