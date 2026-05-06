@@ -1,6 +1,5 @@
 import React from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
-import NAPConsistency from '../components/seo/NAPConsistency';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -13,7 +12,6 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 import {
   BUSINESS_INFO,
-  ADDRESS_INFO,
   SERVICE_AREAS,
   PRIMARY_SERVICES,
   SOCIAL_MEDIA_URLS,
@@ -79,14 +77,6 @@ const ContactPage: React.FC = () => {
     });
   };
 
-  const napData = {
-    businessName: BUSINESS_INFO.name,
-    phone: phoneMachine,
-    email: BUSINESS_INFO.email,
-    address: ADDRESS_INFO,
-    serviceAreas: SERVICE_AREAS,
-    website: BUSINESS_INFO.website
-  };
 
   return (
     <>
@@ -133,16 +123,6 @@ const ContactPage: React.FC = () => {
                 {/* Contact Details */}
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Get In Touch</h2>
-                  
-                  {/* NAP Consistency Component */}
-                  <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                    <NAPConsistency 
-                      data={napData}
-                      showAddress={true}
-                      showServiceAreas={true}
-                      variant="contact"
-                    />
-                  </div>
                   
                   <div className="space-y-6 mb-8">
                     <div className="flex items-start">
