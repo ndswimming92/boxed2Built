@@ -11,7 +11,8 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const STEP_MS = 160;
+const STEP_MS = 180;
+const INITIAL_DELAY = 400;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
   const spanRef = useRef<HTMLSpanElement>(null);
@@ -89,32 +90,21 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
     const el = sectionRef.current;
     if (!el) return;
 
-    const trigger = () => {
-      if (hasTriggeredRef.current) return;
-      hasTriggeredRef.current = true;
-      setShouldAnimate(true);
-    };
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            trigger();
+          if (entry.isIntersecting && !hasTriggeredRef.current) {
+            hasTriggeredRef.current = true;
+            setShouldAnimate(true);
             observer.disconnect();
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.4 }
     );
     observer.observe(el);
 
-    // Fallback: if observer hasn't fired after 500ms, trigger anyway
-    const fallback = setTimeout(trigger, 500);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(fallback);
-    };
+    return () => observer.disconnect();
   }, [isVisible]);
 
   if (!isVisible) return null;
@@ -164,7 +154,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
                   key={`digit-${i}`}
                   target={targetDigit}
                   shouldAnimate={shouldAnimate}
-                  delay={currentDigitIndex * 250}
+                  delay={INITIAL_DELAY + currentDigitIndex * 250}
                 />
               );
             })}
