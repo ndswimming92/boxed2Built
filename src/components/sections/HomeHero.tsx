@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Star, Clock, MapPin, Phone } from 'lucide-react';
+import { ArrowRight, Star, ShieldCheck, MapPin, Phone } from 'lucide-react';
 import Button from '../ui/Button';
 import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
@@ -230,9 +230,9 @@ const HomeHero: React.FC = () => {
               </div>
               <div className="flex items-center justify-center gap-2 md:gap-3 py-4 md:py-5">
                 <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                  <Clock className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                  <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                 </div>
-                <span className="text-xs md:text-sm font-semibold text-gray-800">Same-Day Available</span>
+                <span className="text-xs md:text-sm font-semibold text-gray-800">No Payment Until Done</span>
               </div>
               <div className="flex items-center justify-center gap-2 md:gap-3 py-4 md:py-5">
                 <div className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-green-50 flex items-center justify-center">
