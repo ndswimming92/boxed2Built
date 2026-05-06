@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Clock3 } from 'lucide-react';
+import { trackEvent, trackConversion } from '../../utils/analytics';
 
 type HoursGivenBackCounterProps = {
   totalHoursSaved: number;
@@ -188,6 +189,21 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
 
           <a
             href="https://boxed2built.com/contact?utm_id=B2B&utm_source=website&utm_medium=cta_button&utm_campaign=hours_given_back&utm_term=furniture+assembly&utm_content=get_your_time_back"
+            onClick={() => {
+              trackEvent('cta_click', 'hours_given_back', {
+                event_category: 'conversion',
+                event_label: 'get_your_time_back',
+                element_type: 'button',
+                element_location: 'hours_given_back',
+                page_section: 'hours_given_back',
+                action_type: 'navigate_to_contact',
+                conversion_type: 'form_intent',
+              });
+              trackConversion('cta_click', 1, 'USD', {
+                page_section: 'hours_given_back',
+                conversion_type: 'form_intent',
+              });
+            }}
             className="group inline-flex items-center justify-center w-full sm:w-auto mt-8 px-6 py-3 md:px-8 md:py-4 bg-blue-700 hover:bg-blue-800 text-white font-medium text-base md:text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
           >
             Get Your Time Back
