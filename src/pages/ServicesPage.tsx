@@ -169,47 +169,63 @@ const ServicesPage: React.FC = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Furniture Assembly</h3>
-                  <p className="text-gray-700 mb-4">
-                    We specialize in assembling furniture from major brands like IKEA, Target, Walmart, Wayfair, and
-                    Amazon. From simple chairs to complex bedroom sets, we handle the full build, placement, and cleanup.
-                    Curious about our process?{' '}
-                    <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium">
-                      See what to expect on assembly day
-                    </a>
-                    . Read more{' '}
-                    <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
-                      about Boxed2Built and our approach
-                    </a>{' '}
-                    to quality and care.
-                  </p>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• Professional tools and equipment</li>
-                    <li>• Careful, accurate builds</li>
-                    <li>• Clean and efficient service</li>
-                    <li>• Final check and tidy cleanup</li>
-                  </ul>
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <img
+                    src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
+                    alt="Professional garage furniture and storage assembly by Boxed2Built"
+                    className="w-full h-48 object-cover"
+                    loading="lazy"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Furniture Assembly</h3>
+                    <p className="text-gray-700 mb-4">
+                      We specialize in assembling furniture from major brands like IKEA, Target, Walmart, Wayfair, and
+                      Amazon. From simple chairs to complex bedroom sets, we handle the full build, placement, and cleanup.
+                      Curious about our process?{' '}
+                      <a href="/faq#build-day-process" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                        See what to expect on assembly day
+                      </a>
+                      . Read more{' '}
+                      <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                        about Boxed2Built and our approach
+                      </a>{' '}
+                      to quality and care.
+                    </p>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>• Professional tools and equipment</li>
+                      <li>• Careful, accurate builds</li>
+                      <li>• Clean and efficient service</li>
+                      <li>• Final check and tidy cleanup</li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service Area</h3>
-                  <p className="text-gray-700 mb-4">
-                    Based in Spring Hill, TN, we proudly serve local families and nearby communities with reliable
-                    furniture assembly and light handyman services. Most of our furniture assembly jobs are in Spring
-                    Hill, Thompson’s Station, Franklin, and Columbia—especially for move-ins, nursery setups, and home
-                    office builds. Learn more{' '}
-                    <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
-                      about our local commitment
-                    </a>{' '}
-                    and family-focused approach.
-                  </p>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• Spring Hill, Columbia, Franklin</li>
-                    <li>• Thompson&apos;s Station, Brentwood</li>
-                    <li>• Flexible scheduling options</li>
-                    <li>• Community-focused service</li>
-                  </ul>
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <img
+                    src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
+                    alt="Outdoor furniture assembly and patio setup by Boxed2Built"
+                    className="w-full h-48 object-cover"
+                    loading="lazy"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service Area</h3>
+                    <p className="text-gray-700 mb-4">
+                      Based in Spring Hill, TN, we proudly serve local families and nearby communities with reliable
+                      furniture assembly and light handyman services. Most of our furniture assembly jobs are in Spring
+                      Hill, Thompson’s Station, Franklin, and Columbia—especially for move-ins, nursery setups, and home
+                      office builds. Learn more{' '}
+                      <a href="/about" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                        about our local commitment
+                      </a>{' '}
+                      and family-focused approach.
+                    </p>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>• Spring Hill, Columbia, Franklin</li>
+                      <li>• Thompson&apos;s Station, Brentwood</li>
+                      <li>• Flexible scheduling options</li>
+                      <li>• Community-focused service</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 

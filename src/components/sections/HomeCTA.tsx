@@ -4,17 +4,27 @@ import CallButton from '../ui/CallButton';
 
 const HomeCTA: React.FC = () => {
   return (
-    <section className="py-12 bg-gradient-to-br from-blue-600 to-blue-800">
-      <div className="container mx-auto px-4">
+    <section className="py-16 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10">
+        <img
+          src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Ready for Local Furniture Assembly Near Me?
           </h2>
           <p className="text-xl text-blue-50 mb-8">
-            Book a free consultation with your local furniture assembly service to discuss your project and get an accurate quote. 
+            Book a free consultation with your local furniture assembly service to discuss your project and get an accurate quote.
             Serving Spring Hill, TN and surrounding areas.
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />

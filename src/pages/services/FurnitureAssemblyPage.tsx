@@ -71,23 +71,35 @@ const FurnitureAssemblyPage: React.FC = () => {
               ]}
             />
 
-            <div className="max-w-4xl mx-auto text-center mt-8">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Professional Furniture Assembly Services in Spring Hill, TN
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
-                Expert assembly for IKEA, Target, Walmart, Wayfair, and Amazon furniture. Fast, reliable service with transparent pricing and no hidden fees.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <CallButton size="lg" pageSection="furniture_assembly_hero" />
-                <Link
-                  to="/contact"
-                  onClick={() => handleContactClick('hero_quote')}
-                  className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-md border-2 border-blue-700"
-                >
-                  Get Free Quote
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
+            <div className="max-w-6xl mx-auto mt-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="text-center lg:text-left">
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Professional Furniture Assembly Services in Spring Hill, TN
+                  </h1>
+                  <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+                    Expert assembly for IKEA, Target, Walmart, Wayfair, and Amazon furniture. Fast, reliable service with transparent pricing and no hidden fees.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <CallButton size="lg" pageSection="furniture_assembly_hero" />
+                    <Link
+                      to="/contact"
+                      onClick={() => handleContactClick('hero_quote')}
+                      className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-md border-2 border-blue-700"
+                    >
+                      Get Free Quote
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Link>
+                  </div>
+                </div>
+                <div className="hidden lg:block">
+                  <img
+                    src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
+                    alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
+                    className="rounded-xl shadow-xl w-full h-auto object-cover"
+                    loading="eager"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -177,50 +189,60 @@ const FurnitureAssemblyPage: React.FC = () => {
 
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
                 Our Furniture Assembly Process
               </h2>
-              <div className="space-y-8">
-                {[
-                  {
-                    step: '1',
-                    title: 'Schedule Your Service',
-                    description: `Call us at ${phoneDisplay} or book online. We offer flexible weekend appointments that work with your schedule.`
-                  },
-                  {
-                    step: '2',
-                    title: 'We Arrive On Time',
-                    description: "Receive a 30-minute courtesy call before arrival. We bring all professional tools and equipment needed for the job."
-                  },
-                  {
-                    step: '3',
-                    title: 'Expert Assembly',
-                    description: 'We carefully unbox, assemble, and position your furniture according to manufacturer specifications and your preferences.'
-                  },
-                  {
-                    step: '4',
-                    title: 'Quality Inspection',
-                    description: 'Every piece is thoroughly checked for stability and safety. We ensure all hardware is properly installed and secure.'
-                  },
-                  {
-                    step: '5',
-                    title: 'Complete Cleanup',
-                    description: 'We remove all packaging materials, boxes, and debris. Your space is left clean and ready to enjoy.'
-                  }
-                ].map((item, index) => (
-                  <div key={index} className="flex gap-6">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center text-xl font-bold">
-                        {item.step}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div className="space-y-8">
+                  {[
+                    {
+                      step: '1',
+                      title: 'Schedule Your Service',
+                      description: `Call us at ${phoneDisplay} or book online. We offer flexible weekend appointments that work with your schedule.`
+                    },
+                    {
+                      step: '2',
+                      title: 'We Arrive On Time',
+                      description: "Receive a 30-minute courtesy call before arrival. We bring all professional tools and equipment needed for the job."
+                    },
+                    {
+                      step: '3',
+                      title: 'Expert Assembly',
+                      description: 'We carefully unbox, assemble, and position your furniture according to manufacturer specifications and your preferences.'
+                    },
+                    {
+                      step: '4',
+                      title: 'Quality Inspection',
+                      description: 'Every piece is thoroughly checked for stability and safety. We ensure all hardware is properly installed and secure.'
+                    },
+                    {
+                      step: '5',
+                      title: 'Complete Cleanup',
+                      description: 'We remove all packaging materials, boxes, and debris. Your space is left clean and ready to enjoy.'
+                    }
+                  ].map((item, index) => (
+                    <div key={index} className="flex gap-6">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center text-xl font-bold">
+                          {item.step}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
+                        <p className="text-gray-600 leading-relaxed">{item.description}</p>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-gray-600 leading-relaxed">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <div className="hidden lg:block sticky top-24">
+                  <img
+                    src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+                    alt="Skip the build and enjoy the moments - professional furniture assembly service"
+                    className="rounded-xl shadow-lg w-full h-auto object-cover"
+                    loading="lazy"
+                  />
+                </div>
               </div>
             </div>
           </div>

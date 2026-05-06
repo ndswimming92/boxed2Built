@@ -138,17 +138,29 @@ const AboutPage: React.FC = () => {
               {/* Why We Exist */}
               <div className="mb-16">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Why We Exist</h2>
-                <p className="text-gray-700 mb-6 leading-relaxed text-lg">
-                  Families today are busier than ever. Between work, kids, and the endless to-do list,{' '}
-                  <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
-                    furniture assembly
-                  </a>{' '}
-                  shouldn't be one more thing weighing you down. At Boxed2Built, we step in to take the stress off your
-                  shoulders—so you can spend more time making memories and less time making sense of confusing instructions.
-                </p>
-                <p className="text-xl text-blue-600 font-medium italic">
-                  We don't just build furniture—we build peace of mind, one piece at a time.
-                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                  <div>
+                    <p className="text-gray-700 mb-6 leading-relaxed text-lg">
+                      Families today are busier than ever. Between work, kids, and the endless to-do list,{' '}
+                      <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                        furniture assembly
+                      </a>{' '}
+                      shouldn't be one more thing weighing you down. At Boxed2Built, we step in to take the stress off your
+                      shoulders—so you can spend more time making memories and less time making sense of confusing instructions.
+                    </p>
+                    <p className="text-xl text-blue-600 font-medium italic">
+                      We don't just build furniture—we build peace of mind, one piece at a time.
+                    </p>
+                  </div>
+                  <div>
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
+                      alt="Family enjoying time together while Boxed2Built handles furniture assembly"
+                      className="rounded-xl shadow-lg w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* What You Can Expect */}
@@ -207,6 +219,16 @@ const AboutPage: React.FC = () => {
               {/* Serving Our Community */}
               <div className="bg-gradient-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Serving Our Community</h2>
+
+                <div className="max-w-md mx-auto mb-8">
+                  <img
+                    src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
+                    alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
+                    className="rounded-xl shadow-md w-full h-auto object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
                 <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto mb-8">
                   Based in Spring Hill, TN, we proudly serve local families in the surrounding area with honest work and
                   a helpful attitude. Whether it's a single chair or a whole nursery setup, we're here to make your life
