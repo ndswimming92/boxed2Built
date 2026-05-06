@@ -112,7 +112,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
   const formatted = rawHours.toFixed(1);
   const fullDays = Math.floor(rawHours / 8);
   const contextLine = fullDays >= 2
-    ? `That is more than ${fullDays} full days given back to our customers.`
+    ? `That adds up to more than ${fullDays} full workdays given back to families.`
     : 'Every hour we work is one you get to spend on what matters most.';
 
   const chars = formatted.split('');
