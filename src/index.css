@@ -380,12 +380,12 @@ body {
 }
 
 .flip-tile-flap-down {
-  animation: flipTopDown 80ms ease-in forwards;
+  animation: flipTopDown 120ms ease-in forwards;
 }
 
 .flip-tile-flap-up {
-  animation: flipBottomUp 80ms ease-out forwards;
-  animation-delay: 30ms;
+  animation: flipBottomUp 120ms ease-out forwards;
+  animation-delay: 20ms;
   transform: rotateX(90deg);
 }
 

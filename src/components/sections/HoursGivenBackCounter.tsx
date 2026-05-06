@@ -14,9 +14,9 @@ type FlipDigitProps = {
 const FLIP_STEP_MS = 100;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
-  const [current, setCurrent] = useState<number | null>(null);
-  const [previous, setPrevious] = useState<number | null>(null);
-  const [isFlipping, setIsFlipping] = useState(false);
+  const [current, setCurrent] = useState<number>(0);
+  const [previous, setPrevious] = useState<number>(0);
+  const [flipKey, setFlipKey] = useState(0);
   const animatingRef = useRef(false);
 
   useEffect(() => {
@@ -30,18 +30,15 @@ const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) =
       let step = 0;
 
       const flip = () => {
-        setPrevious(digit);
+        const prev = digit;
         digit = (digit + 1) % 10;
+        setPrevious(prev);
         setCurrent(digit);
-        setIsFlipping(true);
-
-        setTimeout(() => {
-          setIsFlipping(false);
-        }, FLIP_STEP_MS * 1.2);
+        setFlipKey((k) => k + 1);
 
         step++;
         if (step < totalSteps) {
-          setTimeout(flip, FLIP_STEP_MS);
+          setTimeout(flip, FLIP_STEP_MS + 40);
         }
       };
 
@@ -51,31 +48,26 @@ const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) =
     return () => clearTimeout(startTimeout);
   }, [shouldAnimate, target, delay]);
 
-  const displayDigit = current !== null ? current : target;
-  const prevDigit = previous !== null ? previous : 0;
+  const displayDigit = shouldAnimate ? current : target;
+  const showFlap = shouldAnimate && flipKey > 0;
 
   return (
     <div className="flip-tile">
       <div className="flip-tile-inner">
-        {/* Static top half showing current digit */}
         <div className="flip-tile-top">
           <span>{displayDigit}</span>
         </div>
-        {/* Static bottom half showing current digit */}
         <div className="flip-tile-bottom">
           <span>{displayDigit}</span>
         </div>
-        {/* Seam line */}
         <div className="flip-tile-seam" />
-        {/* Animated flap: top half folds down */}
-        {isFlipping && (
-          <div className="flip-tile-flap-top flip-tile-flap-down">
-            <span>{prevDigit}</span>
+        {showFlap && (
+          <div key={`flap-top-${flipKey}`} className="flip-tile-flap-top flip-tile-flap-down">
+            <span>{previous}</span>
           </div>
         )}
-        {/* Animated flap: bottom half folds up to reveal */}
-        {isFlipping && (
-          <div className="flip-tile-flap-bottom flip-tile-flap-up">
+        {showFlap && (
+          <div key={`flap-bot-${flipKey}`} className="flip-tile-flap-bottom flip-tile-flap-up">
             <span>{displayDigit}</span>
           </div>
         )}
