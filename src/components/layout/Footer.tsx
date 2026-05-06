@@ -222,17 +222,17 @@ const Footer: React.FC = () => {
 
           {/* Navigation */}
           <nav aria-label="Footer navigation">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 md:gap-x-6">
-              <div className="rounded-lg border border-blue-500/30 bg-blue-950/30 p-4">
-                <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+              <div>
+                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
                   {serviceLinksSection.title}
                 </h3>
-                <ul className="space-y-2 text-sm text-gray-200">
+                <ul className="space-y-2 text-sm">
                   {serviceLinksSection.links.map((link) => (
                     <li key={link.href}>
                       <InternalLink
                         href={link.href}
-                        className="inline-flex items-start hover:text-white transition-colors"
+                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
                         trackingCategory="footer_nav"
                       >
                         {link.label}
@@ -243,14 +243,14 @@ const Footer: React.FC = () => {
               </div>
 
               {footerLinkSections.map((section) => (
-                <div key={section.title} className="rounded-lg border border-gray-700/80 bg-gray-800/40 p-4">
-                  <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">{section.title}</h3>
-                  <ul className="space-y-2 text-sm text-gray-200">
+                <div key={section.title}>
+                  <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">{section.title}</h3>
+                  <ul className="space-y-2 text-sm">
                     {section.links.map((link) => (
                       <li key={link.href}>
                         <InternalLink
                           href={link.href}
-                          className="inline-flex items-start hover:text-white transition-colors"
+                          className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
                           trackingCategory="footer_nav"
                         >
                           {link.label}
@@ -261,14 +261,14 @@ const Footer: React.FC = () => {
                 </div>
               ))}
 
-              <div className="rounded-lg border border-gray-700/80 bg-gray-800/40 p-4 sm:col-span-2 lg:col-span-1">
-                <h3 className="font-semibold text-blue-100 mb-2 text-sm uppercase tracking-wide">Client Access</h3>
-                <ul className="space-y-2 text-sm text-gray-200">
+              <div>
+                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">Client Access</h3>
+                <ul className="space-y-2 text-sm">
                   {clientAccessLinks.map((link) => (
                     <li key={link.href}>
                       <InternalLink
                         href={link.href}
-                        className="inline-flex items-start hover:text-white transition-colors"
+                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
                         trackingCategory="footer_nav"
                         onClick={() => {
                           if (link.href === '/portal/login') {
