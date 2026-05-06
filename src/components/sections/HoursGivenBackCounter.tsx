@@ -11,51 +11,65 @@ type FlipDigitProps = {
   delay: number;
 };
 
-const STEP_MS = 120;
-const TRANSITION_MS = 100;
+const STEP_MS = 160;
 
 const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
-  const [displayDigit, setDisplayDigit] = useState(0);
-  const [animClass, setAnimClass] = useState('');
+  const spanRef = useRef<HTMLSpanElement>(null);
   const animatingRef = useRef(false);
 
   useEffect(() => {
     if (!shouldAnimate || animatingRef.current) return;
     animatingRef.current = true;
 
+    const el = spanRef.current;
+    if (!el) return;
+
     const totalSteps = target === 0 ? 10 : target;
     let step = 0;
     let digit = 0;
+    let cancelled = false;
 
     const tick = () => {
-      setAnimClass('rolling-out');
+      if (cancelled) return;
+
+      // Slide current digit out (up)
+      el.classList.add('rolling-out');
 
       setTimeout(() => {
-        digit = (digit + 1) % 10;
-        setDisplayDigit(digit);
-        setAnimClass('rolling-in');
+        if (cancelled) return;
 
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setAnimClass('');
-          });
-        });
-      }, TRANSITION_MS);
+        // Update the digit text while hidden
+        digit = (digit + 1) % 10;
+        el.textContent = String(digit);
+
+        // Position below (no transition) then slide in
+        el.classList.remove('rolling-out');
+        el.classList.add('rolling-in');
+
+        // Force browser to commit the rolling-in position before transitioning
+        el.getBoundingClientRect();
+
+        // Now remove rolling-in to transition to center
+        el.classList.remove('rolling-in');
+      }, 100);
 
       step++;
       if (step < totalSteps) {
-        setTimeout(tick, STEP_MS + TRANSITION_MS);
+        setTimeout(tick, STEP_MS);
       }
     };
 
     const startTimeout = setTimeout(tick, delay);
-    return () => clearTimeout(startTimeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(startTimeout);
+    };
   }, [shouldAnimate, target, delay]);
 
   return (
     <div className="flip-tile">
       <div className="flip-tile-inner">
-        <span className={animClass}>{displayDigit}</span>
+        <span ref={spanRef}>0</span>
       </div>
       <div className="flip-tile-seam" />
     </div>

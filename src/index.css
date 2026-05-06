@@ -279,17 +279,20 @@ body {
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
-  transition: transform 100ms ease-in-out, opacity 100ms ease-in-out;
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 100ms ease-out, opacity 80ms ease-out;
 }
 
 .flip-tile-inner span.rolling-out {
-  transform: translateY(-60%);
+  transform: translateY(-50%);
   opacity: 0;
 }
 
 .flip-tile-inner span.rolling-in {
-  transform: translateY(60%);
+  transform: translateY(50%);
   opacity: 0;
+  transition: none;
 }
 
 .flip-tile-seam {
