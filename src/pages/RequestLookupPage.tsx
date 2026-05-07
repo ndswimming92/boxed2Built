@@ -17,7 +17,7 @@ import { formatPhoneForDisplay } from '../services/communicationService';
 
 const RequestLookupPage: React.FC = () => {
   const { data: businessData } = useBusinessDataWithFallback();
-  const phoneRaw = businessData?.info?.phone || "+16155511402";
+  const phoneRaw = businessData?.info?.phone || "+16154034538";
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
 
   usePageMeta({
