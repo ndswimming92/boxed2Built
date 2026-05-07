@@ -142,7 +142,7 @@ function buildPlainText(clientName: string, referralCode: string | null): string
     '',
     'Nicholas Davidson',
     'Owner, Boxed2Built',
-    '(615) 551-1402',
+    '(615) 403-4538',
     CONTACT_EMAIL,
     '',
     'Boxed2Built | Spring Hill, TN',
