@@ -96,7 +96,7 @@ const HomeHero: React.FC = () => {
   const locality = businessData?.address?.address_locality || 'Spring Hill';
   const region = businessData?.address?.address_region || 'TN';
   const ratingStats = calculateRatingStats(allReviews);
-  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneRaw = businessData?.info?.phone || '+16154034538';
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
 
   return (
