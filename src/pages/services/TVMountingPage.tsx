@@ -40,7 +40,7 @@ const TV_MOUNTING_SERVICES = [
 
 const TVMountingPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
-  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
 
   usePageMeta({
     title: LOCAL_SEO_CONTENT.tvMounting.title,
