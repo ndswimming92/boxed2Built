@@ -9,7 +9,7 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 const Services: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
-  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneRaw = businessData?.info?.phone || '+16154034538';
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ''));
 
   const services = businessData?.services.map(service => {
