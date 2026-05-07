@@ -313,7 +313,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
           </table>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call us at <span style="color:#111827;font-weight:600;">(615) 551-1402</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
       </td></tr>
