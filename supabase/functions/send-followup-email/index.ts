@@ -138,7 +138,7 @@ function buildPlainText(clientName: string, referralCode: string | null): string
   }
 
   lines.push(
-    'Feel free to save my number in case you need help again down the road: (615) 551-1402',
+    'Feel free to save my number in case you need help again down the road: (615) 403-4538',
     '',
     'Nicholas Davidson',
     'Owner, Boxed2Built',
