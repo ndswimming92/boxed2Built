@@ -2,8 +2,8 @@
 
 export const BUSINESS_INFO = {
   name: "Boxed2Built",
-  phone: "+16155511402",
-  phoneFormatted: "(615) 551-1402",
+  phone: "+16154034538",
+  phoneFormatted: "(615) 403-4538",
   email: "boxed2builtco@gmail.com",
   website: "https://boxed2built.com",
   founder: "Nicholas Davidson",
