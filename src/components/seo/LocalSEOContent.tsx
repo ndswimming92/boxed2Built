@@ -21,7 +21,7 @@ const LocalSEOContent: React.FC<LocalSEOContentProps> = ({
   className = ''
 }) => {
   const { data: businessData } = useBusinessDataWithFallback();
-  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
   return (
     <section className={`py-8 bg-gray-50 ${className}`}>
       <div className="container mx-auto px-4">
