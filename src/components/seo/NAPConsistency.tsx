@@ -33,7 +33,7 @@ const NAPConsistency: React.FC<NAPConsistencyProps> = ({
   const { businessName, phone, email, address, serviceAreas } = data;
 
   const formatPhone = (phoneNumber: string) => {
-    // Format phone number consistently: (615) 551-1402
+    // Format phone number consistently: (615) 403-4538
     const cleaned = phoneNumber.replace(/\D/g, '');
     if (cleaned.length === 11 && cleaned.startsWith('1')) {
       const number = cleaned.substring(1);
