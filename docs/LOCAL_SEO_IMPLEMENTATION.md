@@ -125,7 +125,7 @@ Offers:
 - Homepage: "Furniture Assembly Spring Hill TN | Handyman Near Me | Boxed2Built"
 - Services: "Furniture Assembly Services Spring Hill TN | IKEA Target Walmart | Boxed2Built"
 - About: "About Boxed2Built | Spring Hill TN Furniture Assembly Expert | Local Handyman"
-- Contact: "Contact Boxed2Built | Spring Hill TN Furniture Assembly | (615) 551-1402"
+- Contact: "Contact Boxed2Built | Spring Hill TN Furniture Assembly | (615) 403-4538"
 
 ### **Meta Descriptions (Optimized)**
 - Include location keywords
