@@ -22,7 +22,7 @@ import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
-  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16155511402').replace(/^\+1/, ''));
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.partners.title;
 
