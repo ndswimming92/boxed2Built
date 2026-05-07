@@ -85,7 +85,7 @@ const Footer: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
   const businessName = businessData?.info?.name || 'Boxed2Built';
-  const phoneRaw = businessData?.info?.phone || '+16155511402';
+  const phoneRaw = businessData?.info?.phone || '+16154034538';
   const phoneTel = toTelHref(phoneRaw);
   const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
