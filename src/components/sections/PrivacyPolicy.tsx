@@ -5,7 +5,7 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const PrivacyPolicy = () => {
   const { data: businessData } = useBusinessDataWithFallback();
-  const phoneRaw = businessData?.info?.phone || "+16155511402";
+  const phoneRaw = businessData?.info?.phone || "+16154034538";
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
   useEffect(() => {
     document.title = LOCAL_SEO_CONTENT.privacyPolicy.title;
