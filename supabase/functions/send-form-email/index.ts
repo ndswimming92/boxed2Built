@@ -389,7 +389,7 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
           <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic;">&ldquo;${safeMessage}&rdquo;</p>
         </div>
 
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call us at <span style="color:#111827;font-weight:600;">(615) 551-1402</span>.</p>
+        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Need a faster response? Call us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span>.</p>
         <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">If you're ready for a free quote, you can also <a href="https://boxed2built.com/#contact" style="color:#1d4ed8;">fill out our full request form</a>.</p>
 
         <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
