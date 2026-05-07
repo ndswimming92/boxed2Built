@@ -174,7 +174,7 @@ const ContactForm: React.FC = () => {
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const { data: businessData } = useBusinessDataWithFallback();
-  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || "+16155511402").replace(/^\+1/, ""));
+  const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || "+16154034538").replace(/^\+1/, ""));
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [formProgress, setFormProgress] = useState(0);
   const [furniturePhotoUrl, setFurniturePhotoUrl] = useState('');
