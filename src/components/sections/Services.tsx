@@ -1,10 +1,18 @@
 import React from 'react';
-import { Check, Phone, Mail, Clock } from 'lucide-react';
+import { Check, Phone, Mail, Clock, Sparkles } from 'lucide-react';
 import SkeletonCard from '../ui/SkeletonCard';
 import InternalLink from '../ui/InternalLink';
 import { trackEvent } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../../services/communicationService';
+
+const CARD_ACCENTS = [
+  { border: 'border-t-blue-600', bg: 'bg-gradient-to-br from-blue-50 to-white', includedBg: 'bg-blue-50/80', includedBorder: 'border-blue-200', check: 'text-blue-600', priceBg: 'bg-blue-600' },
+  { border: 'border-t-teal-500', bg: 'bg-gradient-to-br from-teal-50 to-white', includedBg: 'bg-teal-50/80', includedBorder: 'border-teal-200', check: 'text-teal-600', priceBg: 'bg-teal-600' },
+  { border: 'border-t-emerald-500', bg: 'bg-gradient-to-br from-emerald-50 to-white', includedBg: 'bg-emerald-50/80', includedBorder: 'border-emerald-200', check: 'text-emerald-600', priceBg: 'bg-emerald-600' },
+  { border: 'border-t-amber-500', bg: 'bg-gradient-to-br from-amber-50 to-white', includedBg: 'bg-amber-50/80', includedBorder: 'border-amber-200', check: 'text-amber-600', priceBg: 'bg-amber-600' },
+  { border: 'border-t-sky-500', bg: 'bg-gradient-to-br from-sky-50 to-white', includedBg: 'bg-sky-50/80', includedBorder: 'border-sky-200', check: 'text-sky-600', priceBg: 'bg-sky-600' },
+];
 
 const Services: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -38,7 +46,7 @@ const Services: React.FC = () => {
 
 
   return (
-    <section id="services" className="py-12 bg-white">
+    <section id="services" className="py-12 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
@@ -83,57 +91,69 @@ const Services: React.FC = () => {
               />
             ))
           ) : (
-            services?.map((service, index) => (
-            <div key={service.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100">
-              <div className="p-6">
-                <div className="flex items-center mb-3">
-                  <h3 className="text-lg font-bold text-gray-900">{service.type}</h3>
-                  {service.id === 3 && <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Most Popular</span>}
-                </div>
-                <p className="text-gray-600 mb-4">{service.description}</p>
-                
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 pb-4 border-b border-gray-200">
-                  <div>
-                    <span className="block text-sm text-gray-500">Starting at</span>
-                    <span className="text-2xl font-bold text-blue-700">{service.startingPrice}</span>
-                  </div>
-
-                  {(service.minPrice !== null || service.maxPrice !== null) && (
-                    <div className="mt-2 sm:mt-0">
-                      <span className="block text-sm text-gray-500">Typical Range</span>
-                      <span className="font-medium text-gray-700">
-                        {service.minPrice !== null && service.maxPrice !== null
-                          ? `$${service.minPrice.toFixed(0)} - $${service.maxPrice.toFixed(0)}`
-                          : service.minPrice !== null
-                          ? `From $${service.minPrice.toFixed(0)}`
-                          : `Up to $${service.maxPrice!.toFixed(0)}`}
+            services?.map((service, index) => {
+              const accent = CARD_ACCENTS[index % CARD_ACCENTS.length];
+              const isPopular = service.id === 3;
+              return (
+                <div
+                  key={service.id}
+                  className={`relative rounded-xl border-t-4 ${accent.border} ${accent.bg} shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isPopular ? 'ring-2 ring-emerald-400/50' : ''}`}
+                >
+                  {isPopular && (
+                    <div className="absolute top-3 right-3">
+                      <span className="inline-flex items-center gap-1 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        <Sparkles size={12} />
+                        Most Popular
                       </span>
                     </div>
                   )}
-                </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{service.type}</h3>
+                    <p className="text-gray-600 mb-5 leading-relaxed">{service.description}</p>
 
-                {service.includedItems && service.includedItems.length > 0 && (
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900 mb-2">What's Included:</p>
-                    <ul className="text-sm text-gray-700 space-y-1.5">
-                      {service.includedItems.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-blue-600 mt-0.5">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-5 pb-5 border-b border-gray-200/80">
+                      <div>
+                        <span className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Starting at</span>
+                        <span className={`inline-block text-2xl font-extrabold text-white ${accent.priceBg} px-3 py-1 rounded-lg`}>
+                          {service.startingPrice}
+                        </span>
+                      </div>
+
+                      {(service.minPrice !== null || service.maxPrice !== null) && (
+                        <div className="mt-3 sm:mt-0 text-right">
+                          <span className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Typical Range</span>
+                          <span className="inline-block font-semibold text-gray-800 bg-gray-100 px-3 py-1 rounded-lg text-sm">
+                            {service.minPrice !== null && service.maxPrice !== null
+                              ? `$${service.minPrice.toFixed(0)} - $${service.maxPrice.toFixed(0)}`
+                              : service.minPrice !== null
+                              ? `From $${service.minPrice.toFixed(0)}`
+                              : `Up to $${service.maxPrice!.toFixed(0)}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {service.includedItems && service.includedItems.length > 0 && (
+                      <div className={`rounded-lg p-4 ${accent.includedBg} border ${accent.includedBorder}`}>
+                        <p className="text-sm font-bold text-gray-900 mb-3">What's Included:</p>
+                        <ul className="text-sm text-gray-700 space-y-2">
+                          {service.includedItems.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2.5">
+                              <Check size={15} className={`${accent.check} mt-0.5 shrink-0`} strokeWidth={3} />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <p className="mt-4 text-xs text-gray-400 italic">
+                      Labor-only service. Not subject to Tennessee sales tax (SUT-115).
+                    </p>
                   </div>
-                )}
-
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 italic">
-                    Labor-only service. Not subject to Tennessee sales tax (SUT-115).
-                  </p>
                 </div>
-              </div>
-            </div>
-            ))
+              );
+            })
           )}
         </div>
 
