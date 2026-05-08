@@ -97,7 +97,10 @@ const FurnitureAssemblyPage: React.FC = () => {
                     src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
                     alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
                     className="rounded-xl shadow-xl w-full h-auto object-cover"
+                    width={800}
+                    height={533}
                     loading="eager"
+                    style={{ aspectRatio: '800/533' }}
                   />
                 </div>
               </div>
@@ -240,7 +243,10 @@ const FurnitureAssemblyPage: React.FC = () => {
                     src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
                     alt="Skip the build and enjoy the moments - professional furniture assembly service"
                     className="rounded-xl shadow-lg w-full h-auto object-cover"
+                    width={800}
+                    height={533}
                     loading="lazy"
+                    style={{ aspectRatio: '800/533' }}
                   />
                 </div>
               </div>

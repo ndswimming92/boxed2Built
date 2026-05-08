@@ -10,8 +10,11 @@ const HomeCTA: React.FC = () => {
           src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
           alt=""
           className="w-full h-full object-cover"
+          width={1200}
+          height={800}
           loading="lazy"
           aria-hidden="true"
+          style={{ aspectRatio: '3/2' }}
         />
       </div>
 
