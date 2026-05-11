@@ -174,8 +174,6 @@ const ServicesPage: React.FC = () => {
                     src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
                     alt="Professional garage furniture and storage assembly by Boxed2Built"
                     className="w-full aspect-[16/9] object-cover object-center"
-                    width={800}
-                    height={450}
                     loading="lazy"
                   />
                   <div className="p-6">
@@ -207,8 +205,6 @@ const ServicesPage: React.FC = () => {
                     src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
                     alt="Outdoor furniture assembly and patio setup by Boxed2Built"
                     className="w-full aspect-[16/9] object-cover object-center"
-                    width={800}
-                    height={450}
                     loading="lazy"
                   />
                   <div className="p-6">

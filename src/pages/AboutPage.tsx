@@ -157,10 +157,7 @@ const AboutPage: React.FC = () => {
                       src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
                       alt="Family enjoying time together while Boxed2Built handles furniture assembly"
                       className="rounded-xl shadow-lg w-full h-auto object-cover"
-                      width={800}
-                      height={533}
                       loading="lazy"
-                      style={{ aspectRatio: '800/533' }}
                     />
                   </div>
                 </div>
@@ -228,10 +225,7 @@ const AboutPage: React.FC = () => {
                     src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
                     alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
                     className="rounded-xl shadow-md w-full h-auto object-cover"
-                    width={800}
-                    height={533}
                     loading="lazy"
-                    style={{ aspectRatio: '800/533' }}
                   />
                 </div>
 

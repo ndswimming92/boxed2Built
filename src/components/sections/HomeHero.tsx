@@ -168,14 +168,12 @@ const HomeHero: React.FC = () => {
               </span>
             </div>
 
-            <div className="w-full lg:w-[45%] min-w-0 animate-fadeIn" style={{ animationDelay: '150ms' }}>
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent z-10 pointer-events-none" />
-                <div className="relative h-64 sm:h-80 md:h-96 lg:h-[480px]" style={{ aspectRatio: '810/1080' }}>
-                  {heroImages.length === 0 ? (
-                    <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-2xl" />
-                  ) : (
-                    heroImages.map((img, idx) => (
+            {heroImages.length > 0 && (
+              <div className="w-full lg:w-[45%] min-w-0 animate-fadeIn" style={{ animationDelay: '150ms' }}>
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent z-10 pointer-events-none" />
+                  <div className="relative h-64 sm:h-80 md:h-96 lg:h-[480px]">
+                    {heroImages.map((img, idx) => (
                       <img
                         key={img.src}
                         src={img.src}
@@ -190,9 +188,8 @@ const HomeHero: React.FC = () => {
                         }`}
                         style={{ objectPosition: `${img.focusX}% ${img.focusY}%` }}
                       />
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
                   <div className="absolute bottom-0 left-0 right-0 p-4 z-20 flex items-end justify-between">
                     <p className="text-white text-sm font-medium drop-shadow-lg">
                       {heroImages[activeIndex]?.title}
@@ -216,6 +213,7 @@ const HomeHero: React.FC = () => {
                   </div>
                 </div>
               </div>
+            )}
           </div>
         </div>
       </div>
