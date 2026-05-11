@@ -114,6 +114,77 @@ const HomePage: React.FC = () => {
 
         <HomeServices />
 
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-white to-emerald-50 border border-blue-100 rounded-2xl shadow-sm p-8 md:p-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Why Choose Boxed2Built Instead of a Marketplace App?
+              </h2>
+              <p className="text-lg text-gray-700 leading-relaxed mb-5">
+                Marketplace apps can connect you with available providers, but Boxed2Built gives you a more personal local experience. You work directly with a Spring Hill-based furniture assembly service focused on clear quotes, careful workmanship, and helping busy families enjoy their homes sooner.
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed mb-5">
+                From flat-pack furniture and TV mounting to nursery setups, patio furniture, garage storage, and move-in projects, Boxed2Built is built around one simple goal:
+              </p>
+              <p className="text-xl md:text-2xl font-semibold text-gray-900 mb-8">
+                Turning boxes into comfort so families can focus on what matters most.
+              </p>
+
+              <div className="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm md:text-base">
+                    <caption className="sr-only">Boxed2Built vs marketplace app comparison</caption>
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 font-semibold text-gray-900">What Matters</th>
+                        <th scope="col" className="px-4 py-3 font-semibold text-blue-800">Boxed2Built</th>
+                        <th scope="col" className="px-4 py-3 font-semibold text-gray-700">Marketplace Apps</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      <tr>
+                        <th scope="row" className="px-4 py-3 font-medium text-gray-900">Who you work with</th>
+                        <td className="px-4 py-3 text-gray-700">Directly with a local Spring Hill service</td>
+                        <td className="px-4 py-3 text-gray-600">Often routed through a platform and rotating providers</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" className="px-4 py-3 font-medium text-gray-900">Quote process</th>
+                        <td className="px-4 py-3 text-gray-700">Clear quotes based on your actual items and photos</td>
+                        <td className="px-4 py-3 text-gray-600">Generalized pricing tiers and in-app variables</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" className="px-4 py-3 font-medium text-gray-900">Service focus</th>
+                        <td className="px-4 py-3 text-gray-700">Furniture assembly, TV mounting, and move-in setups</td>
+                        <td className="px-4 py-3 text-gray-600">Broad gig categories with mixed specialization</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" className="px-4 py-3 font-medium text-gray-900">Experience style</th>
+                        <td className="px-4 py-3 text-gray-700">Personal communication and careful workmanship</td>
+                        <td className="px-4 py-3 text-gray-600">App-based messaging with less continuity</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-7">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
+                  Ready for a clear quote without the app-hopping?
+                </h3>
+                <p className="text-gray-700 leading-relaxed mb-5">
+                  Send photos, item links, or a quick description of what you need built, and Boxed2Built will help you figure out the best option.
+                </p>
+                <a
+                  href="https://boxed2built.com/contact?utm_id=B2B&utm_source=website&utm_medium=comparison_section&utm_campaign=local_vs_marketplace&utm_term=furniture_assembly&utm_content=quote_cta"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold shadow-md hover:shadow-lg transition"
+                >
+                  Get Your Clear Quote
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <Testimonials />
 
         <ReferralProgram />
