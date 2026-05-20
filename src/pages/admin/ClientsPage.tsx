@@ -86,7 +86,7 @@ export default function ClientsPage() {
     });
   }
 
-  async function loadData() {
+  async function loadData(silent = false) {
     if (!organizationId) {
       setClients([]);
       setStats(null);
@@ -94,7 +94,7 @@ export default function ClientsPage() {
     }
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const [clientsData, statsData] = await Promise.all([
         selectedSegment === 'all'
           ? getAllClientsIncludingTest(organizationId)
@@ -171,7 +171,7 @@ export default function ClientsPage() {
         setRefreshProgress({ processed: i + batch.length, total: totalClients });
       }
 
-      await loadData();
+      await loadData(true);
 
       setRefreshMessage({
         type: failureCount > 0 ? 'error' : 'success',
