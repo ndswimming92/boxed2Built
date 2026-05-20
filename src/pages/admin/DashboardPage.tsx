@@ -26,6 +26,9 @@ import {
   Gift,
   Users,
   DollarSign,
+  Bell,
+  Phone,
+  Calendar,
 } from 'lucide-react';
 
 interface Stats {
@@ -41,6 +44,20 @@ interface Stats {
   inquiries: number;
   pendingInquiries: number;
   conversionRate: number;
+  remindersDueToday: number;
+  remindersOverdue: number;
+}
+
+interface DashboardReminder {
+  id: string;
+  scheduled_date: string;
+  reminder_type: string;
+  admin_notes: string | null;
+  job: {
+    client_name: string;
+    client_phone: string;
+    job_type: string;
+  } | null;
 }
 
 export default function DashboardPage() {
@@ -65,6 +82,8 @@ export default function DashboardPage() {
     inquiries: 0,
     pendingInquiries: 0,
     conversionRate: 0,
+    remindersDueToday: 0,
+    remindersOverdue: 0,
   });
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState('');
@@ -72,6 +91,7 @@ export default function DashboardPage() {
   const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
   const [goalStats, setGoalStats] = useState({ totalGoals: 0, completedGoals: 0, overdueGoals: 0, completionRate: 0 });
   const [upcomingGoals, setUpcomingGoals] = useState<Goal[]>([]);
+  const [pendingReminders, setPendingReminders] = useState<DashboardReminder[]>([]);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -134,7 +154,8 @@ export default function DashboardPage() {
         inquiryStats,
         recentInquiriesData,
         goalStatsData,
-        upcomingGoalsData
+        upcomingGoalsData,
+        { data: remindersData }
       ] = await Promise.all([
         supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('service_areas').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -146,12 +167,26 @@ export default function DashboardPage() {
         getInquiryStats(businessInfo.id),
         getRecentInquiries(businessInfo.id, 5),
         getGoalStats(businessInfo.id),
-        getUpcomingGoals(businessInfo.id, 3)
+        getUpcomingGoals(businessInfo.id, 3),
+        supabase.from('job_completion_reminders').select('id, scheduled_date, reminder_type, admin_notes, job:jobs!job_id(client_name, client_phone, job_type)').eq('status', 'pending').order('scheduled_date', { ascending: true })
       ]);
 
       setRecentInquiries(recentInquiriesData);
       setGoalStats(goalStatsData);
       setUpcomingGoals(upcomingGoalsData);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const reminders = (remindersData || []) as DashboardReminder[];
+      let dueToday = 0;
+      let overdue = 0;
+      for (const r of reminders) {
+        const d = new Date(r.scheduled_date);
+        d.setHours(0, 0, 0, 0);
+        if (d.getTime() === today.getTime()) dueToday++;
+        else if (d < today) overdue++;
+      }
+      setPendingReminders(reminders.slice(0, 5));
 
       const avgRating = reviewsData && reviewsData.length > 0
         ? reviewsData.reduce((sum, r) => sum + r.rating_value, 0) / reviewsData.length
@@ -176,6 +211,8 @@ export default function DashboardPage() {
         inquiries: inquiryStats.total,
         pendingInquiries: inquiryStats.pending,
         conversionRate: inquiryStats.conversionRate,
+        remindersDueToday: dueToday,
+        remindersOverdue: overdue,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -253,6 +290,15 @@ export default function DashboardPage() {
       link: '/admin/inquiries',
       color: 'bg-orange-500',
       highlight: stats.pendingInquiries > 0
+    },
+    {
+      name: 'Reminders Due',
+      value: stats.remindersDueToday + stats.remindersOverdue,
+      subtitle: stats.remindersOverdue > 0 ? `${stats.remindersOverdue} overdue` : undefined,
+      icon: Bell,
+      link: '/admin/reminders',
+      color: 'bg-rose-500',
+      highlight: (stats.remindersDueToday + stats.remindersOverdue) > 0
     },
     {
       name: 'Total Inquiries',
@@ -368,6 +414,133 @@ export default function DashboardPage() {
                 <p className="text-2xl font-bold text-white">{maskFinancialValue(`$${referralStats.creditsRedeemedAllTime.toFixed(0)}`)}</p>
                 <p className="text-xs text-blue-200 mt-1">Credits Redeemed</p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && pendingReminders.length > 0 && (
+        <div className="mt-12">
+          <div className="bg-white rounded-xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-rose-500" />
+                Follow-up Reminders
+              </h2>
+              <Link
+                to="/admin/reminders"
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+              >
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3 mb-5">
+              {stats.remindersOverdue > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-xs font-semibold text-red-800">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {stats.remindersOverdue} Overdue
+                </span>
+              )}
+              {stats.remindersDueToday > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">
+                  <Clock className="w-3.5 h-3.5" />
+                  {stats.remindersDueToday} Due Today
+                </span>
+              )}
+              {pendingReminders.length - stats.remindersOverdue - stats.remindersDueToday > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {pendingReminders.length - stats.remindersOverdue - stats.remindersDueToday} Upcoming
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {pendingReminders.map((reminder) => {
+                const scheduledDate = new Date(reminder.scheduled_date);
+                scheduledDate.setHours(0, 0, 0, 0);
+                const todayDate = new Date();
+                todayDate.setHours(0, 0, 0, 0);
+                const isOverdue = scheduledDate < todayDate;
+                const isDueToday = scheduledDate.getTime() === todayDate.getTime();
+
+                const getReminderTypeLabel = (type: string) => {
+                  switch (type) {
+                    case 'follow_up_call': return 'Follow-up Call';
+                    case 'warranty_check': return 'Warranty Check';
+                    case 'repeat_business': return 'Repeat Business';
+                    case 'custom': return 'Custom';
+                    default: return type;
+                  }
+                };
+
+                const getReminderTypeColor = (type: string) => {
+                  switch (type) {
+                    case 'follow_up_call': return 'bg-blue-100 text-blue-800 border-blue-200';
+                    case 'warranty_check': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                    case 'repeat_business': return 'bg-teal-100 text-teal-800 border-teal-200';
+                    case 'custom': return 'bg-slate-100 text-slate-800 border-slate-200';
+                    default: return 'bg-slate-100 text-slate-800 border-slate-200';
+                  }
+                };
+
+                return (
+                  <Link
+                    key={reminder.id}
+                    to="/admin/reminders"
+                    className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
+                      isOverdue
+                        ? 'bg-red-50 border-red-200'
+                        : isDueToday
+                        ? 'bg-amber-50 border-amber-200'
+                        : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {isOverdue && (
+                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-600 text-white">
+                              OVERDUE
+                            </span>
+                          )}
+                          {isDueToday && !isOverdue && (
+                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-600 text-white">
+                              TODAY
+                            </span>
+                          )}
+                          <p className="font-semibold text-slate-900 truncate">
+                            {reminder.job?.client_name || 'Unknown Client'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600 mb-1">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {scheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          {reminder.job?.client_phone && (
+                            <>
+                              <span className="text-slate-400">|</span>
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                {reminder.job.client_phone}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        {reminder.admin_notes && (
+                          <p className="text-xs text-slate-500 truncate">{reminder.admin_notes}</p>
+                        )}
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getReminderTypeColor(reminder.reminder_type)}`}>
+                        {getReminderTypeLabel(reminder.reminder_type)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
