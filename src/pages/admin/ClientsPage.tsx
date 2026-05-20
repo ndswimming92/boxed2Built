@@ -78,7 +78,10 @@ export default function ClientsPage() {
       return {
         ...client,
         total_revenue: liveMetrics.revenue,
-        job_count: liveMetrics.completedJobs
+        job_count: liveMetrics.completedJobs,
+        average_job_value: liveMetrics.completedJobs > 0
+          ? liveMetrics.revenue / liveMetrics.completedJobs
+          : 0,
       };
     });
   }

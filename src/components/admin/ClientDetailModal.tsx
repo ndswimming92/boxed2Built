@@ -979,7 +979,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Avg Job Value</p>
             </div>
-            <p className="text-2xl font-bold text-cyan-900">{formatCurrency(currentClient.average_job_value)}</p>
+            <p className="text-2xl font-bold text-cyan-900">{formatCurrency(currentClient.job_count > 0 ? currentClient.total_revenue / currentClient.job_count : 0)}</p>
           </div>
         </div>
 
