@@ -76,7 +76,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const canProceed = () => {
     switch (currentStep) {
       case 'review':
-        return finalPrice && parseFloat(finalPrice) > 0;
+        return finalPrice !== '' && parseFloat(finalPrice) >= 0;
       case 'checklist':
         return checklist.filter(item => item.required).every(item => item.checked);
       case 'satisfaction':
