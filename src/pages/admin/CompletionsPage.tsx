@@ -359,22 +359,22 @@ export default function CompletionsPage() {
                 className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedCompletion(completion)}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-slate-900">{completion.customer_name}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-slate-900">{completion.customer_name}</h3>
                       {completion.is_customer_satisfied ? (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+                        <span className="px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold rounded-full border bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
                           <Star className="w-3 h-3" />
                           Satisfied
                         </span>
                       ) : (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-yellow-100 text-yellow-800 border-yellow-200">
+                        <span className="px-2 py-0.5 sm:px-3 sm:py-1 text-xs font-semibold rounded-full border bg-yellow-100 text-yellow-800 border-yellow-200">
                           Needs Follow-up
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-slate-600">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {formatDate(completion.completed_at)}
@@ -384,8 +384,8 @@ export default function CompletionsPage() {
                       )}
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
+                  <button className="self-start px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     View Details
                   </button>
                 </div>
