@@ -144,9 +144,9 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
+    <div className="fixed inset-0 bg-slate-900/50 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-3xl w-full max-h-dvh sm:max-h-[90vh] flex flex-col">
+        <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">
             {expense ? 'Edit Expense' : 'Add New Expense'}
           </h2>
@@ -189,7 +189,8 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -405,7 +406,8 @@ export default function ExpenseFormModal({ isOpen, onClose, onSave, expense, bus
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-slate-200">
+          </div>
+          <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button
               type="button"
               onClick={onClose}

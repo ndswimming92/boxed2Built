@@ -96,14 +96,14 @@ const Modal: React.FC<ModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4"
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black bg-opacity-50"
       onClick={handleBackdropClick}
       role="presentation"
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-[90vh] shadow-2xl"
+        className="bg-white rounded-t-lg sm:rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-dvh sm:max-h-[90vh] shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}

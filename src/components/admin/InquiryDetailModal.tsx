@@ -112,8 +112,8 @@ export default function InquiryDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full flex flex-col max-h-dvh sm:max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">{inquiry.client_name}</h2>
