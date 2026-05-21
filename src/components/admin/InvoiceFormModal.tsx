@@ -440,9 +440,9 @@ export default function InvoiceFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-6xl w-full my-8">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-white rounded-t-xl sm:rounded-xl max-w-6xl w-full flex flex-col max-h-dvh sm:max-h-[90vh] sm:my-8">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
               {invoice ? 'Edit Invoice' : 'Create Invoice'}
@@ -457,6 +457,7 @@ export default function InvoiceFormModal({
           </button>
         </div>
 
+        <div className="flex-1 overflow-y-auto">
         {message && (
           <div
             className={`mx-6 mt-6 p-4 rounded-lg flex items-start gap-3 ${
@@ -476,7 +477,7 @@ export default function InvoiceFormModal({
           </div>
         )}
 
-        <div className="p-6 space-y-6 max-h-[calc(100vh-250px)] overflow-y-auto">
+        <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Invoice Details</h3>
@@ -893,8 +894,9 @@ export default function InvoiceFormModal({
             </div>
           </div>
         </div>
+        </div>
 
-        <div className="flex flex-col gap-3 p-4 sm:p-6 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 p-4 sm:p-6 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between flex-shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           {invoice && (
             <button
               type="button"
