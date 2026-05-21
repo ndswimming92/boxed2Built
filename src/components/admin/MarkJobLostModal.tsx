@@ -144,7 +144,6 @@ export default function MarkJobLostModal({ job, isOpen, onClose, onSuccess }: Ma
               </div>
             </div>
 
-            </div>
             <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
               <button
                 type="button"
