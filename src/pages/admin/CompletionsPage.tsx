@@ -252,7 +252,7 @@ export default function CompletionsPage() {
   const modalCompletion = selectedCompletionDetail ?? selectedCompletion;
 
   return (
-    <div className="max-w-7xl">
+    <div className="max-w-7xl min-w-0 overflow-hidden">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Job Completions</h1>
         <p className="text-sm sm:text-base text-slate-600">View all completed jobs with customer signatures</p>
@@ -297,42 +297,42 @@ export default function CompletionsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+      <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-white rounded-xl p-2.5 sm:p-6 border border-slate-200 overflow-hidden min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 mb-2">
+            <div className="p-1 sm:p-2 bg-emerald-100 rounded-lg shrink-0">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <p className="text-xs sm:text-sm font-medium text-slate-600">Completions</p>
+            <p className="text-[10px] sm:text-sm font-medium text-slate-600 truncate">Completions</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900">{totalCount}</p>
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">{totalCount}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
+        <div className="bg-white rounded-xl p-2.5 sm:p-6 border border-slate-200 overflow-hidden min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 mb-2">
+            <div className="p-1 sm:p-2 bg-green-100 rounded-lg shrink-0">
               <Star className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
-            <p className="text-xs sm:text-sm font-medium text-slate-600">Satisfied</p>
+            <p className="text-[10px] sm:text-sm font-medium text-slate-600 truncate">Satisfied</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900">
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">
             {completions.filter(c => c.is_customer_satisfied).length}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
             {completions.length > 0
               ? `${Math.round((completions.filter(c => c.is_customer_satisfied).length / completions.length) * 100)}%`
               : '0%'}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-3 sm:p-6 border border-slate-200">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
+        <div className="bg-white rounded-xl p-2.5 sm:p-6 border border-slate-200 overflow-hidden min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 mb-2">
+            <div className="p-1 sm:p-2 bg-blue-100 rounded-lg shrink-0">
               <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <p className="text-xs sm:text-sm font-medium text-slate-600">Total Value</p>
+            <p className="text-[10px] sm:text-sm font-medium text-slate-600 truncate">Total Value</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900">
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">
             ${completions.reduce((sum, c) => sum + (c.final_price || 0), 0).toLocaleString()}
           </p>
         </div>
