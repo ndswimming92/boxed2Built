@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -509,6 +509,12 @@ export default function JobsPage() {
                           {job.lost_reason_category}
                         </span>
                       )}
+                      {job.is_free && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200 flex items-center gap-1">
+                          <Gift className="w-3 h-3" />
+                          Free
+                        </span>
+                      )}
                       {job.repeat_client && (
                         <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-indigo-100 text-indigo-800 border-indigo-200">
                           Repeat Client
@@ -624,34 +630,44 @@ export default function JobsPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
-                    <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
+                {job.is_free ? (
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                    <Gift className="w-5 h-5 text-cyan-600" />
+                    <p className="text-sm font-medium text-cyan-800">Free Job -- no financial tracking</p>
+                    {job.hours_worked && job.hours_worked > 0 && (
+                      <span className="ml-auto text-sm text-slate-600">{formatHours(job.hours_worked)} hrs worked</span>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Materials Cost</p>
-                    <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Net Profit</p>
-                    <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
-                    <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
-                  </div>
-                  {(job.total_mileage ?? 0) > 0 && (
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
                     <div>
-                      <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
-                        <Navigation className="w-3 h-3" />
-                        Mileage Deduction
-                      </p>
-                      <p className="text-lg font-bold text-blue-600">{maskFinancialValue(formatCurrency(job.mileage_deduction))}</p>
-                      <p className="text-xs text-slate-500">{job.total_mileage?.toFixed(1)} mi</p>
+                      <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
+                      <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 mb-1">Materials Cost</p>
+                      <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 mb-1">Net Profit</p>
+                      <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
+                      <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
+                    </div>
+                    {(job.total_mileage ?? 0) > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
+                          <Navigation className="w-3 h-3" />
+                          Mileage Deduction
+                        </p>
+                        <p className="text-lg font-bold text-blue-600">{maskFinancialValue(formatCurrency(job.mileage_deduction))}</p>
+                        <p className="text-xs text-slate-500">{job.total_mileage?.toFixed(1)} mi</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {job.job_description && (
                   <div className="mt-4 pt-4 border-t border-slate-200">

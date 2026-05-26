@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase, Job, ServiceArea, PaymentMethod } from '../../lib/supabase';
-import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon } from 'lucide-react';
+import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon, Gift } from 'lucide-react';
 import { REFERRAL_SOURCES, calculateNetProfit, calculateHourlyRate, formatCurrency } from '../../utils/jobCalculations';
 
 interface JobFormModalProps {
@@ -43,6 +43,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     referral_source: '',
     notes: '',
     job_status: 'quoted',
+    is_free: false,
   });
 
   useEffect(() => {
@@ -194,8 +195,9 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     ? [currentJobType, ...jobTypeOptions]
     : jobTypeOptions;
 
-  const netProfit = calculateNetProfit(formData.final_price, formData.materials_cost);
-  const hourlyRate = calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
+  const isFree = formData.is_free === true;
+  const netProfit = isFree ? 0 : calculateNetProfit(formData.final_price, formData.materials_cost);
+  const hourlyRate = isFree ? 0 : calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
   const requiresHoursWorked = formData.job_status === 'completed' || Boolean(formData.date_completed);
 
   const updateNotes = (nextValue: string) => {
@@ -419,13 +421,43 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-slate-700">Status</label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isFree}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        if (checked) {
+                          setFormData({
+                            ...formData,
+                            is_free: true,
+                            quoted_price: null,
+                            final_price: null,
+                            materials_cost: null,
+                            payment_method: '',
+                            payment_date: null,
+                            job_status: formData.job_status === 'quoted' ? 'accepted' : formData.job_status,
+                          });
+                        } else {
+                          setFormData({ ...formData, is_free: false });
+                        }
+                      }}
+                      className="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                    />
+                    <span className="text-sm font-medium text-cyan-700 flex items-center gap-1">
+                      <Gift className="w-3.5 h-3.5" />
+                      Free Job
+                    </span>
+                  </label>
+                </div>
                 <select name="job_status"
                   value={formData.job_status || 'quoted'}
                   onChange={(e) => setFormData({ ...formData, job_status: e.target.value as any })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
-                  <option value="quoted">Quoted</option>
+                  {!isFree && <option value="quoted">Quoted</option>}
                   <option value="accepted">Accepted</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="in_progress">In Progress</option>
@@ -504,67 +536,78 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Quoted Price</label>
+                <label className={`block text-sm font-medium mb-2 ${isFree ? 'text-slate-400' : 'text-slate-700'}`}>Quoted Price</label>
                 <input name="quoted_price"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.quoted_price || ''}
+                  value={isFree ? '' : (formData.quoted_price || '')}
                   onChange={(e) => setFormData({ ...formData, quoted_price: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isFree}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${isFree ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Final Price</label>
+                <label className={`block text-sm font-medium mb-2 ${isFree ? 'text-slate-400' : 'text-slate-700'}`}>Final Price</label>
                 <input name="final_price"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.final_price || ''}
+                  value={isFree ? '' : (formData.final_price || '')}
                   onChange={(e) => setFormData({ ...formData, final_price: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isFree}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${isFree ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Materials/Extras Cost</label>
+                <label className={`block text-sm font-medium mb-2 ${isFree ? 'text-slate-400' : 'text-slate-700'}`}>Materials/Extras Cost</label>
                 <input name="materials_cost"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.materials_cost || ''}
+                  value={isFree ? '' : (formData.materials_cost || '')}
                   onChange={(e) => setFormData({ ...formData, materials_cost: parseFloat(e.target.value) || null })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isFree}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${isFree ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                 />
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
-                  <p className="text-sm font-medium text-emerald-900">Net Profit</p>
-                </div>
-                <p className="text-2xl font-bold text-emerald-700">{formatCurrency(netProfit)}</p>
+            {isFree ? (
+              <div className="mt-4 bg-cyan-50 border border-cyan-200 rounded-lg p-4 flex items-center gap-3">
+                <Gift className="w-5 h-5 text-cyan-600" />
+                <p className="text-sm font-medium text-cyan-800">Free Job -- no financial tracking. Hours worked will still be recorded.</p>
               </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                  <p className="text-sm font-medium text-purple-900">Hourly Rate</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                    <p className="text-sm font-medium text-emerald-900">Net Profit</p>
+                  </div>
+                  <p className="text-2xl font-bold text-emerald-700">{formatCurrency(netProfit)}</p>
                 </div>
-                <p className="text-2xl font-bold text-purple-700">{formatCurrency(hourlyRate)}/hr</p>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+                    <p className="text-sm font-medium text-emerald-900">Hourly Rate</p>
+                  </div>
+                  <p className="text-2xl font-bold text-emerald-700">{formatCurrency(hourlyRate)}/hr</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment & Follow-up</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Payment Method</label>
+                <label className={`block text-sm font-medium mb-2 ${isFree ? 'text-slate-400' : 'text-slate-700'}`}>Payment Method</label>
                 <select name="payment_method"
-                  value={formData.payment_method || ''}
+                  value={isFree ? '' : (formData.payment_method || '')}
                   onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isFree}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${isFree ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                 >
                   <option value="">Select payment method</option>
                   {paymentMethods.map((method) => (
@@ -575,12 +618,13 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Payment Date</label>
+                <label className={`block text-sm font-medium mb-2 ${isFree ? 'text-slate-400' : 'text-slate-700'}`}>Payment Date</label>
                 <input name="payment_date"
                   type="date"
-                  value={formData.payment_date || ''}
+                  value={isFree ? '' : (formData.payment_date || '')}
                   onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  disabled={isFree}
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${isFree ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed' : 'border-slate-300'}`}
                 />
               </div>
             </div>

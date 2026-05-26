@@ -238,6 +238,7 @@ export type Job = {
   lost_reason_notes: string | null;
   status_changed_at: string | null;
   status_changed_by: string | null;
+  is_free: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
