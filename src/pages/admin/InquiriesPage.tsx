@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image } from 'lucide-react';
+import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2 } from 'lucide-react';
 import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
@@ -226,6 +226,7 @@ export default function InquiriesPage() {
       quoted_price: inquiry.estimated_price ? parseFloat(inquiry.estimated_price.replace(/[^0-9.]/g, '')) : undefined,
       referral_source: inquiry.source || 'contact_form',
       notes: inquiry.notes || undefined,
+      client_type: inquiry.client_type || 'residential',
     };
 
     setJobFormData(initialData);
@@ -549,6 +550,12 @@ export default function InquiriesPage() {
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
                       {getStatusLabel(inquiry.status)}
                     </span>
+                    {inquiry.client_type === 'business' && (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-800 border border-sky-200 flex items-center gap-1">
+                        <Building2 className="w-3 h-3" />
+                        Business
+                      </span>
+                    )}
                     {inquiry.source === 'footer_quick_contact' && (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
                         Quick Contact

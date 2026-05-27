@@ -40,6 +40,7 @@ interface ContactFormPayload {
   furnitureImagePath?: string;
   referralCodeUsed?: string;
   referrerName?: string;
+  clientType?: string;
 }
 
 interface QuickContactPayload {
@@ -140,6 +141,10 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Service ZIP</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeCity}</span></td>
           </tr>` : ""}
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Client Type</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;font-weight:600;${p.clientType === 'business' ? 'color:#0369a1;' : ''}">${p.clientType === 'business' ? '🏢 Business' : '🏠 Residential'}</span></td>
+          </tr>
           <tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Furniture Type</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeFurnitureType}</span></td>

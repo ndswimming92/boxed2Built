@@ -23,6 +23,7 @@ export interface CreateInquiryData {
   source?: string;
   furniture_photo_url?: string;
   furniture_image_path?: string;
+  client_type?: 'residential' | 'business';
   is_test?: boolean;
 }
 
@@ -78,6 +79,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     is_test: data.is_test ?? false,
     furniture_photo_url: data.furniture_photo_url || null,
     furniture_image_path: data.furniture_image_path || null,
+    client_type: data.client_type || 'residential',
   };
 
   const { error } = await supabase

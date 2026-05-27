@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift, Home, Building2 } from 'lucide-react';
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
@@ -165,6 +165,7 @@ const validationRules: Record<string, ValidationRule> = {
 };
 
 const ContactForm: React.FC = () => {
+  const [clientType, setClientType] = useState<'residential' | 'business'>('residential');
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [showFurnitureReference, setShowFurnitureReference] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
@@ -443,6 +444,7 @@ const ContactForm: React.FC = () => {
         gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
+        client_type: clientType,
         is_test: isTest,
       });
 
@@ -517,6 +519,7 @@ const ContactForm: React.FC = () => {
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
           referralCodeUsed: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
+          clientType,
         }),
       }).then(async (res) => {
         const data = await res.json().catch(() => ({}));
@@ -811,7 +814,37 @@ const ContactForm: React.FC = () => {
               <span className="w-5 h-5 bg-green-700 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
               Project Details
             </h4>
-            
+
+            {/* Residential / Business Toggle */}
+            <div className="mb-4 flex justify-center">
+              <div className="relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r from-emerald-400 to-teal-400">
+                <button
+                  type="button"
+                  onClick={() => setClientType('residential')}
+                  className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    clientType === 'residential'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'bg-transparent text-white'
+                  }`}
+                >
+                  <Home className="w-4 h-4" />
+                  Residential
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClientType('business')}
+                  className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    clientType === 'business'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'bg-transparent text-white'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4" />
+                  Business
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Furniture Type */}
               <FormField

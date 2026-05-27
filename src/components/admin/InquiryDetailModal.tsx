@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link } from 'lucide-react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Home, Building2 } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry } from '../../services/inquiryService';
@@ -133,6 +133,12 @@ export default function InquiryDetailModal({
               {inquiry.status.replace('_', ' ').toUpperCase()}
             </span>
             {!inquiry.viewed && <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">NEW</span>}
+            {inquiry.client_type === 'business' && (
+              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-800 border border-sky-200 flex items-center gap-1">
+                <Building2 className="w-3 h-3" />
+                Business
+              </span>
+            )}
             {inquiry.source === 'footer_quick_contact' && (
               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
                 Quick Contact

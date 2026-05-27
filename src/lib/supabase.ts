@@ -239,6 +239,7 @@ export type Job = {
   status_changed_at: string | null;
   status_changed_by: string | null;
   is_free: boolean;
+  client_type: 'residential' | 'business' | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -275,6 +276,7 @@ export type FormInquiry = {
   confirmation_code?: string | null;
   furniture_photo_url: string | null;
   furniture_image_path: string | null;
+  client_type: 'residential' | 'business' | null;
   is_test: boolean;
   is_active: boolean;
   created_at: string;

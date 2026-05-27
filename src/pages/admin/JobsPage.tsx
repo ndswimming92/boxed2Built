@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift, Building2 } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -513,6 +513,12 @@ export default function JobsPage() {
                         <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200 flex items-center gap-1">
                           <Gift className="w-3 h-3" />
                           Free
+                        </span>
+                      )}
+                      {job.client_type === 'business' && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-sky-100 text-sky-800 border-sky-200 flex items-center gap-1">
+                          <Building2 className="w-3 h-3" />
+                          Business
                         </span>
                       )}
                       {job.repeat_client && (
