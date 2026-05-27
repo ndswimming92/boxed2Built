@@ -817,29 +817,29 @@ const ContactForm: React.FC = () => {
 
             {/* Residential / Business Toggle */}
             <div className="mb-4 flex justify-center">
-              <div className="relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r from-emerald-400 to-teal-400">
+              <div className="relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r from-emerald-400 to-teal-400 max-w-full">
                 <button
                   type="button"
                   onClick={() => setClientType('residential')}
-                  className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  className={`relative z-10 flex items-center gap-1.5 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
                     clientType === 'residential'
                       ? 'bg-white text-slate-900 shadow-sm'
                       : 'bg-transparent text-white'
                   }`}
                 >
-                  <Home className="w-4 h-4" />
+                  <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   Residential
                 </button>
                 <button
                   type="button"
                   onClick={() => setClientType('business')}
-                  className={`relative z-10 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  className={`relative z-10 flex items-center gap-1.5 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
                     clientType === 'business'
                       ? 'bg-white text-slate-900 shadow-sm'
                       : 'bg-transparent text-white'
                   }`}
                 >
-                  <Building2 className="w-4 h-4" />
+                  <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   Business
                 </button>
               </div>
