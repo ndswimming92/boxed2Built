@@ -6,6 +6,10 @@ publish = "dist"
 NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
 
+# Prerender.io Extension intercepts crawler requests (Googlebot, Bingbot, etc.)
+# at the CDN edge and serves pre-rendered HTML before the SPA fallback applies.
+# Token is configured in the Netlify Extension settings panel.
+
 [[redirects]]
 from = "http://*"
 to = "https://:splat"
