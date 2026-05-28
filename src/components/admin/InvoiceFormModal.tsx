@@ -688,15 +688,16 @@ export default function InvoiceFormModal({
                       />
                     </div>
                     <div className="col-span-2">
-                      <input name="quantity"
-                        type="number"
+                      <select
+                        name="quantity"
                         value={item.quantity}
-                        onChange={(e) => updateLineItemField(index, 'quantity', parseFloat(e.target.value) || 0)}
-                        placeholder="1"
-                        min="0"
-                        step="0.01"
+                        onChange={(e) => updateLineItemField(index, 'quantity', parseInt(e.target.value))}
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-                      />
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-span-2">
                       <div className="relative">
