@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLoaderData } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Trash2, Star, Home, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
@@ -10,24 +10,14 @@ import Footer from '../../components/layout/Footer';
 import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
-import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
-import { usePageMeta } from '../../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
 
 const FurnitureAssemblyPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.furnitureAssembly.title,
-    description: LOCAL_SEO_CONTENT.furnitureAssembly.description,
-    canonicalUrl: 'https://boxed2built.com/services/furniture-assembly',
-    ogTitle: 'Furniture Assembly Service in Spring Hill, TN',
-    ogDescription: 'Book professional furniture assembly with Boxed2Built for IKEA, Target, Walmart, and more in Spring Hill, TN.',
-    twitterTitle: 'Furniture Assembly | Boxed2Built',
-    twitterDescription: 'Professional furniture assembly service in Spring Hill, TN from Boxed2Built.',
-  });
 
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
   const servicesAndPricing = FAQ_CONTENT.find(cat => cat.category === "Services & Pricing")?.questions || [];
@@ -51,6 +41,11 @@ const FurnitureAssemblyPage: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.furnitureAssembly.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.furnitureAssembly.description} />
+        <link rel="canonical" href="https://boxed2built.com/services/furniture-assembly" />
+      </Head>
       <EnhancedLocalBusinessSchema businessData={businessData} />
       <FAQSchema faqs={furnitureAssemblyFAQs} />
       <BreadcrumbSchema items={[

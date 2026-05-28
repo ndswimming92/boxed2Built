@@ -1,5 +1,7 @@
 import React from 'react';
 import { Gift, ArrowRight } from 'lucide-react';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
@@ -13,25 +15,14 @@ import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
 import HoursGivenBackCounter from '../components/sections/HoursGivenBackCounter';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { CompleteBusinessData } from '../lib/supabase';
 import {
   LOCAL_SEO_CONTENT,
   FAQ_CONTENT
 } from '../constants/localSEO';
 
 const HomePage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.homepage.title,
-    description: LOCAL_SEO_CONTENT.homepage.description,
-    canonicalUrl: 'https://boxed2built.com/',
-    ogTitle: 'Spring Hill Furniture Assembly | Boxed2Built',
-    ogDescription: 'Fast, reliable furniture assembly in Spring Hill, TN for IKEA, Target, Walmart, and more. Get a free quote from Boxed2Built.',
-    twitterTitle: 'Spring Hill Furniture Assembly | Boxed2Built',
-    twitterDescription: 'Need furniture assembled in Spring Hill, TN? Boxed2Built provides professional setup and cleanup for every build.',
-  });
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
   // Get high-value FAQ questions from Common Questions category plus a few popular ones
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
@@ -46,24 +37,17 @@ const HomePage: React.FC = () => {
     }
   ];
 
-  if (loading || !businessData) {
-    return (
-      <>
-        <Header />
-        <main className="pt-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.homepage.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.homepage.description} />
+        <link rel="canonical" href="https://boxed2built.com/" />
+        <meta property="og:title" content="Spring Hill Furniture Assembly | Boxed2Built" />
+        <meta property="og:description" content="Fast, reliable furniture assembly in Spring Hill, TN for IKEA, Target, Walmart, and more. Get a free quote from Boxed2Built." />
+        <meta name="twitter:title" content="Spring Hill Furniture Assembly | Boxed2Built" />
+        <meta name="twitter:description" content="Need furniture assembled in Spring Hill, TN? Boxed2Built provides professional setup and cleanup for every build." />
+      </Head>
       <EnhancedLocalBusinessSchema
         businessData={businessData}
         includeReviews={true}

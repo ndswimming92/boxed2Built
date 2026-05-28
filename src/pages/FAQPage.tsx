@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -8,27 +8,18 @@ import { ArrowRight, Phone, Mail } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT, getFaqContentWithPhone } from '../constants/localSEO';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 
 const FAQPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
   const phone = formatPhoneForSchema(businessData?.info?.phone);
   const phoneDisplay = formatPhoneForDisplay(phone);
   const faqContent = getFaqContentWithPhone({ phone, phoneDisplay });
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.faq.title,
-    description: LOCAL_SEO_CONTENT.faq.description,
-    canonicalUrl: 'https://boxed2built.com/faq',
-    ogTitle: 'Furniture Assembly FAQ | Boxed2Built',
-    ogDescription: 'Read answers about pricing, timelines, service areas, and what to expect from Boxed2Built furniture assembly.',
-    twitterTitle: 'Boxed2Built FAQ',
-    twitterDescription: 'Get quick answers to common furniture assembly questions from Boxed2Built in Spring Hill, TN.',
-  });
   const [openItem, setOpenItem] = useState<string | null>(null);
 
 
@@ -58,23 +49,13 @@ const FAQPage: React.FC = () => {
     }))
   );
 
-  if (loading || !businessData) {
-    return (
-      <>
-        <Header />
-        <main className="pt-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.faq.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.faq.description} />
+        <link rel="canonical" href="https://boxed2built.com/faq" />
+      </Head>
       <EnhancedLocalBusinessSchema
         businessData={businessData}
         includeReviews={false}

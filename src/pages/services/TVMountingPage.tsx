@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLoaderData } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Wrench, Star, Home, ArrowRight, Monitor, Zap } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
@@ -10,9 +10,9 @@ import Footer from '../../components/layout/Footer';
 import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
-import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
-import { usePageMeta } from '../../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
 
 const TV_MOUNTING_SERVICES = [
@@ -39,18 +39,8 @@ const TV_MOUNTING_SERVICES = [
 ];
 
 const TVMountingPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.tvMounting.title,
-    description: LOCAL_SEO_CONTENT.tvMounting.description,
-    canonicalUrl: 'https://boxed2built.com/services/tv-mounting',
-    ogTitle: 'TV Mounting Service in Spring Hill, TN',
-    ogDescription: 'Secure, professional TV mounting with cable management from Boxed2Built in Spring Hill, TN.',
-    twitterTitle: 'TV Mounting | Boxed2Built',
-    twitterDescription: 'Book expert TV mounting in Spring Hill, TN with Boxed2Built.',
-  });
 
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
   const servicesAndPricing = FAQ_CONTENT.find(cat => cat.category === "Services & Pricing")?.questions || [];
@@ -86,6 +76,11 @@ const TVMountingPage: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.tvMounting.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.tvMounting.description} />
+        <link rel="canonical" href="https://boxed2built.com/services/tv-mounting" />
+      </Head>
       <EnhancedLocalBusinessSchema businessData={businessData} />
       <FAQSchema faqs={tvMountingFAQs} />
       <BreadcrumbSchema items={[

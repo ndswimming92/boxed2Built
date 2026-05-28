@@ -7,8 +7,9 @@ import ContactForm from '../components/ContactForm';
 import { ChevronRight, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 import {
   BUSINESS_INFO,
@@ -21,22 +22,12 @@ import {
 } from '../constants/localSEO';
 
 const ContactPage: React.FC = () => {
-  const { data: businessData, loading: businessLoading } = useBusinessDataWithFallback();
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
   const phoneRaw = businessData?.info?.phone;
   const phoneMachine = formatPhoneForSchema(phoneRaw);
   const phoneDisplay = formatPhoneForDisplay(phoneMachine);
   const localSeoContent = getLocalSeoContentWithPhone({ phone: phoneMachine, phoneDisplay });
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.contact.title,
-    description: localSeoContent.contact.description,
-    canonicalUrl: 'https://boxed2built.com/contact',
-    ogTitle: 'Contact Boxed2Built | Free Furniture Assembly Quote',
-    ogDescription: 'Contact Boxed2Built to schedule furniture assembly in Spring Hill, TN. Call, email, or submit a quick quote request.',
-    twitterTitle: 'Contact Boxed2Built',
-    twitterDescription: 'Ready to book furniture assembly in Spring Hill, TN? Reach Boxed2Built today for a free quote.',
-  });
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'contact_page_info', {
@@ -80,6 +71,11 @@ const ContactPage: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.contact.title}</title>
+        <meta name="description" content={localSeoContent.contact.description} />
+        <link rel="canonical" href="https://boxed2built.com/contact" />
+      </Head>
       {businessData && (
         <EnhancedLocalBusinessSchema
           businessData={businessData}
@@ -178,38 +174,32 @@ const ContactPage: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-base font-semibold text-gray-900 mb-1">Hours</h3>
-                        {businessLoading ? (
-                          <p className="text-gray-700">Loading hours...</p>
+                        {businessData?.businessHours && businessData.businessHours.length > 0 ? (
+                          <>
+                            {businessData.businessHours.map((hours) => {
+                              const formatTime = (time: string | null) => {
+                                if (!time) return '';
+                                const [hour, minute] = time.split(':');
+                                const hourNum = parseInt(hour);
+                                const ampm = hourNum >= 12 ? 'PM' : 'AM';
+                                const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
+                                return `${displayHour}:${minute} ${ampm}`;
+                              };
+
+                              return (
+                                <p key={hours.id} className="text-gray-700">
+                                  {hours.day_of_week}: {hours.is_closed ? 'Closed' : `${formatTime(hours.opens)} - ${formatTime(hours.closes)}`}
+                                </p>
+                              );
+                            })}
+                          </>
                         ) : (
                           <>
-                            {businessData?.businessHours && businessData.businessHours.length > 0 ? (
-                              <>
-                                {businessData.businessHours.map((hours) => {
-                                  const formatTime = (time: string | null) => {
-                                    if (!time) return '';
-                                    const [hour, minute] = time.split(':');
-                                    const hourNum = parseInt(hour);
-                                    const ampm = hourNum >= 12 ? 'PM' : 'AM';
-                                    const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
-                                    return `${displayHour}:${minute} ${ampm}`;
-                                  };
-
-                                  return (
-                                    <p key={hours.id} className="text-gray-700">
-                                      {hours.day_of_week}: {hours.is_closed ? 'Closed' : `${formatTime(hours.opens)} - ${formatTime(hours.closes)}`}
-                                    </p>
-                                  );
-                                })}
-                              </>
-                            ) : (
-                              <>
-                                <p className="text-gray-700">Saturday: 9:00 AM - 4:00 PM</p>
-                                <p className="text-gray-700">Sunday: 1:30 PM - 4:00 PM</p>
-                              </>
-                            )}
-                            <p className="text-gray-700 text-sm mt-1">Flexible scheduling available</p>
+                            <p className="text-gray-700">Saturday: 9:00 AM - 4:00 PM</p>
+                            <p className="text-gray-700">Sunday: 1:30 PM - 4:00 PM</p>
                           </>
                         )}
+                        <p className="text-gray-700 text-sm mt-1">Flexible scheduling available</p>
                       </div>
                     </div>
                   </div>

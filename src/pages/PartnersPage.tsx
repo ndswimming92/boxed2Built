@@ -16,32 +16,15 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { formatPhoneForDisplay } from '../services/communicationService';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PartnersPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.partners.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        LOCAL_SEO_CONTENT.partners.description
-      );
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/partners');
-  }, []);
 
   useEffect(() => {
     const schema = {
@@ -102,23 +85,13 @@ const PartnersPage: React.FC = () => {
     await generateRealtorFlyerPDF(businessData);
   };
 
-  if (loading || !businessData) {
-    return (
-      <>
-        <Header />
-        <main className="pt-20 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.partners.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.partners.description} />
+        <link rel="canonical" href="https://boxed2built.com/partners" />
+      </Head>
       <Header />
 
       <noscript>

@@ -9,22 +9,13 @@ import HomeFAQ from '../components/sections/HomeFAQ';
 import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
 import { trackEvent } from '../utils/analytics';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
 
 const ServicesPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.services.title,
-    description: LOCAL_SEO_CONTENT.services.description,
-    canonicalUrl: 'https://boxed2built.com/services',
-    ogTitle: 'Furniture Assembly Services | Boxed2Built',
-    ogDescription: 'Browse Boxed2Built services for furniture assembly and setup in Spring Hill, TN and surrounding communities.',
-    twitterTitle: 'Boxed2Built Services',
-    twitterDescription: 'Explore furniture assembly services from Boxed2Built in Spring Hill, TN.',
-  });
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
   // Get high-value FAQ questions for services page
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
@@ -55,23 +46,13 @@ const ServicesPage: React.FC = () => {
       'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Services%20Page&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Services%20Page';
   };
 
-  if (loading || !businessData) {
-    return (
-      <>
-        <Header />
-        <main className="pt-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.services.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.services.description} />
+        <link rel="canonical" href="https://boxed2built.com/services" />
+      </Head>
       <EnhancedLocalBusinessSchema businessData={businessData} includeReviews={false} pageType="services" />
       <FAQSchema faqs={servicesFAQs} />
       <Header />

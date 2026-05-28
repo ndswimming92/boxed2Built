@@ -14,4 +14,19 @@ export default defineConfig({
     exclude: ['lucide-react'],
     include: ['recharts'],
   },
+  ssgOptions: {
+    dirStyle: 'nested',
+    script: 'async',
+    mock: true,
+    includedRoutes(paths) {
+      return paths.filter(path => {
+        if (path.startsWith('/admin')) return false;
+        if (path.startsWith('/portal')) return false;
+        if (path.startsWith('/go/')) return false;
+        if (path.startsWith('/pay/')) return false;
+        if (path.includes(':')) return false;
+        return true;
+      });
+    },
+  },
 });

@@ -6,42 +6,23 @@ import Footer from '../components/layout/Footer';
 import { CheckCircle, Users, Clock, Award, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
-import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
-import { usePageMeta } from '../hooks/usePageMeta';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const AboutPage: React.FC = () => {
-  const { data: businessData, loading } = useBusinessDataWithFallback();
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.about.title,
-    description: LOCAL_SEO_CONTENT.about.description,
-    canonicalUrl: 'https://boxed2built.com/about',
-    ogTitle: 'About Boxed2Built | Spring Hill Furniture Assembly',
-    ogDescription: 'Meet the team behind Boxed2Built and learn why families in Spring Hill trust us for dependable furniture assembly.',
-    twitterTitle: 'About Boxed2Built',
-    twitterDescription: 'Learn more about Boxed2Built, a local furniture assembly company serving Spring Hill and nearby communities.',
-  });
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
 
-
-  if (loading || !businessData) {
-    return (
-      <>
-        <Header />
-        <main className="pt-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.about.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.about.description} />
+        <link rel="canonical" href="https://boxed2built.com/about" />
+      </Head>
       <EnhancedLocalBusinessSchema
         businessData={businessData}
         includeReviews={false}

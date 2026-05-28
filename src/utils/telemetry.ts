@@ -1,7 +1,10 @@
 const SESSION_CORRELATION_KEY = 'boxed2built.session.correlation_id';
 
+const isBrowser = typeof window !== 'undefined';
+
 const safeStorage = {
   getItem(key: string): string | null {
+    if (!isBrowser) return null;
     try {
       return window.sessionStorage.getItem(key);
     } catch {
@@ -9,6 +12,7 @@ const safeStorage = {
     }
   },
   setItem(key: string, value: string) {
+    if (!isBrowser) return;
     try {
       window.sessionStorage.setItem(key, value);
     } catch {

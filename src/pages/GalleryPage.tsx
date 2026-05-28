@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -6,61 +6,25 @@ import MediaGallery from '../components/sections/MediaGallery';
 import { Camera, Video, CheckCircle, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
-import { usePageMeta } from '../hooks/usePageMeta';
-import { supabase } from '../lib/supabase';
+import { useLoaderData } from 'react-router-dom';
+import { Head } from 'vite-react-ssg';
+import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const GalleryPage: React.FC = () => {
-  const [businessId, setBusinessId] = useState<string>('');
+  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessId = businessData?.info?.id || '';
   const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
-
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.gallery.title,
-    description: LOCAL_SEO_CONTENT.gallery.description,
-    canonicalUrl: 'https://boxed2built.com/gallery',
-    ogTitle: 'Furniture Assembly Gallery | Boxed2Built',
-    ogDescription: 'Browse real furniture assembly and TV mounting projects completed by Boxed2Built in Spring Hill, TN.',
-    twitterTitle: 'Boxed2Built Gallery',
-    twitterDescription: 'See real Boxed2Built furniture assembly projects in Spring Hill and surrounding communities.',
-  });
-
-  useEffect(() => {
-    const fetchBusinessId = async () => {
-      try {
-        const { data } = await supabase
-          .from('business_info')
-          .select('id')
-          .eq('is_active', true)
-          .maybeSingle();
-        if (data) setBusinessId(data.id);
-      } catch (err) {
-        console.error('Error fetching business ID:', err);
-      }
-    };
-    fetchBusinessId();
-  }, []);
-
-  useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.gallery.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', LOCAL_SEO_CONTENT.gallery.description);
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/gallery');
-  }, []);
 
 
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.gallery.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.gallery.description} />
+        <link rel="canonical" href="https://boxed2built.com/gallery" />
+      </Head>
       <Header />
       <main className="pt-20">
         {/* Page Header */}
