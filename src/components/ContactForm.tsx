@@ -165,6 +165,12 @@ const validationRules: Record<string, ValidationRule> = {
 };
 
 const ContactForm: React.FC = () => {
+  // Must start false so the initial render matches the SSG snapshot.
+  // InputMask@2 renders differently between Node (SSG) and the browser,
+  // so we swap it in after mount to avoid hydration mismatch.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const [clientType, setClientType] = useState<'residential' | 'business'>('residential');
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [showFurnitureReference, setShowFurnitureReference] = useState(false);
@@ -786,23 +792,37 @@ const ContactForm: React.FC = () => {
                 success={fields.phone?.valid && fields.phone?.touched && fields.phone?.value}
                 helpText="10-digit US phone number (for faster response)"
               >
-                <InputMask
-                  mask="(999) 999-9999"
-                  {...getFieldProps('phone')}
-                >
-                  {(inputProps: any) => (
-                    <input
-                      {...inputProps}
-                      id="phone"
-                      name="phone"
-                      autoComplete="tel"
-                      className={getInputClasses('phone')}
-                      placeholder="(555) 123-4567"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                    />
-                  )}
-                </InputMask>
+                {isMounted ? (
+                  <InputMask
+                    mask="(999) 999-9999"
+                    {...getFieldProps('phone')}
+                  >
+                    {(inputProps: any) => (
+                      <input
+                        {...inputProps}
+                        id="phone"
+                        name="phone"
+                        autoComplete="tel"
+                        className={getInputClasses('phone')}
+                        placeholder="(555) 123-4567"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                      />
+                    )}
+                  </InputMask>
+                ) : (
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    className={getInputClasses('phone')}
+                    placeholder="(555) 123-4567"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    {...getFieldProps('phone')}
+                  />
+                )}
               </FormField>
               </div>
             </div>
