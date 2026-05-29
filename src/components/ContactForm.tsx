@@ -221,10 +221,10 @@ const ContactForm: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Detect iOS
+  // Detect iOS — navigator.platform is deprecated; use maxTouchPoints + UA instead
   useEffect(() => {
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
     setIsIOS(iOS);
   }, []);
 
@@ -485,10 +485,7 @@ const ContactForm: React.FC = () => {
         submissionDate: savedRequest.submission_date,
       };
 
-      console.log('[ContactForm] Setting confirmation data:', confirmData);
       setConfirmationData(confirmData);
-
-      console.log('[ContactForm] Opening modal - setting showConfirmationModal to true');
       setShowConfetti(true);
       setTimeout(() => {
         setShowConfirmationModal(true);
@@ -555,7 +552,6 @@ const ContactForm: React.FC = () => {
       });
 
       // Reset form AFTER showing modal
-      console.log('[ContactForm] Resetting form');
       reset();
       setFurniturePhotoUrl('');
       setFurniturePhotoFile(null);
@@ -623,11 +619,6 @@ const ContactForm: React.FC = () => {
   };
 
 
-  console.log('[ContactForm] Render state:', {
-    showConfirmationModal,
-    hasConfirmationData: !!confirmationData,
-  });
-
   return (
     <>
       {showConfetti && (
@@ -637,7 +628,6 @@ const ContactForm: React.FC = () => {
         <ConfirmationModal
           isOpen={showConfirmationModal}
           onClose={() => {
-            console.log('[ContactForm] Modal close requested');
             setShowConfirmationModal(false);
             setConfirmationData(null);
           }}
