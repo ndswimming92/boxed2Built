@@ -17,10 +17,14 @@ const Testimonials: React.FC = () => {
   // Avoid stacking timeouts when user clicks multiple times
   const resumeTimeoutRef = useRef<number | null>(null);
 
-  // Respect "reduced motion" without changing other files
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Respect "reduced motion" — must be false on initial render to match the SSG
+  // snapshot, then updated after mount via useEffect to avoid hydration mismatch.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    setPrefersReducedMotion(
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
   }, []);
 
   const REVIEWS = useMemo(() => {
