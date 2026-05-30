@@ -127,7 +127,8 @@
   <meta name="author" content="Boxed2Built" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-  <!-- Canonical URL is set dynamically per route by usePageMeta / Head -->
+  <!-- Static canonical for root; inner routes set their own via usePageMeta -->
+  <link rel="canonical" href="https://boxed2built.com/" />
 
   <!-- Preload optimization -->
   <link rel="dns-prefetch" href="//images.pexels.com" />
@@ -169,7 +170,6 @@
 
   <!-- Google Search Console Support -->
   <meta name="google" content="notranslate" />
-  <meta name="format-detection" content="telephone=yes" />
 
   <!-- Geo Meta Tags for Local SEO -->
   <meta name="geo.region" content="US-TN" />
@@ -234,6 +234,20 @@
       { "@type": "City", "name": "Columbia, TN" },
       { "@type": "City", "name": "Thompson's Station, TN" },
       { "@type": "City", "name": "Brentwood, TN" }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5.0",
+      "reviewCount": "6",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "sameAs": [
+      "https://maps.app.goo.gl/LuBUZ8cnodn5MoRi9",
+      "https://www.facebook.com/BoxedToBuiltUSA",
+      "https://www.instagram.com/boxed2built/",
+      "https://www.youtube.com/@Boxed2BuiltUSA",
+      "https://twitter.com/boxed2built"
     ]
   }
   </script>
@@ -258,19 +272,76 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SiteNavigationElement",
-    "name": ["Home", "Services", "Furniture Assembly", "TV Mounting", "About", "Gallery", "Contact", "FAQ", "Partners", "Gift Cards"],
-    "url": [
-      "https://boxed2built.com/",
-      "https://boxed2built.com/services",
-      "https://boxed2built.com/services/furniture-assembly",
-      "https://boxed2built.com/services/tv-mounting",
-      "https://boxed2built.com/about",
-      "https://boxed2built.com/gallery",
-      "https://boxed2built.com/contact",
-      "https://boxed2built.com/faq",
-      "https://boxed2built.com/partners",
-      "https://boxed2built.com/gift-cards"
+    "@type": "ItemList",
+    "itemListElement": [
+      { "@type": "SiteNavigationElement", "position": 1,  "name": "Home",               "url": "https://boxed2built.com/" },
+      { "@type": "SiteNavigationElement", "position": 2,  "name": "Services",            "url": "https://boxed2built.com/services" },
+      { "@type": "SiteNavigationElement", "position": 3,  "name": "Furniture Assembly",  "url": "https://boxed2built.com/services/furniture-assembly" },
+      { "@type": "SiteNavigationElement", "position": 4,  "name": "TV Mounting",         "url": "https://boxed2built.com/services/tv-mounting" },
+      { "@type": "SiteNavigationElement", "position": 5,  "name": "About",               "url": "https://boxed2built.com/about" },
+      { "@type": "SiteNavigationElement", "position": 6,  "name": "Gallery",             "url": "https://boxed2built.com/gallery" },
+      { "@type": "SiteNavigationElement", "position": 7,  "name": "Contact",             "url": "https://boxed2built.com/contact" },
+      { "@type": "SiteNavigationElement", "position": 8,  "name": "FAQ",                 "url": "https://boxed2built.com/faq" },
+      { "@type": "SiteNavigationElement", "position": 9,  "name": "Partners",            "url": "https://boxed2built.com/partners" },
+      { "@type": "SiteNavigationElement", "position": 10, "name": "Gift Cards",          "url": "https://boxed2built.com/gift-cards" }
+    ]
+  }
+  </script>
+
+  <!-- LocalBusiness Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "HomeAndConstructionBusiness"],
+    "name": "Boxed2Built",
+    "url": "https://boxed2built.com",
+    "telephone": "+1-615-403-4538",
+    "email": "boxed2builtco@gmail.com",
+    "image": "https://boxed2built.com/black_boxed2built_logo.png",
+    "priceRange": "$$",
+    "currenciesAccepted": "USD",
+    "paymentAccepted": "Cash, Credit Card",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Spring Hill",
+      "addressRegion": "TN",
+      "postalCode": "37174",
+      "addressCountry": "US"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "17:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "09:00",
+        "closes": "17:00"
+      }
+    ],
+    "areaServed": [
+      { "@type": "City", "name": "Spring Hill, TN" },
+      { "@type": "City", "name": "Franklin, TN" },
+      { "@type": "City", "name": "Columbia, TN" },
+      { "@type": "City", "name": "Thompson's Station, TN" },
+      { "@type": "City", "name": "Brentwood, TN" }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5.0",
+      "reviewCount": "6",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "sameAs": [
+      "https://maps.app.goo.gl/LuBUZ8cnodn5MoRi9",
+      "https://www.facebook.com/BoxedToBuiltUSA",
+      "https://www.instagram.com/boxed2built/",
+      "https://www.youtube.com/@Boxed2BuiltUSA",
+      "https://twitter.com/boxed2built"
     ]
   }
   </script>

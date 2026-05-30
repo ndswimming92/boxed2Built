@@ -85,17 +85,17 @@ export const SOCIAL_MEDIA_URLS = [
 ];
 
 export const BUSINESS_HOURS = {
-  formatted: ["Sa 09:00-16:00", "Su 13:30-16:00"],
+  formatted: ["Mo-Fr 08:00-17:00", "Sa 09:00-17:00"],
   structured: [
+    {
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "08:00",
+      closes: "17:00"
+    },
     {
       dayOfWeek: "Saturday",
       opens: "09:00",
-      closes: "16:00"
-    },
-    {
-      dayOfWeek: "Sunday", 
-      opens: "13:30",
-      closes: "16:00"
+      closes: "17:00"
     }
   ]
 };
@@ -284,7 +284,7 @@ export const FAQ_CONTENT = [
       },
       {
         question: "What are your business hours?",
-        answer: "We're available on Saturdays from 9:00 AM to 4:00 PM and Sundays from 1:30 PM to 4:00 PM. We understand that weekends work best for busy families, so we've designed our schedule to accommodate your needs. Contact us to discuss scheduling options that work for you."
+        answer: "We're available Monday through Friday from 8:00 AM to 5:00 PM and Saturdays from 9:00 AM to 5:00 PM. We understand that flexible scheduling is important for busy families, so we offer weekday and weekend appointments to accommodate your needs. Contact us to find a time that works best for you."
       },
       {
         question: "Do you offer same-day or next-day service?",

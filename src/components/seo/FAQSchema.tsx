@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 export interface FAQ {
   question: string;
@@ -11,11 +11,10 @@ interface FAQSchemaProps {
   maxItems?: number;
 }
 
-/** Basic HTML tag stripper to keep JSON-LD "text" clean */
 function stripHtml(input: string): string {
   return input
-    .replace(/<[^>]*>/g, ' ') // remove tags
-    .replace(/\s+/g, ' ')     // collapse whitespace
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -27,7 +26,6 @@ const FAQSchema: React.FC<FAQSchemaProps> = ({ faqs, maxItems = 50 }) => {
   const schemaData = useMemo(() => {
     if (!faqs || faqs.length === 0) return null;
 
-    // Normalize + dedupe by question text
     const seen = new Set<string>();
     const cleaned = faqs
       .map((f) => ({
@@ -59,33 +57,14 @@ const FAQSchema: React.FC<FAQSchemaProps> = ({ faqs, maxItems = 50 }) => {
     };
   }, [faqs, maxItems]);
 
-  useEffect(() => {
-    const schemaId = 'faq-schema-jsonld';
-    const existing = document.getElementById(schemaId);
+  if (!schemaData) return null;
 
-    if (!schemaData) {
-      existing?.remove();
-      return;
-    }
-
-    const script = existing || document.createElement('script');
-    script.id = schemaId;
-    script.setAttribute('type', 'application/ld+json');
-    script.textContent = JSON.stringify(schemaData);
-
-    if (!existing) {
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      const current = document.getElementById(schemaId);
-      if (current && current.textContent === JSON.stringify(schemaData)) {
-        current.remove();
-      }
-    };
-  }, [schemaData]);
-
-  return null;
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+    />
+  );
 };
 
 export default FAQSchema;
