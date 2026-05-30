@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Shield, Trash2, Star, Home, ArrowRight } from 'luc
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
+import ServiceSchema from '../../components/seo/ServiceSchema';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -57,6 +58,13 @@ const FurnitureAssemblyPage: React.FC = () => {
         { name: 'Services', url: 'https://boxed2built.com/services' },
         { name: 'Furniture Assembly', url: 'https://boxed2built.com/services/furniture-assembly' },
       ]} />
+      <ServiceSchema
+        name="Furniture Assembly Service"
+        description="Professional furniture assembly for IKEA, Target, Walmart, Wayfair, and Amazon furniture in Spring Hill, TN. Expert assembly with complete cleanup and satisfaction guaranteed."
+        url="https://boxed2built.com/services/furniture-assembly"
+        serviceType="Furniture Assembly"
+        offers={PRIMARY_SERVICES.map(s => ({ name: s.name, description: s.description, price: s.price }))}
+      />
       <Header />
 
       <main className="min-h-screen">

@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Shield, Wrench, Star, Home, ArrowRight, Monitor, Z
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
+import ServiceSchema from '../../components/seo/ServiceSchema';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -92,6 +93,13 @@ const TVMountingPage: React.FC = () => {
         { name: 'Services', url: 'https://boxed2built.com/services' },
         { name: 'TV Mounting', url: 'https://boxed2built.com/services/tv-mounting' },
       ]} />
+      <ServiceSchema
+        name="TV Mounting Service"
+        description="Professional TV mounting for all sizes and wall types in Spring Hill, TN. Secure installation with cable management and optimal viewing angle setup. Same-day service available."
+        url="https://boxed2built.com/services/tv-mounting"
+        serviceType="TV Mounting"
+        offers={TV_MOUNTING_SERVICES}
+      />
       <Header />
 
       <main className="min-h-screen">
