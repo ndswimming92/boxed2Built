@@ -39,13 +39,20 @@ function setCachedImages(data: HeroImage[]) {
 }
 
 export function useHeroImage() {
-  const cached = getCachedImages();
-  const [images, setImages] = useState<HeroImage[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  // Always start empty so SSG and client initial render produce identical output.
+  // Reading sessionStorage during the render phase caused hydration mismatches on
+  // repeat visits when the browser cache was already populated.
+  const [images, setImages] = useState<HeroImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (images.length > 0) return;
+    const cached = getCachedImages();
+    if (cached && cached.length > 0) {
+      setImages(cached);
+      setLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
@@ -84,7 +91,7 @@ export function useHeroImage() {
 
     fetchImages();
     return () => { cancelled = true; };
-  }, [images.length]);
+  }, []);
 
   useEffect(() => {
     if (images.length <= 1) return;
