@@ -16,7 +16,7 @@ export default defineConfig({
   },
   ssgOptions: {
     dirStyle: 'nested',
-    script: 'async',
+    script: 'defer',
     mock: true,
     includedRoutes(paths) {
       return paths.filter(path => {
