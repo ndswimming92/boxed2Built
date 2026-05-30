@@ -55,6 +55,10 @@ const FAQPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.faq.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.faq.description} />
         <link rel="canonical" href="https://boxed2built.com/faq" />
+        <meta property="og:title" content="Furniture Assembly FAQ | Boxed2Built Spring Hill, TN" />
+        <meta property="og:description" content="Answers to your questions about furniture assembly pricing, scheduling, and service areas in Spring Hill, TN." />
+        <meta name="twitter:title" content="Furniture Assembly FAQ | Boxed2Built" />
+        <meta name="twitter:description" content="Get answers about furniture assembly pricing, scheduling, and service areas in Spring Hill, TN." />
       </Head>
       <EnhancedLocalBusinessSchema
         businessData={businessData}

@@ -24,6 +24,10 @@ const GalleryPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.gallery.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.gallery.description} />
         <link rel="canonical" href="https://boxed2built.com/gallery" />
+        <meta property="og:title" content="Furniture Assembly Gallery | Boxed2Built Spring Hill, TN" />
+        <meta property="og:description" content="Real IKEA, Target, Walmart furniture builds for families in Spring Hill and surrounding TN communities." />
+        <meta name="twitter:title" content="Our Work Gallery | Boxed2Built" />
+        <meta name="twitter:description" content="See real furniture assembly results from Spring Hill, Franklin, and surrounding TN areas." />
       </Head>
       <Header />
       <main className="pt-20">

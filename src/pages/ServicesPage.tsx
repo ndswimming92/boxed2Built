@@ -52,6 +52,10 @@ const ServicesPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.services.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.services.description} />
         <link rel="canonical" href="https://boxed2built.com/services" />
+        <meta property="og:title" content="Furniture Assembly Services | Boxed2Built Spring Hill, TN" />
+        <meta property="og:description" content="Expert furniture assembly services in Spring Hill, TN. IKEA, Target, Walmart and more — clear pricing, dependable service." />
+        <meta name="twitter:title" content="Furniture Assembly Services | Boxed2Built" />
+        <meta name="twitter:description" content="From IKEA to Target builds — Boxed2Built offers clear pricing and expert assembly in Spring Hill, TN." />
       </Head>
       <EnhancedLocalBusinessSchema businessData={businessData} includeReviews={false} pageType="services" />
       <FAQSchema faqs={servicesFAQs} />

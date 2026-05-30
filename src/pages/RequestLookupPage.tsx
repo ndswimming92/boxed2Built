@@ -21,8 +21,8 @@ const RequestLookupPage: React.FC = () => {
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
 
   usePageMeta({
-    title: 'Look Up Your Request - Boxed2Built | Spring Hill Furniture Assembly',
-    description: 'Check your furniture assembly request status with Boxed2Built. Quickly access details for your Spring Hill service inquiry.',
+    title: LOCAL_SEO_CONTENT.requestLookup.title,
+    description: LOCAL_SEO_CONTENT.requestLookup.description,
     canonicalUrl: 'https://boxed2built.com/lookup-request',
     ogTitle: 'Request Lookup | Boxed2Built',
     ogDescription: 'Need to review your Boxed2Built request? Use the request lookup page to find your inquiry details fast.',
@@ -36,24 +36,6 @@ const RequestLookupPage: React.FC = () => {
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
   useEffect(() => {
-    document.title = LOCAL_SEO_CONTENT.requestLookup.title;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        LOCAL_SEO_CONTENT.requestLookup.description
-      );
-    }
-
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', 'https://boxed2built.com/lookup-request');
-
     const searchParams = new URLSearchParams(location.search);
     const codeParam = searchParams.get('code');
     const emailParam = searchParams.get('email');

@@ -75,6 +75,10 @@ const ContactPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.contact.title}</title>
         <meta name="description" content={localSeoContent.contact.description} />
         <link rel="canonical" href="https://boxed2built.com/contact" />
+        <meta property="og:title" content="Contact Boxed2Built | Spring Hill Furniture Assembly" />
+        <meta property="og:description" content="Get in touch with Boxed2Built for fast, friendly furniture assembly in Spring Hill, TN. Call or email for a free quote." />
+        <meta name="twitter:title" content="Contact Boxed2Built | Spring Hill, TN" />
+        <meta name="twitter:description" content="Call or email Boxed2Built for professional furniture assembly in Spring Hill, TN. Fast quotes and flexible scheduling." />
       </Head>
       {businessData && (
         <EnhancedLocalBusinessSchema

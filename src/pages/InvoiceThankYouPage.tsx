@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Phone, Mail, Package, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface BusinessBranding {
   business_name: string;
@@ -20,6 +21,12 @@ interface InvoiceSummary {
 }
 
 export default function InvoiceThankYouPage() {
+  usePageMeta({
+    title: 'Payment Received | Boxed2Built',
+    description: 'Your Boxed2Built invoice payment has been received. Thank you!',
+    noIndex: true,
+  });
+
   const { invoiceId } = useParams<{ invoiceId: string }>();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');

@@ -22,6 +22,10 @@ const AboutPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.about.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.about.description} />
         <link rel="canonical" href="https://boxed2built.com/about" />
+        <meta property="og:title" content="About Boxed2Built | Nicholas Davidson, Spring Hill TN" />
+        <meta property="og:description" content="Meet Nicholas Davidson, founder of Boxed2Built. Professional, family-focused furniture assembly in Spring Hill, TN." />
+        <meta name="twitter:title" content="About Boxed2Built | Spring Hill, TN" />
+        <meta name="twitter:description" content="Learn about Boxed2Built and owner Nicholas Davidson — trusted furniture assembly for Spring Hill families." />
       </Head>
       <EnhancedLocalBusinessSchema
         businessData={businessData}

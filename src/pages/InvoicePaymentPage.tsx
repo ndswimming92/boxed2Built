@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getInvoiceExternalUrl, getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface BusinessBranding {
   name: string;
@@ -54,6 +55,12 @@ interface InvoiceData {
 }
 
 export default function InvoicePaymentPage() {
+  usePageMeta({
+    title: 'Invoice Payment | Boxed2Built',
+    description: 'Securely pay your Boxed2Built service invoice online.',
+    noIndex: true,
+  });
+
   const { invoiceId, paymentToken } = useParams<{ invoiceId: string; paymentToken: string }>();
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [branding, setBranding] = useState<BusinessBranding | null>(null);
