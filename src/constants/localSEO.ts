@@ -113,6 +113,12 @@ export const PAYMENT_METHODS = [
 
 export const CUSTOMER_REVIEWS = [
   {
+    author: "Adria Longmire",
+    reviewBody: "I highly recommend Boxed2Built! Communication was excellent and he arrived on time. The wall mount installation of my TV was completed professionally and with great attention to detail. The quality of work was outstanding, the price was very reasonable, and the entire experience was seamless!",
+    ratingValue: 5,
+    datePublished: "2026-05-30"
+  },
+  {
     author: "Natalie R.",
     reviewBody: "Incredible service! Nicholas was extremely professional, punctual, and detail-oriented. He came out to set up our lawn chairs and mount our TV, and everything was done perfectly. He went above and beyond to make sure we were happy with the setup. Highly recommend this company — we're extremely pleased with the entire experience!",
     ratingValue: 5,
