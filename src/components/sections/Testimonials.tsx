@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ReviewCard from '../ReviewCard';
 import StarRating from '../ui/StarRating';
@@ -10,6 +11,7 @@ const RESUME_AFTER_MS = 10000;
 
 const Testimonials: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
+  const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -287,6 +289,8 @@ const Testimonials: React.FC = () => {
               const formSection = document.getElementById('contact-form-section');
               if (formSection) {
                 formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                navigate('/contact');
               }
             }}
             className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
