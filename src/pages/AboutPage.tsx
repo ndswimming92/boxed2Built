@@ -90,8 +90,7 @@ const AboutPage: React.FC = () => {
                 
                 <div className="relative">
                   <OptimizedImage
-                    src="/images/nicholas-davidson-founder-portrait-spring-hill.webp"
-                    fallbackSrc="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+                    src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
                     alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
                     className="rounded-lg shadow-lg object-cover"
                     width="500"
