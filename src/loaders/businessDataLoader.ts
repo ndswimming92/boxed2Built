@@ -28,7 +28,7 @@ function buildFallbackData(): CompleteBusinessData {
       currencies_accepted: 'USD',
       logo_url: 'https://boxed2built.com/black_boxed2built_logo.png',
       image_url: 'https://boxed2built.com/black_boxed2built_logo.png',
-      total_client_hours_saved: 0,
+      total_client_hours_saved: 67.3,
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -157,7 +157,8 @@ async function fetchBusinessDataAtBuildTime(): Promise<CompleteBusinessData> {
       { data: paymentMethods },
       { data: socialMedia },
       { data: reviews },
-      { data: attributes }
+      { data: attributes },
+      { data: completedJobs }
     ] = await Promise.all([
       client.from('business_address').select('*').eq('business_id', businessInfo.id).maybeSingle(),
       client.from('service_areas').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('priority', { ascending: true }),
@@ -166,8 +167,18 @@ async function fetchBusinessDataAtBuildTime(): Promise<CompleteBusinessData> {
       client.from('payment_methods').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('display_order', { ascending: true }),
       client.from('social_media').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('display_order', { ascending: true }),
       client.from('customer_reviews').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('date_published', { ascending: false }),
-      client.from('business_attributes').select('*').eq('business_id', businessInfo.id)
+      client.from('business_attributes').select('*').eq('business_id', businessInfo.id),
+      client.from('jobs').select('hours_worked').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
     ]);
+
+    // Calculate live hours saved from completed jobs (overrides the stored field)
+    const liveHoursSaved = (completedJobs || []).reduce(
+      (sum: number, job: { hours_worked: number | null }) => sum + (job.hours_worked || 0),
+      0
+    );
+    if (liveHoursSaved > 0) {
+      businessInfo.total_client_hours_saved = Math.round(liveHoursSaved * 10) / 10;
+    }
 
     const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const sortedBusinessHours = (businessHours || []).sort((a: { day_of_week: string }, b: { day_of_week: string }) => {
