@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
@@ -6,6 +6,7 @@ import Footer from '../components/layout/Footer';
 import { CheckCircle, Users, Clock, Award, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
+import ImageLightbox, { ClickableImage, LightboxImage } from '../components/ui/ImageLightbox';
 import { useLoaderData } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { CompleteBusinessData } from '../lib/supabase';
@@ -15,6 +16,8 @@ const AboutPage: React.FC = () => {
   const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
 
 
+
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
 
   return (
     <>
@@ -89,16 +92,22 @@ const AboutPage: React.FC = () => {
                 </div>
                 
                 <div className="relative">
-                  <OptimizedImage
+                  <ClickableImage
                     src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
                     alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
-                    className="rounded-lg shadow-lg object-cover"
-                    width="500"
-                    height="667"
-                    imageType="gallery"
-                    quality={85}
-                    enableAvif={true}
-                  />
+                    onOpen={setLightbox}
+                  >
+                    <OptimizedImage
+                      src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
+                      alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
+                      className="rounded-lg shadow-lg object-cover"
+                      width="500"
+                      height="667"
+                      imageType="gallery"
+                      quality={85}
+                      enableAvif={true}
+                    />
+                  </ClickableImage>
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Nicholas Davidson</p>
                     <p className="text-sm text-blue-100">Owner & Founder</p>
@@ -138,12 +147,18 @@ const AboutPage: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <img
+                    <ClickableImage
                       src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
                       alt="Family enjoying time together while Boxed2Built handles furniture assembly"
-                      className="rounded-xl shadow-lg w-full h-auto object-cover"
-                      loading="lazy"
-                    />
+                      onOpen={setLightbox}
+                    >
+                      <img
+                        src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
+                        alt="Family enjoying time together while Boxed2Built handles furniture assembly"
+                        className="rounded-xl shadow-lg w-full h-auto object-cover"
+                        loading="lazy"
+                      />
+                    </ClickableImage>
                   </div>
                 </div>
               </div>
@@ -206,12 +221,18 @@ const AboutPage: React.FC = () => {
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Serving Our Community</h2>
 
                 <div className="max-w-md mx-auto mb-8">
-                  <img
+                  <ClickableImage
                     src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
                     alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
-                    className="rounded-xl shadow-md w-full h-auto object-cover"
-                    loading="lazy"
-                  />
+                    onOpen={setLightbox}
+                  >
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
+                      alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
+                      className="rounded-xl shadow-md w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                  </ClickableImage>
                 </div>
 
                 <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto mb-8">
@@ -318,6 +339,7 @@ const AboutPage: React.FC = () => {
         </section>
       </main>
       <Footer />
+      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
     </>
   );
 };

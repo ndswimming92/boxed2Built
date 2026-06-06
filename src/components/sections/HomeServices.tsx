@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Wrench, Clock, CheckCircle } from 'lucide-react';
 import InternalLink from '../ui/InternalLink';
+import ImageLightbox, { ClickableImage, LightboxImage } from '../ui/ImageLightbox';
 
 const HomeServices: React.FC = () => {
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
+
   return (
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
@@ -18,15 +21,23 @@ const HomeServices: React.FC = () => {
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <img
+            <ClickableImage
               src="/images/marketing-images/Boxed2Built_Living_Room_Assembly.png"
               alt="Professional living room furniture assembly by Boxed2Built in Spring Hill, TN"
-              className="rounded-xl shadow-lg w-full h-auto object-cover"
-              loading="lazy"
-              width="600"
-              height="400"
-            />
+              onOpen={setLightbox}
+            >
+              <img
+                src="/images/marketing-images/Boxed2Built_Living_Room_Assembly.png"
+                alt="Professional living room furniture assembly by Boxed2Built in Spring Hill, TN"
+                className="rounded-xl shadow-lg w-full h-auto object-cover"
+                loading="lazy"
+                width="600"
+                height="400"
+              />
+            </ClickableImage>
           </div>
+
+          <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
 
           <div className="lg:col-span-3 order-1 lg:order-2 grid grid-cols-1 gap-8">
             <div className="text-center lg:text-left">

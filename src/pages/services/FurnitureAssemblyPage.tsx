@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Trash2, Star, Home, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
 import ServiceSchema from '../../components/seo/ServiceSchema';
+import ImageLightbox, { ClickableImage, LightboxImage } from '../../components/ui/ImageLightbox';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -31,6 +32,8 @@ const FurnitureAssemblyPage: React.FC = () => {
     servicesAndPricing[3],
     servicesAndPricing[4],
   ].filter(Boolean);
+
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
 
   const handleContactClick = (source: string) => {
     trackEvent('contact_click', source, {
@@ -100,12 +103,18 @@ const FurnitureAssemblyPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="hidden lg:block">
-                  <img
+                  <ClickableImage
                     src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
                     alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
-                    className="rounded-xl shadow-xl w-full h-auto object-cover"
-                    loading="eager"
-                  />
+                    onOpen={setLightbox}
+                  >
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
+                      alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
+                      className="rounded-xl shadow-xl w-full h-auto object-cover"
+                      loading="eager"
+                    />
+                  </ClickableImage>
                 </div>
               </div>
             </div>
@@ -243,12 +252,18 @@ const FurnitureAssemblyPage: React.FC = () => {
                   ))}
                 </div>
                 <div className="hidden lg:block sticky top-24">
-                  <img
+                  <ClickableImage
                     src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
                     alt="Skip the build and enjoy the moments - professional furniture assembly service"
-                    className="rounded-xl shadow-lg w-full h-auto object-cover"
-                    loading="lazy"
-                  />
+                    onOpen={setLightbox}
+                  >
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+                      alt="Skip the build and enjoy the moments - professional furniture assembly service"
+                      className="rounded-xl shadow-lg w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                  </ClickableImage>
                 </div>
               </div>
             </div>
@@ -436,6 +451,7 @@ const FurnitureAssemblyPage: React.FC = () => {
       </main>
 
       <Footer />
+      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
     </>
   );
 };

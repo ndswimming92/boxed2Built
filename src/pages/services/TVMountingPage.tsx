@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Wrench, Star, Home, ArrowRight, Monitor, Zap } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
 import ServiceSchema from '../../components/seo/ServiceSchema';
+import ImageLightbox, { ClickableImage, LightboxImage } from '../../components/ui/ImageLightbox';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -66,6 +67,8 @@ const TVMountingPage: React.FC = () => {
     commonQuestions[2],
     servicesAndPricing[0],
   ].filter(Boolean);
+
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
 
   const handleContactClick = (source: string) => {
     trackEvent('contact_click', source, {
@@ -510,6 +513,7 @@ const TVMountingPage: React.FC = () => {
       </main>
 
       <Footer />
+      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
     </>
   );
 };
