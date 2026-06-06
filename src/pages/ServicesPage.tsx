@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -8,6 +8,7 @@ import Services from '../components/sections/Services';
 import HomeFAQ from '../components/sections/HomeFAQ';
 import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
+import ImageLightbox, { ClickableImage, LightboxImage } from '../components/ui/ImageLightbox';
 import { trackEvent } from '../utils/analytics';
 import { useLoaderData } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
@@ -29,6 +30,8 @@ const ServicesPage: React.FC = () => {
     servicesAndPricing[1], // What's included in the assembly price?
     servicesAndPricing[4], // Do you provide the tools and hardware?
   ];
+
+  const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'services_page_header', {
@@ -155,12 +158,19 @@ const ServicesPage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <img
+                  <ClickableImage
                     src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
                     alt="Professional garage furniture and storage assembly by Boxed2Built"
-                    className="w-full aspect-[16/9] object-cover object-center"
-                    loading="lazy"
-                  />
+                    onOpen={setLightbox}
+                    className="block w-full"
+                  >
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
+                      alt="Professional garage furniture and storage assembly by Boxed2Built"
+                      className="w-full h-auto"
+                      loading="lazy"
+                    />
+                  </ClickableImage>
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Expert Furniture Assembly</h3>
                     <p className="text-gray-700 mb-4">
@@ -186,12 +196,19 @@ const ServicesPage: React.FC = () => {
                 </div>
 
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <img
+                  <ClickableImage
                     src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
                     alt="Outdoor furniture assembly and patio setup by Boxed2Built"
-                    className="w-full aspect-[16/9] object-cover object-center"
-                    loading="lazy"
-                  />
+                    onOpen={setLightbox}
+                    className="block w-full"
+                  >
+                    <img
+                      src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
+                      alt="Outdoor furniture assembly and patio setup by Boxed2Built"
+                      className="w-full h-auto"
+                      loading="lazy"
+                    />
+                  </ClickableImage>
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Local Spring Hill Service Area</h3>
                     <p className="text-gray-700 mb-4">
@@ -229,6 +246,7 @@ const ServicesPage: React.FC = () => {
       </main>
 
       <Footer />
+      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
     </>
   );
 };
