@@ -17,6 +17,8 @@ interface OptimizedImageProps {
   enableAvif?: boolean;
   focusX?: number;
   focusY?: number;
+  /** Shown automatically if the primary src fails to load */
+  fallbackSrc?: string;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -33,9 +35,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   enableAvif = true,
   focusX = 50,
   focusY = 50,
+  fallbackSrc,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [activeSrc, setActiveSrc] = useState(src);
 
   // Use eager loading for priority images
   const imageLoading = priority ? 'eager' : loading;
@@ -44,7 +48,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const optimalQuality = quality || getOptimalQuality(imageType, 'webp');
   
   // Generate responsive image sources
-  const sources = generateResponsiveImageSources(src, {
+  const sources = generateResponsiveImageSources(activeSrc, {
     sizes: [320, 640, 960, 1280, 1600],
     formats: ['webp', 'jpeg'],
     quality: optimalQuality,
@@ -56,8 +60,14 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   };
 
   const handleError = () => {
-    setIsLoading(false);
-    setHasError(true);
+    if (fallbackSrc && activeSrc !== fallbackSrc) {
+      // Try the fallback image before giving up
+      setActiveSrc(fallbackSrc);
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+      setHasError(true);
+    }
   };
 
   return (
