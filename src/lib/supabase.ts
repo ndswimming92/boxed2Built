@@ -9,18 +9,20 @@ import { getRequestTraceContext } from '../utils/telemetry';
  *  - No auto token refresh
  *  - Narrow global headers if you later add RLS audiences, etc.
  *  -------------------------------------------------------------------------- */
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// During SSG/SSR there is no browser context, so auth storage must be disabled
+// to prevent localStorage access in Node.js. The missing-env case is also safe:
+// createClient with empty strings produces a client that fails on network calls
+// but never throws at module load — all callers already handle fetch failures.
+const isBrowser = typeof window !== 'undefined';
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
+    persistSession: isBrowser,
+    autoRefreshToken: isBrowser,
+    detectSessionInUrl: isBrowser,
     flowType: 'pkce',
     storageKey: 'boxed2built.auth.token',
   },

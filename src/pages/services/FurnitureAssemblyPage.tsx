@@ -49,6 +49,7 @@ const FurnitureAssemblyPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.furnitureAssembly.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.furnitureAssembly.description} />
         <link rel="canonical" href="https://boxed2built.com/services/furniture-assembly" />
+        <meta property="og:url" content="https://boxed2built.com/services/furniture-assembly" />
         <meta property="og:title" content="Furniture Assembly in Spring Hill, TN | Boxed2Built" />
         <meta property="og:description" content="Stress-free furniture assembly in Spring Hill, TN. IKEA, Target, Walmart and more — we build it right and clean up after." />
         <meta name="twitter:title" content="Furniture Assembly | Boxed2Built Spring Hill, TN" />

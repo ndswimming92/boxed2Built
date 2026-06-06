@@ -84,6 +84,7 @@ const TVMountingPage: React.FC = () => {
         <title>{LOCAL_SEO_CONTENT.tvMounting.title}</title>
         <meta name="description" content={LOCAL_SEO_CONTENT.tvMounting.description} />
         <link rel="canonical" href="https://boxed2built.com/services/tv-mounting" />
+        <meta property="og:url" content="https://boxed2built.com/services/tv-mounting" />
         <meta property="og:title" content="TV Mounting in Spring Hill, TN | Boxed2Built" />
         <meta property="og:description" content="Professional TV mounting in Spring Hill, TN. Secure installation, clean cable management, satisfaction guaranteed." />
         <meta name="twitter:title" content="TV Mounting | Boxed2Built Spring Hill, TN" />
