@@ -65,16 +65,30 @@ export const PRIMARY_SERVICES = [
 
 export const SERVICE_KEYWORDS = [
   "Furniture Assembly",
+  "Furniture Assembly Near Me",
   "IKEA Assembly",
+  "IKEA Furniture Assembly Spring Hill TN",
+  "Wayfair Furniture Assembly",
+  "Amazon Furniture Assembly",
   "Target Furniture Assembly",
   "Walmart Furniture Assembly",
-  "Handyman Services",
-  "TV Mounting",
+  "Costco Furniture Assembly",
+  "Ashley Furniture Assembly",
+  "Flat Pack Furniture Assembly",
+  "Someone To Assemble Furniture",
+  "Hire Someone To Put Together Furniture",
+  "Furniture Assembler Near Me",
+  "Handyman To Assemble Furniture Spring Hill",
+  "Crib Assembly Near Me",
   "Bed Frame Assembly",
   "Dresser Assembly",
   "Desk Assembly",
+  "Patio Furniture Assembly Spring Hill",
+  "Playset Assembly Spring Hill TN",
+  "Same Day Furniture Assembly Spring Hill",
+  "Weekend Furniture Assembly Near Me",
+  "TV Mounting",
   "Bookshelf Assembly",
-  "Lawn Chair Assembly",
   "Professional Assembly Service"
 ];
 
@@ -196,9 +210,9 @@ export const LOCAL_SEO_CONTENT = {
       "Look up your Boxed2Built furniture assembly service request using your email and confirmation code. View, download, or email your request details."
   },
   furnitureAssembly: {
-    title: "Furniture Assembly Spring Hill, TN | Boxed2Built",
+    title: "Furniture Assembly Spring Hill TN | IKEA, Wayfair & More | Boxed2Built",
     description:
-      "Get stress-free furniture assembly in Spring Hill, TN with Boxed2Built. We assemble it right, clean up, and get your space ready fast. Call for a free quote."
+      "Got furniture in a box? Boxed2Built assembles IKEA, Wayfair, Amazon, Target, Walmart & more in Spring Hill, TN. Same-day available. Free quote — call now."
   },
   tvMounting: {
     title: "TV Mounting Spring Hill, TN | Boxed2Built",
@@ -230,6 +244,14 @@ export const FAQ_CONTENT = [
         answer: "Yes! We absolutely assemble furniture from IKEA, Target, and Walmart, along with furniture from Wayfair, Amazon, Ashley Furniture, Sauder, and virtually any other brand that comes in a box with assembly instructions. IKEA furniture assembly is one of our specialties - we're experienced with everything from simple IKEA bookcases to complex PAX wardrobe systems and KALLAX storage units. We also regularly assemble Target and Walmart furniture including bedroom sets, office furniture, outdoor patio furniture, storage solutions, and more. Based in Spring Hill, TN, we bring all professional tools and equipment needed for assembly, carefully follow manufacturer instructions, and ensure every piece is stable and secure. Whether you've purchased furniture from a big-box retailer, ordered online, or picked it up locally, Boxed2Built has you covered. We serve Spring Hill, Thompson's Station, Franklin, Columbia, and surrounding areas with reliable furniture assembly services for all major brands."
       },
       {
+        question: "Can someone come put together furniture I already bought?",
+        answer: "Absolutely — that's exactly what we do. Whether your furniture came from IKEA, Wayfair, Amazon, Target, Walmart, Costco, Ashley Furniture, Pottery Barn, or any other retailer, Boxed2Built will come to your home in Spring Hill, TN and handle the full assembly from start to finish. You bought it, we build it. No tools needed, no confusing instructions — just finished furniture ready to use."
+      },
+      {
+        question: "Do you assemble flat pack furniture that comes in a box?",
+        answer: "Yes — flat pack furniture is our specialty. If it came in a box with parts, hardware, and an instruction manual, we handle it. From IKEA flat pack wardrobes and Wayfair dressers to Target bookshelves and Amazon desks, we unbox, build, place, and haul away every bit of packaging. Serving Spring Hill, Franklin, Columbia, and Thompson's Station, TN."
+      },
+      {
         question: "How is Boxed2Built different from Taskrabbit, Thumbtack, Angi, or retailer assembly services?",
         answer: "Boxed2Built is a direct local furniture assembly company, not a lead marketplace. With Taskrabbit, Thumbtack, and Angi, you typically browse profiles, compare availability, and hire independent contractors who may vary in tools, process, and consistency. Boxed2Built gives you one dedicated local team with clear communication, transparent pricing, and a consistent build-day process from start to finish. Compared with retailer assembly add-ons, we also offer more flexibility across brands, personalized placement, and full packaging cleanup. Our focus is quality workmanship, dependable scheduling, and a cleaner, stress-free experience for families in Spring Hill, Franklin, Columbia, and nearby areas."
       }
@@ -256,8 +278,8 @@ export const FAQ_CONTENT = [
     category: "Services & Pricing",
     questions: [
       {
-        question: "How much does furniture assembly cost?",
-        answer: "Our transparent pricing starts at $85 for small furniture items like chairs and nightstands, $185 for tables and desks, $220 for storage and shelving units, $320 for dressers, and $295 for bed frames. All prices include complete assembly, hardware installation, placement, debris cleanup, and quality inspection. We provide detailed quotes for your specific furniture pieces."
+        question: "How much does furniture assembly cost in Spring Hill, TN?",
+        answer: "Our transparent pricing starts at $85 for small items like chairs and nightstands, $185 for tables and desks, $220 for storage and shelving units, $295 for bed frames, and $320 for dressers. TV mounting starts at $125. Volume discounts apply when you have multiple pieces. All prices include complete assembly, hardware installation, placement, debris cleanup, and a quality inspection — no hidden fees. Call or text us for a free quote on your specific items."
       },
       {
         question: "What's included in the assembly price?",
@@ -293,8 +315,12 @@ export const FAQ_CONTENT = [
         answer: "We're available Monday through Friday from 8:00 AM to 5:00 PM and Saturdays from 9:00 AM to 5:00 PM. We understand that flexible scheduling is important for busy families, so we offer weekday and weekend appointments to accommodate your needs. Contact us to find a time that works best for you."
       },
       {
-        question: "Do you offer same-day or next-day service?",
-        answer: "We strive to accommodate urgent assembly needs whenever possible. While availability varies based on our schedule, we often can provide same-day or next-day service for simple projects. Contact us as soon as possible to check availability for rush service."
+        question: "Do you offer same-day furniture assembly in Spring Hill?",
+        answer: "Yes — we do our best to accommodate same-day and next-day requests when our schedule allows. If your furniture just arrived and you need it built fast, contact us right away and we'll fit you in whenever possible. Call or text us at {{phoneDisplay}} to check same-day availability in Spring Hill, Franklin, Columbia, and surrounding areas."
+      },
+      {
+        question: "Do you offer weekend furniture assembly near me?",
+        answer: "Yes! We work Monday through Friday 8 AM–5 PM and Saturdays 9 AM–5 PM, so weekend assembly is available and popular with busy families. Whether you need IKEA furniture assembled on a Saturday or a Wayfair order built after a weekday delivery, we work around your schedule. Book in advance to secure your preferred weekend slot."
       },
       {
         question: "How far in advance should I book?",
@@ -370,6 +396,14 @@ export const FAQ_CONTENT = [
       {
         question: "What if parts are missing or damaged?",
         answer: "We carefully inventory all parts and hardware before beginning assembly. If we discover missing or damaged parts, we'll notify you immediately and help you contact the retailer or manufacturer for replacement parts. We can then schedule a follow-up visit to complete the assembly once replacement parts arrive."
+      },
+      {
+        question: "Do you assemble cribs and nursery furniture near Spring Hill?",
+        answer: "Yes — nursery and crib assembly is one of our most requested services. We take extra care with baby furniture to ensure every joint is tight, every bolt is properly torqued, and all safety standards are met. Whether it's a crib, dresser, changing table, glider, or a full nursery set from IKEA, Wayfair, Amazon, or any other brand, Boxed2Built handles it safely and completely. Serving Spring Hill, Franklin, Thompson's Station, and Columbia, TN."
+      },
+      {
+        question: "Do you assemble playsets or swing sets in Spring Hill, TN?",
+        answer: "Yes — we assemble outdoor playsets and swing sets in Spring Hill and surrounding areas. Playset assembly can take several hours and is much safer and easier with a professional. We follow manufacturer instructions precisely and double-check every structural connection to make sure it's safe for kids. Contact us for a quote on your specific playset model."
       },
       {
         question: "Do you anchor furniture to walls for safety?",

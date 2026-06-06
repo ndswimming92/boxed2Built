@@ -84,11 +84,14 @@ const FurnitureAssemblyPage: React.FC = () => {
             <div className="max-w-6xl mx-auto mt-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                 <div className="text-center lg:text-left">
-                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                    Professional Furniture Assembly Services in Spring Hill, TN
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Furniture Assembly in Spring Hill, TN
                   </h1>
-                  <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-                    Expert assembly for IKEA, Target, Walmart, Wayfair, and Amazon furniture. Fast, reliable service with transparent pricing and no hidden fees.
+                  <p className="text-xl font-medium text-blue-700 mb-4">
+                    Got furniture in a box? We build it.
+                  </p>
+                  <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                    Hire a local furniture assembler for IKEA, Wayfair, Amazon, Target, Walmart, Costco, and more. Flat pack, ready-to-assemble, or anything that came in a box — we handle it from start to finish with no hidden fees.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <CallButton size="lg" pageSection="furniture_assembly_hero" />
@@ -282,20 +285,59 @@ const FurnitureAssemblyPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
                 {[
                   'IKEA',
-                  'Target',
-                  'Walmart',
                   'Wayfair',
                   'Amazon',
+                  'Target',
+                  'Walmart',
+                  'Costco',
                   'Ashley Furniture',
+                  'Pottery Barn',
+                  'Crate & Barrel',
                   'Sauder',
                   'Better Homes & Gardens',
-                  'Mainstays',
                   'Room Essentials',
                   'Threshold',
+                  'Mainstays',
+                  'Article',
                   'And Many More'
                 ].map((brand, index) => (
                   <div key={index} className="bg-blue-600 rounded-lg p-4 font-semibold">
                     {brand}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* What We Assemble */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                What We Assemble
+              </h2>
+              <p className="text-lg text-gray-600 text-center mb-10">
+                If it came in a box with instructions, we can build it — from nursery cribs to backyard playsets.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[
+                  { item: 'Cribs & Nursery Sets', note: 'Safety-first assembly' },
+                  { item: 'Bed Frames', note: 'All sizes & styles' },
+                  { item: 'Dressers & Armoires', note: 'IKEA PAX & more' },
+                  { item: 'Desks & Office Furniture', note: 'Home & standing desks' },
+                  { item: 'Bookshelves & Storage', note: 'KALLAX, BILLY & more' },
+                  { item: 'Dining Tables & Chairs', note: 'Indoor & outdoor' },
+                  { item: 'TV Stands & Media Centers', note: 'Any brand' },
+                  { item: 'Patio & Outdoor Furniture', note: 'Lounge sets, grills' },
+                  { item: 'Playsets & Swing Sets', note: 'Backyard builds' },
+                  { item: 'Coffee & End Tables', note: 'Living room ready' },
+                  { item: 'Wardrobes & Closet Systems', note: 'Full configurations' },
+                  { item: 'Exercise Equipment', note: 'Treadmills, weights' },
+                ].map(({ item, note }, index) => (
+                  <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="font-semibold text-gray-900 text-sm">{item}</p>
+                    <p className="text-xs text-blue-600 mt-1">{note}</p>
                   </div>
                 ))}
               </div>
