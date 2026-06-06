@@ -168,13 +168,15 @@ const Footer: React.FC = () => {
   const closedDays = businessHours.filter((h) => h.is_closed);
 
   return (
-    <footer className="bg-gray-900 text-white pt-10 pb-6">
+    <footer className="bg-gray-900 text-white pt-12 pb-6">
       <div className="container mx-auto px-4">
-        {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-10">
-          {/* Brand + NAP */}
-          <div>
-            <div className="flex items-center justify-center md:justify-start mb-3">
+
+        {/* Top section — 3-col grid: Brand | Hours+Info | CTA */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-10">
+
+          {/* Col 1: Brand + NAP + Social */}
+          <div className="flex flex-col">
+            <div className="flex items-center justify-center md:justify-start mb-4">
               <img
                 src="/white_boxed2built_logo.png"
                 alt={`${businessName} - Furniture Assembly in ${locality}, ${region}`}
@@ -187,7 +189,7 @@ const Footer: React.FC = () => {
               />
             </div>
 
-            <p className="text-gray-300 text-sm leading-relaxed text-center md:text-left mb-5">
+            <p className="text-gray-300 text-sm leading-relaxed text-center md:text-left mb-3">
               Professional furniture assembly for IKEA, Target, Walmart & all major brands — serving{' '}
               {locality}, {region} and nearby communities.
             </p>
@@ -196,61 +198,89 @@ const Footer: React.FC = () => {
               {slogan}
             </p>
 
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left mb-5">
               <NAPConsistency data={napData} showAddress={true} variant="footer" />
             </div>
 
-            {/* Review CTA */}
-            <div className="mt-5 flex flex-col items-center md:items-start gap-3">
+            {/* Social icons */}
+            <div className="flex items-center justify-center md:justify-start gap-4 mt-auto">
+              {socialMedia.map((social) => {
+                const platform = social.platform.toLowerCase();
+                const label = social.platform;
+                let Icon = Mail;
+                if (platform.includes('facebook')) Icon = Facebook;
+                else if (platform.includes('instagram')) Icon = Instagram;
+                else if (platform.includes('youtube')) Icon = Youtube;
+                else if (platform.includes('linkedin')) Icon = Linkedin;
+                return (
+                  <a
+                    key={social.id}
+                    href={getSocialUrl(platform, social.profile_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label={label}
+                    onClick={() => handleSocialClick(platform)}
+                  >
+                    <Icon size={20} title={label} />
+                  </a>
+                );
+              })}
               <a
-                href={getGoogleReviewUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition text-sm"
-                aria-label="Leave Boxed2Built a Google review"
-                onClick={handleReviewClick}
+                href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Email Boxed2Built"
+                onClick={() => handleSocialClick('email')}
               >
-                <Star size={16} className="fill-current mr-2" />
-                Leave a Google Review
+                <Mail size={20} title="Email" />
               </a>
-
-              <p className="text-[11px] text-gray-300">
-                Reviews help local families find us faster.
-              </p>
+              <a
+                href={`tel:${phoneTel}`}
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Call Boxed2Built"
+                onClick={() => handleSocialClick('phone')}
+              >
+                <Phone size={20} title="Phone" />
+              </a>
             </div>
           </div>
 
-          {/* Hours + Areas + Payment */}
-          <div>
-            <h3 className="font-semibold text-white mb-3 text-base flex items-center gap-2">
-              <Clock size={18} className="text-emerald-400" />
-              Business Hours
-            </h3>
-
-            <ul className="space-y-2 text-sm text-gray-300">
-              {openDays.length > 0 ? (
-                openDays.map((hour, index) => (
-                  <li key={index}>
-                    <span className="font-medium text-white">{hour.day_of_week}:</span>{' '}
-                    {hour.opens && hour.closes ? `${formatTime(hour.opens)} – ${formatTime(hour.closes)}` : 'Closed'}
+          {/* Col 2: Hours + Service Areas + Payment */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                <Clock size={15} className="text-emerald-400" />
+                Business Hours
+              </h3>
+              <ul className="space-y-1.5 text-sm text-gray-300">
+                {openDays.length > 0 ? (
+                  openDays.map((hour, index) => (
+                    <li key={index} className="flex justify-between gap-4">
+                      <span className="font-medium text-white">{hour.day_of_week}</span>
+                      <span>
+                        {hour.opens && hour.closes
+                          ? `${formatTime(hour.opens)} – ${formatTime(hour.closes)}`
+                          : 'Closed'}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="flex justify-between gap-4">
+                    <span className="font-medium text-white">Mon–Fri</span>
+                    <span>8:00 AM – 6:00 PM</span>
                   </li>
-                ))
-              ) : (
-                <li>
-                  <span className="font-medium text-white">Mon–Fri:</span> 8:00 AM – 6:00 PM
-                </li>
-              )}
+                )}
+                {closedDays.length > 0 && (
+                  <li className="text-gray-500 italic text-xs pt-1">
+                    Closed: {closedDays.map((h) => h.day_of_week).join(', ')}
+                  </li>
+                )}
+              </ul>
+            </div>
 
-              {closedDays.length > 0 && (
-                <li className="text-gray-400 italic text-xs pt-1">
-                  Closed: {closedDays.map((h) => h.day_of_week).join(', ')}
-                </li>
-              )}
-            </ul>
-
-            <div className="mt-6">
-              <h3 className="font-semibold text-white mb-3 text-base flex items-center gap-2">
-                <MapPin size={18} className="text-blue-300" />
+            <div>
+              <h3 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                <MapPin size={15} className="text-blue-300" />
                 Service Areas
               </h3>
               <p className="text-sm text-gray-300 leading-relaxed">
@@ -260,22 +290,48 @@ const Footer: React.FC = () => {
               </p>
             </div>
 
-            <div className="mt-6">
-              <h3 className="font-semibold text-white mb-3 text-base flex items-center gap-2">
-                <CreditCard size={18} className="text-amber-300" />
+            <div>
+              <h3 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                <CreditCard size={15} className="text-amber-300" />
                 Payment
               </h3>
               <p className="text-sm text-gray-300 leading-relaxed">
                 {paymentMethods.length > 0 ? paymentMethods.join(' • ') : 'Credit/Debit Cards • Cash'}
               </p>
-              <p className="text-[11px] text-gray-400 mt-2 italic">Payment due upon completion.</p>
+              <p className="text-[11px] text-gray-500 mt-1 italic">Payment due upon completion.</p>
             </div>
+          </div>
+
+          {/* Col 3: Review CTA + Quick Contact Form */}
+          <div className="flex flex-col gap-5">
+            <div className="bg-gray-800 rounded-xl p-5 flex flex-col items-center text-center gap-3">
+              <Star size={22} className="text-yellow-400 fill-yellow-400" />
+              <p className="text-sm text-gray-200 leading-snug">
+                Happy with our service? Leave us a review — it helps local families find us faster.
+              </p>
+              <a
+                href={getGoogleReviewUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow transition text-sm w-full"
+                aria-label="Leave Boxed2Built a Google review"
+                onClick={handleReviewClick}
+              >
+                Leave a Google Review
+              </a>
+            </div>
+
+            <QuickContactForm />
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav aria-label="Footer navigation" className="mb-10">
-          <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+        {/* Divider */}
+        <div className="border-t border-gray-800 mb-8" />
+
+        {/* Navigation Links — 4 cols */}
+        <nav aria-label="Footer navigation" className="mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-7">
+            {/* Services */}
             <div>
               <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
                 {serviceLinksSection.title}
@@ -285,7 +341,7 @@ const Footer: React.FC = () => {
                   <li key={link.href}>
                     <InternalLink
                       href={link.href}
-                      className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors"
                       trackingCategory="footer_nav"
                     >
                       {link.label}
@@ -295,33 +351,55 @@ const Footer: React.FC = () => {
               </ul>
             </div>
 
-            {footerLinkSections.map((section) => (
-              <div key={section.title}>
-                <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">{section.title}</h3>
-                <ul className="space-y-2 text-sm">
-                  {section.links.map((link) => (
+            {/* Company + Gift Cards */}
+            {footerLinkSections
+              .filter((s) => s.title !== 'Support')
+              .map((section) => (
+                <div key={section.title}>
+                  <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    {section.links.map((link) => (
+                      <li key={link.href}>
+                        <InternalLink
+                          href={link.href}
+                          className="text-gray-400 hover:text-white transition-colors"
+                          trackingCategory="footer_nav"
+                        >
+                          {link.label}
+                        </InternalLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+
+            {/* Support + Client Access — merged */}
+            <div>
+              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+                Help & Access
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {footerLinkSections
+                  .filter((s) => s.title === 'Support')
+                  .flatMap((s) => s.links)
+                  .map((link) => (
                     <li key={link.href}>
                       <InternalLink
                         href={link.href}
-                        className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                        className="text-gray-400 hover:text-white transition-colors"
                         trackingCategory="footer_nav"
                       >
                         {link.label}
                       </InternalLink>
                     </li>
                   ))}
-                </ul>
-              </div>
-            ))}
-
-            <div>
-              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">Client Access</h3>
-              <ul className="space-y-2 text-sm">
                 {clientAccessLinks.map((link) => (
                   <li key={link.href}>
                     <InternalLink
                       href={link.href}
-                      className="whitespace-nowrap text-gray-300 hover:text-white transition-colors"
+                      className="text-gray-400 hover:text-white transition-colors"
                       trackingCategory="footer_nav"
                       onClick={() => {
                         if (link.href === '/portal/login') {
@@ -332,7 +410,6 @@ const Footer: React.FC = () => {
                             action_value: '/portal/login',
                           });
                         }
-
                         if (link.href === '/lookup-request') {
                           trackEvent('request_lookup_nav_click', 'footer', {
                             event_category: 'navigation',
@@ -352,63 +429,15 @@ const Footer: React.FC = () => {
           </div>
         </nav>
 
-        {/* Social + Contact Row */}
+        {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 sm:gap-4">
-              <span className="text-sm text-gray-300 font-medium">Connect with us</span>
-              <div className="flex items-center gap-4">
-                {socialMedia.map((social) => {
-                  const platform = social.platform.toLowerCase();
-                  const label = social.platform;
-
-                  let Icon = Mail;
-                  if (platform.includes('facebook')) Icon = Facebook;
-                  else if (platform.includes('instagram')) Icon = Instagram;
-                  else if (platform.includes('youtube')) Icon = Youtube;
-                  else if (platform.includes('linkedin')) Icon = Linkedin;
-
-                  return (
-                    <a
-                      key={social.id}
-                      href={getSocialUrl(platform, social.profile_url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-300 hover:text-white transition-colors"
-                      aria-label={label}
-                      onClick={() => handleSocialClick(platform)}
-                    >
-                      <Icon size={22} title={label} />
-                    </a>
-                  );
-                })}
-
-                <a
-                  href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Email Boxed2Built"
-                  onClick={() => handleSocialClick('email')}
-                >
-                  <Mail size={22} title="Email" />
-                </a>
-
-                <a
-                  href={`tel:${phoneTel}`}
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Call Boxed2Built"
-                  onClick={() => handleSocialClick('phone')}
-                >
-                  <Phone size={22} title="Phone" />
-                </a>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-gray-300 text-center md:text-right leading-relaxed">
-              Local furniture assembly near you — serving {locality}, {region} and nearby areas.
-              {' '}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs text-gray-500 mb-5">
+            <p>&copy; {currentYear} {businessName}. All rights reserved.</p>
+            <p className="text-center md:text-right">
+              Local furniture assembly near you — serving {locality}, {region} and nearby areas.{' '}
               <InternalLink
                 href="/services"
-                className="text-blue-100 hover:text-white underline"
+                className="text-gray-400 hover:text-white underline"
                 trackingCategory="footer_content"
               >
                 View services
@@ -417,45 +446,38 @@ const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Contact Form */}
-          <div className="mt-8 max-w-2xl mx-auto">
-            <QuickContactForm />
-          </div>
-
-          <div className="text-center text-xs text-gray-300 mt-6 space-y-2">
-            <div>&copy; {currentYear} {businessName}. All rights reserved.</div>
-
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <p className="text-xs text-gray-500 mb-2">Sitemap</p>
-              <div className="flex flex-wrap justify-center gap-y-1">
-                {sitemapLinks.map((link, index) => (
-                  <React.Fragment key={link.href}>
-                    <a
-                      href={link.href}
-                      className="text-xs text-gray-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
-                      onClick={() =>
-                        trackEvent('link_click', 'footer', {
-                          event_category: 'navigation',
-                          event_label: `sitemap_${link.label.toLowerCase().replace(/\s+/g, '_')}`,
-                          element_type: 'link',
-                          element_location: 'footer_sitemap',
-                          page_section: 'footer',
-                          action_type: 'click',
-                          action_value: link.href,
-                        })
-                      }
-                    >
-                      {link.label}
-                    </a>
-                    {index < sitemapLinks.length - 1 && (
-                      <span className="mx-1 text-gray-600">|</span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+          {/* Sitemap */}
+          <div className="pt-4 border-t border-gray-800">
+            <p className="text-xs text-gray-600 mb-2 text-center">Sitemap</p>
+            <div className="flex flex-wrap justify-center gap-y-1">
+              {sitemapLinks.map((link, index) => (
+                <React.Fragment key={link.href}>
+                  <a
+                    href={link.href}
+                    className="text-xs text-gray-600 underline hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+                    onClick={() =>
+                      trackEvent('link_click', 'footer', {
+                        event_category: 'navigation',
+                        event_label: `sitemap_${link.label.toLowerCase().replace(/\s+/g, '_')}`,
+                        element_type: 'link',
+                        element_location: 'footer_sitemap',
+                        page_section: 'footer',
+                        action_type: 'click',
+                        action_value: link.href,
+                      })
+                    }
+                  >
+                    {link.label}
+                  </a>
+                  {index < sitemapLinks.length - 1 && (
+                    <span className="mx-1 text-gray-700">|</span>
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </div>
+
       </div>
     </footer>
   );
