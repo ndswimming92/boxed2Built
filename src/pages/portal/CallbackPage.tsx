@@ -50,11 +50,23 @@ export default function PortalCallbackPage() {
 
       void (async () => {
         const userEmail = user.email?.toLowerCase() ?? '';
+        const fullName = user.user_metadata?.full_name ?? user.user_metadata?.name ?? null;
+        let linked = false;
+
         if (userEmail.endsWith('@gmail.com')) {
           try {
-            await portalAccountLinkingService.autoLinkGmailAccount(userEmail);
+            const result = await portalAccountLinkingService.autoLinkGmailAccount(userEmail);
+            linked = result.status === 'linked' || result.status === 'already_linked';
           } catch {
             // best-effort auto-linking; do not block sign-in flow
+          }
+        }
+
+        if (!linked && userEmail) {
+          try {
+            await portalAccountLinkingService.autoCreatePortalCustomer(userEmail, fullName);
+          } catch {
+            // best-effort auto-create; do not block sign-in flow
           }
         }
 

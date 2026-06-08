@@ -116,11 +116,11 @@ export default function PortalDashboardPage() {
       ) : null}
 
       {!loading && needsAccountLinking ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-          <p className="font-medium">No linked records found for this portal account yet.</p>
-          <p className="mt-1">Use the secure account-linking flow to connect your existing customer history.</p>
-          <Link to="/portal/link-account" className="mt-3 inline-flex rounded-md bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
-            Link my account
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+          <p className="font-medium">Welcome to your Client Portal!</p>
+          <p className="mt-1">Your account is set up. If you have existing service history under a different email, you can link it below.</p>
+          <Link to="/portal/link-account" className="mt-3 inline-flex rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">
+            Link existing records
           </Link>
         </div>
       ) : null}

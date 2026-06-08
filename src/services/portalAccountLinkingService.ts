@@ -5,6 +5,7 @@ export type VerificationMethod = 'email';
 export type StartLinkStatus = 'token_created' | 'no_match' | 'ambiguous';
 export type ConsumeLinkStatus = 'linked' | 'invalid_token' | 'already_linked';
 export type GmailAutoLinkStatus = 'linked' | 'not_gmail' | 'no_match' | 'ambiguous' | 'already_linked';
+export type AutoCreateStatus = 'created' | 'already_exists' | 'linked_existing' | 'missing_email' | 'no_organization';
 
 export interface StartLinkResult {
   status: StartLinkStatus;
@@ -26,6 +27,11 @@ export interface GmailAutoLinkResult {
   customerId: string | null;
   linkedJobs: number;
   linkedInvoices: number;
+}
+
+export interface AutoCreateResult {
+  status: AutoCreateStatus;
+  customerId: string | null;
 }
 
 interface SendPortalVerificationEmailPayload {
@@ -115,6 +121,25 @@ export const portalAccountLinkingService = {
       customerId: row?.customer_id ?? null,
       linkedJobs: row?.linked_jobs ?? 0,
       linkedInvoices: row?.linked_invoices ?? 0,
+    };
+  },
+
+  async autoCreatePortalCustomer(email: string, fullName: string | null): Promise<AutoCreateResult> {
+    const { data, error } = await supabase.rpc('auto_create_portal_customer', {
+      p_email: email,
+      p_full_name: fullName,
+      p_request_user_agent: getUserAgent(),
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Failed to create portal account.');
+    }
+
+    const row = Array.isArray(data) ? data[0] : null;
+
+    return {
+      status: (row?.status ?? 'missing_email') as AutoCreateStatus,
+      customerId: row?.customer_id ?? null,
     };
   },
 };
