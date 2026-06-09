@@ -26,98 +26,83 @@ export async function optimizeImage(
 ): Promise<OptimizedImage> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+  const objectUrl = URL.createObjectURL(file);
 
-    reader.onload = (e) => {
-      img.src = e.target?.result as string;
-    };
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('Failed to load image'));
+      image.src = objectUrl;
+    });
 
-    reader.onerror = () => reject(new Error('Failed to read image file'));
+    let { width, height } = img;
 
-    img.onload = () => {
-      try {
-        let { width, height } = img;
+    if (width > opts.maxWidth || height > opts.maxHeight) {
+      const aspectRatio = width / height;
 
-        if (width > opts.maxWidth || height > opts.maxHeight) {
-          const aspectRatio = width / height;
-
-          if (width > height) {
-            width = Math.min(width, opts.maxWidth);
-            height = Math.round(width / aspectRatio);
-          } else {
-            height = Math.min(height, opts.maxHeight);
-            width = Math.round(height * aspectRatio);
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
-        }
-
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const mimeType = opts.convertToWebP ? 'image/webp' : file.type;
-        const extension = opts.convertToWebP ? 'webp' : file.name.split('.').pop();
-        const fileName = file.name.replace(/\.[^.]+$/, `.${extension}`);
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Failed to create blob from canvas'));
-              return;
-            }
-
-            const optimizedFile = new File([blob], fileName, {
-              type: mimeType,
-              lastModified: Date.now(),
-            });
-
-            canvas.toBlob(
-              (dataUrlBlob) => {
-                if (!dataUrlBlob) {
-                  reject(new Error('Failed to create data URL blob'));
-                  return;
-                }
-
-                const dataUrlReader = new FileReader();
-                dataUrlReader.onload = () => {
-                  resolve({
-                    file: optimizedFile,
-                    dataUrl: dataUrlReader.result as string,
-                    width,
-                    height,
-                    size: optimizedFile.size,
-                  });
-                };
-                dataUrlReader.onerror = () => reject(new Error('Failed to read data URL'));
-                dataUrlReader.readAsDataURL(dataUrlBlob);
-              },
-              mimeType,
-              opts.quality
-            );
-          },
-          mimeType,
-          opts.quality
-        );
-      } catch (error) {
-        reject(error);
+      if (width > height) {
+        width = Math.min(width, opts.maxWidth);
+        height = Math.round(width / aspectRatio);
+      } else {
+        height = Math.min(height, opts.maxHeight);
+        width = Math.round(height * aspectRatio);
       }
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const mimeType = opts.convertToWebP ? 'image/webp' : file.type;
+    const extension = opts.convertToWebP ? 'webp' : file.name.split('.').pop();
+    const fileName = file.name.replace(/\.[^.]+$/, `.${extension}`);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => {
+          if (!b) {
+            reject(new Error('Failed to create optimized image blob'));
+            return;
+          }
+          resolve(b);
+        },
+        mimeType,
+        opts.quality
+      );
+    });
+
+    const optimizedFile = new File([blob], fileName, {
+      type: mimeType,
+      lastModified: Date.now(),
+    });
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const dataUrlReader = new FileReader();
+      dataUrlReader.onload = () => resolve(dataUrlReader.result as string);
+      dataUrlReader.onerror = () => reject(new Error('Failed to create data URL'));
+      dataUrlReader.readAsDataURL(blob);
+    });
+
+    return {
+      file: optimizedFile,
+      dataUrl,
+      width,
+      height,
+      size: optimizedFile.size,
     };
-
-    img.onerror = () => reject(new Error('Failed to load image'));
-
-    reader.readAsDataURL(file);
-  });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 
 export async function optimizeImages(
