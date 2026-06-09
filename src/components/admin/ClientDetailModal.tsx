@@ -103,6 +103,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const invoiceCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [businessId, setBusinessId] = useState<string | null>(null);
 
+  // Quote email state
+  const [selectedQuoteJobId, setSelectedQuoteJobId] = useState<string>('');
+  const [quoteSending, setQuoteSending] = useState(false);
+  const [quoteMessage, setQuoteMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [quoteCooldownRemaining, setQuoteCooldownRemaining] = useState<number>(0);
+  const quoteCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const getAddressDirectionsUrl = useCallback((address: string) => {
     const encodedAddress = encodeURIComponent(address);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -168,6 +175,29 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     startInvoiceCooldownTimer(currentClient.last_invoice_email_sent_at ?? null);
     return () => { if (invoiceCooldownTimerRef.current) clearInterval(invoiceCooldownTimerRef.current); };
   }, [currentClient.last_invoice_email_sent_at, startInvoiceCooldownTimer]);
+
+  const startQuoteCooldownTimer = useCallback((sentAt: string | null) => {
+    if (quoteCooldownTimerRef.current) clearInterval(quoteCooldownTimerRef.current);
+    if (!sentAt) { setQuoteCooldownRemaining(0); return; }
+    const elapsed = Date.now() - new Date(sentAt).getTime();
+    const remaining = Math.max(0, COOLDOWN_MS - elapsed);
+    setQuoteCooldownRemaining(Math.ceil(remaining / 1000));
+    if (remaining <= 0) return;
+    quoteCooldownTimerRef.current = setInterval(() => {
+      setQuoteCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          if (quoteCooldownTimerRef.current) clearInterval(quoteCooldownTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [COOLDOWN_MS]);
+
+  useEffect(() => {
+    startQuoteCooldownTimer(currentClient.last_quote_email_sent_at ?? null);
+    return () => { if (quoteCooldownTimerRef.current) clearInterval(quoteCooldownTimerRef.current); };
+  }, [currentClient.last_quote_email_sent_at, startQuoteCooldownTimer]);
 
   useEffect(() => {
     loadClientDetails();
@@ -442,6 +472,32 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setInvoiceMessage({ type: 'error', text: 'Failed to send invoice email. Please try again.' });
     } finally {
       setInvoiceSending(false);
+    }
+  }
+
+  async function handleSendQuoteEmail() {
+    if (!selectedQuoteJobId || !currentClient.email || quoteSending || quoteCooldownRemaining > 0) return;
+    setQuoteSending(true);
+    setQuoteMessage(null);
+    try {
+      const { sendQuoteEmail } = await import('../../services/quoteEmailService');
+      const result = await sendQuoteEmail(currentClient.id, currentClient.organization_id, selectedQuoteJobId);
+      if (!result.success) {
+        if (result.error === 'cooldown') {
+          startQuoteCooldownTimer(new Date(Date.now() - (COOLDOWN_MS - (result.remainingSeconds ?? 0) * 1000)).toISOString());
+          setQuoteMessage({ type: 'error', text: 'Quote email was sent recently. Please wait before sending again.' });
+        } else {
+          setQuoteMessage({ type: 'error', text: result.error ?? 'Failed to send quote email.' });
+        }
+        return;
+      }
+      setCurrentClient((prev) => ({ ...prev, last_quote_email_sent_at: result.sentAt ?? null }));
+      setQuoteMessage({ type: 'success', text: 'Quote email sent successfully.' });
+      setSelectedQuoteJobId('');
+    } catch {
+      setQuoteMessage({ type: 'error', text: 'Failed to send quote email. Please try again.' });
+    } finally {
+      setQuoteSending(false);
     }
   }
 
@@ -1017,6 +1073,67 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 Last sent {currentClient.last_followup_email_sent_at ? formatDateTime(currentClient.last_followup_email_sent_at) : ''}. Can resend after cooldown.
               </p>
             )}
+          </div>
+        )}
+
+        {/* Send Quote Email */}
+        {currentClient.email && history && history.jobs.filter((j: any) => j.quoted_price != null).length > 0 && (
+          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="w-5 h-5 text-blue-600" />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Send Quote Email</h3>
+                <p className="text-sm text-gray-500 mt-0.5">Send a pricing quote for a selected job (valid 7 days)</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Select Job</label>
+                <div className="relative">
+                  <select
+                    value={selectedQuoteJobId}
+                    onChange={(e) => { setSelectedQuoteJobId(e.target.value); setQuoteMessage(null); }}
+                    disabled={quoteCooldownRemaining > 0}
+                    className="w-full appearance-none px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">— Choose a job with a quote —</option>
+                    {history.jobs.filter((j: any) => j.quoted_price != null).map((job: any) => (
+                      <option key={job.id} value={job.id}>
+                        {job.job_type || 'Job'} — ${Number(job.quoted_price).toFixed(0)} — {formatDate(job.created_at)}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={handleSendQuoteEmail}
+                  disabled={!selectedQuoteJobId || quoteSending || quoteCooldownRemaining > 0}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  {quoteSending
+                    ? 'Sending...'
+                    : quoteCooldownRemaining > 0
+                    ? `Available in ${quoteCooldownRemaining >= 60 ? `${Math.ceil(quoteCooldownRemaining / 60)}m` : `${quoteCooldownRemaining}s`}`
+                    : 'Send Quote'}
+                </button>
+              </div>
+
+              {quoteMessage && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${quoteMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                  {quoteMessage.text}
+                </div>
+              )}
+              {quoteCooldownRemaining > 0 && !quoteMessage && (
+                <p className="text-xs text-gray-500">
+                  Last sent {currentClient.last_quote_email_sent_at ? formatDateTime(currentClient.last_quote_email_sent_at) : ''}. Can resend after cooldown.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
