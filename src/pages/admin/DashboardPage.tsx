@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
-import { getRecentInquiries, getInquiryStats } from '../../services/inquiryService';
+import { getRecentInquiries, getInquiryStats, getAvgResponseTime, type ResponseTimeStats } from '../../services/inquiryService';
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
 import { getReferralStats } from '../../services/clientService';
 import { calculateClientTimeSaved } from '../../services/analyticsService';
@@ -92,6 +92,7 @@ export default function DashboardPage() {
   const [goalStats, setGoalStats] = useState({ totalGoals: 0, completedGoals: 0, overdueGoals: 0, completionRate: 0 });
   const [upcomingGoals, setUpcomingGoals] = useState<Goal[]>([]);
   const [pendingReminders, setPendingReminders] = useState<DashboardReminder[]>([]);
+  const [responseTimeStats, setResponseTimeStats] = useState<ResponseTimeStats | null>(null);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
@@ -175,6 +176,8 @@ export default function DashboardPage() {
       setGoalStats(goalStatsData);
       setUpcomingGoals(upcomingGoalsData);
 
+      getAvgResponseTime(businessInfo.id).then(setResponseTimeStats).catch(() => {});
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const reminders = (remindersData || []) as DashboardReminder[];
@@ -231,6 +234,22 @@ export default function DashboardPage() {
   };
 
   const clientTimeSaved = calculateClientTimeSaved([stats.totalHoursSaved]);
+
+  const formatResponseTime = (seconds: number | null): string => {
+    if (seconds === null) return 'N/A';
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    return `${minutes}m`;
+  };
+
+  const getResponseTimeColor = (seconds: number | null): string => {
+    if (seconds === null) return 'bg-slate-500';
+    const hours = seconds / 3600;
+    if (hours < 1) return 'bg-emerald-500';
+    if (hours < 4) return 'bg-amber-500';
+    return 'bg-red-500';
+  };
 
   const statCards = [
     {
@@ -306,6 +325,22 @@ export default function DashboardPage() {
       icon: Inbox,
       link: '/admin/inquiries',
       color: 'bg-cyan-500'
+    },
+    {
+      name: 'Avg Response (30d)',
+      value: formatResponseTime(responseTimeStats?.avgSeconds30d ?? null),
+      subtitle: responseTimeStats?.sampleSize30d ? `Based on ${responseTimeStats.sampleSize30d} inquiries` : undefined,
+      icon: Clock,
+      link: '/admin/inquiries',
+      color: getResponseTimeColor(responseTimeStats?.avgSeconds30d ?? null),
+    },
+    {
+      name: 'Avg Response (All)',
+      value: formatResponseTime(responseTimeStats?.avgSecondsAllTime ?? null),
+      subtitle: responseTimeStats?.sampleSizeAllTime ? `Based on ${responseTimeStats.sampleSizeAllTime} inquiries` : undefined,
+      icon: Clock,
+      link: '/admin/inquiries',
+      color: getResponseTimeColor(responseTimeStats?.avgSecondsAllTime ?? null),
     },
   ];
 

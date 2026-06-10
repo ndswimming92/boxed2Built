@@ -308,6 +308,89 @@ export async function logCommunication(
   return data as FormInquiry;
 }
 
+export async function markAsReachedOut(id: string): Promise<FormInquiry> {
+  const inquiry = await getInquiryById(id);
+  if (!inquiry) {
+    throw new Error('Inquiry not found');
+  }
+
+  const now = new Date().toISOString();
+  const updatePayload: Record<string, unknown> = {
+    last_contact_date: now,
+    contact_method: 'manual',
+    response_count: inquiry.response_count + 1,
+  };
+
+  if (!inquiry.first_responded_at) {
+    updatePayload.first_responded_at = now;
+  }
+
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .update(updatePayload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to mark as reached out: ${error.message}`);
+  }
+
+  return data as FormInquiry;
+}
+
+export interface ResponseTimeStats {
+  avgSecondsAllTime: number | null;
+  avgSeconds30d: number | null;
+  sampleSizeAllTime: number;
+  sampleSize30d: number;
+}
+
+export async function getAvgResponseTime(businessId: string): Promise<ResponseTimeStats> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .select('submission_date, first_responded_at')
+    .eq('business_id', businessId)
+    .eq('is_active', true)
+    .eq('is_test', false)
+    .neq('status', 'archived')
+    .not('first_responded_at', 'is', null);
+
+  if (error || !data) {
+    return { avgSecondsAllTime: null, avgSeconds30d: null, sampleSizeAllTime: 0, sampleSize30d: 0 };
+  }
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  let totalSecondsAll = 0;
+  let countAll = 0;
+  let totalSeconds30d = 0;
+  let count30d = 0;
+
+  for (const row of data) {
+    const submitted = new Date(row.submission_date).getTime();
+    const responded = new Date(row.first_responded_at!).getTime();
+    const diffSeconds = (responded - submitted) / 1000;
+    if (diffSeconds < 0) continue;
+
+    totalSecondsAll += diffSeconds;
+    countAll++;
+
+    if (new Date(row.submission_date) >= thirtyDaysAgo) {
+      totalSeconds30d += diffSeconds;
+      count30d++;
+    }
+  }
+
+  return {
+    avgSecondsAllTime: countAll > 0 ? totalSecondsAll / countAll : null,
+    avgSeconds30d: count30d > 0 ? totalSeconds30d / count30d : null,
+    sampleSizeAllTime: countAll,
+    sampleSize30d: count30d,
+  };
+}
+
 export async function getUnviewedCount(businessId: string): Promise<number> {
   const { count, error } = await supabase
     .from('form_inquiries')

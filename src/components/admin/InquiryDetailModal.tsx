@@ -1,12 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Home, Building2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Home, Building2, Clock } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
-import { archiveInquiry, deleteInquiry } from '../../services/inquiryService';
+import { archiveInquiry, deleteInquiry, markAsReachedOut } from '../../services/inquiryService';
 import { getInvoicesByInquiry } from '../../services/invoiceService';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
 import ClientDetailModal from './ClientDetailModal';
+
+function formatElapsedTime(seconds: number): string {
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  return `${minutes}m`;
+}
+
+function getResponseTimeColor(seconds: number): string {
+  const hours = seconds / 3600;
+  if (hours < 1) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+  if (hours < 4) return 'text-amber-700 bg-amber-50 border-amber-200';
+  return 'text-red-700 bg-red-50 border-red-200';
+}
 
 interface InquiryDetailModalProps {
   inquiry: FormInquiry;
@@ -30,6 +47,10 @@ export default function InquiryDetailModal({
   const [copied, setCopied] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
   const [linkedClient, setLinkedClient] = useState<Client | null>(null);
+  const [reachingOut, setReachingOut] = useState(false);
+  const [localFirstResponded, setLocalFirstResponded] = useState<string | null>(inquiry.first_responded_at);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     loadInvoices();
@@ -37,6 +58,38 @@ export default function InquiryDetailModal({
       getClientById(inquiry.client_id).then(setLinkedClient).catch(() => {});
     }
   }, [inquiry.id]);
+
+  useEffect(() => {
+    setLocalFirstResponded(inquiry.first_responded_at);
+  }, [inquiry.first_responded_at]);
+
+  useEffect(() => {
+    if (localFirstResponded) {
+      const diff = (new Date(localFirstResponded).getTime() - new Date(inquiry.submission_date).getTime()) / 1000;
+      setElapsed(Math.max(0, diff));
+      return;
+    }
+    const update = () => {
+      const diff = (Date.now() - new Date(inquiry.submission_date).getTime()) / 1000;
+      setElapsed(Math.max(0, diff));
+    };
+    update();
+    timerRef.current = setInterval(update, 60000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [inquiry.submission_date, localFirstResponded]);
+
+  const handleReachedOut = async () => {
+    setReachingOut(true);
+    try {
+      await markAsReachedOut(inquiry.id);
+      setLocalFirstResponded(new Date().toISOString());
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('Error marking as reached out:', error);
+    } finally {
+      setReachingOut(false);
+    }
+  };
 
   const loadInvoices = async () => {
     try {
@@ -143,6 +196,36 @@ export default function InquiryDetailModal({
               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
                 Quick Contact
               </span>
+            )}
+          </div>
+
+          {/* Response Time Tracker */}
+          <div className={`flex items-center justify-between p-4 rounded-lg border ${localFirstResponded ? getResponseTimeColor(elapsed) : 'bg-amber-50 border-amber-200'}`}>
+            <div className="flex items-center gap-3">
+              <Clock className={`w-5 h-5 ${localFirstResponded ? 'text-emerald-600' : 'text-amber-600'}`} />
+              <div>
+                {localFirstResponded ? (
+                  <>
+                    <p className="text-sm font-semibold">Responded in {formatElapsedTime(elapsed)}</p>
+                    <p className="text-xs opacity-75">First response logged {new Date(localFirstResponded).toLocaleString()}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold text-amber-800">{formatElapsedTime(elapsed)} since submitted</p>
+                    <p className="text-xs text-amber-600">Waiting for first response</p>
+                  </>
+                )}
+              </div>
+            </div>
+            {!localFirstResponded && (
+              <button
+                onClick={handleReachedOut}
+                disabled={reachingOut}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+              >
+                <Phone className="w-4 h-4" />
+                {reachingOut ? 'Saving...' : 'I Reached Out'}
+              </button>
             )}
           </div>
 

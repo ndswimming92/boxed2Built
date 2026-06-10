@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2 } from 'lucide-react';
+import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock } from 'lucide-react';
 import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
@@ -636,6 +636,55 @@ export default function InquiriesPage() {
                     <p className="text-sm font-bold text-blue-900">{inquiry.estimated_time}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Response Time Indicator */}
+              <div className="mt-3">
+                {inquiry.first_responded_at ? (
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border ${
+                    (() => {
+                      const seconds = (new Date(inquiry.first_responded_at).getTime() - new Date(inquiry.submission_date).getTime()) / 1000;
+                      const hours = seconds / 3600;
+                      if (hours < 1) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                      if (hours < 4) return 'bg-amber-50 text-amber-700 border-amber-200';
+                      return 'bg-red-50 text-red-700 border-red-200';
+                    })()
+                  }`}>
+                    <CheckCircle className="w-3 h-3" />
+                    Responded in {(() => {
+                      const seconds = (new Date(inquiry.first_responded_at).getTime() - new Date(inquiry.submission_date).getTime()) / 1000;
+                      const minutes = Math.floor(seconds / 60);
+                      const hours = Math.floor(minutes / 60);
+                      const days = Math.floor(hours / 24);
+                      if (days > 0) return `${days}d ${hours % 24}h`;
+                      if (hours > 0) return `${hours}h ${minutes % 60}m`;
+                      if (minutes > 0) return `${minutes}m`;
+                      return 'under 1m';
+                    })()}
+                  </span>
+                ) : inquiry.status === 'pending' ? (
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border ${
+                    (() => {
+                      const seconds = (Date.now() - new Date(inquiry.submission_date).getTime()) / 1000;
+                      const hours = seconds / 3600;
+                      if (hours < 1) return 'bg-amber-50 text-amber-700 border-amber-200';
+                      if (hours < 4) return 'bg-orange-50 text-orange-700 border-orange-200';
+                      return 'bg-red-50 text-red-700 border-red-200';
+                    })()
+                  }`}>
+                    <Clock className="w-3 h-3" />
+                    {(() => {
+                      const seconds = (Date.now() - new Date(inquiry.submission_date).getTime()) / 1000;
+                      const minutes = Math.floor(seconds / 60);
+                      const hours = Math.floor(minutes / 60);
+                      const days = Math.floor(hours / 24);
+                      if (days > 0) return `${days}d ${hours % 24}h waiting`;
+                      if (hours > 0) return `${hours}h ${minutes % 60}m waiting`;
+                      if (minutes > 0) return `${minutes}m waiting`;
+                      return 'Just submitted';
+                    })()}
+                  </span>
+                ) : null}
               </div>
 
               {inquiry.notes && (
