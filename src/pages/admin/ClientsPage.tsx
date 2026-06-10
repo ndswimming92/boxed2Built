@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -11,6 +11,7 @@ import {
 } from '../../services/clientService';
 import ClientDetailModal from '../../components/admin/ClientDetailModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
+import MergeClientsModal from '../../components/admin/MergeClientsModal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -31,6 +32,7 @@ export default function ClientsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showMergeModal, setShowMergeModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -342,6 +344,15 @@ export default function ClientsPage() {
               ? `${refreshProgress.processed}/${refreshProgress.total} (${refreshPercent}%)`
               : 'Refresh Metrics'}
           </button>
+          {selectedClients.size === 2 && (
+            <button
+              onClick={() => setShowMergeModal(true)}
+              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 whitespace-nowrap"
+            >
+              <GitMerge className="w-4 h-4" />
+              Merge (2)
+            </button>
+          )}
           {selectedClients.size > 0 && (
             <button
               onClick={() => {
@@ -685,6 +696,25 @@ export default function ClientsPage() {
           onClose={() => setShowExportModal(false)}
         />
       )}
+
+      {showMergeModal && selectedClients.size === 2 && (() => {
+        const ids = Array.from(selectedClients);
+        const a = clients.find(c => c.id === ids[0]);
+        const b = clients.find(c => c.id === ids[1]);
+        if (!a || !b) return null;
+        return (
+          <MergeClientsModal
+            clientA={a}
+            clientB={b}
+            onClose={() => setShowMergeModal(false)}
+            onMerged={() => {
+              setShowMergeModal(false);
+              setSelectedClients(new Set());
+              loadData();
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }

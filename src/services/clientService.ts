@@ -432,6 +432,39 @@ export async function getOrCreateClientByEmail(
   return data;
 }
 
+// Merge two clients: keeps one, discards the other, reassigns all related records
+export async function mergeClients(keepClientId: string, discardClientId: string): Promise<Client> {
+  const { data, error } = await supabase.rpc('merge_clients', {
+    p_keep_client_id: keepClientId,
+    p_discard_client_id: discardClientId,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
+// Get merge preview counts for a client
+export async function getMergePreviewCounts(clientId: string): Promise<{
+  jobs: number;
+  invoices: number;
+  inquiries: number;
+  notes: number;
+}> {
+  const [jobsRes, invoicesRes, inquiriesRes, notesRes] = await Promise.all([
+    supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('client_id', clientId),
+    supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('client_id', clientId),
+    supabase.from('form_inquiries').select('id', { count: 'exact', head: true }).eq('client_id', clientId),
+    supabase.from('client_notes').select('id', { count: 'exact', head: true }).eq('client_id', clientId),
+  ]);
+
+  return {
+    jobs: jobsRes.count ?? 0,
+    invoices: invoicesRes.count ?? 0,
+    inquiries: inquiriesRes.count ?? 0,
+    notes: notesRes.count ?? 0,
+  };
+}
+
 // Delete client
 export async function deleteClient(clientId: string): Promise<void> {
   const { error } = await supabase

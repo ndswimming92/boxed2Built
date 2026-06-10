@@ -338,9 +338,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       });
       setCurrentClient(updated);
       setEditingInfo(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving client info:', error);
-      setSaveInfoError('Failed to save changes. Please try again.');
+      if (error?.code === '23505' || error?.message?.includes('unique') || error?.message?.includes('duplicate')) {
+        setSaveInfoError('This email is already associated with another client. Use the Merge feature on the Clients page to combine duplicate records.');
+      } else {
+        setSaveInfoError('Failed to save changes. Please try again.');
+      }
     } finally {
       setSavingInfo(false);
     }
