@@ -35,6 +35,7 @@ export interface UpdateInquiryData {
   contact_method?: string;
   contact_notes?: string;
   response_count?: number;
+  first_response_at?: string;
 }
 
 export interface InquiryFilters {
@@ -308,6 +309,31 @@ export async function logCommunication(
   return data as FormInquiry;
 }
 
+/**
+ * Records the FIRST time the admin reached out to a lead. This anchors the
+ * "Lead Response Time" (Speed to Lead) metric. Only sets first_response_at if
+ * it is currently NULL — it is never overwritten by later contacts, so the
+ * metric always reflects the initial response. Returns the up-to-date inquiry.
+ */
+export async function markFirstResponse(id: string): Promise<FormInquiry> {
+  const { error } = await supabase
+    .from('form_inquiries')
+    .update({ first_response_at: new Date().toISOString() })
+    .eq('id', id)
+    .is('first_response_at', null);
+
+  if (error) {
+    console.error('Error marking first response:', error);
+    throw new Error(`Failed to mark first response: ${error.message}`);
+  }
+
+  const inquiry = await getInquiryById(id);
+  if (!inquiry) {
+    throw new Error('Inquiry not found after marking first response');
+  }
+  return inquiry;
+}
+
 export async function getUnviewedCount(businessId: string): Promise<number> {
   const { count, error } = await supabase
     .from('form_inquiries')
@@ -346,6 +372,10 @@ export async function getInquiryStats(businessId: string, includeTestData = fals
       converted: 0,
       archived: 0,
       conversionRate: 0,
+      respondedCount: 0,
+      medianResponseMinutes: null,
+      avgResponseMinutes: null,
+      respondedWithinHourPct: 0,
     };
   }
 
@@ -356,12 +386,45 @@ export async function getInquiryStats(businessId: string, includeTestData = fals
   const archived = inquiries.filter((i) => i.status === 'archived').length;
   const conversionRate = total > 0 ? (converted / total) * 100 : 0;
 
+  // Lead Response Time (Speed to Lead): minutes from submission to first outreach.
+  const responseMinutes = inquiries
+    .filter((i) => i.first_response_at)
+    .map(
+      (i) =>
+        (new Date(i.first_response_at as string).getTime() -
+          new Date(i.submission_date).getTime()) /
+        60000
+    )
+    .filter((mins) => mins >= 0)
+    .sort((a, b) => a - b);
+
+  const respondedCount = responseMinutes.length;
+  const avgResponseMinutes =
+    respondedCount > 0
+      ? responseMinutes.reduce((sum, m) => sum + m, 0) / respondedCount
+      : null;
+  const medianResponseMinutes =
+    respondedCount > 0
+      ? respondedCount % 2 === 1
+        ? responseMinutes[(respondedCount - 1) / 2]
+        : (responseMinutes[respondedCount / 2 - 1] +
+            responseMinutes[respondedCount / 2]) /
+          2
+      : null;
+  const withinHour = responseMinutes.filter((m) => m <= 60).length;
+  const respondedWithinHourPct =
+    respondedCount > 0 ? Math.round((withinHour / respondedCount) * 100) : 0;
+
   return {
     total,
     pending,
     converted,
     archived,
     conversionRate: Math.round(conversionRate),
+    respondedCount,
+    medianResponseMinutes,
+    avgResponseMinutes,
+    respondedWithinHourPct,
   };
 }
 

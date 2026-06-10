@@ -28,6 +28,7 @@ import {
   DollarSign,
   Bell,
   Phone,
+  Zap,
   Calendar,
 } from 'lucide-react';
 
@@ -44,6 +45,8 @@ interface Stats {
   inquiries: number;
   pendingInquiries: number;
   conversionRate: number;
+  leadResponseMinutes: number | null;
+  respondedWithinHourPct: number;
   remindersDueToday: number;
   remindersOverdue: number;
 }
@@ -82,6 +85,8 @@ export default function DashboardPage() {
     inquiries: 0,
     pendingInquiries: 0,
     conversionRate: 0,
+    leadResponseMinutes: null,
+    respondedWithinHourPct: 0,
     remindersDueToday: 0,
     remindersOverdue: 0,
   });
@@ -211,6 +216,8 @@ export default function DashboardPage() {
         inquiries: inquiryStats.total,
         pendingInquiries: inquiryStats.pending,
         conversionRate: inquiryStats.conversionRate,
+        leadResponseMinutes: inquiryStats.medianResponseMinutes,
+        respondedWithinHourPct: inquiryStats.respondedWithinHourPct,
         remindersDueToday: dueToday,
         remindersOverdue: overdue,
       });
@@ -231,6 +238,17 @@ export default function DashboardPage() {
   };
 
   const clientTimeSaved = calculateClientTimeSaved([stats.totalHoursSaved]);
+
+  // Formats a duration in minutes as a compact "1d 3h" / "2h 15m" / "45m" string.
+  const formatDuration = (totalMinutes: number) => {
+    const mins = Math.max(0, Math.round(totalMinutes));
+    const days = Math.floor(mins / 1440);
+    const hours = Math.floor((mins % 1440) / 60);
+    const minutes = mins % 60;
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   const statCards = [
     {
@@ -306,6 +324,17 @@ export default function DashboardPage() {
       icon: Inbox,
       link: '/admin/inquiries',
       color: 'bg-cyan-500'
+    },
+    {
+      name: 'Lead Response Time',
+      value: stats.leadResponseMinutes !== null ? formatDuration(stats.leadResponseMinutes) : '—',
+      subtitle:
+        stats.leadResponseMinutes !== null
+          ? `${stats.respondedWithinHourPct}% within 1 hr`
+          : 'No responses logged yet',
+      icon: Zap,
+      link: '/admin/inquiries',
+      color: 'bg-fuchsia-500'
     },
   ];
 
