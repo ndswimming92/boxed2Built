@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Building2, Clock, Send } from 'lucide-react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Home, Building2 } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
-import { archiveInquiry, deleteInquiry, markFirstResponse } from '../../services/inquiryService';
+import { archiveInquiry, deleteInquiry } from '../../services/inquiryService';
 import { getInvoicesByInquiry } from '../../services/invoiceService';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
@@ -30,12 +30,9 @@ export default function InquiryDetailModal({
   const [copied, setCopied] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
   const [linkedClient, setLinkedClient] = useState<Client | null>(null);
-  const [firstResponseAt, setFirstResponseAt] = useState<string | null>(inquiry.first_response_at);
-  const [markingResponse, setMarkingResponse] = useState(false);
 
   useEffect(() => {
     loadInvoices();
-    setFirstResponseAt(inquiry.first_response_at);
     if (inquiry.client_id) {
       getClientById(inquiry.client_id).then(setLinkedClient).catch(() => {});
     }
@@ -71,38 +68,6 @@ export default function InquiryDetailModal({
       console.error('Error deleting:', error);
     }
   };
-
-  const handleMarkResponse = async () => {
-    setMarkingResponse(true);
-    try {
-      const updated = await markFirstResponse(inquiry.id);
-      setFirstResponseAt(updated.first_response_at);
-      if (onRefresh) onRefresh();
-    } catch (error) {
-      console.error('Error marking first response:', error);
-      alert('Could not record your response time. Please try again.');
-    } finally {
-      setMarkingResponse(false);
-    }
-  };
-
-  // Formats a duration in minutes as a compact "1d 3h" / "2h 15m" / "45m" string.
-  const formatDuration = (totalMinutes: number) => {
-    const mins = Math.max(0, Math.round(totalMinutes));
-    const days = Math.floor(mins / 1440);
-    const hours = Math.floor((mins % 1440) / 60);
-    const minutes = mins % 60;
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
-
-  const responseMinutes =
-    firstResponseAt
-      ? (new Date(firstResponseAt).getTime() - new Date(inquiry.submission_date).getTime()) / 60000
-      : null;
-  const waitingMinutes =
-    (Date.now() - new Date(inquiry.submission_date).getTime()) / 60000;
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -225,46 +190,6 @@ export default function InquiryDetailModal({
               </p>
             </div>
           )}
-
-          <div className={`rounded-lg p-4 border ${firstResponseAt ? 'bg-emerald-50 border-emerald-200' : 'bg-indigo-50 border-indigo-200'}`}>
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className={`w-4 h-4 ${firstResponseAt ? 'text-emerald-600' : 'text-indigo-600'}`} />
-              <h3 className="text-sm font-semibold text-slate-700">Lead Response Time</h3>
-            </div>
-            {firstResponseAt && responseMinutes !== null ? (
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="text-2xl font-bold text-emerald-700">{formatDuration(responseMinutes)}</p>
-                  <p className="text-xs text-slate-600 mt-1">
-                    First reached out {formatDate(firstResponseAt)}
-                  </p>
-                </div>
-                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  Responded
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="text-sm text-slate-700">
-                    Waiting <span className="font-semibold">{formatDuration(waitingMinutes)}</span> and counting
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Tap once you've first contacted this lead to record your response time.
-                  </p>
-                </div>
-                <button
-                  onClick={handleMarkResponse}
-                  disabled={markingResponse}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-60 transition-colors flex items-center gap-2 text-sm font-medium"
-                >
-                  <Send className="w-4 h-4" />
-                  {markingResponse ? 'Saving…' : 'Mark as Reached Out'}
-                </button>
-              </div>
-            )}
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-slate-50 p-4 rounded-lg">
