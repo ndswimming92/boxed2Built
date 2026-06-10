@@ -827,7 +827,11 @@ const ContactForm: React.FC = () => {
 
             {/* Residential / Business Toggle */}
             <div className="mb-4 flex justify-center">
-              <div className="relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r from-emerald-400 to-teal-400 max-w-full">
+              <div className={`relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r transition-all duration-300 max-w-full ${
+                    clientType === 'business'
+                      ? 'from-sky-400 to-blue-500'
+                      : 'from-emerald-400 to-teal-400'
+                  }`}>
                 <button
                   type="button"
                   onClick={() => setClientType('residential')}
