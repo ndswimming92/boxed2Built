@@ -17,6 +17,8 @@ import {
   calculateConversionMetrics,
   getLostDealBreakdown,
   getJobTypeConversionRates,
+  getQuoteVarianceJobs,
+  getQuoteAccuracyTimeSeries,
   TimePeriod,
 } from '../../services/analyticsService';
 import {
@@ -71,6 +73,8 @@ import LostDealsChart from '../../components/analytics/LostDealsChart';
 import JobTypeConversionTable from '../../components/analytics/JobTypeConversionTable';
 import ConversionMetricsCards from '../../components/analytics/ConversionMetricsCards';
 import ClientAnalytics from '../../components/analytics/ClientAnalytics';
+import QuoteAccuracyChart from '../../components/analytics/QuoteAccuracyChart';
+import QuoteVarianceTable from '../../components/analytics/QuoteVarianceTable';
 import { getTotalDeductibleExpenses } from '../../services/expenseService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
@@ -164,6 +168,9 @@ export default function AnalyticsPage() {
   const conversionMetrics = useMemo(() => calculateConversionMetrics(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const lostDealBreakdown = useMemo(() => getLostDealBreakdown(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+
+  const quoteVarianceJobs = useMemo(() => getQuoteVarianceJobs(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const quoteAccuracyTimeSeries = useMemo(() => getQuoteAccuracyTimeSeries(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
 
   const taxCalculation = useMemo(() => {
     if (!taxSettings) {
@@ -611,7 +618,15 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="mb-8">
+              <QuoteAccuracyChart data={quoteAccuracyTimeSeries} />
+            </div>
+
+            <div className="mb-8">
               <JobTypePerformanceTable performance={jobTypePerformance} />
+            </div>
+
+            <div className="mb-8">
+              <QuoteVarianceTable jobs={quoteVarianceJobs} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">

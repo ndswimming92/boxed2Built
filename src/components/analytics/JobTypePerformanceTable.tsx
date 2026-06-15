@@ -81,6 +81,9 @@ export default function JobTypePerformanceTable({ performance }: JobTypePerforma
               <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 Materials %
               </th>
+              <th className="py-3 px-4 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Quote Accuracy
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -159,11 +162,31 @@ export default function JobTypePerformanceTable({ performance }: JobTypePerforma
                       {formatPercent(item.materialsPercent)}
                     </span>
                   </td>
+                  <td className="py-4 px-4 text-center">
+                    {item.avgQuoteVariance !== null ? (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                            Math.abs(item.avgQuoteVariance) <= 5
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : Math.abs(item.avgQuoteVariance) <= 15
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {item.avgQuoteVariance > 0 ? '+' : ''}{item.avgQuoteVariance.toFixed(1)}%
+                        </span>
+                        <span className="text-xs text-slate-400">{item.quoteAccuracyCount} jobs</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400">--</span>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={11} className="py-12 text-center text-slate-500">
+                <td colSpan={12} className="py-12 text-center text-slate-500">
                   No performance data available. Add completed jobs with hours worked to see analysis.
                 </td>
               </tr>

@@ -377,6 +377,27 @@ export interface JobTypePerformance {
   maxPrice: number;
   avgMaterialsCost: number;
   materialsPercent: number;
+  avgQuoteVariance: number | null;
+  quoteAccuracyCount: number;
+}
+
+export interface QuoteVarianceJob {
+  id: string;
+  client_name: string;
+  job_type: string;
+  date_completed: string | null;
+  quoted_price: number;
+  final_price: number;
+  dollarDifference: number;
+  percentDifference: number;
+}
+
+export interface QuoteAccuracyMonthly {
+  month: string;
+  avgVariancePercent: number;
+  jobCount: number;
+  totalQuoted: number;
+  totalFinal: number;
 }
 
 export interface ProfitabilityJob {
@@ -449,6 +470,12 @@ export function getJobTypePerformance(jobs: Job[], period: TimePeriod): JobTypeP
 
       const prices = typeJobs.map(job => job.final_price || 0).filter(price => price > 0);
 
+      const jobsWithQuotes = typeJobs.filter(j => j.quoted_price && j.final_price);
+      const quoteAccuracyCount = jobsWithQuotes.length;
+      const avgQuoteVariance = quoteAccuracyCount > 0
+        ? jobsWithQuotes.reduce((sum, j) => sum + (((j.final_price! - j.quoted_price!) / j.quoted_price!) * 100), 0) / quoteAccuracyCount
+        : null;
+
       return {
         type,
         count,
@@ -464,6 +491,8 @@ export function getJobTypePerformance(jobs: Job[], period: TimePeriod): JobTypeP
         maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
         avgMaterialsCost: totalMaterialsCost / count,
         materialsPercent: totalRevenue > 0 ? (totalMaterialsCost / totalRevenue) * 100 : 0,
+        avgQuoteVariance,
+        quoteAccuracyCount,
       };
     })
     .sort((a, b) => b.totalNetProfit - a.totalNetProfit);
@@ -744,4 +773,65 @@ export function getJobTypeConversionRates(jobs: Job[], period: TimePeriod): JobT
     })
     .filter(item => item.totalQuoted > 0)
     .sort((a, b) => b.totalQuoted - a.totalQuoted);
+}
+
+export function getQuoteVarianceJobs(jobs: Job[], period: TimePeriod): QuoteVarianceJob[] {
+  return filterJobsByPeriod(jobs, period)
+    .filter(job => job.date_completed && job.quoted_price && job.final_price)
+    .map(job => {
+      const quoted = job.quoted_price!;
+      const final_val = job.final_price!;
+      const dollarDifference = final_val - quoted;
+      const percentDifference = quoted !== 0 ? (dollarDifference / quoted) * 100 : 0;
+
+      return {
+        id: job.id,
+        client_name: job.client_name,
+        job_type: job.job_type || 'Uncategorized',
+        date_completed: job.date_completed,
+        quoted_price: quoted,
+        final_price: final_val,
+        dollarDifference,
+        percentDifference,
+      };
+    })
+    .sort((a, b) => Math.abs(b.percentDifference) - Math.abs(a.percentDifference));
+}
+
+export function getQuoteAccuracyTimeSeries(jobs: Job[], period: TimePeriod): QuoteAccuracyMonthly[] {
+  const filtered = filterJobsByPeriod(jobs, period)
+    .filter(job => job.date_completed && job.quoted_price && job.final_price);
+
+  const monthMap = new Map<string, { variances: number[]; totalQuoted: number; totalFinal: number }>();
+
+  filtered.forEach(job => {
+    const date = new Date(job.date_completed!);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!monthMap.has(key)) {
+      monthMap.set(key, { variances: [], totalQuoted: 0, totalFinal: 0 });
+    }
+
+    const entry = monthMap.get(key)!;
+    const variance = ((job.final_price! - job.quoted_price!) / job.quoted_price!) * 100;
+    entry.variances.push(variance);
+    entry.totalQuoted += job.quoted_price!;
+    entry.totalFinal += job.final_price!;
+  });
+
+  return Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, data]) => {
+      const [year, month] = key.split('-');
+      const date = new Date(Number(year), Number(month) - 1);
+      const label = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      return {
+        month: label,
+        avgVariancePercent: data.variances.reduce((s, v) => s + v, 0) / data.variances.length,
+        jobCount: data.variances.length,
+        totalQuoted: data.totalQuoted,
+        totalFinal: data.totalFinal,
+      };
+    });
 }
