@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QrCode, Plus, Search, Filter, Eye, CreditCard as Edit, Copy, Power, Trash2, ExternalLink, BarChart3 } from 'lucide-react';
+import { QrCode, Plus, Search, Filter, Eye, CreditCard as Edit, Copy, Power, Trash2, ExternalLink, BarChart3, X, Download, RotateCcw } from 'lucide-react';
+import QRCodeLib from 'qrcode';
 import { supabase } from '../../lib/supabase';
 import {
   getAllQRCodes,
@@ -11,6 +12,7 @@ import {
   QRCodeWithSchedules,
   QRCodeStats
 } from '../../services/qrCodeService';
+import { resetQRCodeScans } from '../../services/qrScanService';
 import QRCodeFormModal from '../../components/admin/QRCodeFormModal';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
@@ -30,6 +32,10 @@ export default function QRCodesPage() {
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [isTogglingId, setIsTogglingId] = useState<string | null>(null);
   const [copyingSlug, setCopyingSlug] = useState<string | null>(null);
+  const [previewQRCode, setPreviewQRCode] = useState<QRCodeWithSchedules | null>(null);
+  const [previewDataURL, setPreviewDataURL] = useState<string>('');
+  const [resetCandidate, setResetCandidate] = useState<QRCodeWithSchedules | null>(null);
+  const [isResettingId, setIsResettingId] = useState<string | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -146,6 +152,58 @@ export default function QRCodesPage() {
 
   const handleViewDetails = (qrCodeId: string) => {
     navigate(`/admin/qr-codes/${qrCodeId}`);
+  };
+
+  const handlePreview = async (qrCode: QRCodeWithSchedules) => {
+    setPreviewQRCode(qrCode);
+    try {
+      const url = getShortURL(qrCode.slug);
+      const dataURL = await QRCodeLib.toDataURL(url, {
+        width: 600,
+        margin: 2,
+        errorCorrectionLevel: 'H',
+        color: { dark: '#000000', light: '#FFFFFF' }
+      });
+      setPreviewDataURL(dataURL);
+    } catch (error) {
+      console.error('Error generating QR code preview:', error);
+    }
+  };
+
+  const handleDownloadPNG = async (qrCode: QRCodeWithSchedules) => {
+    try {
+      const url = getShortURL(qrCode.slug);
+      const dataURL = await QRCodeLib.toDataURL(url, {
+        width: 600,
+        margin: 2,
+        errorCorrectionLevel: 'H'
+      });
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = `qr-code-${qrCode.slug}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      showToast({ type: 'error', message: 'Failed to download QR code.' });
+    }
+  };
+
+  const handleResetScansConfirm = async () => {
+    if (!resetCandidate) return;
+    setIsResettingId(resetCandidate.id);
+    try {
+      await resetQRCodeScans(resetCandidate.id);
+      showToast({ type: 'success', message: `Scans reset for "${resetCandidate.title}".` });
+      setResetCandidate(null);
+      await fetchData();
+    } catch (error) {
+      console.error('Error resetting scans:', error);
+      showToast({ type: 'error', message: 'Failed to reset scans.' });
+    } finally {
+      setIsResettingId(null);
+    }
   };
 
   if (loading) {
@@ -316,15 +374,18 @@ export default function QRCodesPage() {
                 {filteredQRCodes.map((qrCode) => (
                   <tr key={qrCode.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gray-100 rounded">
-                          <QrCode className="w-5 h-5 text-gray-600" />
+                      <button
+                        onClick={() => handlePreview(qrCode)}
+                        className="flex items-center gap-3 group text-left"
+                      >
+                        <div className="p-2 bg-gray-100 rounded group-hover:bg-emerald-100 transition-colors">
+                          <QrCode className="w-5 h-5 text-gray-600 group-hover:text-emerald-600 transition-colors" />
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{qrCode.title}</div>
+                          <div className="text-sm font-medium text-gray-900 group-hover:text-emerald-700 transition-colors">{qrCode.title}</div>
                           <div className="text-xs text-gray-500">/{qrCode.slug}</div>
                         </div>
-                      </div>
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
@@ -398,6 +459,14 @@ export default function QRCodesPage() {
                           <Power className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => setResetCandidate(qrCode)}
+                          disabled={isResettingId === qrCode.id || (qrCode.scan_count || 0) === 0}
+                          className="p-2 hover:bg-amber-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                          title="Reset Scans"
+                        >
+                          <RotateCcw className="w-4 h-4 text-amber-600" />
+                        </button>
+                        <button
                           onClick={() => setDeleteCandidate(qrCode)}
                           disabled={isDeletingId === qrCode.id}
                           className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -426,6 +495,77 @@ export default function QRCodesPage() {
         onCancel={() => setDeleteCandidate(null)}
         onConfirm={handleDeleteConfirm}
       />
+
+      <ConfirmActionModal
+        isOpen={!!resetCandidate}
+        title="Reset scan data"
+        description={`Reset all ${resetCandidate?.scan_count || 0} scan(s) for "${resetCandidate?.title || ''}"? This cannot be undone.`}
+        confirmLabel="Reset Scans"
+        destructive
+        isLoading={!!isResettingId}
+        onCancel={() => setResetCandidate(null)}
+        onConfirm={handleResetScansConfirm}
+      />
+
+      {previewQRCode && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={() => { setPreviewQRCode(null); setPreviewDataURL(''); }}>
+          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 truncate pr-2">{previewQRCode.title}</h3>
+              <button
+                onClick={() => { setPreviewQRCode(null); setPreviewDataURL(''); }}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="flex justify-center mb-4">
+              <div className="bg-white border-2 border-gray-100 rounded-lg p-3">
+                {previewDataURL ? (
+                  <img
+                    src={previewDataURL}
+                    alt={`QR Code for ${previewQRCode.title}`}
+                    className="w-56 h-56"
+                  />
+                ) : (
+                  <div className="w-56 h-56 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg px-3 py-2 mb-4">
+              <code className="text-sm text-gray-700 break-all">{getShortURL(previewQRCode.slug)}</code>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => handleCopyURL(previewQRCode.slug)}
+                className="flex flex-col items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Copy className="w-4 h-4 text-gray-700" />
+                <span className="text-xs text-gray-600">Copy URL</span>
+              </button>
+              <button
+                onClick={() => handleDownloadPNG(previewQRCode)}
+                className="flex flex-col items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4 text-gray-700" />
+                <span className="text-xs text-gray-600">Download</span>
+              </button>
+              <button
+                onClick={() => { setPreviewQRCode(null); setPreviewDataURL(''); handleViewDetails(previewQRCode.id); }}
+                className="flex flex-col items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <BarChart3 className="w-4 h-4 text-gray-700" />
+                <span className="text-xs text-gray-600">Analytics</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {businessId ? (
         <QRCodeFormModal

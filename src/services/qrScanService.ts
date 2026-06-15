@@ -192,6 +192,15 @@ export async function getScansForQRCode(
   return data || [];
 }
 
+export async function resetQRCodeScans(qrCodeId: string): Promise<void> {
+  const { error } = await supabase
+    .from('qr_scans')
+    .delete()
+    .eq('qr_code_id', qrCodeId);
+
+  if (error) throw error;
+}
+
 export async function exportScanDataToCSV(qrCodeId: string): Promise<string> {
   const scans = await getScansForQRCode(qrCodeId, 10000);
 
