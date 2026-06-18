@@ -139,7 +139,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
               <Clock3 className="w-5 h-5 text-blue-600" />
             </div>
             <p className="text-xs md:text-sm font-bold tracking-[0.2em] uppercase text-gray-500">
-              Hours Given Back to Customers
+              Total Hours Given Back to Customers
             </p>
           </div>
 
@@ -176,7 +176,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
           <p className="mt-8 text-base md:text-lg text-gray-500">
             {fullDays >= 2 ? (
               <>
-                That adds up to <span className="font-bold text-gray-800">nearly {fullDays} full workdays</span> given back to families!
+                Across every build we've completed, that's <span className="font-bold text-gray-800">nearly {fullDays} full workdays</span> handed back to local families — and counting.
               </>
             ) : (
               'Every hour we work is one you get to spend on what matters most.'

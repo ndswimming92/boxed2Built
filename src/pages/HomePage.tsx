@@ -64,8 +64,6 @@ const HomePage: React.FC = () => {
       <main className="pt-16">
         <HomeHero />
 
-        <HoursGivenBackCounter totalHoursSaved={Number(businessData.info.total_client_hours_saved) || 0} />
-
         <section id="contact-form-section" className="scroll-mt-24 py-12 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
@@ -98,6 +96,8 @@ const HomePage: React.FC = () => {
         </section>
 
         <HomeServices />
+
+        <HoursGivenBackCounter totalHoursSaved={Number(businessData.info.total_client_hours_saved) || 0} />
 
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
