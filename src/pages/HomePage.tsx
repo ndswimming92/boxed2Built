@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Gift, ArrowRight } from 'lucide-react';
 import { useLoaderData } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
@@ -15,6 +15,7 @@ import Testimonials from '../components/sections/Testimonials';
 import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
 import HoursGivenBackCounter from '../components/sections/HoursGivenBackCounter';
+import FormProgressRail from '../components/ui/FormProgressRail';
 import { CompleteBusinessData } from '../lib/supabase';
 import {
   LOCAL_SEO_CONTENT,
@@ -23,6 +24,7 @@ import {
 
 const HomePage: React.FC = () => {
   const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const [quoteProgress, setQuoteProgress] = useState(0);
 
   // Get high-value FAQ questions from Common Questions category plus a few popular ones
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
@@ -76,8 +78,11 @@ const HomePage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200">
-                <ContactForm />
+              <div className="relative">
+                <FormProgressRail progress={quoteProgress} />
+                <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200">
+                  <ContactForm sideRail onProgressChange={setQuoteProgress} />
+                </div>
               </div>
 
               <p className="text-center text-sm text-gray-500 mt-6">
