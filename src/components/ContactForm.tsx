@@ -7,6 +7,7 @@ import { trackEvent, trackFormInteraction, trackConversion } from '../utils/anal
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
 import ProgressBar from './ui/ProgressBar';
+import FormProgressRail from './ui/FormProgressRail';
 import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
@@ -190,6 +191,7 @@ const ContactForm: React.FC = () => {
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Use enhanced form validation
   const {
@@ -641,14 +643,19 @@ const ContactForm: React.FC = () => {
           requestData={confirmationData}
         />
       )}
-      <div className="bg-white rounded shadow p-6">
+      {/* Vertical progress rail — floats beside the form on large screens, only while the form is in view */}
+      <FormProgressRail progress={formProgress} targetRef={cardRef} />
+
+      <div ref={cardRef} className="bg-white rounded shadow p-6">
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-2">Get Your Free Quote</h3>
         <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
       </div>
 
-      {/* Progress Bar */}
-      <ProgressBar progress={formProgress} className="mb-6" />
+      {/* Progress Bar — sticky compact bar on mobile/tablet; replaced by the side rail on lg+ */}
+      <div className="lg:hidden sticky top-12 sm:top-14 md:top-16 z-20 -mx-6 px-6 py-3 mb-6 bg-white/95 backdrop-blur border-b border-gray-100">
+        <ProgressBar progress={formProgress} />
+      </div>
 
       {/* Submission error message */}
       {submissionError && (
