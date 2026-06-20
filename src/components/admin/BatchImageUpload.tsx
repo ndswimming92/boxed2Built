@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
-import { optimizeImages, validateImageFiles, OptimizedImage } from '../../utils/imageOptimizationUpload';
+import { optimizeImages, validateImageFiles, snapshotFileToMemory, OptimizedImage } from '../../utils/imageOptimizationUpload';
 import Button from '../ui/Button';
 
 interface BatchImageUploadProps {
@@ -16,7 +16,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
@@ -27,8 +27,16 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
       return;
     }
 
-    setError(null);
-    setSelectedFiles(prev => [...prev, ...fileArray]);
+    try {
+      // Copy bytes into memory at selection time so optimize (which can happen much
+      // later) can't hit net::ERR_UPLOAD_FILE_CHANGED on mobile temp files going stale.
+      const snapshots = await Promise.all(fileArray.map(snapshotFileToMemory));
+      setError(null);
+      setSelectedFiles(prev => [...prev, ...snapshots]);
+    } catch (err) {
+      console.error('Error reading selected images:', err);
+      setError('Could not read one or more selected images. Please try again.');
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {

@@ -20,6 +20,26 @@ const DEFAULT_OPTIONS: Required<ImageOptimizationOptions> = {
   convertToWebP: true,
 };
 
+/**
+ * Reads a File's bytes into memory and returns a new in-memory File copy.
+ *
+ * On mobile browsers (notably iOS Safari/Chrome) the File returned by a photo
+ * picker is backed by a temporary on-disk file that the OS can regenerate or
+ * delete between selection and use — e.g. HEIC->JPEG transcoding or temp-file
+ * cleanup. Reading those bytes later then fails with
+ * `net::ERR_UPLOAD_FILE_CHANGED`, which surfaces here as "Failed to load image".
+ *
+ * Call this immediately when a file is selected so the rest of the flow works
+ * off an in-memory copy that cannot go stale.
+ */
+export async function snapshotFileToMemory(file: File): Promise<File> {
+  const buffer = await file.arrayBuffer();
+  return new File([buffer], file.name, {
+    type: file.type,
+    lastModified: file.lastModified,
+  });
+}
+
 export async function optimizeImage(
   file: File,
   options: ImageOptimizationOptions = {}

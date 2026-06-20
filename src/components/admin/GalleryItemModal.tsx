@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Upload, Video, AlertCircle } from 'lucide-react';
 import { GalleryService, CreateGalleryItemInput, UpdateGalleryItemInput } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
-import { optimizeImage, validateImageFile } from '../../utils/imageOptimizationUpload';
+import { optimizeImage, validateImageFile, snapshotFileToMemory } from '../../utils/imageOptimizationUpload';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -36,7 +36,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -46,9 +46,18 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
       return;
     }
 
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-    setError(null);
+    try {
+      // Copy the bytes into memory now so a later read (optimize/upload) can't hit
+      // net::ERR_UPLOAD_FILE_CHANGED when the OS-backed temp file goes stale on mobile.
+      const snapshot = await snapshotFileToMemory(file);
+      setSelectedFile(snapshot);
+      if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(URL.createObjectURL(snapshot));
+      setError(null);
+    } catch (err) {
+      console.error('Error reading selected image:', err);
+      setError('Could not read the selected image. Please try selecting it again.');
+    }
   };
 
   const extractYouTubeId = (url: string): string | null => {
