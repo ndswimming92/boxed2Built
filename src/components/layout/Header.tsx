@@ -40,6 +40,16 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  /* Publish the bottom edge of the fixed header stack (notification bar +
+     header bar) as a CSS variable so sticky elements elsewhere (e.g. the quote
+     form's progress bar/rail) can pin just below it without hardcoding the
+     offset. Header bar height is deterministic: h-20 row (80px) + py-2/py-4. */
+  useEffect(() => {
+    const headerBarHeight = isScrolled ? 96 : 112;
+    const offset = (notificationBarVisible ? notificationHeight : 0) + headerBarHeight;
+    document.documentElement.style.setProperty('--app-header-bottom', `${offset}px`);
+  }, [isScrolled, notificationBarVisible, notificationHeight]);
+
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);

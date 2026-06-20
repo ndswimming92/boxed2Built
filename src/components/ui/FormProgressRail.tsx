@@ -32,9 +32,12 @@ const FormProgressRail: React.FC<FormProgressRailProps> = ({ progress }) => {
     // Full-height lane: bounds how far the sticky meter can travel (top → bottom
     // of the form). It takes no visual space of its own.
     <div className="hidden lg:block absolute top-0 bottom-0 right-full mr-6 w-14">
-      {/* Compact meter that sticks just below the fixed header while scrolling */}
+      {/* Compact meter that sticks just below the fixed header while scrolling.
+          Offset tracks the live header stack (notification bar + scroll shrink)
+          via --app-header-bottom, set by Header; falls back to 112px. */}
       <div
-        className="sticky top-28 flex flex-col items-center"
+        className="sticky flex flex-col items-center"
+        style={{ top: 'calc(var(--app-header-bottom, 96px) + 1rem)' }}
         role="progressbar"
         aria-label={`Form completion: ${progress}%`}
         aria-valuenow={progress}
