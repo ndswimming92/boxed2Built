@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
-import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink, Plus, Loader2 } from 'lucide-react';
 import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
+import { optimizeImage, validateImageFile, snapshotFileToMemory } from '../../utils/imageOptimizationUpload';
+
+const MAX_COMPLETION_PHOTOS = 10;
 
 const PAGE_SIZE = 25;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -20,6 +23,9 @@ export default function CompletionsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCompletion, setSelectedCompletion] = useState<(JobCompletion & { job: any }) | null>(null);
   const [selectedCompletionDetail, setSelectedCompletionDetail] = useState<(JobCompletion & { job: any }) | null>(null);
+  const [addingPhotos, setAddingPhotos] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const completionPhotoInputRef = useRef<HTMLInputElement>(null);
   const detailCache = useRef<Map<string, JobCompletion & { job: any }>>(new Map());
 
   const fetchData = useCallback(async (
@@ -121,6 +127,8 @@ export default function CompletionsPage() {
   }, [debouncedSearchTerm, fetchData, satisfactionFilter]);
 
   useEffect(() => {
+    setPhotoError(null);
+
     if (!selectedCompletion?.id) {
       setSelectedCompletionDetail(null);
       setDetailLoading(false);
@@ -227,6 +235,84 @@ export default function CompletionsPage() {
     }
   };
 
+  const handleAddPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const files = input.files;
+    const target = selectedCompletionDetail;
+
+    // Detail (with the authoritative completion_photos array) must be loaded
+    // before we can append, otherwise we'd overwrite existing photos.
+    if (!files || files.length === 0 || !target) {
+      input.value = '';
+      return;
+    }
+
+    const existing = target.completion_photos || [];
+    const remaining = MAX_COMPLETION_PHOTOS - existing.length;
+    if (remaining <= 0) {
+      setPhotoError(`Maximum of ${MAX_COMPLETION_PHOTOS} photos reached.`);
+      input.value = '';
+      return;
+    }
+
+    const allSelected = Array.from(files);
+    const toProcess = allSelected.slice(0, remaining);
+    const skipped = allSelected.length - toProcess.length;
+
+    setAddingPhotos(true);
+    setPhotoError(null);
+
+    try {
+      const newPhotos: string[] = [];
+      for (const file of toProcess) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          throw new Error(`${file.name}: ${validation.error}`);
+        }
+        // Snapshot to memory first (mobile temp files can go stale), then
+        // optimize so we store a compact webp data URL rather than a raw photo.
+        const snapshot = await snapshotFileToMemory(file);
+        const optimized = await optimizeImage(snapshot, {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 0.85,
+          convertToWebP: true,
+        });
+        newPhotos.push(optimized.dataUrl);
+      }
+
+      const updatedPhotos = [...existing, ...newPhotos];
+
+      const { error } = await supabase
+        .from('job_completions')
+        .update({ completion_photos: updatedPhotos })
+        .eq('id', target.id);
+
+      if (error) throw error;
+
+      const updatedDetail = { ...target, completion_photos: updatedPhotos };
+      detailCache.current.set(target.id, updatedDetail);
+      setSelectedCompletionDetail(updatedDetail);
+      // photo_count is a generated column DB-side; mirror it locally so the
+      // list badge updates without a refetch.
+      setCompletions(prev =>
+        prev.map(c => (c.id === target.id ? { ...c, photo_count: updatedPhotos.length } as any : c))
+      );
+
+      if (skipped > 0) {
+        setPhotoError(
+          `Added ${toProcess.length} photo${toProcess.length === 1 ? '' : 's'}. ${skipped} skipped — limit is ${MAX_COMPLETION_PHOTOS}.`
+        );
+      }
+    } catch (err: any) {
+      console.error('Error adding completion photos:', err);
+      setPhotoError(err?.message || 'Failed to add photos. Please try again.');
+    } finally {
+      setAddingPhotos(false);
+      input.value = '';
+    }
+  };
+
   const handleDownloadAllPhotos = (completion: JobCompletion & { job: any }) => {
     if (!completion.completion_photos || completion.completion_photos.length === 0) return;
 
@@ -250,6 +336,8 @@ export default function CompletionsPage() {
   }
 
   const modalCompletion = selectedCompletionDetail ?? selectedCompletion;
+  const completionPhotos = selectedCompletionDetail?.completion_photos ?? [];
+  const atPhotoLimit = completionPhotos.length >= MAX_COMPLETION_PHOTOS;
 
   return (
     <div className="max-w-7xl min-w-0 overflow-hidden">
@@ -555,33 +643,76 @@ export default function CompletionsPage() {
                 </div>
               </div>
 
-              {modalCompletion?.completion_photos && modalCompletion.completion_photos.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5 text-emerald-600" />
-                      Completion Photos ({modalCompletion.completion_photos.length})
-                    </h3>
-                    {!isIOS() && (
+              <div>
+                <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                  <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-emerald-600" />
+                    Completion Photos ({completionPhotos.length})
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {completionPhotos.length > 0 && !isIOS() && (
                       <button
-                        onClick={() => handleDownloadAllPhotos(modalCompletion)}
+                        onClick={() => selectedCompletionDetail && handleDownloadAllPhotos(selectedCompletionDetail)}
                         className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
                       >
                         <Download className="w-4 h-4" />
                         Save All
                       </button>
                     )}
+                    <button
+                      onClick={() => completionPhotoInputRef.current?.click()}
+                      disabled={detailLoading || addingPhotos || atPhotoLimit}
+                      title={atPhotoLimit ? `Maximum of ${MAX_COMPLETION_PHOTOS} photos` : undefined}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
+                    >
+                      {addingPhotos ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Plus className="w-4 h-4" />
+                      )}
+                      {addingPhotos ? 'Uploading...' : 'Add Photos'}
+                    </button>
+                    <input
+                      ref={completionPhotoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      className="hidden"
+                      onChange={handleAddPhotos}
+                    />
                   </div>
-                  {isIOS() && (
-                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-xs text-blue-900 font-medium mb-1">iPhone Users:</p>
-                      <p className="text-xs text-blue-800">
-                        Tap "Save to Photos" on each image or use "Open & Save" to view full size and long-press to save
-                      </p>
-                    </div>
-                  )}
+                </div>
+
+                {photoError && (
+                  <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                    <p className="text-sm text-red-700 flex-1 whitespace-pre-line">{photoError}</p>
+                    <button onClick={() => setPhotoError(null)} className="text-red-400 hover:text-red-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {isIOS() && completionPhotos.length > 0 && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-900 font-medium mb-1">iPhone Users:</p>
+                    <p className="text-xs text-blue-800">
+                      Tap "Save to Photos" on each image or use "Open & Save" to view full size and long-press to save
+                    </p>
+                  </div>
+                )}
+
+                {completionPhotos.length === 0 ? (
+                  <div className="rounded-lg border-2 border-dashed border-slate-200 p-8 text-center">
+                    <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      {detailLoading
+                        ? 'Loading photos...'
+                        : 'No photos yet. Use "Add Photos" to upload completion photos.'}
+                    </p>
+                  </div>
+                ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {modalCompletion.completion_photos.map((photo, index) => (
+                    {completionPhotos.map((photo, index) => (
                       <div key={index} className="bg-slate-50 rounded-lg overflow-hidden">
                         <img
                           src={photo}
@@ -591,7 +722,7 @@ export default function CompletionsPage() {
                         <div className="p-2 flex gap-2 flex-wrap">
                           {canShare() && (
                             <button
-                              onClick={() => handleSharePhoto(photo, modalCompletion, index)}
+                              onClick={() => selectedCompletionDetail && handleSharePhoto(photo, selectedCompletionDetail, index)}
                               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700 transition-colors"
                             >
                               <Share2 className="w-3.5 h-3.5" />
@@ -608,7 +739,7 @@ export default function CompletionsPage() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleDownloadPhoto(photo, modalCompletion, index)}
+                              onClick={() => selectedCompletionDetail && handleDownloadPhoto(photo, selectedCompletionDetail, index)}
                               className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-600 text-white rounded text-xs font-semibold hover:bg-emerald-700 transition-colors"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -619,8 +750,8 @@ export default function CompletionsPage() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {modalCompletion?.admin_notes && (
                 <div>
