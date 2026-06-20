@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { optimizeImages, validateImageFiles, snapshotFileToMemory, OptimizedImage } from '../../utils/imageOptimizationUpload';
 import Button from '../ui/Button';
@@ -8,13 +8,30 @@ interface BatchImageUploadProps {
   onCancel: () => void;
 }
 
+interface SelectedFile {
+  file: File;
+  previewUrl: string;
+}
+
 export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchImageUploadProps) {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [optimizing, setOptimizing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Track the latest selection so the unmount cleanup can revoke every
+  // outstanding preview URL without capturing a stale closure.
+  const selectedFilesRef = useRef<SelectedFile[]>([]);
+  useEffect(() => {
+    selectedFilesRef.current = selectedFiles;
+  }, [selectedFiles]);
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    };
+  }, []);
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -32,7 +49,10 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
       // later) can't hit net::ERR_UPLOAD_FILE_CHANGED on mobile temp files going stale.
       const snapshots = await Promise.all(fileArray.map(snapshotFileToMemory));
       setError(null);
-      setSelectedFiles(prev => [...prev, ...snapshots]);
+      setSelectedFiles(prev => [
+        ...prev,
+        ...snapshots.map(file => ({ file, previewUrl: URL.createObjectURL(file) })),
+      ]);
     } catch (err) {
       console.error('Error reading selected images:', err);
       setError('Could not read one or more selected images. Please try again.');
@@ -55,7 +75,11 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
   };
 
   const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles(prev => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleOptimize = async () => {
@@ -67,7 +91,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
       setProgress({ current: 0, total: selectedFiles.length });
 
       const optimizedImages = await optimizeImages(
-        selectedFiles,
+        selectedFiles.map(item => item.file),
         {
           maxWidth: 1920,
           maxHeight: 1080,
@@ -176,13 +200,13 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {selectedFiles.map((file, index) => (
+                {selectedFiles.map(({ file, previewUrl }, index) => (
                   <div
                     key={`${file.name}-${index}`}
                     className="relative group aspect-square bg-slate-100 rounded-lg overflow-hidden"
                   >
                     <img
-                      src={URL.createObjectURL(file)}
+                      src={previewUrl}
                       alt={file.name}
                       className="w-full h-full object-cover"
                     />
