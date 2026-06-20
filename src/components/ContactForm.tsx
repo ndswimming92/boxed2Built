@@ -656,8 +656,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
       </div>
 
-      {/* Progress Bar — sticky compact bar; on side-rail pages it is replaced by the vertical rail on lg+ */}
-      <div className={`${sideRail ? 'lg:hidden ' : ''}sticky top-12 sm:top-14 md:top-16 z-20 -mx-6 px-6 py-3 mb-6 bg-white/95 backdrop-blur border-b border-gray-100`}>
+      {/* Progress Bar — sticky compact bar that follows the user down the form.
+          top-24 (96px) clears the fixed header (h-20 row + py-2 ≈ 96px when
+          scrolled) so the stuck bar stays visible instead of hiding behind it.
+          On side-rail pages it is replaced by the vertical rail on lg+. */}
+      <div className={`${sideRail ? 'lg:hidden ' : ''}sticky top-24 z-20 -mx-6 px-6 py-3 mb-6 bg-white/95 backdrop-blur border-b border-gray-100`}>
         <ProgressBar progress={formProgress} />
       </div>
 
