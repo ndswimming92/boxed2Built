@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Home, Building2, Clock } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Building2, Clock } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, markAsReachedOut } from '../../services/inquiryService';

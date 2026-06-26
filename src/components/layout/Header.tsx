@@ -144,7 +144,7 @@ const Header: React.FC = () => {
                 className={`w-auto object-contain transition-all duration-300 ${logoClass}`}
                 width="251"
                 height="88"
-                fetchpriority="high"
+                fetchPriority="high"
               />
             </a>
           </div>

@@ -101,7 +101,7 @@ export async function getDocumentsForAdmin(organizationId: string): Promise<Admi
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(`Failed to fetch documents: ${error.message}`);
-  return (data ?? []) as AdminDocument[];
+  return (data ?? []) as unknown as AdminDocument[];
 }
 
 export async function getCustomersForOrg(organizationId: string): Promise<CustomerOption[]> {
@@ -138,7 +138,6 @@ export async function getInvoicesForCustomer(customerId: string): Promise<Invoic
 }
 
 export async function uploadDocumentForCustomer(payload: AdminDocumentUploadPayload): Promise<AdminDocument> {
-  const fileExt = payload.file.name.split('.').pop() ?? 'bin';
   const safeName = payload.file.name
     .replace(/[^a-zA-Z0-9._-]/g, '_')
     .replace(/_{2,}/g, '_');
@@ -287,7 +286,7 @@ export async function getDocumentsForCustomer(customerId: string): Promise<Admin
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(`Failed to fetch documents: ${error.message}`);
-  return (data ?? []) as AdminDocument[];
+  return (data ?? []) as unknown as AdminDocument[];
 }
 
 export async function getAdminDocumentSignedUrl(storagePath: string, download = false): Promise<string> {

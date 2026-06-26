@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Download, Plus, Filter, Search, Receipt, CreditCard as Edit, Trash2, ChevronDown, PieChart as PieChartIcon, BarChart3, AlertCircle } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, Download, Plus, Filter, Search, Receipt, CreditCard as Edit, Trash2, PieChart as PieChartIcon, BarChart3, AlertCircle } from 'lucide-react';
 import {
   getExpenses,
   createExpense,
@@ -18,7 +18,7 @@ import {
   type ExpenseByCategoryStats,
 } from '../../services/expenseService';
 import ExpenseFormModal from '../../components/admin/ExpenseFormModal';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
@@ -199,16 +199,6 @@ export default function FinancesPage() {
     return stats.deductibleExpenses * 0.30;
   }, [stats]);
 
-  const uniqueCategories = useMemo(() => {
-    const categories = new Set<string>();
-    expenses.forEach((exp) => {
-      if (exp.category) {
-        categories.add(exp.category.id);
-      }
-    });
-    return Array.from(categories);
-  }, [expenses]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -358,10 +348,10 @@ export default function FinancesPage() {
                     cy="50%"
                     outerRadius={100}
                     label={({ category_name, percentage_of_total }) =>
-                      `${category_name}: ${percentage_of_total.toFixed(0)}%`
+                      `${category_name}: ${Number(percentage_of_total).toFixed(0)}%`
                     }
                   >
-                    {categoryStats.map((entry, index) => (
+                    {categoryStats.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

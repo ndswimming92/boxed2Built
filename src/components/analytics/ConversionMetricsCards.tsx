@@ -1,4 +1,4 @@
-import { Target, DollarSign, TrendingUp, Clock, AlertCircle, XCircle } from 'lucide-react';
+import { Target, DollarSign, TrendingUp, Clock, XCircle } from 'lucide-react';
 import { ConversionMetrics } from '../../services/analyticsService';
 
 interface ConversionMetricsCardsProps {

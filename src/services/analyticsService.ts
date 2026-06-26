@@ -27,6 +27,7 @@ export interface LocationRevenue {
   revenue: number;
   netProfit: number;
   count: number;
+  [key: string]: string | number;
 }
 
 export interface MonthlyData {
@@ -46,6 +47,7 @@ export interface ClientTypeData {
   type: 'Repeat' | 'New';
   count: number;
   percent: number;
+  [key: string]: string | number;
 }
 
 export interface ConversionMetrics {
@@ -97,7 +99,7 @@ export const CLIENT_TIME_SAVED_TITLE = 'Hours Given Back to Customers';
 export const CLIENT_TIME_SAVED_SUBTITLE = 'Calculated as the direct sum of completed job hours worked.';
 
 export function calculateClientTimeSaved(hoursWorkedValues: Array<number | null | undefined>): ClientTimeSavedMetric {
-  const rawHours = hoursWorkedValues.reduce((sum, hoursWorked) => sum + (Number(hoursWorked) || 0), 0);
+  const rawHours = hoursWorkedValues.reduce<number>((sum, hoursWorked) => sum + (Number(hoursWorked) || 0), 0);
 
   return {
     rawHours,
@@ -267,7 +269,6 @@ export function getMonthlyData(jobs: Job[], period: TimePeriod): MonthlyData[] {
 
     const date = new Date(job.date_completed);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthLabel = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
 
     const existing = monthMap.get(monthKey) || { revenue: 0, netProfit: 0, jobs: 0 };
 

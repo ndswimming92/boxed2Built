@@ -6,14 +6,10 @@ import Testimonials from '../components/sections/Testimonials';
 import ErrorBoundary from '../components/ErrorBoundary';
 import {
   Phone,
-  CheckCircle,
   Download,
   Gift,
-  Users,
   Tag,
   Clock,
-  MapPin,
-  HelpCircle,
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { useLoaderData } from 'react-router-dom';

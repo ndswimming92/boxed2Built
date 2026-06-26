@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabase';
 import type { GPSCoordinate, LocationData, MileageRecord, TrackingState } from '../lib/supabase';
 import { createExpense, getExpenseCategories, createExpenseCategory } from './expenseService';
 
-const TRACKING_INTERVAL = 10000;
 const MIN_ACCURACY = 100;
 const MIN_DISTANCE_THRESHOLD = 0.01;
 const MILEAGE_CATEGORY_NAME = 'Vehicle & Mileage';

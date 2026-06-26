@@ -50,7 +50,7 @@ export const useSmartForm = (options: UseSmartFormOptions) => {
   }, [fields]);
 
   // Validate single field
-  const validateField = useCallback((name: string, value: string): ValidationResult => {
+  const validateField = useCallback((_name: string, _value: string): ValidationResult => {
     // This would use your validation rules
     return { isValid: true }; // Simplified for now
   }, []);

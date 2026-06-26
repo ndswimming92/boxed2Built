@@ -145,7 +145,7 @@ export function generateEstimateFollowUpEmailPlainText(details: EstimateFollowUp
     details.serviceSummary ? `- Service: ${details.serviceSummary}` : null,
     details.estimateTotal ? `- Estimate total: ${details.estimateTotal}` : null,
     details.estimatedDuration ? `- Estimated time: ${details.estimatedDuration}` : null,
-  ].filter(Boolean);
+  ].filter((line): line is string => Boolean(line));
 
   if (detailLines.length > 0) {
     lines.push('Here are the details I have for your project:');

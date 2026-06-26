@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Wand2, Check, AlertCircle } from 'lucide-react';
+import { Wand2, Check, AlertCircle } from 'lucide-react';
 import Modal from '../Modal';
 import { QRCodeWithSchedules } from '../../services/qrCodeService';
 import {

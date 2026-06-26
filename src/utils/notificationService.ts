@@ -1,7 +1,5 @@
 import { FormInquiry } from '../lib/supabase';
 
-let notificationPermission: NotificationPermission = 'default';
-
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window)) {
     console.log('This browser does not support notifications');
@@ -9,17 +7,14 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 
   if (Notification.permission === 'granted') {
-    notificationPermission = 'granted';
     return true;
   }
 
   if (Notification.permission !== 'denied') {
     const permission = await Notification.requestPermission();
-    notificationPermission = permission;
     return permission === 'granted';
   }
 
-  notificationPermission = Notification.permission;
   return false;
 }
 

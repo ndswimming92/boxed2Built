@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { DollarSign, TrendingUp, AlertCircle, Target } from 'lucide-react';
 import { PricingRecommendation } from '../../services/analyticsService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

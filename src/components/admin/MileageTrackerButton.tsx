@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigation, Square, AlertCircle, MapPin } from 'lucide-react';
 import { mileageTracker } from '../../services/mileageTrackingService';
 import type { Job } from '../../lib/supabase';

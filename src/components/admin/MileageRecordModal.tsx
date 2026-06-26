@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, Save } from 'lucide-react';
 import { mileageTracker } from '../../services/mileageTrackingService';
 import type { MileageRecord } from '../../lib/supabase';

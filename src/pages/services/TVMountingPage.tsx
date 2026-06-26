@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
-import { CheckCircle2, Clock, Shield, Wrench, Star, Home, ArrowRight, Monitor, Zap } from 'lucide-react';
+import { CheckCircle2, Shield, Wrench, Home, ArrowRight, Monitor, Zap } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';
 import ServiceSchema from '../../components/seo/ServiceSchema';
-import ImageLightbox, { ClickableImage, LightboxImage } from '../../components/ui/ImageLightbox';
+import ImageLightbox, { LightboxImage } from '../../components/ui/ImageLightbox';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';

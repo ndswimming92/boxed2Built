@@ -2,14 +2,8 @@ import React from 'react';
 import { ChevronDown, CheckCircle, DollarSign } from 'lucide-react';
 import CallButton from '../ui/CallButton';
 import OptimizedImage from '../ui/OptimizedImage';
-import { trackEvent } from '../../utils/analytics';
 
 const Hero: React.FC = () => {
-
-  const handleEmailClick = () => {
-    trackEvent('email-click-hero-cta');
-    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Quote%20Request%20-%20Website%20Hero&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Hero%20Section';
-  };
 
   const scrollToServices = () => {
     const servicesSection = document.getElementById('services');
@@ -76,8 +70,8 @@ const Hero: React.FC = () => {
                 src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                 alt="Professional furniture assembly service in Spring Hill Tennessee" 
                 className="w-full h-auto rounded object-cover"
-                width="600"
-                height="400"
+                width={600}
+                height={400}
                 priority={true}
                 imageType="hero"
                 quality={90}

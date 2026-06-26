@@ -1,4 +1,3 @@
-import React from 'react';
 import { Receipt } from 'lucide-react';
 import { calculateJobTaxWithholding, formatCurrency } from '../../utils/taxCalculations';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

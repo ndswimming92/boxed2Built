@@ -638,7 +638,7 @@ export default function ClientsPage() {
                     <td className="px-4 py-4">
                       <div className="flex gap-2">
                         {client.marketing_email_opt_in && (
-                          <Mail className="w-4 h-4 text-green-600" title="Email opt-in" />
+                          <Mail className="w-4 h-4 text-green-600" aria-label="Email opt-in" />
                         )}
                       </div>
                     </td>

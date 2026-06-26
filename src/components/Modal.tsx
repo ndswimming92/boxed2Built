@@ -8,6 +8,7 @@ interface ModalProps {
   triggerRef?: React.RefObject<HTMLElement>;
   title?: string;
   description?: string;
+  size?: 'small' | 'medium' | 'large';
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -16,8 +17,14 @@ const Modal: React.FC<ModalProps> = ({
   children,
   triggerRef,
   title,
-  description
+  description,
+  size = 'medium'
 }) => {
+  const sizeClasses: Record<'small' | 'medium' | 'large', string> = {
+    small: 'max-w-md',
+    medium: 'max-w-3xl',
+    large: 'max-w-5xl',
+  };
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
@@ -103,7 +110,7 @@ const Modal: React.FC<ModalProps> = ({
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-t-lg sm:rounded-lg max-w-3xl w-full p-6 relative overflow-y-auto max-h-dvh sm:max-h-[90vh] shadow-2xl"
+        className={`bg-white rounded-t-lg sm:rounded-lg ${sizeClasses[size]} w-full p-6 relative overflow-y-auto max-h-dvh sm:max-h-[90vh] shadow-2xl`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}

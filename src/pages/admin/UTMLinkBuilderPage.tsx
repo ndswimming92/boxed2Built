@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Copy, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { createUTMUrl, UTMParams } from '../../utils/utm';
 

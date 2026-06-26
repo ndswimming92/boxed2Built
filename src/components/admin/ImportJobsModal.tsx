@@ -14,7 +14,7 @@ type ImportStep = 'upload' | 'validation' | 'preview' | 'importing' | 'success';
 
 export default function ImportJobsModal({ businessId, onClose, onSuccess }: ImportJobsModalProps) {
   const [step, setStep] = useState<ImportStep>('upload');
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [validJobs, setValidJobs] = useState<Partial<Job>[]>([]);
   const [totalRows, setTotalRows] = useState(0);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Search, FileText, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { Invoice, Job } from '../../lib/supabase';
 import { getUnattachedInvoices, attachInvoiceToJob } from '../../services/invoiceService';

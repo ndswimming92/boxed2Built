@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
@@ -180,7 +180,7 @@ export default function DashboardPage() {
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const reminders = (remindersData || []) as DashboardReminder[];
+      const reminders = (remindersData || []) as unknown as DashboardReminder[];
       let dueToday = 0;
       let overdue = 0;
       for (const r of reminders) {

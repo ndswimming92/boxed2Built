@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, JobCompletionReminder } from '../../lib/supabase';
 import { Calendar, Bell, CheckCircle, X, Clock, AlertCircle, Filter, Search } from 'lucide-react';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';

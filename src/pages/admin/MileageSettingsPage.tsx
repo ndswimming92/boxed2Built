@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { MileageSettings } from '../../lib/supabase';
 import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info } from 'lucide-react';

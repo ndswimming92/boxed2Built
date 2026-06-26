@@ -107,7 +107,6 @@ export interface TaxCalculationResult {
   };
 }
 
-const TAX_YEAR = 2024;
 
 const FEDERAL_TAX_BRACKETS_2024: Record<FilingStatus, TaxBracket[]> = {
   single: [
@@ -258,7 +257,6 @@ export function calculateTaxes(
   const filingStatus = settings.filing_status || 'single';
   const netProfit = Math.max(0, grossIncome - totalExpenses);
 
-  const seIncome = netProfit * SELF_EMPLOYMENT_INCOME_SUBJECT_TO_TAX;
   const seTaxBreakdown = calculateSelfEmploymentTax(netProfit, filingStatus);
   const selfEmploymentTax = seTaxBreakdown.totalSelfEmploymentTax;
 

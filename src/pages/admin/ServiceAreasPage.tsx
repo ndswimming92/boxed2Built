@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, ServiceArea } from '../../lib/supabase';
 import { Plus, CreditCard as Edit2, Trash2, Save, X, AlertCircle, CheckCircle, MapPin } from 'lucide-react';
 

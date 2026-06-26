@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Package, Globe, Building2, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';

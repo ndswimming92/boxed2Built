@@ -48,7 +48,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
     ? items 
     : items.filter(item => item.category === selectedCategory);
 
-  const openLightbox = (item: MediaItem, index: number) => {
+  const openLightbox = (item: MediaItem, _index: number) => {
     setLightboxItem(item);
     trackEvent('gallery-lightbox-open', item.title);
     document.body.style.overflow = 'hidden';

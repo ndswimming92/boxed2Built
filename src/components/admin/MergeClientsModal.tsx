@@ -72,7 +72,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
   }
 
-  function renderClientCard(client: Client, counts: PreviewCounts | null, side: 'left' | 'right') {
+  function renderClientCard(client: Client, counts: PreviewCounts | null, _side: 'left' | 'right') {
     const isSelected = keepClientId === client.id;
     const isDiscarded = keepClientId !== null && keepClientId !== client.id;
 

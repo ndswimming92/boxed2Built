@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, Star, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift, Building2 } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift, Building2 } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,

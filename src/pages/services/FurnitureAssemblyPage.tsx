@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
-import { CheckCircle2, Clock, Shield, Trash2, Star, Home, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Clock, Shield, Trash2, Home, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
 import BreadcrumbSchema from '../../components/seo/BreadcrumbSchema';

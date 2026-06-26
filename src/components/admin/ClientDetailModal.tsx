@@ -614,16 +614,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       : [])
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const getStatusBadgeColor = (status: string): string => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'repeat': return 'bg-yellow-100 text-yellow-800';
-      case 'dormant': return 'bg-orange-100 text-orange-800';
-      case 'lead': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const DOC_TYPE_LABELS: Record<string, string> = {
     invoice: 'Invoice', receipt: 'Receipt', estimate: 'Estimate',
     job_report: 'Job Report', photo: 'Photo', agreement: 'Agreement',

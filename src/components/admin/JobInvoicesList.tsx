@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Download, ExternalLink, Unlink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Invoice } from '../../lib/supabase';
 import { getInvoicesByJob, detachInvoiceFromJob, getInvoice } from '../../services/invoiceService';

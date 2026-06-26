@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getPortalAdoptionReport,
   getPortalInactiveCustomersReport,
@@ -107,7 +107,7 @@ export default function PortalAdoptionPage() {
                         <p className="font-medium text-slate-900">{row.full_name || 'Unknown customer'}</p>
                         <p className="text-xs text-slate-500">{row.email || 'No email'}</p>
                       </td>
-                      <td className="px-4 py-2 text-sm text-slate-700">{row.funnel_stage.replaceAll('_', ' ')}</td>
+                      <td className="px-4 py-2 text-sm text-slate-700">{row.funnel_stage.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-2 text-sm text-slate-700">{formatDateTime(row.invited_at)}</td>
                       <td className="px-4 py-2 text-sm text-slate-700">{formatDateTime(row.first_login_at)}</td>
                       <td className="px-4 py-2 text-sm text-slate-700">{formatDateTime(row.first_job_view_at)}</td>
@@ -140,7 +140,7 @@ export default function PortalAdoptionPage() {
                         <p className="font-medium text-slate-900">{row.full_name || 'Unknown customer'}</p>
                         <p className="text-xs text-slate-500">{row.email || 'No email'}</p>
                       </td>
-                      <td className="px-4 py-2 text-sm text-slate-700">{row.inactivity_status.replaceAll('_', ' ')}</td>
+                      <td className="px-4 py-2 text-sm text-slate-700">{row.inactivity_status.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-2 text-sm text-slate-700">{row.inactive_days}</td>
                       <td className="px-4 py-2 text-sm text-slate-700">{formatDateTime(row.last_portal_activity_at)}</td>
                     </tr>

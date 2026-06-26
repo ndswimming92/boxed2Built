@@ -4,7 +4,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ContactForm from '../components/ContactForm';
-import { ChevronRight, Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
 import { useLoaderData } from 'react-router-dom';
@@ -12,11 +12,6 @@ import { Head } from 'vite-react-ssg';
 import { CompleteBusinessData } from '../lib/supabase';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 import {
-  BUSINESS_INFO,
-  SERVICE_AREAS,
-  PRIMARY_SERVICES,
-  SOCIAL_MEDIA_URLS,
-  CUSTOMER_REVIEWS,
   LOCAL_SEO_CONTENT,
   getLocalSeoContentWithPhone
 } from '../constants/localSEO';
@@ -54,18 +49,6 @@ const ContactPage: React.FC = () => {
       conversion_type: 'email_lead'
     });
     window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Contact%20Page&body=I%20would%20like%20to%20inquire%20about%20furniture%20assembly%20services.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Contact%20Page';
-  };
-
-  const handleTermsClick = () => {
-    trackEvent('link_click', 'contact_page_header', {
-      event_category: 'navigation',
-      event_label: 'terms_link_contact',
-      element_type: 'link',
-      element_location: 'contact_page_header',
-      page_section: 'contact_page_header',
-      action_type: 'click',
-      action_value: '/terms-of-service'
-    });
   };
 
 

@@ -104,7 +104,7 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     furniture_image_path: data.furniture_image_path || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  } as FormInquiry;
+  } as unknown as FormInquiry;
 }
 
 export async function getInquiries(

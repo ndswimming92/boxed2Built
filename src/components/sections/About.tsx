@@ -122,8 +122,8 @@ const About: React.FC = () => {
                   src="https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                   alt="Professional furniture assembly service in Spring Hill Tennessee" 
                   className="rounded-lg shadow-md object-cover"
-                  width="500"
-                  height="333"
+                  width={500}
+                  height={333}
                   imageType="gallery"
                   quality={80}
                   enableAvif={true}

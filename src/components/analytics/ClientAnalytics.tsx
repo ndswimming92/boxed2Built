@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, TrendingUp, DollarSign, UserX, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, UserX } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -273,7 +273,7 @@ export default function ClientAnalytics() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {statusDistribution.map((entry, index) => (
+                {statusDistribution.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

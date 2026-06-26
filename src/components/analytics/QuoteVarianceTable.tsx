@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowUpRight, ArrowDownRight, Minus, FileSpreadsheet } from 'lucide-react';
 import { QuoteVarianceJob } from '../../services/analyticsService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

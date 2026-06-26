@@ -6,7 +6,7 @@ interface BusinessData {
     phone?: string;
     email?: string;
     website?: string;
-    slogan?: string;
+    slogan?: string | null;
   };
 }
 
@@ -123,7 +123,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   for (const service of SERVICES) {
     doc.setFont('helvetica', 'normal');
     doc.text(service.type, margin + 3, y);
-    doc.text(service.priceRange, pageWidth - margin - 3, y, { align: 'right' });
+    doc.text(service.priceRange || '', pageWidth - margin - 3, y, { align: 'right' });
     y += 5.5;
   }
 

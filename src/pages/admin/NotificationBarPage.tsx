@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, NotificationBar, getNotificationBarSettings } from '../../lib/supabase';
 import { Save, AlertCircle, CheckCircle, Bell, Eye, EyeOff, Zap } from 'lucide-react';
 

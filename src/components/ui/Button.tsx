@@ -1,5 +1,5 @@
 import React from 'react';
-import { trackEvent, getPageContext } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ButtonProps {
@@ -44,7 +44,6 @@ const Button: React.FC<ButtonProps> = ({
 
   const handleClick = () => {
     if (trackingLabel) {
-      const pageContext = getPageContext();
       const buttonText = typeof children === 'string' ? children : trackingLabel;
 
       trackEvent(`button_click`, pageSection || 'general', {

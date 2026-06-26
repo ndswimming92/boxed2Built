@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Edit2, Trash2, Navigation, DollarSign, Calendar, Plus, Download } from 'lucide-react';
 import { mileageTracker } from '../../services/mileageTrackingService';
 import type { MileageRecord } from '../../lib/supabase';

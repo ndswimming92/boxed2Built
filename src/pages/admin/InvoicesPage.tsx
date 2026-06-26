@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus, Search, Clock, CheckCircle, Briefcase } from 'lucide-react';
 import { supabase, Invoice } from '../../lib/supabase';

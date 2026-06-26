@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase, CompleteBusinessData } from '../lib/supabase';
+import { CompleteBusinessData } from '../lib/supabase';
+import { fetchBusinessData } from './businessDataStore';
+import { useBusinessDataContext } from '../contexts/BusinessDataContext';
 import {
   BUSINESS_INFO,
   ADDRESS_INFO,
@@ -11,147 +13,48 @@ import {
   CUSTOMER_REVIEWS
 } from '../constants/localSEO';
 
-const BUSINESS_DATA_CACHE_TTL_MS = 5 * 60 * 1000;
-
-let cachedBusinessData: CompleteBusinessData | null = null;
-let cachedBusinessDataAt = 0;
-let pendingBusinessDataRequest: Promise<CompleteBusinessData | null> | null = null;
-
-const hasValidBusinessDataCache = () => {
-  return !!cachedBusinessData && Date.now() - cachedBusinessDataAt < BUSINESS_DATA_CACHE_TTL_MS;
-};
-
-const fetchBusinessDataFromSupabase = async (): Promise<CompleteBusinessData | null> => {
-  const { data: businessInfo, error: infoError } = await supabase
-    .from('business_info')
-    .select('*')
-    .eq('is_active', true)
-    .maybeSingle();
-
-  if (infoError) throw infoError;
-
-  if (!businessInfo) {
-    cachedBusinessData = null;
-    cachedBusinessDataAt = Date.now();
-    return null;
-  }
-
-  const [
-    { data: address },
-    { data: serviceAreas },
-    { data: services },
-    { data: businessHours },
-    { data: paymentMethods },
-    { data: socialMedia },
-    { data: reviews },
-    { data: attributes }
-  ] = await Promise.all([
-    supabase
-      .from('business_address')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .maybeSingle(),
-    supabase
-      .from('service_areas')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .eq('is_active', true)
-      .order('priority', { ascending: true }),
-    supabase
-      .from('services')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true }),
-    supabase
-      .from('business_hours')
-      .select('*')
-      .eq('business_id', businessInfo.id),
-    supabase
-      .from('payment_methods')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true }),
-    supabase
-      .from('social_media')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true }),
-    supabase
-      .from('customer_reviews')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-      .eq('is_active', true)
-      .order('date_published', { ascending: false }),
-    supabase
-      .from('business_attributes')
-      .select('*')
-      .eq('business_id', businessInfo.id)
-  ]);
-
-  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const sortedBusinessHours = (businessHours || []).sort((a, b) => {
-    return dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week);
-  });
-
-  const completeData: CompleteBusinessData = {
-    info: businessInfo,
-    address: address || null,
-    serviceAreas: serviceAreas || [],
-    services: services || [],
-    businessHours: sortedBusinessHours,
-    paymentMethods: paymentMethods || [],
-    socialMedia: socialMedia || [],
-    reviews: reviews || [],
-    attributes: attributes || []
-  };
-
-  cachedBusinessData = completeData;
-  cachedBusinessDataAt = Date.now();
-
-  return completeData;
-};
-
 export const useBusinessData = (forceRefresh?: number) => {
+  // When a BusinessDataProvider is mounted (public routes), read the shared
+  // data instead of issuing a duplicate fetch wave per consumer.
+  const sharedData = useBusinessDataContext();
+
   const [data, setData] = useState<CompleteBusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchBusinessData = async () => {
+    // The provider owns fetching when present; nothing to do here.
+    if (sharedData) return;
+
+    let active = true;
+
+    const run = async () => {
       try {
-        if (!forceRefresh && hasValidBusinessDataCache()) {
-          setData(cachedBusinessData);
-          setError(null);
-          setLoading(false);
-          return;
-        }
-
         setLoading(true);
-
-        const shouldBypassCache = typeof forceRefresh === 'number';
-        if (shouldBypassCache || !pendingBusinessDataRequest) {
-          pendingBusinessDataRequest = fetchBusinessDataFromSupabase().finally(() => {
-            pendingBusinessDataRequest = null;
-          });
-        }
-
-        const completeData = await pendingBusinessDataRequest;
+        const completeData = await fetchBusinessData(typeof forceRefresh === 'number');
+        if (!active) return;
         setData(completeData);
         setError(null);
       } catch (err) {
+        if (!active) return;
         console.error('Error fetching business data:', err);
         setError(err as Error);
         setData(null);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
-    fetchBusinessData();
-  }, [forceRefresh]);
+    run();
+
+    return () => {
+      active = false;
+    };
+  }, [forceRefresh, sharedData]);
+
+  if (sharedData) {
+    return { data: sharedData.data, loading: sharedData.loading, error: sharedData.error };
+  }
 
   return { data, loading, error };
 };
@@ -173,6 +76,8 @@ const buildFallbackData = (): CompleteBusinessData => ({
     logo_url: 'https://boxed2built.com/black_boxed2built_logo.png',
     image_url: 'https://boxed2built.com/black_boxed2built_logo.png',
     total_client_hours_saved: 0,
+    hours_counter_duration_ms: null,
+    hours_counter_frame_ms: null,
     is_active: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -212,6 +117,10 @@ const buildFallbackData = (): CompleteBusinessData => ({
     description: service.description,
     category: 'Furniture Assembly',
     base_price: parseFloat(service.price),
+    min_price: null,
+    max_price: null,
+    price_range_description: null,
+    included_items: null,
     price_currency: 'USD',
     duration_minutes: null,
     is_featured: index < 5,
@@ -223,7 +132,7 @@ const buildFallbackData = (): CompleteBusinessData => ({
   businessHours: BUSINESS_HOURS.structured.map((hours, index) => ({
     id: `fallback-${index}`,
     business_id: 'fallback',
-    day_of_week: hours.dayOfWeek,
+    day_of_week: Array.isArray(hours.dayOfWeek) ? hours.dayOfWeek.join(', ') : hours.dayOfWeek,
     opens: hours.opens,
     closes: hours.closes,
     is_closed: false,
@@ -263,6 +172,10 @@ const buildFallbackData = (): CompleteBusinessData => ({
     date_published: review.datePublished,
     is_featured: index < 3,
     is_verified: true,
+    show_in_header: false,
+    job_completion_id: null,
+    source: 'manual',
+    collected_at_completion: false,
     is_active: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()

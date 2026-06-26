@@ -183,7 +183,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [showFurnitureReference, setShowFurnitureReference] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
-  const [isIOS, setIsIOS] = useState(false);
+  const [, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -207,7 +207,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     isSubmitting,
     submitAttempted,
     handleFieldChange,
-    handleFieldBlur,
     handleSubmit: handleValidatedSubmit,
     reset,
     getFieldProps
@@ -797,7 +796,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 label="Phone Number (optional)"
                 inputId="phone"
                 error={fields.phone?.error}
-                success={fields.phone?.valid && fields.phone?.touched && fields.phone?.value}
+                success={Boolean(fields.phone?.valid && fields.phone?.touched && fields.phone?.value)}
                 helpText="10-digit US phone number (for faster response)"
               >
                 {isMounted ? (
@@ -1001,7 +1000,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 <FormField
                   label="Preferred Date"
                   error={fields.preferredDate?.error}
-                  success={fields.preferredDate?.valid && fields.preferredDate?.touched && fields.preferredDate?.value}
+                  success={Boolean(fields.preferredDate?.valid && fields.preferredDate?.touched && fields.preferredDate?.value)}
                   helpText="When would you like the assembly completed?"
                 >
                   <input
@@ -1020,7 +1019,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 <FormField
                   label="Preferred Time"
                   error={fields.preferredTimeSlot?.error}
-                  success={fields.preferredTimeSlot?.valid && fields.preferredTimeSlot?.touched && fields.preferredTimeSlot?.value}
+                  success={Boolean(fields.preferredTimeSlot?.valid && fields.preferredTimeSlot?.touched && fields.preferredTimeSlot?.value)}
                   helpText="What time works best for you?"
                 >
                   <select
@@ -1043,7 +1042,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     label="Additional Details"
                     error={fields.notes?.error}
                     warning={fields.notes?.warning}
-                    success={fields.notes?.valid && fields.notes?.touched && fields.notes?.value}
+                    success={Boolean(fields.notes?.valid && fields.notes?.touched && fields.notes?.value)}
                     helpText="Any special requirements or questions?"
                     showCharacterCount
                     maxLength={500}

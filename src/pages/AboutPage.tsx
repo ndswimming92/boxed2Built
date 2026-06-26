@@ -102,8 +102,8 @@ const AboutPage: React.FC = () => {
                       src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
                       alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
                       className="rounded-lg shadow-lg object-cover"
-                      width="500"
-                      height="667"
+                      width={500}
+                      height={667}
                       imageType="gallery"
                       quality={85}
                       enableAvif={true}

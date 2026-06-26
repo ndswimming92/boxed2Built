@@ -92,9 +92,9 @@ export default function CompletionsPage() {
 
       if (data) {
         if (reset) {
-          setCompletions(data);
+          setCompletions(data as unknown as (JobCompletion & { job: unknown })[]);
         } else {
-          setCompletions(prev => [...prev, ...data]);
+          setCompletions(prev => [...prev, ...(data as unknown as (JobCompletion & { job: unknown })[])]);
         }
       } else if (reset) {
         setCompletions([]);

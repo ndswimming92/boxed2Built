@@ -230,7 +230,7 @@ export async function searchClients(organizationId: string, searchTerm: string):
 }
 
 // Get dormant clients (no activity in 90+ days)
-export async function getDormantClients(organizationId: string, daysThreshold: number = 90): Promise<Client[]> {
+export async function getDormantClients(organizationId: string, _daysThreshold: number = 90): Promise<Client[]> {
   const { data, error } = await supabase
     .from('clients')
     .select('*')

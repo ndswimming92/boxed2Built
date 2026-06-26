@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QrCode, Plus, Search, Filter, Eye, CreditCard as Edit, Copy, Power, Trash2, ExternalLink, BarChart3, X, Download, RotateCcw } from 'lucide-react';
 import QRCodeLib from 'qrcode';

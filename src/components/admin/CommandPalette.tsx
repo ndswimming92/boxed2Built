@@ -5,7 +5,7 @@ import { Search, X } from 'lucide-react';
 interface NavigationItem {
   name: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ElementType;
   category?: string;
 }
 

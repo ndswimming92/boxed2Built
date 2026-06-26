@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Phone, Mail, Package, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';

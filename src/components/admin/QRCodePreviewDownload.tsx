@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Copy, ExternalLink, FileImage, FileCode, FileText } from 'lucide-react';
 import QRCode from 'qrcode';
 import { QRCodeWithSchedules } from '../../lib/supabase';
@@ -13,7 +13,7 @@ type DownloadFormat = 'png' | 'svg' | 'pdf';
 type PNGSize = 300 | 600 | 1200;
 
 export default function QRCodePreviewDownload({ qrCode }: Props) {
-  const [selectedSize, setSelectedSize] = useState<PNGSize>(600);
+  const [selectedSize] = useState<PNGSize>(600);
   const [qrDataURL, setQrDataURL] = useState<string>('');
   const [qrSVG, setQrSVG] = useState<string>('');
   const [downloadingFormat, setDownloadingFormat] = useState<DownloadFormat | null>(null);

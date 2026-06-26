@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import {
@@ -9,16 +9,12 @@ import {
   exportForecastToCSV,
   ForecastSettings,
   ForecastResult,
-  ForecastDataPoint,
 } from '../../services/forecastingService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import {
-  LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,

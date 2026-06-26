@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
 import { customerPortalService, PortalServiceError, type CustomerPortalJob } from '../../services/customerPortalService';

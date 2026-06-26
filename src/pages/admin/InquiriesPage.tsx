@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
 import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock } from 'lucide-react';
-import { getInquiries, markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
+import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
@@ -34,7 +34,7 @@ export default function InquiriesPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [showTestData, setShowTestData] = useState(false);
 
-  const { inquiries, unviewedCount, refresh } = useRealtimeInquiries({ businessId, includeTestData: showTestData });
+  const { inquiries, refresh } = useRealtimeInquiries({ businessId, includeTestData: showTestData });
 
   useEffect(() => {
     fetchBusinessId();

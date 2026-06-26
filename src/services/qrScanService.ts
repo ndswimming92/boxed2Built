@@ -139,8 +139,8 @@ export async function getScanAnalytics(
 
   const device_breakdown: DeviceBreakdown[] = Object.entries(deviceCounts).map(([device, count]) => ({
     device_type: device,
-    count,
-    percentage: Math.round((count / scans.length) * 100)
+    count: Number(count),
+    percentage: Math.round((Number(count) / scans.length) * 100)
   }));
 
   const referrerCounts = scans
@@ -152,7 +152,7 @@ export async function getScanAnalytics(
     }, {} as Record<string, number>);
 
   const top_referrers: TopReferrer[] = Object.entries(referrerCounts)
-    .map(([referrer, count]) => ({ referrer, count }))
+    .map(([referrer, count]) => ({ referrer, count: Number(count) }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
@@ -163,7 +163,7 @@ export async function getScanAnalytics(
   }, {} as Record<string, number>);
 
   const time_series: ScanTimeSeries[] = Object.entries(dateCounts)
-    .map(([date, scans]) => ({ date, scans }))
+    .map(([date, scans]) => ({ date, scans: Number(scans) }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   return {

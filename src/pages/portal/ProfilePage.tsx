@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Check, Copy, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../../services/communicationService';

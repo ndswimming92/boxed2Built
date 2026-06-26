@@ -1,4 +1,3 @@
-import React from 'react';
 import { TaxCalculationResult } from '../../services/taxService';
 import { DollarSign, TrendingUp, AlertTriangle, Calendar, Info } from 'lucide-react';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

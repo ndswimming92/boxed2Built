@@ -11,7 +11,7 @@ import { trackEvent } from '../utils/analytics';
 import { useLoaderData } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { CompleteBusinessData } from '../lib/supabase';
-import { LOCAL_SEO_CONTENT, FAQ_CONTENT, getFaqContentWithPhone } from '../constants/localSEO';
+import { LOCAL_SEO_CONTENT, getFaqContentWithPhone } from '../constants/localSEO';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
 
 const FAQPage: React.FC = () => {

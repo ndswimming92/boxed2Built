@@ -3,7 +3,7 @@ import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, C
 import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
-import { PhotoFile, downloadPhoto, downloadAllPhotos, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
+import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
 
 type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
 
@@ -35,7 +35,6 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     { id: '5', label: 'Tools and materials accounted for', checked: false, required: false },
   ]);
   const [photos, setPhotos] = useState<PhotoFile[]>([]);
-  const [downloadingPhotos, setDownloadingPhotos] = useState(false);
   const [satisfactionRating, setSatisfactionRating] = useState(5);
   const [satisfactionComment, setSatisfactionComment] = useState('');
   const [signatureData, setSignatureData] = useState('');
@@ -133,12 +132,6 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
 
   const removePhoto = (index: number) => {
     setPhotos(photos.filter((_, i) => i !== index));
-  };
-
-  const handleDownloadAllPhotos = () => {
-    setDownloadingPhotos(true);
-    downloadAllPhotos(photos, job.client_name);
-    setTimeout(() => setDownloadingPhotos(false), 2000);
   };
 
   const handleSharePhoto = async (photo: PhotoFile, index: number) => {

@@ -326,7 +326,7 @@ export const customerPortalService = {
       throw normalizePortalError(error, `Failed to fetch documents: ${error.message}`);
     }
 
-    return (data ?? []) as CustomerPortalDocument[];
+    return (data ?? []) as unknown as CustomerPortalDocument[];
   },
 
   async getDocumentSignedUrl(documentId: string, mode: DocumentAccessMode): Promise<string> {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { QuarterlyTaxPayment } from '../../services/taxService';
 import { Calendar, CheckCircle, AlertCircle, Plus, DollarSign, X } from 'lucide-react';
 import { addQuarterlyPayment } from '../../services/taxService';

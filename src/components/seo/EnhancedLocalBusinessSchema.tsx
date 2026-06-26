@@ -4,13 +4,12 @@ import { CompleteBusinessData } from '../../lib/supabase';
 interface EnhancedLocalBusinessSchemaProps {
   businessData: CompleteBusinessData | null | undefined;
   includeReviews?: boolean;
-  pageType?: 'home' | 'services' | 'about' | 'contact';
+  pageType?: string;
 }
 
 const EnhancedLocalBusinessSchema: React.FC<EnhancedLocalBusinessSchemaProps> = ({
   businessData,
-  includeReviews = false,
-  pageType = 'home'
+  includeReviews = false
 }) => {
   if (!businessData) return null;
 

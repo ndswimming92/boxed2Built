@@ -1,14 +1,15 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { ReactNode, useEffect } from 'react';
+import { useLocation, useMatches } from 'react-router-dom';
 import { ClientOnly } from 'vite-react-ssg';
 import { AuthProvider } from '../contexts/AuthContext';
 import { NotificationBarProvider } from '../contexts/NotificationBarContext';
 import { ToastProvider } from '../contexts/ToastContext';
+import { BusinessDataProvider, useBusinessDataContext } from '../contexts/BusinessDataContext';
 import ScrollToTop from './ui/ScrollToTop';
 import NotificationBar from './NotificationBar';
 import { useNotificationBar } from '../hooks/useNotificationBar';
 import { useManifestManager } from '../hooks/useManifestManager';
-import { supabase } from '../lib/supabase';
+import type { CompleteBusinessData } from '../lib/supabase';
 import { loadGoogleAnalytics } from '../utils/analyticsLoader';
 import PageLoader from './ui/PageLoader';
 import { Suspense } from 'react';
@@ -143,21 +144,12 @@ function HashHandler() {
 }
 
 function NotificationBarWrapper() {
-  const [businessId, setBusinessId] = useState<string | null>(null);
+  // Reuse the business id from the shared business data instead of issuing a
+  // separate business_info lookup (and the round-trip waterfall behind it).
+  const businessData = useBusinessDataContext();
+  const businessId = businessData?.data?.info?.id ?? null;
   const { notification } = useNotificationBar(businessId);
   const location = useLocation();
-
-  useEffect(() => {
-    const fetchBusinessId = async () => {
-      const { data } = await supabase
-        .from('business_info')
-        .select('id')
-        .eq('is_active', true)
-        .maybeSingle();
-      if (data) setBusinessId(data.id);
-    };
-    fetchBusinessId();
-  }, []);
 
   if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/pay')) {
     return null;
@@ -209,17 +201,48 @@ function ClientOnlyBrowserComponents() {
   );
 }
 
+// Pull the build-time business data out of the matched route loader (if any)
+// so the provider can paint immediately without a fetch.
+function useLoaderBusinessData(): CompleteBusinessData | null {
+  const matches = useMatches();
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const data = matches[i].data as { businessData?: CompleteBusinessData } | undefined;
+    if (data?.businessData) return data.businessData;
+  }
+  return null;
+}
+
 export default function AppShell({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const initialBusinessData = useLoaderBusinessData();
+
+  // Admin/portal/pay routes don't consume the public business data wave, so
+  // we skip the provider there to avoid an unnecessary fetch.
+  const isAppRoute =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/portal') ||
+    location.pathname.startsWith('/pay');
+
+  const content = (
+    <div className="min-h-screen">
+      <ClientOnlyBrowserComponents />
+      <Suspense fallback={<PageLoader message="Loading application..." />}>
+        {children}
+      </Suspense>
+    </div>
+  );
+
   return (
     <NotificationBarProvider>
       <ToastProvider>
         <ConditionalAuthProvider>
-          <div className="min-h-screen">
-            <ClientOnlyBrowserComponents />
-            <Suspense fallback={<PageLoader message="Loading application..." />}>
-              {children}
-            </Suspense>
-          </div>
+          {isAppRoute ? (
+            content
+          ) : (
+            <BusinessDataProvider initialData={initialBusinessData}>
+              {content}
+            </BusinessDataProvider>
+          )}
         </ConditionalAuthProvider>
       </ToastProvider>
     </NotificationBarProvider>

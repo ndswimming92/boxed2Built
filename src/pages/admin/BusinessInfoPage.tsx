@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, BusinessInfo, BusinessAddress } from '../../lib/supabase';
 import { Save, AlertCircle, CheckCircle, Building2, MapPin } from 'lucide-react';
 

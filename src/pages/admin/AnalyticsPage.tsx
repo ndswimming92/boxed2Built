@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
 import {
@@ -53,11 +53,9 @@ import {
   DollarSign,
   Clock,
   Briefcase,
-  Users,
   Target,
   Activity,
   Calendar,
-  MapPin,
   UserCheck,
   Download,
   Upload,
@@ -97,7 +95,6 @@ export default function AnalyticsPage() {
   const [targetHourlyRate, setTargetHourlyRate] = useState(50);
   const [taxSettings, setTaxSettings] = useState<TaxSettingsType | null>(null);
   const [quarterlyPayments, setQuarterlyPayments] = useState<QuarterlyTaxPayment[]>([]);
-  const [showTaxSection, setShowTaxSection] = useState(true);
   const [trackedExpenses, setTrackedExpenses] = useState<number>(0);
   const { jobs, loading, lastUpdated, isConnected } = useRealtimeJobs(businessId);
 
@@ -405,7 +402,7 @@ export default function AnalyticsPage() {
                     outerRadius={80}
                     label={false}
                   >
-                    {locationRevenue.map((entry, index) => (
+                    {locationRevenue.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -511,7 +508,7 @@ export default function AnalyticsPage() {
                     outerRadius={80}
                     label={false}
                   >
-                    {clientTypeData.map((entry, index) => (
+                    {clientTypeData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#3b82f6'} />
                     ))}
                   </Pie>
@@ -736,7 +733,7 @@ export default function AnalyticsPage() {
 
                 <TaxOverview
                   taxCalculation={taxCalculation}
-                  quarterlyPayments={quarterlyPayments}
+                  quarterlyPayments={quarterlyPayments.map((q) => ({ quarter: q.quarter, amount: q.payment_amount }))}
                   nextDueDate={nextQuarterDueDate}
                 />
               </div>

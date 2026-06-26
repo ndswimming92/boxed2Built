@@ -42,6 +42,9 @@ export interface GAEventParams {
   conversion_type?: string;
   conversion_value?: number;
   currency?: string;
+
+  // Allow additional GA custom parameters (e.g. confirmation_code, error_message)
+  [key: string]: string | number | boolean | string[] | undefined;
 }
 
 // Helper function to get page context from current URL
@@ -110,7 +113,7 @@ export const trackConversion = (action: string, value?: number, currency: string
 // Track form interactions with enhanced parameters
 export const trackFormInteraction = (
   formName: string,
-  action: 'start' | 'complete' | 'abandon' | 'field_interaction' | 'validation_error',
+  action: 'start' | 'complete' | 'abandon' | 'field_interaction' | 'validation_error' | 'blur' | 'submit',
   additionalParams?: GAEventParams
 ) => {
   trackGAEvent(`form_${action}`, {

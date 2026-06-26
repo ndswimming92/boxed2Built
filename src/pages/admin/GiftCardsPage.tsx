@@ -231,8 +231,8 @@ const Th: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <th className="text-left font-medium px-4 py-2 whitespace-nowrap">{children}</th>
 );
 
-const Td: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <td className={`px-4 py-3 whitespace-nowrap ${className}`}>{children}</td>
+const Td: React.FC<{ children: React.ReactNode; className?: string; title?: string }> = ({ children, className = '', title }) => (
+  <td title={title} className={`px-4 py-3 whitespace-nowrap ${className}`}>{children}</td>
 );
 
 const StatCard: React.FC<{ label: string; value: string; accent?: 'teal' | 'slate' | 'emerald' }> = ({ label, value, accent = 'emerald' }) => {

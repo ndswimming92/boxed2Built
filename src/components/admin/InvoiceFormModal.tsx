@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download, Gift } from 'lucide-react';
-import { Invoice, InvoiceLineItem } from '../../lib/supabase';
+import { Invoice } from '../../lib/supabase';
 import {
   createInvoice,
   updateInvoice,
@@ -56,7 +56,6 @@ const INVOICE_TYPES = [
   { value: 'final', label: 'Final' },
 ];
 
-const TN_TAX_RATE = 9.25;
 
 function formatPhoneNumber(value: string): string {
   const cleaned = value.replace(/\D/g, '');
@@ -412,7 +411,6 @@ export default function InvoiceFormModal({
         },
         {
           name: businessInfo.name,
-          address: businessInfo.address,
           phone: businessInfo.phone,
           email: businessInfo.email,
           website: businessInfo.website,

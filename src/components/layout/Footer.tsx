@@ -222,7 +222,7 @@ const Footer: React.FC = () => {
                     aria-label={label}
                     onClick={() => handleSocialClick(platform)}
                   >
-                    <Icon size={20} title={label} />
+                    <Icon size={20} />
                   </a>
                 );
               })}
@@ -232,7 +232,7 @@ const Footer: React.FC = () => {
                 aria-label="Email Boxed2Built"
                 onClick={() => handleSocialClick('email')}
               >
-                <Mail size={20} title="Email" />
+                <Mail size={20} />
               </a>
               <a
                 href={`tel:${phoneTel}`}
@@ -240,7 +240,7 @@ const Footer: React.FC = () => {
                 aria-label="Call Boxed2Built"
                 onClick={() => handleSocialClick('phone')}
               >
-                <Phone size={20} title="Phone" />
+                <Phone size={20} />
               </a>
             </div>
           </div>

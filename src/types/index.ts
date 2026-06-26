@@ -32,6 +32,7 @@ export interface UserOrganizationContext {
 }
 
 export interface ServiceItem {
+  priceRange?: string;
   id: number;
   type: string;
   description: string;
@@ -40,7 +41,7 @@ export interface ServiceItem {
 }
 
 export interface Review {
-  id: number;
+  id: string | number;
   author: string;
   text: string;
   rating: number;

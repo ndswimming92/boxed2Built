@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Star } from 'lucide-react';
 
 type SatisfactionRatingProps = {

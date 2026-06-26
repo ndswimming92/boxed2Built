@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, Save, DollarSign, Info } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getInvoiceSettings, updateInvoiceSettings } from '../../services/invoiceService';

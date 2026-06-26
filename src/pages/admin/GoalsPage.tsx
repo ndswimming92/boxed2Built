@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Target, Plus, Search, CreditCard as Edit, Trash2, Check, Archive, TrendingUp, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { Goal } from '../../lib/supabase';
@@ -10,7 +10,6 @@ import {
   completeGoal,
   archiveGoal,
   updateGoalProgress,
-  type GoalFilters,
 } from '../../services/goalsService';
 import GoalFormModal from '../../components/admin/GoalFormModal';
 

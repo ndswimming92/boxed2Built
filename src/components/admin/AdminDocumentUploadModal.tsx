@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Upload, File, AlertCircle, CheckCircle2, ChevronDown, Eye, EyeOff, Lock } from 'lucide-react';
+import { X, Upload, File, AlertCircle, CheckCircle2, ChevronDown, Eye, Lock } from 'lucide-react';
 import {
   uploadDocumentForCustomer,
   getJobsForCustomer,

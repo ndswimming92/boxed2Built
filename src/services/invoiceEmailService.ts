@@ -1,5 +1,4 @@
 import { Invoice, InvoiceLineItem, InvoicePayment } from '../lib/supabase';
-import { generateInvoicePDF } from '../utils/invoicePDFGenerator';
 
 interface InvoiceWithDetails extends Invoice {
   lineItems: InvoiceLineItem[];
@@ -15,15 +14,6 @@ interface BusinessInfo {
 }
 
 export function generateInvoiceEmailHTML(invoice: Invoice, businessInfo: BusinessInfo): string {
-  const statusColor = {
-    draft: '#6B7280',
-    sent: '#3B82F6',
-    partially_paid: '#F59E0B',
-    paid: '#10B981',
-    overdue: '#EF4444',
-    cancelled: '#6B7280',
-  }[invoice.status];
-
   return `
 <!DOCTYPE html>
 <html>

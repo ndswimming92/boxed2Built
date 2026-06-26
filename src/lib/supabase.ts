@@ -103,6 +103,7 @@ export type Service = {
   business_id: string;
   name: string;
   description: string;
+  category?: string | null;
   base_price: number;
   min_price: number | null;
   max_price: number | null;
@@ -490,6 +491,10 @@ export type QRCodeSchedule = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type QRCodeWithSchedules = QRCode & {
+  schedules: QRCodeSchedule[];
 };
 
 export type QRScan = {
@@ -918,23 +923,23 @@ export async function getCompleteBusiness(): Promise<CompleteBusinessData> {
   // Runtime validation (throws if schema drift)
   zBusinessInfo.parse(info);
   if (address) zBusinessAddress.parse(address);
-  serviceAreas.forEach(zServiceArea.parse);
-  services.forEach(zService.parse);
-  businessHours.forEach(zBusinessHours.parse);
-  paymentMethods.forEach(zPaymentMethod.parse);
-  socialMedia.forEach(zSocialMedia.parse);
-  reviews.forEach(zCustomerReview.parse);
-  attributes.forEach(zBusinessAttribute.parse);
+  serviceAreas.forEach((x) => zServiceArea.parse(x));
+  services.forEach((x) => zService.parse(x));
+  businessHours.forEach((x) => zBusinessHours.parse(x));
+  paymentMethods.forEach((x) => zPaymentMethod.parse(x));
+  socialMedia.forEach((x) => zSocialMedia.parse(x));
+  reviews.forEach((x) => zCustomerReview.parse(x));
+  attributes.forEach((x) => zBusinessAttribute.parse(x));
 
   const payload: CompleteBusinessData = {
-    info,
+    info: info as BusinessInfo,
     address,
     serviceAreas,
     services,
     businessHours,
     paymentMethods,
     socialMedia,
-    reviews,
+    reviews: reviews as CustomerReview[],
     attributes,
   };
 

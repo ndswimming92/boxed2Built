@@ -1,4 +1,3 @@
-import React from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface MetricCardProps {
@@ -6,12 +5,10 @@ interface MetricCardProps {
   value: string | number;
   subtitle?: string;
   icon: LucideIcon;
-  iconColor: string;
-  iconBgColor: string;
-  trend?: {
-    value: string;
-    positive: boolean;
-  };
+  iconColor?: string;
+  iconBgColor?: string;
+  color?: string;
+  trend?: { value: string; positive: boolean } | string;
 }
 
 export default function MetricCard({
@@ -19,8 +16,8 @@ export default function MetricCard({
   value,
   subtitle,
   icon: Icon,
-  iconColor,
-  iconBgColor,
+  iconColor = 'text-slate-600',
+  iconBgColor = 'bg-slate-100',
   trend,
 }: MetricCardProps) {
   return (
@@ -33,7 +30,7 @@ export default function MetricCard({
       </div>
       <p className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">{value}</p>
       {subtitle && <p className="text-xs sm:text-sm text-slate-600">{subtitle}</p>}
-      {trend && (
+      {trend && typeof trend === 'object' && (
         <p
           className={`text-xs sm:text-sm font-medium mt-2 ${
             trend.positive ? 'text-emerald-600' : 'text-red-600'

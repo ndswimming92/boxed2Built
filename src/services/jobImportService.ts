@@ -195,7 +195,7 @@ function validateNumber(numStr: string, row: number, field: keyof JobCSVRow, err
   return parsed;
 }
 
-function validateReferralSource(source: string, row: number, errors: ValidationError[]): string | null {
+function validateReferralSource(source: string, _row: number, _errors: ValidationError[]): string | null {
   if (!source || !source.trim()) return null;
 
   const cleaned = source.trim();
@@ -208,7 +208,7 @@ function validateReferralSource(source: string, row: number, errors: ValidationE
   return cleaned;
 }
 
-function validateCity(city: string, row: number, serviceAreas: ServiceArea[], errors: ValidationError[]): string | null {
+function validateCity(city: string, _row: number, serviceAreas: ServiceArea[], _errors: ValidationError[]): string | null {
   if (!city || !city.trim()) return null;
 
   const cleaned = city.trim();
@@ -221,7 +221,7 @@ function validateCity(city: string, row: number, serviceAreas: ServiceArea[], er
   return cleaned;
 }
 
-function validatePaymentMethod(method: string, row: number, paymentMethods: PaymentMethod[], errors: ValidationError[]): string | null {
+function validatePaymentMethod(method: string, _row: number, paymentMethods: PaymentMethod[], _errors: ValidationError[]): string | null {
   if (!method || !method.trim()) return null;
 
   const cleaned = method.trim();

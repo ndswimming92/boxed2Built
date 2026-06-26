@@ -196,8 +196,8 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     : jobTypeOptions;
 
   const isFree = formData.is_free === true;
-  const netProfit = isFree ? 0 : calculateNetProfit(formData.final_price, formData.materials_cost);
-  const hourlyRate = isFree ? 0 : calculateHourlyRate(formData.final_price, formData.materials_cost, formData.hours_worked);
+  const netProfit = isFree ? 0 : calculateNetProfit(formData.final_price ?? null, formData.materials_cost ?? null);
+  const hourlyRate = isFree ? 0 : calculateHourlyRate(formData.final_price ?? null, formData.materials_cost ?? null, formData.hours_worked ?? null);
   const requiresHoursWorked = formData.job_status === 'completed' || Boolean(formData.date_completed);
 
   const updateNotes = (nextValue: string) => {

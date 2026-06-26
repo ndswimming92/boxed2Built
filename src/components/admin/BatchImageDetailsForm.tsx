@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Save, AlertCircle } from 'lucide-react';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { GalleryService, CreateGalleryItemInput } from '../../services/galleryService';

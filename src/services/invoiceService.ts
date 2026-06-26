@@ -47,7 +47,7 @@ export interface UpdateInvoiceData {
 
 export interface CreateLineItemData {
   invoice_id: string;
-  item_type: 'labor' | 'material' | 'other';
+  item_type: 'labor' | 'material' | 'other' | 'discount';
   description: string;
   quantity: number;
   unit_price: number;

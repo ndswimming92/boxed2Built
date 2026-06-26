@@ -1,4 +1,3 @@
-import React from 'react';
 import { TrendingUp } from 'lucide-react';
 import { ProfitabilityJob } from '../../services/analyticsService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

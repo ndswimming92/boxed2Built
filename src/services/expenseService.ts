@@ -60,6 +60,7 @@ export interface ExpenseByCategoryStats {
   deductible_amount: number;
   expense_count: number;
   percentage_of_total: number;
+  [key: string]: string | number;
 }
 
 export async function getExpenseCategories(businessId: string): Promise<ExpenseCategory[]> {
@@ -284,7 +285,7 @@ export async function getExpensesByCategory(
 
   data.forEach(exp => {
     const catId = exp.category_id || 'uncategorized';
-    const catName = exp.category?.name || 'Uncategorized';
+    const catName = (exp.category as unknown as { name?: string } | null)?.name || 'Uncategorized';
 
     if (!categoryMap[catId]) {
       categoryMap[catId] = {
@@ -349,7 +350,7 @@ export async function getMonthlyExpenses(
   const monthlyData: Record<string, { amount: number; deductible: number }> = {};
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  monthNames.forEach((month, index) => {
+  monthNames.forEach((month, _index) => {
     monthlyData[month] = { amount: 0, deductible: 0 };
   });
 

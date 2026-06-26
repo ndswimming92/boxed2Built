@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { JobTypePerformance } from '../../services/analyticsService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';

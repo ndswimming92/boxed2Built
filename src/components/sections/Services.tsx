@@ -93,7 +93,7 @@ const Services: React.FC = () => {
           ) : (
             services?.map((service, index) => {
               const accent = CARD_ACCENTS[index % CARD_ACCENTS.length];
-              const isPopular = service.id === 3;
+              const isPopular = service.id === '3';
               return (
                 <div
                   key={service.id}

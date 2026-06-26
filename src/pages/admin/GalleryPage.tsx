@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, Filter } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
@@ -12,7 +11,6 @@ import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm'
 import GalleryItemModal from '../../components/admin/GalleryItemModal';
 
 export default function GalleryPage() {
-  const { user } = useAuth();
   const [businessId, setBusinessId] = useState<string>('');
   const [loadingBusinessId, setLoadingBusinessId] = useState(true);
   const { items, loading, error, refresh } = useGalleryItems(businessId, true);
