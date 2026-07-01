@@ -37,7 +37,7 @@ Deno.serve(async (req: Request) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250514",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 1024,
         messages: [
           {
@@ -77,7 +77,7 @@ Respond ONLY with valid JSON in this exact format:
       const errorBody = await response.text();
       console.error("Claude API error:", response.status, errorBody);
       return new Response(
-        JSON.stringify({ error: "AI analysis failed" }),
+        JSON.stringify({ error: `AI analysis failed (${response.status})`, details: errorBody }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -94,7 +94,11 @@ Respond ONLY with valid JSON in this exact format:
       );
     }
 
-    const parsed = JSON.parse(textContent.text);
+    let jsonText = textContent.text.trim();
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+    }
+    const parsed = JSON.parse(jsonText);
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
