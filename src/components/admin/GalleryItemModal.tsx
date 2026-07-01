@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Save, Upload, Video, AlertCircle } from 'lucide-react';
+import { X, Save, Upload, Video, AlertCircle, Sparkles } from 'lucide-react';
 import { GalleryService, CreateGalleryItemInput, UpdateGalleryItemInput } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
 import { optimizeImage, validateImageFile, snapshotFileToMemory } from '../../utils/imageOptimizationUpload';
+import { analyzeGalleryImage, analyzeGalleryImageFromUrl } from '../../services/galleryAIService';
+import { SERVICE_AREAS } from '../../constants/localSEO';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -34,6 +36,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(item?.src || '');
   const [saving, setSaving] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +60,36 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     } catch (err) {
       console.error('Error reading selected image:', err);
       setError('Could not read the selected image. Please try selecting it again.');
+    }
+  };
+
+  const handleAnalyze = async () => {
+    try {
+      setAnalyzing(true);
+      setError(null);
+
+      let result;
+      if (selectedFile) {
+        result = await analyzeGalleryImage(selectedFile);
+      } else if (isEdit && item?.src) {
+        result = await analyzeGalleryImageFromUrl(item.src);
+      } else {
+        setError('Please select an image first');
+        setAnalyzing(false);
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        title: result.title,
+        description: result.description,
+        alt: result.alt,
+      }));
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      setError(err instanceof Error ? err.message : 'AI analysis failed');
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -246,6 +279,26 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                   />
                 </div>
               )}
+              {previewUrl && (
+                <button
+                  type="button"
+                  onClick={handleAnalyze}
+                  disabled={analyzing || saving}
+                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-300 text-amber-800 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {analyzing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Analyze with AI
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
 
@@ -319,13 +372,15 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
             </div>
 
             <FormField label="Location">
-              <input name="location"
-                type="text"
+              <select name="location"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="Spring Hill, TN"
-              />
+              >
+                {SERVICE_AREAS.map((area) => (
+                  <option key={area} value={area}>{area}</option>
+                ))}
+              </select>
             </FormField>
 
 
