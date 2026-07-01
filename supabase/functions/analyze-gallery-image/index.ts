@@ -3,7 +3,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "*",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
 Deno.serve(async (req: Request) => {
@@ -16,17 +17,61 @@ Deno.serve(async (req: Request) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
-    const { image, mediaType } = await req.json();
+    const { image, mediaType, productUrl } = await req.json();
 
     if (!image || !mediaType) {
       return new Response(
         JSON.stringify({ error: "Missing image or mediaType" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
+    }
+
+    const userContent: unknown[] = [
+      {
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: mediaType,
+          data: image,
+        },
+      },
+    ];
+
+    let textPrompt =
+      "Based off the image uploaded, create a Gallery post for my website that includes a title, description of the item, and alt text. The items are going to be furniture that people bought and had assembled by Boxed2Built in Spring Hill, TN.";
+
+    if (productUrl) {
+      textPrompt += `\n\nProduct URL: ${productUrl}\nUse web search to look up this product for additional details like brand, product name, materials, and features to create a richer description.`;
+    }
+
+    textPrompt += `\n\nRespond ONLY with valid JSON in this exact format:\n{\n  "title": "concise SEO-friendly title, max 60 chars",\n  "description": "detailed 2-3 sentence SEO description mentioning furniture type, brand if known, and assembly quality",\n  "alt": "accessibility alt text describing what is shown, max 125 chars"\n}`;
+
+    userContent.push({ type: "text", text: textPrompt });
+
+    const tools = productUrl
+      ? [{ type: "web_search_20250305", name: "web_search" }]
+      : [];
+
+    const body: Record<string, unknown> = {
+      model: "claude-opus-4-7",
+      max_tokens: 4096,
+      system:
+        "You are a gallery content creator for Boxed2Built, a furniture assembly business in Spring Hill, TN. They assemble flat-pack furniture from IKEA, Wayfair, Amazon, and other retailers. Create compelling, SEO-friendly gallery posts based on images of assembled furniture. Always respond with valid JSON only.",
+      messages: [{ role: "user", content: userContent }],
+    };
+
+    if (tools.length > 0) {
+      body.tools = tools;
     }
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -36,67 +81,47 @@ Deno.serve(async (req: Request) => {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType,
-                  data: image,
-                },
-              },
-              {
-                type: "text",
-                text: `You are analyzing an image for a furniture assembly business called Boxed2Built. They assemble flat-pack furniture (IKEA, Wayfair, Amazon, etc.) for customers in the Spring Hill, TN area.
-
-Analyze this image and provide:
-1. A concise, SEO-friendly title (max 60 chars) describing the assembled furniture or work shown
-2. A detailed description (2-3 sentences) suitable for SEO that mentions the type of furniture, brand if identifiable, and quality of assembly
-3. Alt text (max 125 chars) for accessibility that describes what is visually shown
-
-Respond ONLY with valid JSON in this exact format:
-{
-  "title": "...",
-  "description": "...",
-  "alt": "..."
-}`,
-              },
-            ],
-          },
-        ],
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
       console.error("Claude API error:", response.status, errorBody);
       return new Response(
-        JSON.stringify({ error: `AI analysis failed (${response.status})`, details: errorBody }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: `AI analysis failed (${response.status})`,
+          details: errorBody,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
     const result = await response.json();
-    const textContent = result.content?.find(
+
+    // Find the last text block (web search adds intermediate blocks before the final answer)
+    const textBlocks = result.content?.filter(
       (block: { type: string }) => block.type === "text"
     );
+    const lastTextBlock = textBlocks?.[textBlocks.length - 1];
 
-    if (!textContent?.text) {
+    if (!lastTextBlock?.text) {
       return new Response(
         JSON.stringify({ error: "No response from AI" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
-    let jsonText = textContent.text.trim();
+    let jsonText = lastTextBlock.text.trim();
     if (jsonText.startsWith("```")) {
-      jsonText = jsonText.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+      jsonText = jsonText
+        .replace(/^```(?:json)?\s*/, "")
+        .replace(/\s*```$/, "");
     }
     const parsed = JSON.parse(jsonText);
 
@@ -107,7 +132,10 @@ Respond ONLY with valid JSON in this exact format:
     console.error("analyze-gallery-image error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });

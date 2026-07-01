@@ -35,6 +35,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(item?.src || '');
+  const [productUrl, setProductUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,9 +71,9 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
       let result;
       if (selectedFile) {
-        result = await analyzeGalleryImage(selectedFile);
+        result = await analyzeGalleryImage(selectedFile, productUrl || undefined);
       } else if (isEdit && item?.src) {
-        result = await analyzeGalleryImageFromUrl(item.src);
+        result = await analyzeGalleryImageFromUrl(item.src, productUrl || undefined);
       } else {
         setError('Please select an image first');
         setAnalyzing(false);
@@ -277,6 +278,23 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                     alt="Preview"
                     className="w-full h-48 object-cover rounded-lg border border-slate-200"
                   />
+                </div>
+              )}
+              {previewUrl && (
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-slate-600 mb-1">
+                    Product URL <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={productUrl}
+                    onChange={(e) => setProductUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                    placeholder="https://www.ikea.com/... or Amazon/Wayfair link"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Paste a product link for richer AI-generated descriptions
+                  </p>
                 </div>
               )}
               {previewUrl && (
