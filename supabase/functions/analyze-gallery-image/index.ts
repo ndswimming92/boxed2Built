@@ -47,13 +47,19 @@ Deno.serve(async (req: Request) => {
     ];
 
     let textPrompt =
-      "Based off the image uploaded, create a Gallery post for my website that includes a title, description of the item, and alt text. The items are going to be furniture that people bought and had assembled by Boxed2Built in Spring Hill, TN.";
+  `City: ${location || "Spring Hill, TN"}\n` +
+  `Category: ${category || "Completed Work"}\n`;
 
-    if (productUrl) {
-      textPrompt += `\n\nProduct URL: ${productUrl}\nUse web search to look up this product for additional details like brand, product name, materials, and features to create a richer description.`;
-    }
+if (productUrl) {
+  textPrompt +=
+    `Product link: ${productUrl}\n` +
+    `Use web search to confirm the brand, product name, materials, and notable ` +
+    `features, then fold accurate details into the description.\n`;
+}
 
-    textPrompt += `\n\nRespond ONLY with valid JSON in this exact format:\n{\n  "title": "concise SEO-friendly title, max 60 chars",\n  "description": "detailed 2-3 sentence SEO description mentioning furniture type, brand if known, and assembly quality",\n  "alt": "accessibility alt text describing what is shown, max 125 chars"\n}`;
+textPrompt +=
+  `\nBased on the photo, write the gallery entry now. Respond with ONLY the ` +
+  `JSON object described in the system prompt.`;
 
     userContent.push({ type: "text", text: textPrompt });
 
