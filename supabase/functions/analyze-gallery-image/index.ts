@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { image, mediaType, productUrl } = await req.json();
+    const { image, mediaType, productUrl, location, category } = await req.json();
 
     if (!image || !mediaType) {
       return new Response(

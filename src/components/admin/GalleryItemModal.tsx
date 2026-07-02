@@ -70,10 +70,15 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
       setError(null);
 
       let result;
+      const aiOptions = {
+        productUrl: productUrl || undefined,
+        location: formData.location,
+        category: formData.category,
+      };
       if (selectedFile) {
-        result = await analyzeGalleryImage(selectedFile, productUrl || undefined);
+        result = await analyzeGalleryImage(selectedFile, aiOptions);
       } else if (isEdit && item?.src) {
-        result = await analyzeGalleryImageFromUrl(item.src, productUrl || undefined);
+        result = await analyzeGalleryImageFromUrl(item.src, aiOptions);
       } else {
         setError('Please select an image first');
         setAnalyzing(false);

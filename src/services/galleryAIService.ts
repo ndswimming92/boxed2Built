@@ -19,12 +19,24 @@ async function fileToBase64(file: File): Promise<{ base64: string; mediaType: st
   });
 }
 
-export async function analyzeGalleryImage(file: File, productUrl?: string): Promise<AIAnalysisResult> {
+export interface AIAnalysisOptions {
+  productUrl?: string;
+  location?: string;
+  category?: string;
+}
+
+export async function analyzeGalleryImage(file: File, options?: AIAnalysisOptions): Promise<AIAnalysisResult> {
   const { base64, mediaType } = await fileToBase64(file);
 
   const body: Record<string, string> = { image: base64, mediaType };
-  if (productUrl?.trim()) {
-    body.productUrl = productUrl.trim();
+  if (options?.productUrl?.trim()) {
+    body.productUrl = options.productUrl.trim();
+  }
+  if (options?.location?.trim()) {
+    body.location = options.location.trim();
+  }
+  if (options?.category?.trim()) {
+    body.category = options.category.trim();
   }
 
   const { data, error } = await supabase.functions.invoke('analyze-gallery-image', {
@@ -42,11 +54,11 @@ export async function analyzeGalleryImage(file: File, productUrl?: string): Prom
   return { title: data.title, description: data.description, alt: data.alt };
 }
 
-export async function analyzeGalleryImageFromUrl(imageUrl: string, productUrl?: string): Promise<AIAnalysisResult> {
+export async function analyzeGalleryImageFromUrl(imageUrl: string, options?: AIAnalysisOptions): Promise<AIAnalysisResult> {
   const response = await fetch(imageUrl);
   if (!response.ok) throw new Error('Failed to fetch image');
 
   const blob = await response.blob();
   const file = new File([blob], 'image.webp', { type: blob.type || 'image/webp' });
-  return analyzeGalleryImage(file, productUrl);
+  return analyzeGalleryImage(file, options);
 }
