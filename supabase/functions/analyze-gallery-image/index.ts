@@ -68,8 +68,8 @@ textPrompt +=
       : [];
 
     const body: Record<string, unknown> = {
-      model: "claude-opus-4-7",
-      max_tokens: 4096,
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
       system:
         `You write gallery captions for Boxed2Built, a labor-only furniture assembly and
 TV/wall-mounting service based in Spring Hill, TN, serving Franklin, Brentwood,
