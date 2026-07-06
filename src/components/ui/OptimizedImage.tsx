@@ -40,6 +40,15 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [activeSrc, setActiveSrc] = useState(src);
+  const [prevSrc, setPrevSrc] = useState(src);
+
+  // Reset state when the src prop changes (e.g. lightbox navigation)
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setActiveSrc(src);
+    setIsLoading(true);
+    setHasError(false);
+  }
 
   // Use eager loading for priority images
   const imageLoading = priority ? 'eager' : loading;
