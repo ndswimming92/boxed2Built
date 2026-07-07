@@ -123,13 +123,20 @@ export function getAccountLinkingError(user: User | null): string | null {
       duplicateProviders.add(provider);
     }
     seenProviders.add(provider);
+  }
 
-    const identityEmail = identity.identity_data?.email
-      ? normalizeEmail(identity.identity_data.email)
-      : primaryEmail;
+  // Only flag an email mismatch when multiple provider identities are linked.
+  // A single identity whose email changed (e.g. a Google account rename) is
+  // legitimate and must not trigger a sign-out.
+  if (identities.length > 1) {
+    for (const identity of identities) {
+      const identityEmail = identity.identity_data?.email
+        ? normalizeEmail(identity.identity_data.email)
+        : primaryEmail;
 
-    if (identityEmail !== primaryEmail) {
-      return 'Account linking denied: provider identity email does not match the primary account email.';
+      if (identityEmail !== primaryEmail) {
+        return 'Account linking denied: provider identity email does not match the primary account email.';
+      }
     }
   }
 

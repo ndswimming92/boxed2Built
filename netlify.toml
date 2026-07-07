@@ -5,6 +5,8 @@ publish = "dist"
 [build.environment]
 NODE_VERSION = "22"
 NPM_FLAGS = "--include=dev"
+VITE_AUTHORIZED_ADMIN_EMAILS = "boxed2builtco@gmail.com"
+VITE_AUTHORIZED_ADMIN_DOMAINS = "boxed2built.com"
 
 [[redirects]]
 from = "http://*"

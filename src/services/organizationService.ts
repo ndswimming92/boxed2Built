@@ -121,6 +121,15 @@ export const organizationService = {
     if (error) throw error;
   },
 
+  async claimAdminMembership(): Promise<boolean> {
+    const { data, error } = await supabase.rpc('claim_admin_membership');
+    if (error) {
+      console.error('claimAdminMembership error:', error);
+      return false;
+    }
+    return data === true;
+  },
+
   async isPlatformAdmin(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;

@@ -79,7 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadOrganizations = async (userId: string) => {
     try {
       const storedOrgId = localStorage.getItem('currentOrganizationId');
-      const orgs = await organizationService.getUserOrganizations(userId);
+      let orgs = await organizationService.getUserOrganizations(userId);
+
+      // An allowlisted admin who has no membership yet can self-claim one
+      // server-side (the RPC enforces the allowlist), then we re-fetch.
+      if (orgs.length === 0) {
+        const claimed = await organizationService.claimAdminMembership();
+        if (claimed) {
+          orgs = await organizationService.getUserOrganizations(userId);
+        }
+      }
+
       setUserOrganizations(orgs);
 
       const selectedOrg = orgs.find(org => org.id === storedOrgId) || orgs[0] || null;
