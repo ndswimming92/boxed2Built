@@ -48,7 +48,7 @@ const ContactPage: React.FC = () => {
       action_type: 'email_click',
       conversion_type: 'email_lead'
     });
-    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Contact%20-%20Contact%20Page&body=I%20would%20like%20to%20inquire%20about%20furniture%20assembly%20services.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Contact%20Page';
+    window.location.href = 'mailto:nicholas.davidson@boxed2built.com?subject=Contact%20-%20Contact%20Page&body=I%20would%20like%20to%20inquire%20about%20furniture%20assembly%20services.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Contact%20Page';
   };
 
 
@@ -137,7 +137,7 @@ const ContactPage: React.FC = () => {
                           onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
                           className="text-blue-700 hover:text-blue-800"
                         >
-                          boxed2builtco@gmail.com
+                          nicholas.davidson@boxed2built.com
                         </a>
                         <p className="text-gray-700 text-sm mt-1">Send us your furniture assembly questions</p>
                       </div>

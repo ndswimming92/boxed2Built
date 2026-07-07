@@ -173,7 +173,7 @@ const TermsOfService = () => {
         <h2 className="text-xl font-semibold mb-2">12. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about these Terms or our furniture assembly services in Spring Hill, TN, contact us at:</p>
         <ul className="list-none pl-0 mt-2 space-y-1">
-          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
+          <li>Email: <a href="mailto:nicholas.davidson@boxed2built.com" className="text-blue-700 hover:text-blue-800 underline">nicholas.davidson@boxed2built.com</a></li>
           <li>Phone: <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">(615) 403-4538</a></li>
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
           <li>Services: IKEA Assembly, Target Furniture Assembly, Walmart Furniture Assembly, Professional Furniture Assembly</li>

@@ -224,8 +224,8 @@ const RequestLookupPage: React.FC = () => {
                           {phoneDisplay}
                         </a>{' '}
                         or{' '}
-                        <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">
-                          boxed2builtco@gmail.com
+                        <a href="mailto:nicholas.davidson@boxed2built.com" className="text-blue-700 hover:text-blue-800 underline">
+                          nicholas.davidson@boxed2built.com
                         </a>
                       </p>
                     </div>
@@ -429,7 +429,7 @@ const RequestLookupPage: React.FC = () => {
                     Call {phoneDisplay}
                   </a>
                   <a
-                    href="mailto:boxed2builtco@gmail.com"
+                    href="mailto:nicholas.davidson@boxed2built.com"
                     className="flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-green-700 border border-green-600 rounded-lg font-semibold transition-colors"
                   >
                     Email Us

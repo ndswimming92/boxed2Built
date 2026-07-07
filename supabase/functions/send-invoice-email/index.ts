@@ -12,10 +12,10 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM_EMAIL = 'team@boxed2built.com';
-const BCC_EMAIL = 'boxed2builtco@gmail.com';
+const BCC_EMAIL = 'nicholas.davidson@boxed2built.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const CONTACT_PHONE = '(615) 403-4538';
-const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
+const CONTACT_EMAIL = 'nicholas.davidson@boxed2built.com';
 const APP_URL = 'https://www.boxed2built.com';
 
 const COOLDOWN_MINUTES = 10;

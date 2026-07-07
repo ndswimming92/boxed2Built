@@ -168,7 +168,7 @@ export default function LoginPage() {
               </div>
               <div className="mt-2 flex items-center justify-end text-xs text-slate-500">
                 <a
-                  href="mailto:boxed2builtco@gmail.com"
+                  href="mailto:nicholas.davidson@boxed2built.com"
                   className="text-emerald-600 hover:text-emerald-700"
                 >
                   Need help?

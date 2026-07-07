@@ -21,7 +21,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
 
   const name = businessData?.info?.name || 'Boxed2Built';
   const phone = formatPhone(businessData?.info?.phone || '+16154034538');
-  const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
+  const email = businessData?.info?.email || 'nicholas.davidson@boxed2built.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
   const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
 

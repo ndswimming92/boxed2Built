@@ -68,7 +68,7 @@
 
 ### Get Your Free Quote Today!
 - **Phone**: [(615) 403-4538](tel:+16154034538)
-- **Email**: [boxed2builtco@gmail.com](mailto:boxed2builtco@gmail.com)
+- **Email**: [nicholas.davidson@boxed2built.com](mailto:nicholas.davidson@boxed2built.com)
 - **Website**: [boxed2built.com](https://boxed2built.com)
 - **Online Booking**: [Schedule Free Consultation](https://boxed2built.com/contact)
 

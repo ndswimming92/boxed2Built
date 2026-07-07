@@ -220,7 +220,7 @@ export async function generateRequestSummaryPDF(data: RequestSummaryData): Promi
   doc.text('Phone: (615) 403-4538', margin, yPosition);
 
   yPosition += 5;
-  doc.text('Email: boxed2builtco@gmail.com', margin, yPosition);
+  doc.text('Email: nicholas.davidson@boxed2built.com', margin, yPosition);
 
   yPosition += 5;
   doc.text('Website: https://boxed2built.com', margin, yPosition);

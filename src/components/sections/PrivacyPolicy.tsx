@@ -122,7 +122,7 @@ const PrivacyPolicy = () => {
           <li>Contact Stripe directly regarding payment data through their customer support</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600">
-          To exercise any of these rights, contact us at <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a> or <a href={`tel:${phoneRaw}`} className="text-blue-700 hover:text-blue-800 underline">{phoneDisplay}</a>.
+          To exercise any of these rights, contact us at <a href="mailto:nicholas.davidson@boxed2built.com" className="text-blue-700 hover:text-blue-800 underline">nicholas.davidson@boxed2built.com</a> or <a href={`tel:${phoneRaw}`} className="text-blue-700 hover:text-blue-800 underline">{phoneDisplay}</a>.
         </p>
       </section>
 
@@ -205,7 +205,7 @@ const PrivacyPolicy = () => {
         <h2 className="text-xl font-semibold mb-2">11. Contact Boxed2Built</h2>
         <p className="mb-4">If you have questions about this privacy policy or our furniture assembly services in Spring Hill, TN, you can contact us at:</p>
         <ul className="list-none pl-0 mt-2 space-y-1">
-          <li>Email: <a href="mailto:boxed2builtco@gmail.com" className="text-blue-700 hover:text-blue-800 underline">boxed2builtco@gmail.com</a></li>
+          <li>Email: <a href="mailto:nicholas.davidson@boxed2built.com" className="text-blue-700 hover:text-blue-800 underline">nicholas.davidson@boxed2built.com</a></li>
           <li>Phone: <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">(615) 403-4538</a></li>
           <li>Service Area: Spring Hill, Columbia, Franklin, Thompson's Station, Brentwood, TN</li>
         </ul>

@@ -13,7 +13,7 @@ const FROM_EMAIL = 'team@boxed2built.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const TERMS_URL = 'https://boxed2built.com/terms-of-service';
 const PRIVACY_URL = 'https://boxed2built.com/privacy-policy';
-const CONTACT_EMAIL = 'boxed2builtco@gmail.com';
+const CONTACT_EMAIL = 'nicholas.davidson@boxed2built.com';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 

@@ -30,7 +30,7 @@ Would you be available for a quick call at your convenience?
 Best regards,
 Boxed2Built
 (615) 403-4538
-boxed2builtco@gmail.com`,
+nicholas.davidson@boxed2built.com`,
   }),
 
   request_more_info: (inquiry: FormInquiry): EmailTemplate => ({
@@ -51,7 +51,7 @@ We're here to make your furniture assembly as smooth as possible!
 Best regards,
 Boxed2Built
 (615) 403-4538
-boxed2builtco@gmail.com`,
+nicholas.davidson@boxed2built.com`,
   }),
 
   schedule_consultation: (inquiry: FormInquiry): EmailTemplate => ({

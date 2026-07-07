@@ -34,7 +34,7 @@ const FAQPage: React.FC = () => {
       action_type: 'email_click',
       conversion_type: 'email_lead'
     });
-    window.location.href = 'mailto:boxed2builtco@gmail.com?subject=Question%20-%20FAQ%20Page&body=I%20have%20a%20question%20about%20your%20furniture%20assembly%20services.%0A%0ASource:%20FAQ%20Page';
+    window.location.href = 'mailto:nicholas.davidson@boxed2built.com?subject=Question%20-%20FAQ%20Page&body=I%20have%20a%20question%20about%20your%20furniture%20assembly%20services.%0A%0ASource:%20FAQ%20Page';
   };
 
   const toggleFAQItem = (category: string, index: number) => {
@@ -221,7 +221,7 @@ const FAQPage: React.FC = () => {
                 className="inline-flex items-center text-blue-100 hover:text-white transition-colors duration-200 text-lg font-medium"
               >
                 <Mail size={20} className="mr-2" />
-                Email us at boxed2builtco@gmail.com
+                Email us at nicholas.davidson@boxed2built.com
               </button>
 
               <p className="text-xs text-blue-100 font-medium mt-6">

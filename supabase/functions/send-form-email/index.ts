@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = "team@boxed2built.com";
-const OWNER_EMAIL = "boxed2builtco@gmail.com";
+const OWNER_EMAIL = "nicholas.davidson@boxed2built.com";
 const OWNER_CC = "team@boxed2built.com";
 
 function escapeHtml(input: string): string {

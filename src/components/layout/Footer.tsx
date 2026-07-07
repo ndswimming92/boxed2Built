@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
   const businessName = businessData?.info?.name || 'Boxed2Built';
   const phoneRaw = businessData?.info?.phone || '+16154034538';
   const phoneTel = toTelHref(phoneRaw);
-  const email = businessData?.info?.email || 'boxed2builtco@gmail.com';
+  const email = businessData?.info?.email || 'nicholas.davidson@boxed2built.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
   const slogan = businessData?.info?.slogan || 'Turning boxes into comfort, one home at a time.';
   const locality = businessData?.address?.address_locality || 'Spring Hill';

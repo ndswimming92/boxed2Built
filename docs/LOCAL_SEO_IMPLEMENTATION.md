@@ -109,7 +109,7 @@ Offers:
 ### **Standardized Format**
 - **Name**: Boxed2Built
 - **Phone**: (615) 403-4538
-- **Email**: boxed2builtco@gmail.com
+- **Email**: nicholas.davidson@boxed2built.com
 - **Address**: Spring Hill, TN 37174
 
 ### **Consistent Across**

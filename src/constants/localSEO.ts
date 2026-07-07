@@ -4,7 +4,7 @@ export const BUSINESS_INFO = {
   name: "Boxed2Built",
   phone: "+16154034538",
   phoneFormatted: "(615) 403-4538",
-  email: "boxed2builtco@gmail.com",
+  email: "nicholas.davidson@boxed2built.com",
   website: "https://boxed2built.com",
   founder: "Nicholas Davidson",
   yearEstablished: "2024",
@@ -308,7 +308,7 @@ export const FAQ_CONTENT = [
     questions: [
       {
         question: "How do I schedule furniture assembly service?",
-        answer: "Scheduling is easy! You can call us at {{phoneDisplay}}, book online through our website, or send us an email at boxed2builtco@gmail.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
+        answer: "Scheduling is easy! You can call us at {{phoneDisplay}}, book online through our website, or send us an email at nicholas.davidson@boxed2built.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
       },
       {
         question: "What are your business hours?",

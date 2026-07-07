@@ -680,7 +680,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 <ul className="list-disc list-inside space-y-1">
                   <li>Try submitting again</li>
                   <li>Call us at {phoneDisplay}</li>
-                  <li>Email us at boxed2builtco@gmail.com</li>
+                  <li>Email us at nicholas.davidson@boxed2built.com</li>
                 </ul>
               </div>
             </div>
