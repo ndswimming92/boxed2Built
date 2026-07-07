@@ -111,6 +111,11 @@ export function getAuthorizationError(user: User | null): string {
 export function getAccountLinkingError(user: User | null): string | null {
   if (!user?.email) return 'User email not found';
 
+  // Authorized admins are trusted: their identities are managed intentionally
+  // (e.g. a Google account whose email differs from the primary), so the
+  // account-linking heuristics below must never sign them out.
+  if (isUserAuthorized(user)) return null;
+
   const primaryEmail = normalizeEmail(user.email);
   const identities = user.identities ?? [];
 
@@ -125,18 +130,13 @@ export function getAccountLinkingError(user: User | null): string | null {
     seenProviders.add(provider);
   }
 
-  // Only flag an email mismatch when multiple provider identities are linked.
-  // A single identity whose email changed (e.g. a Google account rename) is
-  // legitimate and must not trigger a sign-out.
-  if (identities.length > 1) {
-    for (const identity of identities) {
-      const identityEmail = identity.identity_data?.email
-        ? normalizeEmail(identity.identity_data.email)
-        : primaryEmail;
+  for (const identity of identities) {
+    const identityEmail = identity.identity_data?.email
+      ? normalizeEmail(identity.identity_data.email)
+      : primaryEmail;
 
-      if (identityEmail !== primaryEmail) {
-        return 'Account linking denied: provider identity email does not match the primary account email.';
-      }
+    if (identityEmail !== primaryEmail) {
+      return 'Account linking denied: provider identity email does not match the primary account email.';
     }
   }
 
