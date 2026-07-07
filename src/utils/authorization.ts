@@ -43,12 +43,12 @@ export function isUserAuthorized(user: User | null): boolean {
   const authorizedDomains = getAuthorizedAdminDomains();
   const userEmail = normalizeEmail(user.email);
 
-  if (authorizedEmails.length > 0) {
-    return authorizedEmails.includes(userEmail);
+  if (authorizedEmails.includes(userEmail)) {
+    return true;
   }
 
-  if (authorizedDomains.length > 0) {
-    return emailDomainMatches(userEmail, authorizedDomains);
+  if (authorizedDomains.length > 0 && emailDomainMatches(userEmail, authorizedDomains)) {
+    return true;
   }
 
   return false;
