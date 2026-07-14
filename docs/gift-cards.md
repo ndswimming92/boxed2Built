@@ -6,7 +6,7 @@ The system is designed to reuse the existing Stripe credentials and webhook endp
 
 ## Flow summary
 
-1. Customer visits `/gift-cards`, picks a fixed denomination ($25 / $50 / $100 / $200), chooses self- or recipient-delivery, and clicks **Continue to Checkout**.
+1. Customer visits `/gift-cards`, picks a preset denomination ($25 / $50 / $100 / $200) or enters a custom whole-dollar amount ($10–$1,000), chooses self- or recipient-delivery, and clicks **Continue to Checkout**.
 2. The `create-gift-card-checkout` edge function reserves a pending row in `gift_cards`, generates a unique `B2B-XXXX-XXXX` code, and creates a Stripe Checkout Session with `metadata.kind = 'gift_card'` and inline `price_data` (no pre-registered Stripe Price IDs required).
 3. Stripe delivers events to the existing `stripe-webhook` endpoint. The handler inspects `metadata.kind` and dispatches gift card events to a dedicated branch that flips the card to `active`, stores `stripe_payment_intent_id`, and invokes `send-gift-card-email`.
 4. The customer lands on `/gift-cards/success?session_id=...`, which polls `get-gift-card-confirmation` until the webhook has activated the card (then displays the code for self-delivery, or "sent to recipient" messaging).
@@ -17,7 +17,7 @@ The system is designed to reuse the existing Stripe credentials and webhook endp
 
 ### Tables
 
-- **`gift_cards`** — one row per purchase. Unique `code`, unique `stripe_checkout_session_id`. Status lifecycle: `pending -> active -> partially_redeemed -> redeemed`, plus `voided` and `failed`. Amounts constrained to $25/$50/$100/$200 (in cents).
+- **`gift_cards`** — one row per purchase. Unique `code`, unique `stripe_checkout_session_id`. Status lifecycle: `pending -> active -> partially_redeemed -> redeemed`, plus `voided` and `failed`. Amounts constrained to the preset denominations ($25/$50/$100/$200) or a whole-dollar custom amount from $10 to $1,000 (in cents).
 - **`gift_card_redemptions`** — append-only ledger. FK to `gift_cards`. Optional FK-like fields for `job_id` / `invoice_id`.
 - **`form_inquiries.gift_card_code`** — nullable column so inbound leads can reference a code they plan to redeem.
 

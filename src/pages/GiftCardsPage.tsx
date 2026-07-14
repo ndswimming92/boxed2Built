@@ -1,9 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Gift, Sparkles, ShieldCheck, Infinity as InfinityIcon, Mail, User, MessageSquareHeart } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Button from '../components/ui/Button';
-import { GIFT_CARD_DENOMINATIONS, formatGiftCardDollars } from '../constants/giftCards';
+import {
+  GIFT_CARD_DENOMINATIONS,
+  GIFT_CARD_MIN_CENTS,
+  GIFT_CARD_MAX_CENTS,
+  formatGiftCardDollars,
+  parseCustomAmountToCents,
+} from '../constants/giftCards';
 import { createGiftCardCheckout } from '../services/giftCardService';
 import { useToast } from '../contexts/ToastContext';
 import type { GiftCardDeliveryType } from '../types/giftCard';
@@ -44,22 +50,52 @@ const GiftCardsPage: React.FC = () => {
   });
 
   const [form, setForm] = useState<FormState>(initialForm);
+  const [customMode, setCustomMode] = useState(false);
+  const [customInput, setCustomInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const { showToast } = useToast();
+  const customInputRef = useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
-  const selectedAmount = useMemo(
-    () => GIFT_CARD_DENOMINATIONS.find((d) => d.amountCents === form.amount_cents) || GIFT_CARD_DENOMINATIONS[0],
-    [form.amount_cents],
-  );
+  const selectPreset = (amountCents: number) => {
+    setCustomMode(false);
+    setCustomInput('');
+    set('amount_cents', amountCents);
+  };
+
+  const chooseCustom = () => {
+    setCustomMode(true);
+    const cents = parseCustomAmountToCents(customInput);
+    set('amount_cents', cents ?? 0);
+    // Focus the field on the next paint so it's ready to type into.
+    requestAnimationFrame(() => customInputRef.current?.focus());
+  };
+
+  const onCustomInputChange = (raw: string) => {
+    // Allow digits and a single decimal point while typing.
+    const cleaned = raw.replace(/[^\d.]/g, '');
+    setCustomInput(cleaned);
+    const cents = parseCustomAmountToCents(cleaned);
+    set('amount_cents', cents ?? 0);
+  };
 
   const validate = (): boolean => {
     const next: Partial<Record<keyof FormState, string>> = {};
+    if (customMode) {
+      const cents = parseCustomAmountToCents(customInput);
+      if (cents === null) {
+        next.amount_cents = 'Enter a whole-dollar amount.';
+      } else if (cents < GIFT_CARD_MIN_CENTS || cents > GIFT_CARD_MAX_CENTS) {
+        next.amount_cents = `Choose an amount between ${formatGiftCardDollars(
+          GIFT_CARD_MIN_CENTS,
+        )} and ${formatGiftCardDollars(GIFT_CARD_MAX_CENTS)}.`;
+      }
+    }
     if (!form.purchaser_name.trim()) next.purchaser_name = 'Please enter your name.';
     if (!EMAIL_RE.test(form.purchaser_email)) next.purchaser_email = 'Enter a valid email.';
     if (form.delivery_type === 'recipient') {
@@ -122,7 +158,7 @@ const GiftCardsPage: React.FC = () => {
                       </div>
                       <p className="mt-6 text-sm uppercase tracking-widest opacity-80">Gift amount</p>
                       <p className="text-6xl sm:text-7xl font-extrabold mt-1">
-                        {formatGiftCardDollars(selectedAmount.amountCents)}
+                        {form.amount_cents > 0 ? formatGiftCardDollars(form.amount_cents) : '$—'}
                       </p>
                     </div>
                     <img
@@ -170,14 +206,14 @@ const GiftCardsPage: React.FC = () => {
                 <legend className="text-sm font-semibold text-slate-900 mb-3">Choose an amount</legend>
                 <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Gift card amount">
                   {GIFT_CARD_DENOMINATIONS.map((d) => {
-                    const selected = d.amountCents === form.amount_cents;
+                    const selected = !customMode && d.amountCents === form.amount_cents;
                     return (
                       <button
                         key={d.amountCents}
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        onClick={() => set('amount_cents', d.amountCents)}
+                        onClick={() => selectPreset(d.amountCents)}
                         className={`relative rounded-xl border-2 px-4 py-5 text-left transition-all ${
                           selected
                             ? 'border-emerald-600 bg-emerald-50 shadow-sm'
@@ -192,7 +228,65 @@ const GiftCardsPage: React.FC = () => {
                       </button>
                     );
                   })}
+
+                  {/* Custom amount */}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={customMode}
+                    onClick={chooseCustom}
+                    className={`relative col-span-2 rounded-xl border-2 px-4 py-4 text-left transition-all ${
+                      customMode
+                        ? 'border-emerald-600 bg-emerald-50 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="block text-base font-semibold text-slate-900">Custom amount</span>
+                    <span className="block text-xs text-slate-500 mt-0.5">
+                      Pick any amount from {formatGiftCardDollars(GIFT_CARD_MIN_CENTS)} to{' '}
+                      {formatGiftCardDollars(GIFT_CARD_MAX_CENTS)}
+                    </span>
+                    {customMode && (
+                      <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                    )}
+                  </button>
                 </div>
+
+                {customMode && (
+                  <div className="mt-3">
+                    <label htmlFor="custom_amount" className="sr-only">
+                      Custom gift card amount in dollars
+                    </label>
+                    <div className="relative">
+                      <span className="absolute top-1/2 -translate-y-1/2 left-4 text-lg font-semibold text-slate-500">
+                        $
+                      </span>
+                      <input
+                        ref={customInputRef}
+                        id="custom_amount"
+                        type="text"
+                        inputMode="numeric"
+                        value={customInput}
+                        onChange={(e) => onCustomInputChange(e.target.value)}
+                        placeholder="75"
+                        aria-invalid={!!errors.amount_cents}
+                        aria-describedby={errors.amount_cents ? 'custom_amount-err' : undefined}
+                        className={`w-full pl-9 pr-3 py-3 rounded-lg border-2 text-lg font-semibold text-slate-900 outline-none transition-colors ${
+                          errors.amount_cents
+                            ? 'border-red-400 focus:ring-2 focus:ring-red-100'
+                            : 'border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100'
+                        }`}
+                      />
+                    </div>
+                    {errors.amount_cents ? (
+                      <p id="custom_amount-err" className="mt-1 text-xs text-red-600">
+                        {errors.amount_cents}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-slate-400">Whole dollars only.</p>
+                    )}
+                  </div>
+                )}
               </fieldset>
 
               <div className="mt-6 grid sm:grid-cols-2 gap-4">
@@ -290,9 +384,11 @@ const GiftCardsPage: React.FC = () => {
                   size="lg"
                   className="w-full"
                   loading={submitting}
-                  disabled={submitting}
+                  disabled={submitting || form.amount_cents <= 0}
                 >
-                  Continue to Checkout — {formatGiftCardDollars(selectedAmount.amountCents)}
+                  {form.amount_cents > 0
+                    ? `Continue to Checkout — ${formatGiftCardDollars(form.amount_cents)}`
+                    : 'Continue to Checkout'}
                 </Button>
                 <p className="mt-3 text-xs text-slate-500 text-center">
                   You'll complete payment securely on Stripe. Your credit never expires and is redeemable
