@@ -83,6 +83,16 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const dangerZoneRef = useRef<HTMLDivElement>(null);
+
+  function revealDeleteConfirm() {
+    setActiveTab('overview');
+    setShowDeleteConfirm(true);
+    setDeleteError(null);
+    setTimeout(() => {
+      dangerZoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
 
   const COOLDOWN_MS = 10 * 60 * 1000;
   const [followupSending, setFollowupSending] = useState(false);
@@ -855,13 +865,22 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   <p className="text-base font-semibold text-white mt-0.5">{formatDate(currentClient.first_contact_date)}</p>
                 </div>
                 {!editingInfo && (
-                  <button
-                    onClick={() => setEditingInfo(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-white border border-indigo-100 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    Edit
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setEditingInfo(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-white border border-indigo-100 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={revealDeleteConfirm}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-white border border-red-100 rounded-lg hover:bg-red-50 transition-colors shadow-sm"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -1549,7 +1568,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
         )}
 
         {/* Danger Zone */}
-        <div className="border border-red-200 rounded-xl overflow-hidden">
+        <div ref={dangerZoneRef} className="border border-red-200 rounded-xl overflow-hidden">
           <div className="px-5 py-4 bg-red-50 border-b border-red-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trash2 className="w-4 h-4 text-red-600" />
