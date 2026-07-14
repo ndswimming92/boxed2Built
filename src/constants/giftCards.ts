@@ -17,6 +17,38 @@ export const ALLOWED_GIFT_CARD_AMOUNTS_CENTS = new Set(
   GIFT_CARD_DENOMINATIONS.map((d) => d.amountCents),
 );
 
+/** Bounds for a customer-entered custom gift card amount. */
+export const GIFT_CARD_MIN_CENTS = 1000; // $10
+export const GIFT_CARD_MAX_CENTS = 100000; // $1,000
+
+/**
+ * Whether a whole-cent amount is an acceptable gift card value: either one of
+ * the preset denominations, or a whole-dollar custom amount within bounds.
+ */
+export function isValidGiftCardAmountCents(cents: number): boolean {
+  if (!Number.isInteger(cents)) return false;
+  if (ALLOWED_GIFT_CARD_AMOUNTS_CENTS.has(cents)) return true;
+  return (
+    cents % 100 === 0 &&
+    cents >= GIFT_CARD_MIN_CENTS &&
+    cents <= GIFT_CARD_MAX_CENTS
+  );
+}
+
+/**
+ * Parse a user-entered dollar string (e.g. "75" or "75.00") into whole cents.
+ * Returns null when the input isn't a positive whole-dollar amount.
+ */
+export function parseCustomAmountToCents(input: string): number | null {
+  const cleaned = input.replace(/[$,\s]/g, '');
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
+  const dollars = Number(cleaned);
+  if (!Number.isFinite(dollars)) return null;
+  const cents = Math.round(dollars * 100);
+  if (cents % 100 !== 0) return null; // whole dollars only
+  return cents;
+}
+
 export function formatGiftCardDollars(cents: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

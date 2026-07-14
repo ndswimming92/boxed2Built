@@ -25,6 +25,17 @@ async function getStripeSecretKey(supabase: ReturnType<typeof createClient>): Pr
 }
 
 const ALLOWED_AMOUNTS_CENTS = new Set([2500, 5000, 10000, 20000]);
+// Bounds for customer-entered custom amounts. Keep in sync with
+// src/constants/giftCards.ts (GIFT_CARD_MIN_CENTS / GIFT_CARD_MAX_CENTS).
+const CUSTOM_MIN_CENTS = 1000; // $10
+const CUSTOM_MAX_CENTS = 100000; // $1,000
+
+function isValidAmountCents(cents: unknown): cents is number {
+  if (typeof cents !== 'number' || !Number.isInteger(cents)) return false;
+  if (ALLOWED_AMOUNTS_CENTS.has(cents)) return true;
+  // Custom amounts: whole dollars within bounds.
+  return cents % 100 === 0 && cents >= CUSTOM_MIN_CENTS && cents <= CUSTOM_MAX_CENTS;
+}
 
 interface Payload {
   amount_cents: number;
@@ -69,7 +80,7 @@ Deno.serve(async (req) => {
     const payload = (await req.json()) as Payload;
 
     // Validate
-    if (!ALLOWED_AMOUNTS_CENTS.has(payload.amount_cents)) {
+    if (!isValidAmountCents(payload.amount_cents)) {
       return json({ error: 'Invalid gift card amount' }, 400);
     }
     if (!payload.purchaser_name?.trim()) {
