@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
   getClientSegmentStats,
   searchClients,
+  deleteClient,
   type Client,
   type ClientSegmentStats,
   calculateClientMetrics
@@ -12,6 +13,7 @@ import {
 import ClientDetailModal from '../../components/admin/ClientDetailModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import MergeClientsModal from '../../components/admin/MergeClientsModal';
+import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -37,6 +39,9 @@ export default function ClientsPage() {
   const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { currentOrganization } = useAuth();
 
   const organizationId = currentOrganization?.id;
@@ -184,6 +189,28 @@ export default function ClientsPage() {
       setRefreshMessage({ type: 'error', text: 'Metrics refresh failed before completion.' });
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!clientToDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteClient(clientToDelete.id);
+      logAction({ actionType: 'DELETE', tableName: 'clients', recordIdentifier: clientToDelete.name });
+      setClients((prev) => prev.filter((c) => c.id !== clientToDelete.id));
+      setSelectedClients((prev) => {
+        const next = new Set(prev);
+        next.delete(clientToDelete.id);
+        return next;
+      });
+      setClientToDelete(null);
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete client. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -562,6 +589,9 @@ export default function ClientsPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Referral
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -667,6 +697,20 @@ export default function ClientsPage() {
                         <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
+                    <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => {
+                          setClientToDelete(client);
+                          setDeleteError(null);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                        title={`Delete ${client.name}`}
+                        aria-label={`Delete ${client.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -688,6 +732,68 @@ export default function ClientsPage() {
             setSelectedClient(null);
           }}
         />
+      )}
+
+      {clientToDelete && (
+        <Modal
+          isOpen
+          onClose={() => { if (!deleting) { setClientToDelete(null); setDeleteError(null); } }}
+          title="Delete client"
+          size="small"
+        >
+          <div className="space-y-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Delete this client?</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  <span className="font-medium text-gray-900">{clientToDelete.name}</span> will be permanently removed. This action cannot be undone.
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 list-disc list-inside">
+                  <li>The client record and all notes will be deleted</li>
+                  <li>Jobs and invoices will be unlinked but kept</li>
+                  <li>Referral attributions from this client will be cleared</li>
+                </ul>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => { setClientToDelete(null); setDeleteError(null); }}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? (
+                  <>
+                    <LoadingSpinner />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Client
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {showExportModal && (
