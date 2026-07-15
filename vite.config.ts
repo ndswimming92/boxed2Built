@@ -15,7 +15,7 @@ export default defineConfig({
     include: ['recharts'],
   },
   ssgOptions: {
-    dirStyle: 'nested',
+    dirStyle: 'flat',
     script: 'defer',
     mock: true,
     includedRoutes(paths) {
