@@ -33,8 +33,8 @@ export function showNewInquiryNotification(inquiry: FormInquiry): void {
 
   const options: NotificationOptions = {
     body,
-    icon: '/black_boxed2built_logo.png',
-    badge: '/black_boxed2built_logo.png',
+    icon: '/boxed2built_logo.png',
+    badge: '/boxed2built_logo.png',
     tag: `inquiry-${inquiry.id}`,
     requireInteraction: true,
     data: {
