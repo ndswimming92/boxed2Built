@@ -98,6 +98,7 @@ function applyPublicBranding() {
   setLink('apple-touch-icon', { sizes: '180x180', href: '/black_boxed2built_logo.png' });
 
   document.querySelectorAll('link[rel="icon"]').forEach((n) => n.parentElement?.removeChild(n));
+  setLink('icon', { type: 'image/svg+xml', href: '/boxed2built_logo.svg' });
   setLink('icon', { type: 'image/png', href: '/black_boxed2built_logo.png' });
   setLink('icon', { type: 'image/png', sizes: '32x32', href: '/black_boxed2built_logo.png' });
   setLink('icon', { type: 'image/png', sizes: '16x16', href: '/black_boxed2built_logo.png' });

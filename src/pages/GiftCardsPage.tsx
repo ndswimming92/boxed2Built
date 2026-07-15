@@ -162,9 +162,9 @@ const GiftCardsPage: React.FC = () => {
                       </p>
                     </div>
                     <img
-                      src="/white_boxed2built_logo.png"
+                      src="/boxed2built_logo_white.svg"
                       alt="Boxed2Built"
-                      className="h-12 opacity-90"
+                      className="h-16 opacity-90"
                     />
                   </div>
                   <div className="mt-10 flex items-end justify-between gap-6">

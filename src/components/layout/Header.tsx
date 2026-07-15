@@ -139,10 +139,10 @@ const Header: React.FC = () => {
               }
             >
               <img
-                src="/black_boxed2built_logo.png"
+                src="/boxed2built_logo.svg"
                 alt="Boxed2Built - Professional Furniture Assembly"
                 className={`w-auto object-contain transition-all duration-300 ${logoClass}`}
-                width="251"
+                width="88"
                 height="88"
                 fetchPriority="high"
               />
