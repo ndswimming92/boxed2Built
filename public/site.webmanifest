@@ -9,8 +9,8 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/black_boxed2built_logo.png",
-      "sizes": "512x512",
+      "src": "/boxed2built_logo.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
     }
