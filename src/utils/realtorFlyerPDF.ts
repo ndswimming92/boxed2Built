@@ -23,7 +23,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   const phone = formatPhone(businessData?.info?.phone || '+16154034538');
   const email = businessData?.info?.email || 'nicholas.davidson@boxed2built.com';
   const website = businessData?.info?.website || 'https://boxed2built.com';
-  const slogan = businessData?.info?.slogan || 'We turn boxes into comfort so families can focus on what matters most';
+  const slogan = businessData?.info?.slogan || 'Turning boxes into comfort so families can focus on what matters most';
 
   // --- HEADER BANNER ---
   doc.setFillColor(29, 78, 216);
