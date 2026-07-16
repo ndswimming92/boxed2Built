@@ -51,7 +51,7 @@ import SubscriptionFormModal from '../../components/admin/SubscriptionFormModal'
 import BalanceUpdateModal from '../../components/admin/BalanceUpdateModal';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
-// Categorical palette (matches the app's chart colors on the Finances page).
+// Categorical palette (matches the app's chart colors).
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#14b8a6', '#ef4444', '#06b6d4', '#f97316'];
 
 export default function BurnRatePage() {
