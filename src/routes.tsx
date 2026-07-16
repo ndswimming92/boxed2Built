@@ -52,7 +52,6 @@ const QRCodesPage = React.lazy(() => import('./pages/admin/QRCodesPage'));
 const QRCodeDetailPage = React.lazy(() => import('./pages/admin/QRCodeDetailPage'));
 const CompletionsPage = React.lazy(() => import('./pages/admin/CompletionsPage'));
 const RemindersPage = React.lazy(() => import('./pages/admin/RemindersPage'));
-const FinancesPage = React.lazy(() => import('./pages/admin/FinancesPage'));
 const ClientsPage = React.lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = React.lazy(() => import('./pages/admin/TestIdentifiersPage'));
 const EmailActivityPage = React.lazy(() => import('./pages/admin/EmailActivityPage'));
@@ -135,7 +134,6 @@ export const routes: RouteRecord[] = [
           { path: 'invoices', Component: InvoicesPage },
           { path: 'invoice-settings', Component: InvoiceSettingsPage },
           { path: 'analytics', Component: AnalyticsPage },
-          { path: 'finances', Component: FinancesPage },
           { path: 'forecasting', Component: ForecastingPage },
           { path: 'burn-rate', Component: BurnRatePage },
           { path: 'tax-settings', Component: TaxSettingsPage },
