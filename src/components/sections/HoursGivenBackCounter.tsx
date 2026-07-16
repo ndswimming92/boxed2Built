@@ -184,7 +184,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
           </p>
 
           <p className="mt-6 text-lg md:text-xl text-gray-800 font-semibold italic">
-            We turn boxes into comfort so families can focus on what matters most.
+            Turning boxes into comfort so families can focus on what matters most.
           </p>
 
           <a
