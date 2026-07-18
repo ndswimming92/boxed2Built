@@ -44,7 +44,17 @@ export async function analyzeGalleryImage(file: File, options?: AIAnalysisOption
   });
 
   if (error) {
-    throw new Error(error.message || 'AI analysis failed');
+    // On a non-2xx the Edge Function's JSON body (with a human-readable `error`)
+    // is on error.context; surface that instead of the generic
+    // "Edge Function returned a non-2xx status code".
+    let message = error.message || 'AI analysis failed';
+    try {
+      const body = await (error as { context?: Response }).context?.json?.();
+      if (body?.error) message = body.error;
+    } catch {
+      // fall back to the generic message
+    }
+    throw new Error(message);
   }
 
   if (!data?.title || !data?.description || !data?.alt) {

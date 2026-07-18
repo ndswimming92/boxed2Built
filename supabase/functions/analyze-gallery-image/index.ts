@@ -69,7 +69,7 @@ textPrompt +=
 
     const body: Record<string, unknown> = {
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 2048,
       system:
         `You write gallery captions for Boxed2Built, a labor-only furniture assembly and
 TV/wall-mounting service based in Spring Hill, TN, serving Franklin, Brentwood,
@@ -159,7 +159,30 @@ Respond with ONLY valid JSON, no markdown or backticks:
         .replace(/^```(?:json)?\s*/, "")
         .replace(/\s*```$/, "");
     }
-    const parsed = JSON.parse(jsonText);
+    // The model occasionally wraps the JSON in a sentence or two. Extract the
+    // object so a stray preamble doesn't blow up JSON.parse.
+    const objStart = jsonText.indexOf("{");
+    const objEnd = jsonText.lastIndexOf("}");
+    if (objStart !== -1 && objEnd > objStart) {
+      jsonText = jsonText.slice(objStart, objEnd + 1);
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (_parseErr) {
+      console.error("Failed to parse AI response as JSON:", lastTextBlock.text);
+      return new Response(
+        JSON.stringify({
+          error: "AI returned an unexpected format. Please try again.",
+          details: lastTextBlock.text.slice(0, 500),
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -167,7 +190,10 @@ Respond with ONLY valid JSON, no markdown or backticks:
   } catch (err) {
     console.error("analyze-gallery-image error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({
+        error: "Internal server error",
+        details: err instanceof Error ? err.message : String(err),
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

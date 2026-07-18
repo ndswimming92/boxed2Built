@@ -79,7 +79,18 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
         category: formData.category,
       };
       if (selectedFile) {
-        result = await analyzeGalleryImage(selectedFile, aiOptions);
+        // Downscale before sending to the AI. The stored image is optimized on
+        // save, but the raw pick (a full-res iPhone photo, or the full-size JPEG
+        // heic2any produces) can exceed the vision API's per-image size limit and
+        // fail. 1568px is the API's recommended long-edge max — smaller, faster,
+        // and cheaper with no loss of analysis quality.
+        const optimized = await optimizeImage(selectedFile, {
+          maxWidth: 1568,
+          maxHeight: 1568,
+          quality: 0.8,
+          convertToWebP: false,
+        });
+        result = await analyzeGalleryImage(optimized.file, aiOptions);
       } else if (isEdit && item?.src) {
         result = await analyzeGalleryImageFromUrl(item.src, aiOptions);
       } else {
