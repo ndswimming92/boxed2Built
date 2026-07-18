@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Save, Upload, Video, AlertCircle, Sparkles } from 'lucide-react';
 import { GalleryService, CreateGalleryItemInput, UpdateGalleryItemInput } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
-import { optimizeImage, validateImageFile, snapshotFileToMemory } from '../../utils/imageOptimizationUpload';
+import { optimizeImage, validateImageFile, snapshotFileToMemory, normalizeImageFile } from '../../utils/imageOptimizationUpload';
 import { analyzeGalleryImage, analyzeGalleryImageFromUrl } from '../../services/galleryAIService';
 import { SERVICE_AREAS } from '../../constants/localSEO';
 import Button from '../ui/Button';
@@ -54,9 +54,12 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
       // Copy the bytes into memory now so a later read (optimize/upload) can't hit
       // net::ERR_UPLOAD_FILE_CHANGED when the OS-backed temp file goes stale on mobile.
       const snapshot = await snapshotFileToMemory(file);
-      setSelectedFile(snapshot);
+      // Convert HEIC/HEIF to JPEG so preview, AI analysis, and canvas optimization
+      // all work in browsers that can't decode HEIC natively.
+      const normalized = await normalizeImageFile(snapshot);
+      setSelectedFile(normalized);
       if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(URL.createObjectURL(snapshot));
+      setPreviewUrl(URL.createObjectURL(normalized));
       setError(null);
     } catch (err) {
       console.error('Error reading selected image:', err);
@@ -271,7 +274,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
               <FormField label={isEdit ? 'Change Image (optional)' : 'Image *'} required={!isEdit}>
                 <input name="file"
                   type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   onChange={handleFileSelect}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />

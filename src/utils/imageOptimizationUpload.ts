@@ -40,6 +40,36 @@ export async function snapshotFileToMemory(file: File): Promise<File> {
   });
 }
 
+/**
+ * Detects HEIC/HEIF files (the default iPhone photo format). The browser doesn't
+ * always populate `file.type` for these, so we also fall back to the extension.
+ */
+export function isHeicFile(file: File): boolean {
+  const type = file.type.toLowerCase();
+  if (type === 'image/heic' || type === 'image/heif') return true;
+  return /\.(heic|heif)$/i.test(file.name);
+}
+
+/**
+ * Converts a HEIC/HEIF file to a JPEG File so it can be decoded by the browser
+ * canvas (Chrome/Firefox/Edge can't render HEIC natively). Non-HEIC files are
+ * returned unchanged. The heic2any decoder is loaded lazily so it only ships to
+ * users who actually pick a HEIC file.
+ */
+export async function normalizeImageFile(file: File): Promise<File> {
+  if (!isHeicFile(file)) return file;
+
+  const { default: heic2any } = await import('heic2any');
+  const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  const fileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+
+  return new File([blob], fileName, {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+}
+
 export async function optimizeImage(
   file: File,
   options: ImageOptimizationOptions = {}
@@ -157,19 +187,25 @@ export function generateUniqueFileName(originalName: string): string {
 
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
   const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  const maxSize = 10 * 1024 * 1024;
+  // Files are downscaled to 1920x1080 WebP before upload, so the stored image is
+  // almost always well under 1MB regardless of the source size. This limit only
+  // guards against loading an unreasonably large file into a canvas, so keep it
+  // generous enough for high-resolution iPhone photos (incl. ProRAW).
+  const maxSize = 50 * 1024 * 1024;
 
-  if (!validTypes.includes(file.type)) {
+  // HEIC/HEIF (the default iPhone format) is accepted here and converted to JPEG
+  // via normalizeImageFile() before it reaches the canvas.
+  if (!validTypes.includes(file.type) && !isHeicFile(file)) {
     return {
       valid: false,
-      error: 'Invalid file type. Please upload JPEG, PNG, or WebP images.',
+      error: 'Invalid file type. Please upload JPEG, PNG, HEIC, or WebP images.',
     };
   }
 
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'File size exceeds 10MB limit.',
+      error: 'File size exceeds 50MB limit.',
     };
   }
 

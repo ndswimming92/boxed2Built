@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, JobCompletion } from '../../lib/supabase';
 import { CheckCircle2, Star, Eye, Calendar, User, DollarSign, Search, Filter, X, Image as ImageIcon, Download, Share2, ExternalLink, Plus, Loader2 } from 'lucide-react';
 import { downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
-import { optimizeImage, validateImageFile, snapshotFileToMemory } from '../../utils/imageOptimizationUpload';
+import { optimizeImage, validateImageFile, snapshotFileToMemory, normalizeImageFile } from '../../utils/imageOptimizationUpload';
 
 const MAX_COMPLETION_PHOTOS = 10;
 
@@ -269,9 +269,10 @@ export default function CompletionsPage() {
         if (!validation.valid) {
           throw new Error(`${file.name}: ${validation.error}`);
         }
-        // Snapshot to memory first (mobile temp files can go stale), then
+        // Snapshot to memory first (mobile temp files can go stale), convert any
+        // HEIC/HEIF (iPhone) file to JPEG so the canvas can decode it, then
         // optimize so we store a compact webp data URL rather than a raw photo.
-        const snapshot = await snapshotFileToMemory(file);
+        const snapshot = await normalizeImageFile(await snapshotFileToMemory(file));
         const optimized = await optimizeImage(snapshot, {
           maxWidth: 1920,
           maxHeight: 1080,
@@ -675,7 +676,7 @@ export default function CompletionsPage() {
                     <input
                       ref={completionPhotoInputRef}
                       type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                       multiple
                       className="hidden"
                       onChange={handleAddPhotos}

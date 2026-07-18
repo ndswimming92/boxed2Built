@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, AlertCircle, CheckCircle } from 'lucide-react';
-import { optimizeImages, validateImageFiles, snapshotFileToMemory, OptimizedImage } from '../../utils/imageOptimizationUpload';
+import { optimizeImages, validateImageFiles, snapshotFileToMemory, normalizeImageFile, OptimizedImage } from '../../utils/imageOptimizationUpload';
 import Button from '../ui/Button';
 
 interface BatchImageUploadProps {
@@ -47,7 +47,10 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
     try {
       // Copy bytes into memory at selection time so optimize (which can happen much
       // later) can't hit net::ERR_UPLOAD_FILE_CHANGED on mobile temp files going stale.
-      const snapshots = await Promise.all(fileArray.map(snapshotFileToMemory));
+      // Convert any HEIC/HEIF (iPhone) files to JPEG so preview and canvas work everywhere.
+      const snapshots = await Promise.all(
+        fileArray.map(async (file) => normalizeImageFile(await snapshotFileToMemory(file)))
+      );
       setError(null);
       setSelectedFiles(prev => [
         ...prev,
@@ -166,13 +169,13 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
               <input name="file"
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 multiple
                 className="hidden"
                 onChange={(e) => handleFileSelect(e.target.files)}
               />
               <p className="text-xs text-slate-400 mt-4">
-                Supported formats: JPEG, PNG, WebP (max 10MB each)
+                Supported formats: JPEG, PNG, HEIC, WebP (max 50MB each)
               </p>
             </div>
           ) : (
@@ -192,7 +195,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
                 <input name="file"
                   ref={fileInputRef}
                   type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   multiple
                   className="hidden"
                   onChange={(e) => handleFileSelect(e.target.files)}
