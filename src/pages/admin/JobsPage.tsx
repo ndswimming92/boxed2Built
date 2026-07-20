@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift, Building2 } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, Navigation, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -619,22 +619,34 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Job Type</p>
-                    <p className="text-sm font-medium text-slate-900">{job.job_type || 'N/A'}</p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                      <Briefcase className="w-3 h-3" />
+                      Job Type
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900 truncate" title={job.job_type || 'N/A'}>{job.job_type || 'N/A'}</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Location</p>
-                    <p className="text-sm font-medium text-slate-900">{job.location_city || 'N/A'}</p>
+                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                      <MapPin className="w-3 h-3" />
+                      Location
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900 truncate" title={job.location_city || 'N/A'}>{job.location_city || 'N/A'}</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Completed</p>
-                    <p className="text-sm font-medium text-slate-900">{formatDate(job.date_completed)}</p>
+                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" />
+                      Completed
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900">{formatDate(job.date_completed)}</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-1">Hours Worked</p>
-                    <p className="text-sm font-medium text-slate-900">{formatHours(job.hours_worked)}</p>
+                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3" />
+                      Hours Worked
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900">{formatHours(job.hours_worked)}</p>
                   </div>
                 </div>
 
@@ -646,44 +658,46 @@ export default function JobsPage() {
 
                 {job.is_free ? (
                   <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
-                    <Gift className="w-5 h-5 text-cyan-600" />
-                    <p className="text-sm font-medium text-cyan-800">Free Job -- no financial tracking</p>
-                    {job.hours_worked && job.hours_worked > 0 && (
-                      <span className="ml-auto text-sm text-slate-600">{formatHours(job.hours_worked)} hrs worked</span>
-                    )}
+                    <div className="flex items-center gap-3 rounded-lg bg-cyan-50 border border-cyan-100 px-4 py-3 w-full">
+                      <Gift className="w-5 h-5 text-cyan-600 shrink-0" />
+                      <p className="text-sm font-semibold text-cyan-800">Free Job — no financial tracking</p>
+                      {job.hours_worked && job.hours_worked > 0 && (
+                        <span className="ml-auto text-sm font-medium text-cyan-700">{formatHours(job.hours_worked)} hrs worked</span>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-slate-200">
-                    <div>
-                      <p className="text-xs font-medium text-slate-500 mb-1">Final Price</p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-slate-200">
+                    <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Final Price</p>
                       <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500 mb-1">Materials Cost</p>
+                    <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Materials Cost</p>
                       <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
                     </div>
                     {contractorCost > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-slate-500 mb-1">Contractor Pay</p>
+                      <div className="rounded-lg bg-rose-50 border border-rose-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-400 mb-1">Contractor Pay</p>
                         <p className="text-lg font-bold text-rose-600">{maskFinancialValue(formatCurrency(contractorCost))}</p>
                       </div>
                     )}
-                    <div>
-                      <p className="text-xs font-medium text-slate-500 mb-1">Net Profit</p>
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Net Profit</p>
                       <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500 mb-1">Hourly Rate</p>
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Hourly Rate</p>
                       <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
                     </div>
                     {(job.total_mileage ?? 0) > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
+                      <div className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-400 mb-1 flex items-center gap-1">
                           <Navigation className="w-3 h-3" />
                           Mileage Deduction
                         </p>
                         <p className="text-lg font-bold text-blue-600">{maskFinancialValue(formatCurrency(job.mileage_deduction))}</p>
-                        <p className="text-xs text-slate-500">{job.total_mileage?.toFixed(1)} mi</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{job.total_mileage?.toFixed(1)} mi</p>
                       </div>
                     )}
                   </div>
@@ -691,8 +705,8 @@ export default function JobsPage() {
 
                 {job.job_description && (
                   <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-xs font-medium text-slate-500 mb-1">Description</p>
-                    <p className="text-sm text-slate-700">{job.job_description}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Description</p>
+                    <p className="text-sm text-slate-700 leading-relaxed rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">{job.job_description}</p>
                   </div>
                 )}
 
