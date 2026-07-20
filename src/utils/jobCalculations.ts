@@ -13,19 +13,25 @@ export const REFERRAL_SOURCES = [
   'Other',
 ] as const;
 
-export function calculateNetProfit(finalPrice: number | null, materialsCost: number | null): number {
+export function calculateNetProfit(
+  finalPrice: number | null,
+  materialsCost: number | null,
+  contractorCost: number | null = 0
+): number {
   if (finalPrice === null) return 0;
   const materials = materialsCost || 0;
-  return finalPrice - materials;
+  const contractors = contractorCost || 0;
+  return finalPrice - materials - contractors;
 }
 
 export function calculateHourlyRate(
   finalPrice: number | null,
   materialsCost: number | null,
-  hoursWorked: number | null
+  hoursWorked: number | null,
+  contractorCost: number | null = 0
 ): number {
   if (!hoursWorked || hoursWorked <= 0) return 0;
-  const netProfit = calculateNetProfit(finalPrice, materialsCost);
+  const netProfit = calculateNetProfit(finalPrice, materialsCost, contractorCost);
   return netProfit / hoursWorked;
 }
 

@@ -617,6 +617,39 @@ export type BusinessExpense = {
   updated_at: string;
 };
 
+export type Contractor = {
+  id: string;
+  business_id: string;
+  organization_id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type JobContractor = {
+  id: string;
+  business_id: string;
+  organization_id: string;
+  job_id: string;
+  contractor_id: string;
+  amount_paid: number;
+  work_description: string | null;
+  payment_date: string | null;
+  payment_method: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type JobContractorWithContractor = JobContractor & {
+  contractor?: Contractor | null;
+};
+
 export type GPSCoordinate = {
   lat: number;
   lng: number;
