@@ -20,7 +20,7 @@ export default function InquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'converted_to_job' | 'archived'>('all');
+  const [statusFilter, setStatusFilter] = useState<'active' | 'all' | 'pending' | 'converted_to_job' | 'archived'>('active');
   const [furnitureTypeFilter, setFurnitureTypeFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -142,7 +142,10 @@ export default function InquiriesPage() {
       );
     }
 
-    if (statusFilter !== 'all') {
+    if (statusFilter === 'active') {
+      // Default view: hide inquiries that are done (converted) or dismissed (archived)
+      filtered = filtered.filter((inquiry) => inquiry.status === 'pending');
+    } else if (statusFilter !== 'all') {
       filtered = filtered.filter((inquiry) => inquiry.status === statusFilter);
     }
 
@@ -391,7 +394,17 @@ export default function InquiriesPage() {
           <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.total}</p>
         </div>
 
-        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter('active');
+            setShowFilters(true);
+          }}
+          className={`text-left bg-white rounded-xl p-4 sm:p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 ${
+            statusFilter === 'active' ? 'border-yellow-400 ring-1 ring-yellow-300' : 'border-slate-200'
+          }`}
+          title="Show pending inquiries"
+        >
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
             <div className="p-1.5 sm:p-2 bg-yellow-100 rounded-lg">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
@@ -399,9 +412,19 @@ export default function InquiriesPage() {
             <p className="text-xs sm:text-sm font-medium text-slate-600">Pending</p>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.pending}</p>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter('converted_to_job');
+            setShowFilters(true);
+          }}
+          className={`text-left bg-white rounded-xl p-4 sm:p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 ${
+            statusFilter === 'converted_to_job' ? 'border-green-400 ring-1 ring-green-300' : 'border-slate-200'
+          }`}
+          title="Show inquiries converted to jobs"
+        >
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
             <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
@@ -409,7 +432,7 @@ export default function InquiriesPage() {
             <p className="text-xs sm:text-sm font-medium text-slate-600">Converted</p>
           </div>
           <p className="text-xl sm:text-2xl font-bold text-slate-900">{stats.converted}</p>
-        </div>
+        </button>
 
         <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -451,11 +474,11 @@ export default function InquiriesPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
               <select name="statusFilter"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
               >
+                <option value="active">Active (Pending)</option>
                 <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
                 <option value="converted_to_job">Converted</option>
                 <option value="archived">Archived</option>
               </select>
