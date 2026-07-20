@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
@@ -9,6 +9,7 @@ import Button from '../../components/ui/Button';
 import BatchImageUpload from '../../components/admin/BatchImageUpload';
 import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm';
 import GalleryItemModal from '../../components/admin/GalleryItemModal';
+import GalleryReorderGrid from '../../components/admin/GalleryReorderGrid';
 
 export default function GalleryPage() {
   const [businessId, setBusinessId] = useState<string>('');
@@ -28,6 +29,7 @@ export default function GalleryPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [reorderMode, setReorderMode] = useState(false);
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -131,6 +133,16 @@ export default function GalleryPage() {
           <p className="text-sm sm:text-base text-slate-600 mt-1">Manage images and videos for the public gallery</p>
         </div>
         <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+          {!reorderMode && (
+            <Button
+              onClick={() => setReorderMode(true)}
+              variant="outline"
+              disabled={items.length < 2}
+            >
+              <ArrowUpDown size={16} className="mr-1.5" />
+              <span className="hidden sm:inline">Reorder</span>
+            </Button>
+          )}
           <Button
             onClick={() => setShowBatchUpload(true)}
             variant="primary"
@@ -153,6 +165,16 @@ export default function GalleryPage() {
         </div>
       </div>
 
+      {reorderMode ? (
+        <GalleryReorderGrid
+          items={items}
+          onDone={() => {
+            setReorderMode(false);
+            refresh();
+          }}
+        />
+      ) : (
+      <>
       <div className="bg-white rounded-lg border border-slate-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
@@ -339,6 +361,8 @@ export default function GalleryPage() {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
 
       {showBatchUpload && (
