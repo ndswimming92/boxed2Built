@@ -15,6 +15,7 @@ import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import AttachInvoiceModal from '../../components/admin/AttachInvoiceModal';
 import JobInvoicesList from '../../components/admin/JobInvoicesList';
+import JobContractorsList from '../../components/admin/JobContractorsList';
 import MileageTrackerButton from '../../components/admin/MileageTrackerButton';
 import MileageRecordsList from '../../components/admin/MileageRecordsList';
 import MarkJobLostModal from '../../components/admin/MarkJobLostModal';
@@ -22,7 +23,9 @@ import CancelJobModal from '../../components/admin/CancelJobModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
 import { attachInvoiceToJob } from '../../services/invoiceService';
 import { jobStatusService } from '../../services/jobStatusService';
+import { getJobContractorTotals } from '../../services/contractorService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { logAction } from '../../services/auditLogService';
 
 interface JobStats {
@@ -42,6 +45,7 @@ interface JobsPageLocationState {
 
 export default function JobsPage() {
   const { maskFinancialValue } = usePrivacyMode();
+  const { currentOrganization } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const locationState = location.state as JobsPageLocationState | null;
@@ -58,6 +62,7 @@ export default function JobsPage() {
   const [locationFilter, setLocationFilter] = useState<string>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<JobStats>({ totalJobs: 0, totalRevenue: 0, totalProfit: 0, avgHourlyRate: 0 });
+  const [contractorTotals, setContractorTotals] = useState<Record<string, number>>({});
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -118,7 +123,9 @@ export default function JobsPage() {
 
         if (data) {
           setJobs(data);
-          calculateStats(data);
+          const totals = await getJobContractorTotals(bizData.id);
+          setContractorTotals(totals);
+          calculateStats(data, totals);
         }
       }
     } catch (error) {
@@ -128,10 +135,10 @@ export default function JobsPage() {
     }
   };
 
-  const calculateStats = (jobsList: Job[]) => {
+  const calculateStats = (jobsList: Job[], totals: Record<string, number> = {}) => {
     const completedJobs = jobsList.filter(job => job.date_completed);
     const totalRevenue = completedJobs.reduce((sum, job) => sum + (job.final_price || 0), 0);
-    const totalProfit = completedJobs.reduce((sum, job) => sum + calculateNetProfit(job.final_price, job.materials_cost), 0);
+    const totalProfit = completedJobs.reduce((sum, job) => sum + calculateNetProfit(job.final_price, job.materials_cost, totals[job.id] || 0), 0);
     const totalHours = completedJobs.reduce((sum, job) => sum + (job.hours_worked || 0), 0);
     const avgHourlyRate = totalHours > 0 ? totalProfit / totalHours : 0;
 
@@ -486,8 +493,9 @@ export default function JobsPage() {
           </div>
         ) : (
           filteredJobs.map((job) => {
-            const netProfit = calculateNetProfit(job.final_price, job.materials_cost);
-            const hourlyRate = calculateHourlyRate(job.final_price, job.materials_cost, job.hours_worked);
+            const contractorCost = contractorTotals[job.id] || 0;
+            const netProfit = calculateNetProfit(job.final_price, job.materials_cost, contractorCost);
+            const hourlyRate = calculateHourlyRate(job.final_price, job.materials_cost, job.hours_worked, contractorCost);
             const statusLabel = jobStatusService.getStatusLabel(job.job_status);
             const statusColor = jobStatusService.getStatusColor(job.job_status);
             const isInactive = job.job_status === 'lost' || job.job_status === 'cancelled';
@@ -654,6 +662,12 @@ export default function JobsPage() {
                       <p className="text-xs font-medium text-slate-500 mb-1">Materials Cost</p>
                       <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
                     </div>
+                    {contractorCost > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 mb-1">Contractor Pay</p>
+                        <p className="text-lg font-bold text-rose-600">{maskFinancialValue(formatCurrency(contractorCost))}</p>
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs font-medium text-slate-500 mb-1">Net Profit</p>
                       <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
@@ -687,6 +701,16 @@ export default function JobsPage() {
                     jobId={job.id}
                     businessInfo={businessInfo}
                     onInvoiceDetached={fetchData}
+                  />
+                )}
+
+                {businessId && (
+                  <JobContractorsList
+                    jobId={job.id}
+                    businessId={businessId}
+                    organizationId={currentOrganization?.id ?? null}
+                    jobRevenue={job.final_price}
+                    onChange={fetchData}
                   />
                 )}
 

@@ -37,6 +37,7 @@ const UTMLinkBuilderPage = React.lazy(() => import('./pages/admin/UTMLinkBuilder
 const AttributesPage = React.lazy(() => import('./pages/admin/AttributesPage'));
 const GalleryAdminPage = React.lazy(() => import('./pages/admin/GalleryPage'));
 const JobsAdminPage = React.lazy(() => import('./pages/admin/JobsPage'));
+const ContractorsPage = React.lazy(() => import('./pages/admin/ContractorsPage'));
 const AnalyticsPage = React.lazy(() => import('./pages/admin/AnalyticsPage'));
 const InquiriesPage = React.lazy(() => import('./pages/admin/InquiriesPage'));
 const InvoicesPage = React.lazy(() => import('./pages/admin/InvoicesPage'));
@@ -150,6 +151,7 @@ export const routes: RouteRecord[] = [
           { path: 'qr-codes', Component: QRCodesPage },
           { path: 'qr-codes/:id', Component: QRCodeDetailPage },
           { path: 'jobs', Component: JobsAdminPage },
+          { path: 'contractors', Component: ContractorsPage },
           { path: 'completions', Component: CompletionsPage },
           { path: 'reminders', Component: RemindersPage },
           { path: 'business-hours', Component: BusinessHoursPage },
