@@ -31,6 +31,7 @@ interface InquiryDetailModalProps {
   onArchive?: () => void;
   onDelete?: () => void;
   onConvertToJob?: (inquiry: FormInquiry) => void;
+  onMarkConverted?: (inquiry: FormInquiry) => void;
   onRefresh?: () => void;
 }
 
@@ -40,6 +41,7 @@ export default function InquiryDetailModal({
   onArchive,
   onDelete,
   onConvertToJob,
+  onMarkConverted,
   onRefresh,
 }: InquiryDetailModalProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -487,6 +489,17 @@ export default function InquiryDetailModal({
                 >
                   <ExternalLink className="w-5 h-5" />
                   Convert to Job
+                </button>
+              )}
+
+              {inquiry.status !== 'converted_to_job' && onMarkConverted && (
+                <button
+                  onClick={() => onMarkConverted(inquiry)}
+                  className="px-4 py-3 bg-white border border-emerald-300 text-emerald-700 rounded-lg font-medium hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+                  title="Use when a job already exists for this inquiry"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  Mark as Converted
                 </button>
               )}
 
