@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
 import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock } from 'lucide-react';
-import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob } from '../../services/inquiryService';
+import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob, markAsConverted } from '../../services/inquiryService';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
@@ -260,6 +260,30 @@ export default function InquiriesPage() {
     } catch (error) {
       console.error('Error converting inquiry:', error);
       setMessage({ type: 'error', text: 'Job created but failed to update inquiry status' });
+    }
+  };
+
+  const handleMarkConverted = async (inquiry: FormInquiry) => {
+    if (!confirm(`Mark ${inquiry.client_name}'s inquiry as converted? Use this when a job already exists for it. It will count toward your conversion rate.`)) return;
+
+    try {
+      await markAsConverted(inquiry.id);
+      await logAction({
+        actionType: 'UPDATE',
+        tableName: 'form_inquiries',
+        recordId: inquiry.id,
+        recordIdentifier: inquiry.client_name,
+        metadata: { status: 'converted_to_job', manual: true },
+      });
+      setMessage({ type: 'success', text: 'Inquiry marked as converted!' });
+      setShowDetailModal(false);
+      setSelectedInquiry(null);
+      await refresh();
+      await fetchStats();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error marking inquiry as converted:', error);
+      setMessage({ type: 'error', text: 'Failed to mark inquiry as converted' });
     }
   };
 
@@ -739,6 +763,7 @@ export default function InquiriesPage() {
             await fetchStats();
           }}
           onConvertToJob={handleConvertToJob}
+          onMarkConverted={handleMarkConverted}
           onRefresh={refresh}
         />
       )}

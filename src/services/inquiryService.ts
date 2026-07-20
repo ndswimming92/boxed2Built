@@ -272,6 +272,25 @@ export async function convertToJob(
   return data as FormInquiry;
 }
 
+// Marks an inquiry as converted without creating a new job. Use when a job
+// already exists (e.g. it was created manually) and only the inquiry's status
+// needs to be corrected so it counts toward the conversion rate.
+export async function markAsConverted(id: string): Promise<FormInquiry> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .update({ status: 'converted_to_job' })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error marking inquiry as converted:', error);
+    throw new Error(`Failed to mark inquiry as converted: ${error.message}`);
+  }
+
+  return data as FormInquiry;
+}
+
 export async function logCommunication(
   id: string,
   method: 'email' | 'phone',
