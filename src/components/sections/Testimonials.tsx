@@ -10,6 +10,10 @@ import { calculateRatingStats } from '../../utils/ratingCalculations';
 const AUTOSCROLL_MS = 5000;
 const RESUME_AFTER_MS = 10000;
 
+// Google Business results for Boxed2Built — where "Read more on Google" points.
+// Canonical search URL (no browser-session tracking params) so it stays stable.
+const GOOGLE_REVIEWS_URL = 'https://www.google.com/search?q=boxed2built';
+
 // Avatars cycle through the brand's soft tints so adjacent cards read distinctly.
 const TINTS: NonNullable<Review['tint']>[] = ['blue', 'green', 'emerald'];
 
@@ -241,7 +245,7 @@ const Testimonials: React.FC = () => {
                 <>
                   <span className="w-px h-4 bg-gray-200" aria-hidden="true" />
                   <a
-                    href={firstGoogleUrl}
+                    href={GOOGLE_REVIEWS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-700 hover:text-blue-800 underline font-medium text-sm"
