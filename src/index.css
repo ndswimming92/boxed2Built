@@ -249,92 +249,98 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Retro split-flap counter
-   Each tile uses two halves that clip a centered digit.
-   The digit is positioned at the full tile height center,
-   and each half shows its respective portion. */
-.flip-tile {
-  --tile-w: 3.5rem;
-  --tile-h: 5rem;
-  --tile-r: 0.5rem;
-  --tile-font: 2.75rem;
+/* Odometer counter
+   Each tile clips a vertical column of looping digits.
+   The column translates up (in percent of its own height)
+   until the target digit in the final loop is centered. */
+.odo-tile {
+  --odo-w: 4rem;
+  --odo-h: 5.25rem;
+  --odo-r: 0.75rem;
+  --odo-font: 3.5rem;
   position: relative;
-  width: var(--tile-w);
-  height: var(--tile-h);
-  border-radius: var(--tile-r);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  width: var(--odo-w);
+  height: var(--odo-h);
+  border-radius: var(--odo-r);
   overflow: hidden;
-  background: linear-gradient(180deg, #4d4d4d 0%, #3a3a3a 50%, #313131 100%);
+  background: linear-gradient(180deg, #1D4ED8, #1E40AF);
+  box-shadow: 0 14px 26px -10px rgba(29, 78, 216, 0.55);
 }
 
 @media (min-width: 768px) {
-  .flip-tile {
-    --tile-w: 5rem;
-    --tile-h: 7rem;
-    --tile-r: 0.625rem;
-    --tile-font: 4rem;
+  .odo-tile {
+    --odo-w: 7.375rem;
+    --odo-h: 9.375rem;
+    --odo-r: 1rem;
+    --odo-font: 6.5rem;
   }
 }
 
-.flip-tile-inner {
-  position: absolute;
-  inset: 0;
+.odo-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.odo-column.odo-animate {
+  transition: transform 2000ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.odo-cell {
+  height: var(--odo-h);
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: inherit;
-}
-
-.flip-tile-inner span {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: var(--tile-font);
-  font-weight: 700;
+  font-size: var(--odo-font);
+  font-weight: 800;
   color: #ffffff;
   line-height: 1;
-  transform: translateY(0);
-  opacity: 1;
-  transition: transform 100ms ease-out, opacity 80ms ease-out;
+  font-variant-numeric: tabular-nums;
 }
 
-.flip-tile-inner span.rolling-out {
-  transform: translateY(-50%);
-  opacity: 0;
-}
-
-.flip-tile-inner span.rolling-in {
-  transform: translateY(50%);
-  opacity: 0;
-  transition: none;
-}
-
-.flip-tile-seam {
+.odo-seam {
   position: absolute;
   left: 0;
   right: 0;
   top: 50%;
-  height: 1.5px;
-  background: rgba(0,0,0,0.55);
-  transform: translateY(-50%);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.14);
   z-index: 5;
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .flip-tile-inner span {
-    transition: none;
-  }
+.odo-dot-col {
+  width: 1rem;
+  height: var(--odo-h, 5.25rem);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
-.flip-dot {
-  font-size: var(--tile-font, 2.75rem);
-  font-weight: 700;
-  color: #3d3d3d;
-  line-height: 1;
-  align-self: center;
+.odo-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: #1D4ED8;
+  margin-bottom: 0.875rem;
 }
 
 @media (min-width: 768px) {
-  .flip-dot {
-    font-size: 4rem;
+  .odo-dot-col {
+    width: 1.625rem;
+    height: 9.375rem;
+  }
+
+  .odo-dot {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .odo-column.odo-animate {
+    transition: none;
   }
 }
