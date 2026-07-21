@@ -1,0 +1,201 @@
+/* BoxLoader — full-screen box-opening splash (from Claude Design "BoxLoader") */
+
+@keyframes blBoxIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes blFlapOpen {
+  from { transform: rotateX(88deg); }
+  to { transform: rotateX(-28deg); }
+}
+
+@keyframes blSparkPop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.4) rotate(0deg); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-52px) scale(1) rotate(170deg); }
+}
+
+@keyframes blFadeUp {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* If hydration never happens (no JS), auto-dismiss so the page is never blocked */
+@keyframes blFailsafe {
+  to { opacity: 0; visibility: hidden; }
+}
+
+.bl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.7s ease-out;
+  opacity: 1;
+  animation: blFailsafe 0.7s ease-out 8s forwards;
+}
+
+.bl-overlay--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bl-box-wrap {
+  position: relative;
+  margin-bottom: 70px;
+  animation: blBoxIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.bl-perspective {
+  perspective: 900px;
+}
+
+.bl-box {
+  width: 140px;
+  height: 95px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-28deg) rotateY(-32deg);
+}
+
+.bl-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  height: 95px;
+  border: 1px solid rgba(96, 69, 38, 0.5);
+  box-sizing: border-box;
+}
+
+.bl-face--bottom {
+  background: #a87f4e;
+  transform: rotateX(90deg) translateZ(-47.5px);
+}
+
+.bl-face--back {
+  background: #be9260;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg) translateZ(47.5px);
+}
+
+.bl-face--left,
+.bl-face--right {
+  left: 22.5px;
+  width: 95px;
+  height: 95px;
+  background: #b08655;
+  transform-style: preserve-3d;
+}
+
+.bl-face--left {
+  transform: rotateY(-90deg) translateZ(70px);
+}
+
+.bl-face--right {
+  transform: rotateY(90deg) translateZ(70px);
+}
+
+.bl-face--front {
+  background: #c79e6b;
+  transform-style: preserve-3d;
+  transform: translateZ(47.5px);
+}
+
+.bl-flap {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: 47.5px;
+  border: 1px solid rgba(96, 69, 38, 0.5);
+  box-sizing: border-box;
+  transform-origin: 50% 100%;
+  transform: rotateX(88deg);
+  animation: blFlapOpen 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.bl-flap--front {
+  background: #d2ab77;
+  animation-delay: 0.5s;
+}
+
+.bl-flap--back {
+  background: #cda470;
+  animation-delay: 0.62s;
+}
+
+.bl-flap--left {
+  background: #c49b68;
+  animation-delay: 0.74s;
+}
+
+.bl-flap--right {
+  background: #c49b68;
+  animation-delay: 0.86s;
+}
+
+.bl-tape {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 13px;
+  background: rgba(235, 224, 198, 0.95);
+  border: 1px solid rgba(96, 69, 38, 0.25);
+}
+
+.bl-logo-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bl-logo {
+  width: 48px;
+  display: block;
+  opacity: 0.95;
+}
+
+.bl-shadow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100% + 30px);
+  width: 190px;
+  height: 20px;
+  background: radial-gradient(ellipse, rgba(17, 24, 39, 0.2), transparent 68%);
+}
+
+.bl-spark {
+  position: absolute;
+  transform: rotate(45deg);
+  opacity: 0;
+  animation: blSparkPop 1s ease-out both;
+}
+
+.bl-tagline {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: calc(100% + 60px);
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0e2748;
+  animation: blFadeUp 0.5s ease-out 1.7s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bl-overlay * {
+    animation-duration: 0.01s !important;
+  }
+}

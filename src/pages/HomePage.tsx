@@ -6,6 +6,7 @@ import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusiness
 import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
 import Header from '../components/layout/Header';
+import BoxLoader from '../components/BoxLoader';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
 import HomeFAQ from '../components/sections/HomeFAQ';
@@ -62,6 +63,7 @@ const HomePage: React.FC = () => {
         businessUrl={businessData.info.website}
         serviceAreas={businessData.serviceAreas}
       />
+      <BoxLoader />
       <Header />
       <main className="pt-16">
         <HomeHero />
