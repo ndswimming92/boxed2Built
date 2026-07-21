@@ -1,13 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ReviewCard from '../ReviewCard';
 import StarRating from '../ui/StarRating';
+import { Review } from '../../types';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
 
 const AUTOSCROLL_MS = 5000;
 const RESUME_AFTER_MS = 10000;
+
+// Avatars cycle through the brand's soft tints so adjacent cards read distinctly.
+const TINTS: NonNullable<Review['tint']>[] = ['blue', 'green', 'emerald'];
+
+const getInitials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join('')
+    .toUpperCase();
 
 const Testimonials: React.FC = () => {
   const { data: businessData, loading } = useBusinessDataWithFallback();
@@ -15,6 +28,8 @@ const Testimonials: React.FC = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  // Bumped on every slide change so the progress bar remounts and restarts.
+  const [cycleId, setCycleId] = useState(0);
 
   // Avoid stacking timeouts when user clicks multiple times
   const resumeTimeoutRef = useRef<number | null>(null);
@@ -29,15 +44,17 @@ const Testimonials: React.FC = () => {
     );
   }, []);
 
-  const REVIEWS = useMemo(() => {
+  const REVIEWS: Review[] = useMemo(() => {
     if (!businessData?.reviews) return [];
-    return businessData.reviews.map((review) => ({
+    return businessData.reviews.map((review, index) => ({
       id: review.id,
       author: review.author_name,
       text: review.review_body,
       rating: review.rating_value,
       datePublished: review.date_published,
       source: review.is_verified ? 'Google' : 'Customer',
+      initials: getInitials(review.author_name),
+      tint: TINTS[index % TINTS.length],
       googleReviewUrl: review.is_verified
         ? 'https://www.google.com/maps/place/Boxed2Built/@35.7513,-86.9236,17z/data=!4m8!3m7!1s0x886466e6e6e6e6e6:0x1234567890abcdef!8m2!3d35.7513!4d-86.9236!9m1!1b1!16s%2Fg%2F11y3qr8h5z'
         : undefined,
@@ -79,6 +96,7 @@ const Testimonials: React.FC = () => {
 
     const interval = window.setInterval(() => {
       setCurrentIndex((prev) => (prev === REVIEWS.length - 1 ? 0 : prev + 1));
+      setCycleId((prev) => prev + 1);
     }, AUTOSCROLL_MS);
 
     return () => window.clearInterval(interval);
@@ -114,6 +132,7 @@ const Testimonials: React.FC = () => {
   // Pause auto-scroll when user interacts; resume after inactivity (without stacking timers)
   const handleManualNavigation = (newIndex: number) => {
     setCurrentIndex(newIndex);
+    setCycleId((prev) => prev + 1);
 
     if (!prefersReducedMotion) {
       setIsAutoScrolling(false);
@@ -144,6 +163,39 @@ const Testimonials: React.FC = () => {
     return REVIEWS.find((r) => r.googleReviewUrl)?.googleReviewUrl;
   }, [REVIEWS]);
 
+  // Peek layout — position every card relative to the centered one and let the
+  // neighbours peek at reduced scale/opacity. Wraps around at both ends.
+  const cards = useMemo(() => {
+    const len = REVIEWS.length;
+    return REVIEWS.map((review, idx) => {
+      let offset = idx - currentIndex;
+      if (offset > len / 2) offset -= len;
+      if (offset < -len / 2) offset += len;
+
+      const isCenter = offset === 0;
+      const visible = Math.abs(offset) <= 1;
+      const tx = offset * 56;
+      const scale = isCenter ? 1 : 0.86;
+
+      const wrapStyle: React.CSSProperties = {
+        position: 'absolute',
+        top: 0,
+        left: '50%',
+        width: '62%',
+        height: '100%',
+        transform: `translate(calc(-50% + ${tx}%), 0) scale(${scale})`,
+        opacity: isCenter ? 1 : visible ? 0.4 : 0,
+        zIndex: isCenter ? 10 : 5,
+        pointerEvents: isCenter ? 'auto' : 'none',
+        transition: prefersReducedMotion
+          ? 'none'
+          : 'transform 500ms cubic-bezier(0.16,1,0.3,1), opacity 500ms ease',
+      };
+
+      return { review, isCenter, wrapStyle };
+    });
+  }, [REVIEWS, currentIndex, prefersReducedMotion]);
+
   if (loading) {
     return (
       <section className="py-12 bg-gray-50">
@@ -162,101 +214,104 @@ const Testimonials: React.FC = () => {
   const showNav = REVIEWS.length > 1;
 
   return (
-    <section className="py-12 bg-gray-50" aria-labelledby="testimonials-heading">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-8 md:mb-10">
-          <h2 id="testimonials-heading" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+    <section className="py-16 bg-gray-50" aria-labelledby="testimonials-heading">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2
+            id="testimonials-heading"
+            className="text-3xl md:text-4xl font-bold text-gray-900 mb-3.5"
+          >
             Customer Reviews
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+          <p className="text-gray-600 max-w-xl mx-auto text-base md:text-lg leading-relaxed">
             Real feedback from families in Spring Hill, TN and nearby areas — including verified Google reviews.
           </p>
 
           {ratingStats && ratingStats.totalReviews > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mt-5">
-              <StarRating rating={ratingStats.averageRating} size={22} allowPartialStars={true} />
-              <span className="text-lg font-semibold text-gray-900">
+            <div className="inline-flex flex-wrap items-center justify-center gap-2.5 mt-5 bg-white border border-gray-200 rounded-full px-5 py-2.5 shadow-sm">
+              <StarRating rating={ratingStats.averageRating} size={20} allowPartialStars={true} />
+              <span className="text-lg font-bold text-gray-900">
                 {ratingStats.averageRating.toFixed(1)}
               </span>
-              <span className="text-gray-600">
+              <span className="text-gray-600 text-sm">
                 ({ratingStats.totalReviews} {ratingStats.totalReviews === 1 ? 'review' : 'reviews'})
               </span>
 
               {firstGoogleUrl && (
-                <a
-                  href={firstGoogleUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-700 hover:text-blue-800 underline font-medium text-sm"
-                  aria-label="Read more reviews on Google"
-                >
-                  Read more on Google
-                </a>
+                <>
+                  <span className="w-px h-4 bg-gray-200" aria-hidden="true" />
+                  <a
+                    href={firstGoogleUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-700 hover:text-blue-800 underline font-medium text-sm"
+                    aria-label="Read more reviews on Google"
+                  >
+                    Read more on Google
+                  </a>
+                </>
               )}
             </div>
           )}
         </div>
 
         {/* Carousel Container */}
-        <div className="relative max-w-4xl mx-auto">
-          {/* Navigation Buttons (kept inside on mobile so they’re tappable) */}
+        <div className="relative max-w-[980px] mx-auto">
+          {/* Navigation Buttons */}
           {showNav && (
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-2 md:-left-12 lg:-left-16 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="absolute -left-2 top-[42%] -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white border border-gray-200 text-gray-700 shadow-md transition hover:shadow-lg hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 aria-label="Previous review"
                 type="button"
               >
-                <ChevronLeft size={22} className="text-gray-700" />
+                <ChevronLeft size={22} />
               </button>
 
               <button
                 onClick={goToNext}
-                className="absolute right-2 md:-right-12 lg:-right-16 top-1/2 -translate-y-1/2 z-10 p-2.5 md:p-3 bg-white rounded-full shadow-md hover:shadow-lg transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                className="absolute -right-2 top-[42%] -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white border border-gray-200 text-gray-700 shadow-md transition hover:shadow-lg hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                 aria-label="Next review"
                 type="button"
               >
-                <ChevronRight size={22} className="text-gray-700" />
+                <ChevronRight size={22} />
               </button>
             </>
           )}
 
-          {/* Review Cards */}
-          <div className="overflow-hidden rounded-lg">
-            <div
-              className="flex"
-              style={{
-                transform: `translateX(-${currentIndex * 100}%)`,
-                transition: prefersReducedMotion ? 'none' : 'transform 500ms ease-in-out',
-              }}
-              aria-live={isAutoScrolling ? 'off' : 'polite'}
-            >
-              {REVIEWS.map((review) => (
-                <div key={review.id} className="w-full flex-shrink-0 px-2 sm:px-4">
-                  <ReviewCard review={review} />
-                </div>
-              ))}
-            </div>
+          {/* Peek cards */}
+          <div
+            className="relative h-[388px] overflow-hidden"
+            aria-live={isAutoScrolling ? 'off' : 'polite'}
+          >
+            {cards.map(({ review, isCenter, wrapStyle }) => (
+              <div
+                key={review.id}
+                className={isCenter ? 'rc-center-card' : 'rc-side-card'}
+                style={wrapStyle}
+                aria-hidden={!isCenter}
+              >
+                <ReviewCard review={review} elevated={isCenter} />
+              </div>
+            ))}
           </div>
 
           {/* Dots */}
           {showNav && (
-            <div className="flex justify-center mt-5 space-x-2">
+            <div className="flex justify-center gap-2 mt-5">
               {REVIEWS.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className="group flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="flex items-center p-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-full"
                   aria-label={`Go to review ${index + 1}`}
                   aria-current={index === currentIndex ? 'true' : undefined}
                   type="button"
                 >
                   <span
-                    className={`h-2.5 rounded-full transition-all duration-200 ${
-                      index === currentIndex
-                        ? 'w-6 bg-blue-600'
-                        : 'w-2.5 bg-gray-300 group-hover:bg-gray-400'
+                    className={`block h-2 rounded-full transition-all duration-200 ${
+                      index === currentIndex ? 'w-[22px] bg-blue-600' : 'w-2 bg-gray-300'
                     }`}
                   />
                 </button>
@@ -264,23 +319,38 @@ const Testimonials: React.FC = () => {
             </div>
           )}
 
-          {/* Auto-scroll indicator (hide if reduced motion) */}
+          {/* Auto-scroll progress bar (hidden for reduced motion) */}
           {!prefersReducedMotion && showNav && (
-            <div className="flex justify-center mt-3">
-              <div className="flex items-center text-xs text-gray-500">
-                <div
-                  className={`w-2 h-2 rounded-full mr-2 ${
-                    isAutoScrolling ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
-                  }`}
-                />
-                {isAutoScrolling ? 'Auto-scrolling' : 'Paused'}
+            <>
+              <div className="max-w-[220px] mx-auto mt-3.5 h-[3px] rounded-full bg-gray-200 overflow-hidden">
+                {isAutoScrolling && (
+                  <div
+                    key={`${currentIndex}-${cycleId}`}
+                    className="h-full rounded-full bg-blue-600"
+                    style={{
+                      width: '0%',
+                      animation: `rc-fill ${AUTOSCROLL_MS}ms linear forwards`,
+                    }}
+                  />
+                )}
               </div>
-            </div>
+
+              <div className="flex justify-center mt-2.5">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <span
+                    className={`w-[7px] h-[7px] rounded-full ${
+                      isAutoScrolling ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                    }`}
+                  />
+                  {isAutoScrolling ? 'Auto-scrolling' : 'Paused'}
+                </div>
+              </div>
+            </>
           )}
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-9 md:mt-10">
+        <div className="text-center mt-11">
           <p className="text-gray-700 mb-4 text-sm md:text-base">
             Ready to join our satisfied customers?
           </p>
@@ -293,10 +363,11 @@ const Testimonials: React.FC = () => {
                 navigate('/contact');
               }
             }}
-            className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             type="button"
           >
             Get Your Free Quote
+            <ArrowRight size={18} />
           </button>
         </div>
       </div>

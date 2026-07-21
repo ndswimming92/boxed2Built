@@ -20,6 +20,18 @@
   animation: fadeIn 0.6s ease-out;
 }
 
+/* Reviews carousel — auto-scroll progress fill */
+@keyframes rc-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Reviews carousel — collapse the peeking side cards on small screens */
+@media (max-width: 720px) {
+  .rc-side-card { display: none !important; }
+  .rc-center-card { width: 92% !important; }
+}
+
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
