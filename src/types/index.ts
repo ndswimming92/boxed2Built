@@ -48,6 +48,10 @@ export interface Review {
   datePublished: string;
   source: string;
   googleReviewUrl?: string;
+  /** Author initials shown in the card avatar (e.g. "VG"). */
+  initials?: string;
+  /** Avatar color register — cycles through the brand tints. */
+  tint?: 'blue' | 'green' | 'emerald';
 }
 
 export interface FormInquiry {
