@@ -6,74 +6,46 @@ type HoursGivenBackCounterProps = {
   totalHoursSaved: number;
 };
 
-type FlipDigitProps = {
+type OdometerDigitProps = {
   target: number;
   shouldAnimate: boolean;
   delay: number;
+  prefersReducedMotion: boolean;
 };
 
-const STEP_MS = 185;
 const INITIAL_DELAY = 500;
+const STAGGER_MS = 170;
+// Each column holds three 0-9 loops; landing in the last loop keeps the
+// roll spinning past 20 digits before settling on the target.
+const DIGIT_LOOPS = 3;
+const COLUMN_DIGITS = Array.from({ length: DIGIT_LOOPS * 10 }, (_, i) => i % 10);
 
-const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) => {
-  const spanRef = useRef<HTMLSpanElement>(null);
-  const animatingRef = useRef(false);
-
-  useEffect(() => {
-    if (!shouldAnimate || animatingRef.current) return;
-    animatingRef.current = true;
-
-    const el = spanRef.current;
-    if (!el) return;
-
-    const totalSteps = target === 0 ? 10 : target;
-    let step = 0;
-    let digit = 0;
-    let cancelled = false;
-
-    const tick = () => {
-      if (cancelled) return;
-
-      // Slide current digit out (up)
-      el.classList.add('rolling-out');
-
-      setTimeout(() => {
-        if (cancelled) return;
-
-        // Update the digit text while hidden
-        digit = (digit + 1) % 10;
-        el.textContent = String(digit);
-
-        // Position below (no transition) then slide in
-        el.classList.remove('rolling-out');
-        el.classList.add('rolling-in');
-
-        // Force browser to commit the rolling-in position before transitioning
-        el.getBoundingClientRect();
-
-        // Now remove rolling-in to transition to center
-        el.classList.remove('rolling-in');
-      }, 100);
-
-      step++;
-      if (step < totalSteps) {
-        setTimeout(tick, STEP_MS);
-      }
-    };
-
-    const startTimeout = setTimeout(tick, delay);
-    return () => {
-      cancelled = true;
-      clearTimeout(startTimeout);
-    };
-  }, [shouldAnimate, target, delay]);
+const OdometerDigit: React.FC<OdometerDigitProps> = ({
+  target,
+  shouldAnimate,
+  delay,
+  prefersReducedMotion,
+}) => {
+  const settled = shouldAnimate || prefersReducedMotion;
+  const restingCell = (DIGIT_LOOPS - 1) * 10 + target;
+  const offsetPercent = (restingCell / COLUMN_DIGITS.length) * 100;
 
   return (
-    <div className="flip-tile">
-      <div className="flip-tile-inner">
-        <span ref={spanRef}>0</span>
+    <div className="odo-tile">
+      <div
+        className={`odo-column${settled && !prefersReducedMotion ? ' odo-animate' : ''}`}
+        style={{
+          transform: settled ? `translateY(-${offsetPercent}%)` : 'translateY(0)',
+          transitionDelay: prefersReducedMotion ? undefined : `${delay}ms`,
+        }}
+      >
+        {COLUMN_DIGITS.map((digit, i) => (
+          <div key={i} className="odo-cell">
+            {digit}
+          </div>
+        ))}
       </div>
-      <div className="flip-tile-seam" />
+      <div className="odo-seam" />
     </div>
   );
 };
@@ -81,10 +53,23 @@ const FlipDigit: React.FC<FlipDigitProps> = ({ target, shouldAnimate, delay }) =
 const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHoursSaved }) => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const hasTriggeredRef = useRef(false);
 
   const rawHours = Number.isFinite(totalHoursSaved) ? Math.max(0, totalHoursSaved) : 0;
   const isVisible = rawHours > 0;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener('change', updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updatePreference);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isVisible || hasTriggeredRef.current) return;
@@ -143,13 +128,13 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
             </p>
           </div>
 
-          <div className="flex items-center justify-center gap-2 md:gap-3" aria-hidden="true">
+          <div className="flex items-center justify-center gap-2 md:gap-3.5 flex-wrap" aria-hidden="true">
             {chars.map((char, i) => {
               if (char === '.') {
                 return (
-                  <span key={`dot-${i}`} className="flip-dot">
-                    .
-                  </span>
+                  <div key={`dot-${i}`} className="odo-dot-col">
+                    <div className="odo-dot" />
+                  </div>
                 );
               }
 
@@ -158,15 +143,16 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
               digitIndex++;
 
               return (
-                <FlipDigit
+                <OdometerDigit
                   key={`digit-${i}`}
                   target={targetDigit}
                   shouldAnimate={shouldAnimate}
-                  delay={INITIAL_DELAY + currentDigitIndex * 140}
+                  delay={INITIAL_DELAY + currentDigitIndex * STAGGER_MS}
+                  prefersReducedMotion={prefersReducedMotion}
                 />
               );
             })}
-            <span className="ml-2 md:ml-4 text-2xl md:text-4xl font-semibold text-gray-400 self-center">
+            <span className="ml-2 md:ml-2.5 text-2xl md:text-[40px] font-semibold text-gray-400 self-center">
               hrs
             </span>
           </div>
