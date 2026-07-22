@@ -10,13 +10,13 @@ import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
 import ImageLightbox, { ClickableImage, LightboxImage } from '../components/ui/ImageLightbox';
 import { trackEvent } from '../utils/analytics';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const ServicesPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
 
   // Get high-value FAQ questions for services page
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];

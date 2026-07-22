@@ -8,20 +8,19 @@ import { ArrowRight, Phone, Mail } from 'lucide-react';
 import Button from '../components/ui/Button';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT, getFaqContentWithPhone } from '../constants/localSEO';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const FAQPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
 
   const phone = formatPhoneForSchema(businessData?.info?.phone);
   const phoneDisplay = formatPhoneForDisplay(phone);
   const faqContent = getFaqContentWithPhone({ phone, phoneDisplay });
   const [openItem, setOpenItem] = useState<string | null>(null);
-
 
   const handleEmailClick = () => {
     trackEvent('email_click', 'faq_page_cta', {

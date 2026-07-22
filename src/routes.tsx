@@ -3,6 +3,9 @@ import { Navigate, Outlet } from 'react-router-dom';
 import type { RouteRecord } from 'vite-react-ssg';
 import { businessDataLoader } from './loaders/businessDataLoader';
 import AppShell from './components/AppShell';
+// Deliberately not lazy: the error page must render even when loading a
+// hashed chunk is exactly what failed.
+import RouteErrorPage from './components/RouteErrorPage';
 
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const ServicesPage = React.lazy(() => import('./pages/ServicesPage'));
@@ -83,6 +86,7 @@ export const routes: RouteRecord[] = [
   {
     path: '/',
     element: <AppShell><Outlet /></AppShell>,
+    errorElement: <RouteErrorPage />,
     children: [
       // Public pages with build-time data loading
       { index: true, Component: HomePage, loader: businessDataLoader },

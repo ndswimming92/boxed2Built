@@ -7,17 +7,17 @@ import ContactForm from '../components/ContactForm';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { formatPhoneForDisplay, formatPhoneForSchema } from '../utils/phoneFormatting';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 import {
   LOCAL_SEO_CONTENT,
   getLocalSeoContentWithPhone
 } from '../constants/localSEO';
 
 const ContactPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
 
   const phoneRaw = businessData?.info?.phone;
   const phoneMachine = formatPhoneForSchema(phoneRaw);
@@ -50,7 +50,6 @@ const ContactPage: React.FC = () => {
     });
     window.location.href = 'mailto:nicholas.davidson@boxed2built.com?subject=Contact%20-%20Contact%20Page&body=I%20would%20like%20to%20inquire%20about%20furniture%20assembly%20services.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Contact%20Page';
   };
-
 
   return (
     <>

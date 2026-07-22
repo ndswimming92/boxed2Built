@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Gift, ArrowRight } from 'lucide-react';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
@@ -19,14 +19,14 @@ import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
 import HoursGivenBackCounter from '../components/sections/HoursGivenBackCounter';
 import FormProgressRail from '../components/ui/FormProgressRail';
-import { CompleteBusinessData } from '../lib/supabase';
 import {
   LOCAL_SEO_CONTENT,
   FAQ_CONTENT
 } from '../constants/localSEO';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const HomePage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
   const [quoteProgress, setQuoteProgress] = useState(0);
 
   // Get high-value FAQ questions from Common Questions category plus a few popular ones
