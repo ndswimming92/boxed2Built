@@ -6,6 +6,7 @@ import QuickContactForm from '../QuickContactForm';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { calculateRatingStats } from '../../utils/ratingCalculations';
 
 const currentYear = new Date().getFullYear();
 
@@ -95,6 +96,18 @@ const formatTime = (time: string): string => {
   return `${displayHour}:${minutes} ${ampm}`;
 };
 
+// Avatar backgrounds cycle through the brand tints so adjacent bubbles read distinctly.
+const AVATAR_TINTS = ['bg-blue-700', 'bg-green-700', 'bg-amber-700'];
+
+const getInitials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join('')
+    .toUpperCase();
+
 // Prefer a consistent "tel:" format
 const toTelHref = (rawPhone: string) => {
   const digits = rawPhone.replace(/\D/g, '');
@@ -123,6 +136,15 @@ const Footer: React.FC = () => {
     return !platform.includes('email');
   });
   const businessHours = businessData?.businessHours || [];
+
+  // Real review data drives the review CTA card — no hardcoded counts.
+  const reviews = businessData?.reviews || [];
+  const reviewStats = calculateRatingStats(reviews);
+  const avatarReviews = reviews.slice(0, 3);
+  const overflowCount = reviews.length - avatarReviews.length;
+  const roundedRating = Math.round(reviewStats.averageRating);
+  const allFiveStar =
+    reviewStats.totalReviews > 0 && reviewStats.distribution[5] === reviewStats.totalReviews;
 
   const handleSocialClick = (platform: string) => {
     trackEvent('social_click', 'footer', {
@@ -327,32 +349,64 @@ const Footer: React.FC = () => {
           {/* Col 3: Review CTA + Quick Contact Form */}
           <div className="flex flex-col gap-5">
             <div className="bg-gray-800 border border-gray-700 rounded-xl px-5 py-[22px] flex flex-col items-center text-center gap-3.5">
-              {/* Stacked reviewer avatars */}
-              <div className="flex items-center" aria-hidden="true">
-                <span className="w-[34px] h-[34px] rounded-full bg-blue-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800">
-                  JM
-                </span>
-                <span className="w-[34px] h-[34px] rounded-full bg-green-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
-                  AR
-                </span>
-                <span className="w-[34px] h-[34px] rounded-full bg-amber-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
-                  TP
-                </span>
-                <span className="w-[34px] h-[34px] rounded-full bg-gray-700 text-gray-200 text-[11px] font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
-                  +117
-                </span>
-              </div>
+              {/* Stacked reviewer avatars — initials from actual customer reviews */}
+              {avatarReviews.length > 0 && (
+                <div className="flex items-center" aria-hidden="true">
+                  {avatarReviews.map((review, index) => (
+                    <span
+                      key={review.id}
+                      className={`w-[34px] h-[34px] rounded-full ${AVATAR_TINTS[index % AVATAR_TINTS.length]} text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800 ${index > 0 ? '-ml-2.5' : ''}`}
+                    >
+                      {getInitials(review.author_name)}
+                    </span>
+                  ))}
+                  {overflowCount > 0 && (
+                    <span className="w-[34px] h-[34px] rounded-full bg-gray-700 text-gray-200 text-[11px] font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
+                      +{overflowCount}
+                    </span>
+                  )}
+                </div>
+              )}
 
-              {/* Five-star rating */}
-              <div className="flex gap-[3px] text-yellow-400" aria-label="5 out of 5 stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={18} className="fill-yellow-400" aria-hidden="true" />
-                ))}
-              </div>
+              {/* Star rating from actual review average */}
+              {reviewStats.totalReviews > 0 && (
+                <div
+                  className="flex gap-[3px] text-yellow-400"
+                  aria-label={`${reviewStats.averageRating.toFixed(1)} out of 5 stars`}
+                >
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      className={i < roundedRating ? 'fill-yellow-400' : 'text-gray-600'}
+                      aria-hidden="true"
+                    />
+                  ))}
+                </div>
+              )}
 
               <p className="text-sm leading-snug text-gray-200">
-                <strong className="text-white">120+ five-star reviews</strong> from families across{' '}
-                {locality}. Your feedback keeps us top-rated — and helps neighbors find us faster.
+                {reviewStats.totalReviews > 0 ? (
+                  <>
+                    {allFiveStar ? (
+                      <strong className="text-white">
+                        {reviewStats.totalReviews} five-star{' '}
+                        {reviewStats.totalReviews === 1 ? 'review' : 'reviews'}
+                      </strong>
+                    ) : (
+                      <strong className="text-white">
+                        Rated {reviewStats.averageRating.toFixed(1)} out of 5
+                      </strong>
+                    )}{' '}
+                    from families across {locality}. Your feedback keeps us top-rated — and helps
+                    neighbors find us faster.
+                  </>
+                ) : (
+                  <>
+                    Happy with our service? Leave us a review — it helps local families across{' '}
+                    {locality} find us faster.
+                  </>
+                )}
               </p>
 
               <a
