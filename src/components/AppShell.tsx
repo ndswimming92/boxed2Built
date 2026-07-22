@@ -12,6 +12,7 @@ import { useManifestManager } from '../hooks/useManifestManager';
 import type { CompleteBusinessData } from '../lib/supabase';
 import { loadGoogleAnalytics } from '../utils/analyticsLoader';
 import PageLoader from './ui/PageLoader';
+import BoxLoader from './BoxLoader';
 import { Suspense } from 'react';
 
 type AnalyticsModule = typeof import('../utils/analytics');
@@ -223,10 +224,27 @@ export default function AppShell({ children }: { children: ReactNode }) {
     location.pathname.startsWith('/portal') ||
     location.pathname.startsWith('/pay');
 
+  // On the home page and QR redirect slugs the visible page already shows the
+  // branded 3D box loader. Those pages are React.lazy, so on a fresh full page
+  // load (e.g. arriving via a QR/redirect) the Suspense fallback flashes while
+  // the chunk hydrates. Using the same BoxLoader here keeps the box on screen
+  // the whole way through instead of swapping to a generic circle spinner.
+  const useBoxLoader =
+    !isAppRoute &&
+    (location.pathname === '/' || location.pathname.startsWith('/go/'));
+
   const content = (
     <div className="min-h-screen">
       <ClientOnlyBrowserComponents />
-      <Suspense fallback={<PageLoader message="Loading application..." />}>
+      <Suspense
+        fallback={
+          useBoxLoader ? (
+            <BoxLoader minDurationMs={999999} />
+          ) : (
+            <PageLoader message="Loading application..." />
+          )
+        }
+      >
         {children}
       </Suspense>
     </div>

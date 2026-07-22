@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getQRCodeBySlug, getActiveScheduleForQRCode } from '../services/qrCodeService';
 import { logScan } from '../services/qrScanService';
-import PageLoader from '../components/ui/PageLoader';
+import BoxLoader from '../components/BoxLoader';
 
 export default function QRRedirectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -64,5 +64,7 @@ export default function QRRedirectPage() {
     );
   }
 
-  return <PageLoader message="Redirecting..." />;
+  // Keep the branded box loader visible (no circle spinner) so arriving via a
+  // QR slug and the destination page it forwards to feel like one seamless load.
+  return <BoxLoader minDurationMs={999999} />;
 }
