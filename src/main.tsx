@@ -6,6 +6,9 @@ export const createRoot = ViteReactSSG(
   { routes },
   ({ isClient }) => {
     if (isClient) {
+      import('./utils/ssgLoaderGuard').then(({ primeStaticLoaderManifest }) => {
+        void primeStaticLoaderManifest();
+      });
       import('./utils/authHardening').then(({ enforceHttpsInBrowser }) => {
         enforceHttpsInBrowser();
       });

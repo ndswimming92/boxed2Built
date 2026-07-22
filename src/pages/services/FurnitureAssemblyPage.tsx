@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLoaderData } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, Clock, Shield, Trash2, Home, ArrowRight } from 'lucide-react';
 import EnhancedLocalBusinessSchema from '../../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../../components/seo/FAQSchema';
@@ -13,12 +13,12 @@ import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
+import { useBusinessLoaderData } from '../../hooks/useBusinessLoaderData';
 
 const FurnitureAssemblyPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
 
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];

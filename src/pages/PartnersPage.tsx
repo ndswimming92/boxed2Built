@@ -12,14 +12,14 @@ import {
   Clock,
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { formatPhoneForDisplay } from '../services/communicationService';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const PartnersPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || '+16154034538').replace(/^\+1/, ''));
 
   useEffect(() => {

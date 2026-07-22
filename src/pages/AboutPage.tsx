@@ -7,15 +7,13 @@ import { CheckCircle, Users, Clock, Award, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import OptimizedImage from '../components/ui/OptimizedImage';
 import ImageLightbox, { ClickableImage, LightboxImage } from '../components/ui/ImageLightbox';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const AboutPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
-
-
+  const businessData = useBusinessLoaderData();
 
   const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
 

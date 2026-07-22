@@ -11,7 +11,7 @@ import {
   CUSTOMER_REVIEWS
 } from '../constants/localSEO';
 
-function buildFallbackData(): CompleteBusinessData {
+export function buildFallbackData(): CompleteBusinessData {
   return {
     info: {
       id: 'fallback',

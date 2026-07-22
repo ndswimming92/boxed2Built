@@ -6,17 +6,15 @@ import MediaGallery from '../components/sections/MediaGallery';
 import { Camera, Video, CheckCircle, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
-import { useLoaderData } from 'react-router-dom';
+
 import { Head } from 'vite-react-ssg';
-import { CompleteBusinessData } from '../lib/supabase';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
+import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
 
 const GalleryPage: React.FC = () => {
-  const { businessData } = useLoaderData() as { businessData: CompleteBusinessData };
+  const businessData = useBusinessLoaderData();
   const businessId = businessData?.info?.id || '';
   const { items: galleryItems, loading, error } = usePublicGalleryItems(businessId);
-
-
 
   return (
     <>
