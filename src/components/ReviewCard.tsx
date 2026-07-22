@@ -1,5 +1,5 @@
 import React from 'react';
-import { Quote, BadgeCheck } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import StarRating from './ui/StarRating';
 import { Review } from '../types';
 import { trackEvent } from '../utils/analytics';
@@ -40,13 +40,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, elevated = false, class
         elevated ? 'shadow-xl' : 'shadow-sm'
       } ${className}`}
     >
-      {/* Faint watermark quote mark */}
-      <Quote
-        className="pointer-events-none absolute left-6 top-5 text-blue-600 opacity-[0.08]"
-        size={56}
-        aria-hidden="true"
-      />
-
       <div className="relative flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
