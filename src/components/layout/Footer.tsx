@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Mail, Phone, Instagram, Star, Youtube, Linkedin, Clock, MapPin, CreditCard } from 'lucide-react';
+import { Facebook, Mail, Phone, Instagram, Star, Youtube, Linkedin, Clock, MapPin, CreditCard, ArrowRight } from 'lucide-react';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import QuickContactForm from '../QuickContactForm';
@@ -8,6 +8,28 @@ import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
 const currentYear = new Date().getFullYear();
+
+// Google "G" logo mark, used on the footer review CTA button.
+const GoogleGIcon: React.FC = () => (
+  <svg width={18} height={18} viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+    <path
+      fill="#EA4335"
+      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+    />
+    <path
+      fill="#4285F4"
+      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+    />
+    <path
+      fill="#34A853"
+      d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+    />
+  </svg>
+);
 
 const serviceLinksSection = {
   title: 'Services',
@@ -304,20 +326,50 @@ const Footer: React.FC = () => {
 
           {/* Col 3: Review CTA + Quick Contact Form */}
           <div className="flex flex-col gap-5">
-            <div className="bg-gray-800 rounded-xl p-5 flex flex-col items-center text-center gap-3">
-              <Star size={22} className="text-yellow-400 fill-yellow-400" />
-              <p className="text-sm text-gray-200 leading-snug">
-                Happy with our service? Leave us a review — it helps local families find us faster.
+            <div className="bg-gray-800 border border-gray-700 rounded-xl px-5 py-[22px] flex flex-col items-center text-center gap-3.5">
+              {/* Stacked reviewer avatars */}
+              <div className="flex items-center" aria-hidden="true">
+                <span className="w-[34px] h-[34px] rounded-full bg-blue-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800">
+                  JM
+                </span>
+                <span className="w-[34px] h-[34px] rounded-full bg-green-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
+                  AR
+                </span>
+                <span className="w-[34px] h-[34px] rounded-full bg-amber-700 text-white text-xs font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
+                  TP
+                </span>
+                <span className="w-[34px] h-[34px] rounded-full bg-gray-700 text-gray-200 text-[11px] font-bold inline-flex items-center justify-center border-2 border-gray-800 -ml-2.5">
+                  +117
+                </span>
+              </div>
+
+              {/* Five-star rating */}
+              <div className="flex gap-[3px] text-yellow-400" aria-label="5 out of 5 stars">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={18} className="fill-yellow-400" aria-hidden="true" />
+                ))}
+              </div>
+
+              <p className="text-sm leading-snug text-gray-200">
+                <strong className="text-white">120+ five-star reviews</strong> from families across{' '}
+                {locality}. Your feedback keeps us top-rated — and helps neighbors find us faster.
               </p>
+
               <a
                 href={getGoogleReviewUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-semibold rounded-lg shadow transition text-sm w-full"
-                aria-label="Leave Boxed2Built a Google review"
+                className="group w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-white text-gray-800 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-50 hover:shadow-xl transition"
+                aria-label="Review Boxed2Built on Google"
                 onClick={handleReviewClick}
               >
-                Leave a Google Review
+                <GoogleGIcon />
+                Review us on Google
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
               </a>
             </div>
 
