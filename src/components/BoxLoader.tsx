@@ -20,7 +20,7 @@ const SPARKLES = [
 const BoxLoader: React.FC<BoxLoaderProps> = ({
   minDurationMs = 3000,
   showSparkles = true,
-  tagline = 'We assemble. You enjoy.',
+  tagline = 'We assemble. You enjoy!',
   onDone,
 }) => {
   const [done, setDone] = useState(false);
