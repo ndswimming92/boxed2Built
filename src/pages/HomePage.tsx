@@ -14,6 +14,7 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/layout/Footer';
 import Testimonials from '../components/sections/Testimonials';
 import ComparisonSection from '../components/sections/ComparisonSection';
+import WhyChooseSection from '../components/sections/WhyChooseSection';
 import Pricing from '../components/sections/Pricing';
 import ReferralProgram from '../components/sections/ReferralProgram';
 import HoursGivenBackCounter from '../components/sections/HoursGivenBackCounter';
@@ -104,6 +105,8 @@ const HomePage: React.FC = () => {
         </section>
 
         <HomeServices />
+
+        <WhyChooseSection />
 
         <HoursGivenBackCounter totalHoursSaved={Number(businessData.info.total_client_hours_saved) || 0} />
 
