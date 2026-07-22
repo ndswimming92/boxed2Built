@@ -66,6 +66,8 @@ const PortalAdoptionPage = React.lazy(() => import('./pages/admin/PortalAdoption
 const AdminDocumentsPage = React.lazy(() => import('./pages/admin/AdminDocumentsPage'));
 const BrandingPage = React.lazy(() => import('./pages/admin/BrandingPage'));
 const AdminGiftCardsPage = React.lazy(() => import('./pages/admin/GiftCardsPage'));
+const ApiKeysPage = React.lazy(() => import('./pages/admin/ApiKeysPage'));
+const ConnectionsPage = React.lazy(() => import('./pages/admin/ConnectionsPage'));
 
 const PortalLoginPage = React.lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = React.lazy(() => import('./pages/portal/DashboardPage'));
@@ -171,6 +173,8 @@ export const routes: RouteRecord[] = [
           { path: 'branding', Component: BrandingPage },
           { path: 'gift-cards', Component: AdminGiftCardsPage },
           { path: 'privacy-requests', Component: PrivacyRequestsPage },
+          { path: 'api-keys', Component: ApiKeysPage },
+          { path: 'connections', Component: ConnectionsPage },
         ],
       },
     ],
