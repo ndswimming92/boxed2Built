@@ -40,15 +40,23 @@ function buildCaption(title: string, description?: string | null): string {
   return caption.slice(0, MAX_CAPTION_LENGTH);
 }
 
-async function postToFacebook(tokens: FacebookTokens, imageUrl: string, caption: string): Promise<PlatformResult> {
+async function postToFacebook(
+  tokens: FacebookTokens,
+  imageUrl: string,
+  caption: string,
+  altText?: string | null
+): Promise<PlatformResult> {
   try {
+    const params: Record<string, string> = {
+      url: imageUrl,
+      caption,
+      access_token: tokens.page_access_token,
+    };
+    if (altText) params.alt_text_custom = altText;
+
     const res = await fetch(`${GRAPH_URL}/${tokens.page_id}/photos`, {
       method: 'POST',
-      body: new URLSearchParams({
-        url: imageUrl,
-        caption,
-        access_token: tokens.page_access_token,
-      }),
+      body: new URLSearchParams(params),
     });
     const body = await res.json();
     if (!res.ok) throw new Error(body?.error?.message || 'Facebook rejected the post');
@@ -58,18 +66,26 @@ async function postToFacebook(tokens: FacebookTokens, imageUrl: string, caption:
   }
 }
 
-async function postToInstagram(tokens: FacebookTokens, imageUrl: string, caption: string): Promise<PlatformResult> {
+async function postToInstagram(
+  tokens: FacebookTokens,
+  imageUrl: string,
+  caption: string,
+  altText?: string | null
+): Promise<PlatformResult> {
   if (!tokens.ig_user_id) {
     return { success: false, error: 'No Instagram Business account is linked to the connected Facebook Page.' };
   }
   try {
+    const containerParams: Record<string, string> = {
+      image_url: imageUrl,
+      caption,
+      access_token: tokens.page_access_token,
+    };
+    if (altText) containerParams.alt_text = altText;
+
     const createRes = await fetch(`${GRAPH_URL}/${tokens.ig_user_id}/media`, {
       method: 'POST',
-      body: new URLSearchParams({
-        image_url: imageUrl,
-        caption,
-        access_token: tokens.page_access_token,
-      }),
+      body: new URLSearchParams(containerParams),
     });
     const createBody = await createRes.json();
     if (!createRes.ok) throw new Error(createBody?.error?.message || 'Instagram rejected the media container');
@@ -120,7 +136,7 @@ Deno.serve(async (req) => {
 
     const { data: item, error: itemErr } = await admin
       .from('gallery_items')
-      .select('id, type, src, title, description, eligible_for_social')
+      .select('id, type, src, title, description, alt, eligible_for_social')
       .eq('id', galleryItemId)
       .maybeSingle();
     if (itemErr || !item) return json({ error: 'Gallery item not found' }, 404);
@@ -153,8 +169,8 @@ Deno.serve(async (req) => {
 
     const caption = buildCaption(item.title, item.description);
     const [facebookResult, instagramResult] = await Promise.all([
-      postToFacebook(tokens, item.src, caption),
-      postToInstagram(tokens, item.src, caption),
+      postToFacebook(tokens, item.src, caption, item.alt),
+      postToInstagram(tokens, item.src, caption, item.alt),
     ]);
 
     await admin

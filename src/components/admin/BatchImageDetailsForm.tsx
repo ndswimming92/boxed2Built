@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Save, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Save, AlertCircle, Sparkles } from 'lucide-react';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { GalleryService, CreateGalleryItemInput } from '../../services/galleryService';
 import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags } from '../../utils/galleryPurpose';
+import { analyzeGalleryImage } from '../../services/galleryAIService';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -52,6 +53,7 @@ export default function BatchImageDetailsForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
 
   const [commonValues, setCommonValues] = useState({
     category: 'completed-work' as const,
@@ -66,6 +68,30 @@ export default function BatchImageDetailsForm({
         i === index ? { ...detail, [field]: value } : detail
       )
     );
+  };
+
+  const handleAnalyze = async (index: number) => {
+    try {
+      setAnalyzingIndex(index);
+      setError(null);
+
+      const detail = imageDetails[index];
+      const result = await analyzeGalleryImage(detail.optimizedImage.file, {
+        location: detail.location,
+        category: detail.category,
+      });
+
+      setImageDetails((prev) =>
+        prev.map((d, i) =>
+          i === index ? { ...d, title: result.title, description: result.description, alt: result.alt } : d
+        )
+      );
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      setError(err instanceof Error ? err.message : 'AI analysis failed');
+    } finally {
+      setAnalyzingIndex(null);
+    }
   };
 
   const applyCommonValues = () => {
@@ -264,6 +290,25 @@ export default function BatchImageDetailsForm({
 
                 {expandedIndex === index && (
                   <div className="px-4 pb-4 border-t border-slate-200 bg-slate-50">
+                    <button
+                      type="button"
+                      onClick={() => handleAnalyze(index)}
+                      disabled={analyzingIndex !== null || saving}
+                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-300 text-amber-800 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {analyzingIndex === index ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={16} />
+                          Analyze with AI
+                        </>
+                      )}
+                    </button>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <FormField label="Title *" required>
                         <input name="title"
