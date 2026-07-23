@@ -153,7 +153,7 @@ same pattern.
   `<SUPABASE_URL>/functions/v1/facebook-oauth-callback` → note the App ID and
   App Secret. **App Review is not required for the business's own use**: while
   the app is in Development Mode, its own admins/testers can grant the full
-  `pages_manage_posts` / `instagram_content_publish` permissions to themselves
+  `pages_manage_posts` / `instagram_content_publishing` permissions to themselves
   without waiting on Meta's review — that review is only required to let
   *other* people's accounts use the app. Requires an Instagram **Business or
   Creator** account already linked to the Facebook Page in Meta Business Suite.
