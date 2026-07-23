@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Save, AlertCircle } from 'lucide-react';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { GalleryService, CreateGalleryItemInput } from '../../services/galleryService';
+import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags } from '../../utils/galleryPurpose';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -14,6 +15,7 @@ interface ImageDetail {
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date: string;
   location: string;
+  purpose: GalleryPurpose;
   focusX: number;
   focusY: number;
 }
@@ -40,6 +42,7 @@ export default function BatchImageDetailsForm({
       category: 'completed-work' as const,
       date: new Date().toISOString().split('T')[0],
       location: 'Spring Hill, TN',
+      purpose: 'both' as GalleryPurpose,
       focusX: 50,
       focusY: 50,
     }))
@@ -54,6 +57,7 @@ export default function BatchImageDetailsForm({
     category: 'completed-work' as const,
     date: new Date().toISOString().split('T')[0],
     location: 'Spring Hill, TN',
+    purpose: 'both' as GalleryPurpose,
   });
 
   const updateImageDetail = (index: number, field: keyof ImageDetail, value: string) => {
@@ -71,6 +75,7 @@ export default function BatchImageDetailsForm({
         category: commonValues.category,
         date: commonValues.date,
         location: commonValues.location,
+        purpose: commonValues.purpose,
       }))
     );
   };
@@ -111,6 +116,7 @@ export default function BatchImageDetailsForm({
           is_active: true,
           focus_x: detail.focusX,
           focus_y: detail.focusY,
+          ...purposeToFlags(detail.purpose),
         });
       }
 
@@ -168,7 +174,7 @@ export default function BatchImageDetailsForm({
             <h3 className="text-sm font-semibold text-slate-900 mb-3">
               Apply Common Values to All Images
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
               <FormField label="Category">
                 <select name="category"
                   value={commonValues.category}
@@ -206,6 +212,20 @@ export default function BatchImageDetailsForm({
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Spring Hill, TN"
                 />
+              </FormField>
+
+              <FormField label="Where do these go?">
+                <select name="purpose"
+                  value={commonValues.purpose}
+                  onChange={(e) =>
+                    setCommonValues((prev) => ({ ...prev, purpose: e.target.value as GalleryPurpose }))
+                  }
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  {GALLERY_PURPOSE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
               </FormField>
             </div>
             <Button onClick={applyCommonValues} variant="outline" size="sm">
@@ -307,6 +327,18 @@ export default function BatchImageDetailsForm({
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="Spring Hill, TN"
                         />
+                      </FormField>
+
+                      <FormField label="Where does this go?">
+                        <select name="purpose"
+                          value={detail.purpose}
+                          onChange={(e) => updateImageDetail(index, 'purpose', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                          {GALLERY_PURPOSE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
                       </FormField>
 
                     </div>

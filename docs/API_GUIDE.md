@@ -281,6 +281,30 @@ gallery item has a **Post to Social** button (Admin → Gallery):
 4. Only `type: 'image'` items can be posted; video publishing to these APIs
    needs a different, async upload flow and isn't supported yet.
 
+### Gallery item purpose (website / social / both)
+
+Every image gallery item carries two independent booleans —
+`show_on_website` and `eligible_for_social` — set via a single "Where does
+this go?" selector wherever items are created or edited (single-item add/edit,
+and both the common-values and per-image sections of the batch upload form):
+
+| Selector option | `show_on_website` | `eligible_for_social` |
+| --- | --- | --- |
+| Website Gallery + Social Media | `true` | `true` |
+| Website Gallery Only | `true` | `false` |
+| Social Media Only | `false` | `true` |
+
+- `show_on_website = false` is enforced at the database level: the anon
+  SELECT policy on `gallery_items` requires it, so social-only items are
+  excluded from the public `/gallery` page regardless of any client-side
+  filtering.
+- `eligible_for_social = false` hides the **Post to Social** button for that
+  item in the admin UI, and `publish-gallery-photo` independently rejects the
+  request server-side if called anyway.
+- Both default to `true` for backward compatibility — every item created
+  before this feature behaves exactly as it did (shown on the website, and
+  postable to social).
+
 ### Uploading a video to YouTube
 
 Admin → Gallery has an **Upload to YouTube** button (separate from Post to
