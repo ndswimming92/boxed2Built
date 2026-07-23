@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Plug,
   Instagram,
@@ -14,8 +15,13 @@ import {
   IntegrationConnection,
   listConnections,
   disconnectConnection,
+  startGoogleBusinessConnect,
 } from '../../services/apiPlatformService';
 import { logAction } from '../../services/auditLogService';
+
+// Providers with a working Connect flow. Others stay disabled until their
+// OAuth callback is built and a developer app is registered with that platform.
+const CONNECTABLE_PROVIDERS = new Set(['google_business']);
 
 interface ProviderInfo {
   id: string;
@@ -66,11 +72,39 @@ const statusStyles: Record<string, string> = {
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const connected = searchParams.get('connected');
+    const connectionError = searchParams.get('connection_error');
+    if (connected) {
+      setMessage({ type: 'success', text: `${connected.replace('_', ' ')} connected successfully.` });
+      setSearchParams({}, { replace: true });
+    } else if (connectionError) {
+      setMessage({ type: 'error', text: connectionError });
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleConnect = async (providerId: string) => {
+    if (providerId !== 'google_business') return;
+    setConnecting(providerId);
+    try {
+      const url = await startGoogleBusinessConnect();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error starting Google connection:', error);
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Failed to start connection.' });
+      setConnecting(null);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -137,9 +171,12 @@ export default function ConnectionsPage() {
           <p className="font-medium mb-1">Provider setup required before connecting</p>
           <p>
             Each platform requires a registered developer app (with its own approval process) before accounts can be
-            linked here. The connection plumbing is ready — see the "Outbound Connections" section of{' '}
-            <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup steps. Once a
-            provider app is registered, its Connect button activates.
+            linked here. Google Business Profile's Connect button is live once its credentials are configured; the
+            others activate as their OAuth flows are built. See the "Outbound Connections" section of{' '}
+            <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup steps. If
+            Google's Business Profile API access is still pending approval, the connection will show as connected
+            with a note that account details aren't available yet — that resolves automatically once Google approves
+            access.
           </p>
         </div>
       </div>
@@ -148,6 +185,7 @@ export default function ConnectionsPage() {
         {PROVIDERS.map((provider) => {
           const Icon = provider.icon;
           const active = activeConnectionsFor(provider.id);
+          const isHealthy = active.some((c) => c.status === 'connected');
           return (
             <div key={provider.id} className="bg-white rounded-xl border border-slate-200 p-5">
               <div className="flex items-start justify-between mb-3">
@@ -166,13 +204,23 @@ export default function ConnectionsPage() {
                     )}
                   </div>
                 </div>
-                <button
-                  disabled
-                  className="px-3 py-1.5 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed"
-                  title="Requires provider app registration first — see docs/API_GUIDE.md"
-                >
-                  Connect
-                </button>
+                {CONNECTABLE_PROVIDERS.has(provider.id) ? (
+                  <button
+                    onClick={() => handleConnect(provider.id)}
+                    disabled={connecting === provider.id || isHealthy}
+                    className="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {connecting === provider.id ? 'Connecting…' : isHealthy ? 'Connected' : active.length > 0 ? 'Reconnect' : 'Connect'}
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="px-3 py-1.5 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed"
+                    title="Requires provider app registration first — see docs/API_GUIDE.md"
+                  >
+                    Connect
+                  </button>
+                )}
               </div>
               <p className="text-sm text-slate-600">{provider.description}</p>
             </div>

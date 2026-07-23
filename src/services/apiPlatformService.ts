@@ -157,6 +157,23 @@ export async function listConnections(): Promise<IntegrationConnection[]> {
   return (data as IntegrationConnection[]) ?? [];
 }
 
+export async function startGoogleBusinessConnect(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/google-business-oauth-start`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to start Google connection');
+  return body.url as string;
+}
+
 export async function disconnectConnection(id: string): Promise<void> {
   const { error } = await supabase
     .from('integration_connections')
