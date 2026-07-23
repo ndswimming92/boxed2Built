@@ -35,8 +35,12 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function buildCaption(title: string, description?: string | null): string {
-  const caption = description ? `${title}\n\n${description}` : title;
+function buildCaption(title: string, description?: string | null, hashtags?: string[] | null): string {
+  let caption = description ? `${title}\n\n${description}` : title;
+  if (hashtags && hashtags.length > 0) {
+    const tagLine = hashtags.map((tag) => (tag.startsWith('#') ? tag : `#${tag}`)).join(' ');
+    caption += `\n\n${tagLine}`;
+  }
   return caption.slice(0, MAX_CAPTION_LENGTH);
 }
 
@@ -136,7 +140,7 @@ Deno.serve(async (req) => {
 
     const { data: item, error: itemErr } = await admin
       .from('gallery_items')
-      .select('id, type, src, title, description, alt, eligible_for_social')
+      .select('id, type, src, title, description, alt, hashtags, eligible_for_social')
       .eq('id', galleryItemId)
       .maybeSingle();
     if (itemErr || !item) return json({ error: 'Gallery item not found' }, 404);
@@ -167,7 +171,7 @@ Deno.serve(async (req) => {
     }
     const tokens = JSON.parse(secretJson) as FacebookTokens;
 
-    const caption = buildCaption(item.title, item.description);
+    const caption = buildCaption(item.title, item.description, item.hashtags);
     const [facebookResult, instagramResult] = await Promise.all([
       postToFacebook(tokens, item.src, caption, item.alt),
       postToInstagram(tokens, item.src, caption, item.alt),

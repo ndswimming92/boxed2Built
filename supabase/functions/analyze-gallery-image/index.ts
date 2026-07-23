@@ -93,6 +93,12 @@ sometimes a product link to look up. Write an SEO-friendly gallery entry:
   city — never keyword-stuff. Stay true to the photo.
 - alt: max 125 characters, one plain sentence describing what is visible (item
   type + setting) for accessibility and SEO. Do not begin with "image of".
+- hashtags: 5-8 relevant hashtags for posting this photo to Facebook and
+  Instagram, each starting with "#" and using PascalCase for multi-word tags
+  (e.g. "#FurnitureAssembly"). Mix: the specific item/brand if identifiable,
+  the service type (furniture assembly, TV mounting, IKEA assembly, nursery
+  setup, patio furniture, etc.), and the city. Avoid generic filler tags and
+  never repeat the same concept twice.
 
 Let CATEGORY set the framing: "Completed Work" = the finished result;
 "Before and After" = the transformation; "Process" = assembly in progress;
@@ -102,7 +108,7 @@ Describe only what you can see. If a product link is provided, use verified
 brand/product details from the lookup, but never invent specs.
 
 Respond with ONLY valid JSON, no markdown or backticks:
-{"title": "...", "description": "...", "alt": "..."}`,
+{"title": "...", "description": "...", "alt": "...", "hashtags": ["...", "..."]}`,
       messages: [{ role: "user", content: userContent }],
     };
 
