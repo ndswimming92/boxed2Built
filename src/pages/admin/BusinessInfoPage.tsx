@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, BusinessInfo, BusinessAddress } from '../../lib/supabase';
 import { Save, AlertCircle, CheckCircle, Building2, MapPin } from 'lucide-react';
+import { syncGoogleBusinessProfile } from '../../services/googleBusinessSyncService';
+import GoogleSyncNote from '../../components/admin/GoogleSyncNote';
 
 export default function BusinessInfoPage() {
   const [loading, setLoading] = useState(true);
@@ -110,8 +112,16 @@ export default function BusinessInfoPage() {
         if (insertAddrError) throw insertAddrError;
       }
 
-      setMessage({ type: 'success', text: 'Business information saved successfully!' });
-      setTimeout(() => setMessage(null), 3000);
+      const googleResult = await syncGoogleBusinessProfile().catch((err) => ({
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to sync to Google.',
+      }));
+      const googleNote = googleResult.success
+        ? ' Google Business Profile updated.'
+        : ` Google Business Profile sync: ${googleResult.error ?? 'failed'}.`;
+
+      setMessage({ type: 'success', text: `Business information saved successfully!${googleNote}` });
+      setTimeout(() => setMessage(null), 8000);
     } catch (error) {
       console.error('Error saving:', error);
       setMessage({ type: 'error', text: 'Failed to save business information' });
@@ -181,6 +191,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
 
             <div>
@@ -193,6 +204,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setBusinessInfo({ ...businessInfo, alternate_name: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
 
@@ -207,6 +219,7 @@ export default function BusinessInfoPage() {
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               required
             />
+            <GoogleSyncNote synced />
           </div>
 
           <div>
@@ -219,6 +232,7 @@ export default function BusinessInfoPage() {
               onChange={(e) => setBusinessInfo({ ...businessInfo, slogan: e.target.value })}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
+            <GoogleSyncNote synced={false} />
           </div>
 
 
@@ -234,6 +248,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
 
             <div>
@@ -247,6 +262,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
 
@@ -262,6 +278,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
 
             <div>
@@ -275,6 +292,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 placeholder="2023"
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
 
@@ -289,6 +307,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setBusinessInfo({ ...businessInfo, founder_name: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
 
             <div>
@@ -302,6 +321,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 placeholder="$$"
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
 
@@ -316,6 +336,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setBusinessInfo({ ...businessInfo, logo_url: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
 
             <div>
@@ -328,6 +349,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setBusinessInfo({ ...businessInfo, image_url: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
         </div>
@@ -352,6 +374,7 @@ export default function BusinessInfoPage() {
               onChange={(e) => setAddress({ ...address, street_address: e.target.value })}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
+            <GoogleSyncNote synced />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -366,6 +389,7 @@ export default function BusinessInfoPage() {
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
 
             <div>
@@ -380,6 +404,7 @@ export default function BusinessInfoPage() {
                 placeholder="TN"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
           </div>
 
@@ -394,6 +419,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setAddress({ ...address, postal_code: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced />
             </div>
 
             <div>
@@ -408,6 +434,7 @@ export default function BusinessInfoPage() {
                 placeholder="US"
                 required
               />
+              <GoogleSyncNote synced />
             </div>
           </div>
 
@@ -423,6 +450,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setAddress({ ...address, latitude: e.target.value ? parseFloat(e.target.value) : null })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
 
             <div>
@@ -436,6 +464,7 @@ export default function BusinessInfoPage() {
                 onChange={(e) => setAddress({ ...address, longitude: e.target.value ? parseFloat(e.target.value) : null })}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <GoogleSyncNote synced={false} />
             </div>
           </div>
         </div>

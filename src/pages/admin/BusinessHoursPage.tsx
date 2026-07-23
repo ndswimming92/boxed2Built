@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, BusinessHours } from '../../lib/supabase';
-import { Save, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Save, Clock, AlertCircle, CheckCircle, Link2 } from 'lucide-react';
+import { syncGoogleBusinessProfile } from '../../services/googleBusinessSyncService';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -81,8 +82,16 @@ export default function BusinessHoursPage() {
             }]);
         }
       }
-      setMessage({ type: 'success', text: 'Business hours saved! Refresh your public site to see the changes.' });
-      setTimeout(() => setMessage(null), 5000);
+      const googleResult = await syncGoogleBusinessProfile().catch((err) => ({
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to sync to Google.',
+      }));
+      const googleNote = googleResult.success
+        ? ' Google Business Profile updated.'
+        : ` Google Business Profile sync: ${googleResult.error ?? 'failed'}.`;
+
+      setMessage({ type: 'success', text: `Business hours saved! Refresh your public site to see the changes.${googleNote}` });
+      setTimeout(() => setMessage(null), 8000);
       fetchData();
     } catch (error) {
       console.error('Error saving:', error);
@@ -126,6 +135,10 @@ export default function BusinessHoursPage() {
             <Clock className="w-5 h-5 text-emerald-600" />
             Weekly Schedule
           </h2>
+          <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+            <Link2 className="w-3 h-3 flex-shrink-0" />
+            These hours sync to Google Business Profile as a whole when you save.
+          </p>
         </div>
 
         <div className="p-6 space-y-4">

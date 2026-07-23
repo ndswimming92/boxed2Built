@@ -111,8 +111,9 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
 
 1. Apply the migrations `20260722120000_create_api_platform_system.sql`,
    `20260723120000_create_oauth_states_and_vault_helpers.sql`,
-   `20260724120000_add_gallery_social_publish_columns.sql`, and
-   `20260725120000_add_update_vault_secret_helper.sql`.
+   `20260724120000_add_gallery_social_publish_columns.sql`,
+   `20260725120000_add_update_vault_secret_helper.sql`, and
+   `20260726120000_add_external_resource_id_to_connections.sql`.
 2. Deploy the edge functions:
    ```bash
    supabase functions deploy manage-api-keys
@@ -123,14 +124,15 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
    supabase functions deploy facebook-oauth-callback --no-verify-jwt
    supabase functions deploy publish-gallery-photo
    supabase functions deploy youtube-upload-start
+   supabase functions deploy sync-google-business-profile
    ```
    `api-v1`, `google-business-oauth-callback`, and `facebook-oauth-callback`
    **must** be deployed with `--no-verify-jwt` (or `verify_jwt = false` in the
    dashboard): `api-v1` callers authenticate with API keys, and the two OAuth
    callbacks are hit directly by the provider's redirect with no Supabase
-   session at all. The `*-oauth-start` functions, `publish-gallery-photo`, and
-   `youtube-upload-start` keep JWT verification on — they're only called by
-   logged-in platform admins.
+   session at all. The `*-oauth-start` functions, `publish-gallery-photo`,
+   `youtube-upload-start`, and `sync-google-business-profile` keep JWT
+   verification on — they're only called by logged-in platform admins.
 3. Set the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and
    `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` edge function secrets (see
    "Outbound Connections" below) if not already configured.
@@ -200,6 +202,53 @@ carries an `expires_at` so `youtube-upload-start` knows when to transparently
 refresh the access token via the stored `refresh_token` before calling
 YouTube's API (Google access tokens expire hourly, unlike Facebook's
 long-lived Page tokens).
+
+### Keeping Business Info in sync with Google Business Profile
+
+Saving **Admin → Business Info** or **Admin → Business Hours** automatically
+pushes the change to Google (one-way: this site → Google, never the reverse —
+no conflict resolution needed). This is separate from the manual Post to
+Social pattern above; business facts (name, phone, hours) are low-risk to
+auto-sync, unlike creative content.
+
+1. The page's existing save calls `sync-google-business-profile`
+   (admin-JWT protected) right after its own save succeeds. Sync failure never
+   blocks or rolls back the local save — it's reported as a secondary note in
+   the same success banner (e.g. "Google Business Profile updated." or a
+   `sync_error`-derived message).
+2. The function refreshes the Google access token if stale (same pattern as
+   YouTube), then resolves the account's Business Profile **location**
+   resource name once via a locations-list call and caches it in
+   `integration_connections.external_resource_id` — every subsequent sync
+   reuses the cached id instead of re-resolving it.
+3. It `PATCH`es the location with a fixed `updateMask` covering exactly the
+   fields below, so nothing on Google is touched outside this list.
+4. `integration_connections` (`google_business` row)'s `sync_error` /
+   `last_synced_at` reflect the most recent sync attempt, superseding the
+   original connect-time "pending approval" note once a real sync succeeds or
+   fails with a new error.
+
+**Field mapping (1:1, no transformation beyond format conversion)** — every
+field on both admin pages carries a note stating whether it's in this list:
+
+| Site field | Google field |
+| --- | --- |
+| `business_info.name` | `title` |
+| `business_info.phone` | `phoneNumbers.primaryPhone` |
+| `business_info.website` | `websiteUri` |
+| `business_info.description` | `profile.description` |
+| `business_address.street_address` | `storefrontAddress.addressLines[0]` |
+| `business_address.address_locality` | `storefrontAddress.locality` |
+| `business_address.address_region` | `storefrontAddress.administrativeArea` |
+| `business_address.postal_code` | `storefrontAddress.postalCode` |
+| `business_address.address_country` | `storefrontAddress.regionCode` |
+| `business_hours` (all days) | `regularHours.periods` |
+
+Everything else on those two pages (alternate name, slogan, email, founded
+year, founder name, price range, logo/image URLs, latitude/longitude) has no
+corresponding Google Business Profile field via this API and stays local
+only — same as `service_areas`, which would need Google Places IDs (a
+separate integration) to map to Google's `serviceArea`, and isn't wired up.
 
 Facebook's callback additionally: exchanges the short-lived user token for a
 long-lived one, lists the Pages the admin manages via `/me/accounts` (using
