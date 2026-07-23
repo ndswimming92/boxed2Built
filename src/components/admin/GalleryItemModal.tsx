@@ -5,6 +5,7 @@ import type { GalleryItem } from '../../services/galleryService';
 import { optimizeImage, validateImageFile, snapshotFileToMemory, normalizeImageFile } from '../../utils/imageOptimizationUpload';
 import { analyzeGalleryImage, analyzeGalleryImageFromUrl } from '../../services/galleryAIService';
 import { SERVICE_AREAS } from '../../constants/localSEO';
+import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags, flagsToPurpose } from '../../utils/galleryPurpose';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -32,6 +33,10 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     focusX: item?.focus_x || 50,
     focusY: item?.focus_y || 50,
   });
+
+  const [purpose, setPurpose] = useState<GalleryPurpose>(
+    flagsToPurpose(item?.show_on_website ?? true, item?.eligible_for_social ?? true),
+  );
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(item?.src || '');
@@ -171,6 +176,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
         imageSrc = `https://youtu.be/${videoId}`;
       }
 
+      const purposeFlags = purposeToFlags(purpose);
+
       if (isEdit) {
         const updateData: UpdateGalleryItemInput = {
           title: formData.title,
@@ -183,6 +190,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           height,
           focus_x: formData.focusX,
           focus_y: formData.focusY,
+          ...purposeFlags,
         };
 
         if (type === 'image' && selectedFile) {
@@ -210,6 +218,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           is_active: true,
           focus_x: formData.focusX,
           focus_y: formData.focusY,
+          ...purposeFlags,
         };
 
         await GalleryService.createGalleryItem(createData);
@@ -420,6 +429,22 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
               </select>
             </FormField>
 
+            {type === 'image' && (
+              <FormField label="Where does this go?">
+                <select name="purpose"
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value as GalleryPurpose)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  {GALLERY_PURPOSE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  "Social Media Only" keeps this photo off your public gallery page.
+                </p>
+              </FormField>
+            )}
 
             {type === 'image' && previewUrl && (
               <FocusAreaSelector

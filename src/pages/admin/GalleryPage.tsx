@@ -364,6 +364,21 @@ export default function GalleryPage() {
                 <p className="text-xs text-slate-500 mb-1 capitalize">
                   {item.category.replace('-', ' ')}
                 </p>
+                {item.type === 'image' && (
+                  <span className={`inline-block mb-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                    !item.show_on_website
+                      ? 'bg-purple-100 text-purple-700'
+                      : !item.eligible_for_social
+                        ? 'bg-slate-100 text-slate-600'
+                        : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {!item.show_on_website
+                      ? 'Social Only'
+                      : !item.eligible_for_social
+                        ? 'Website Only'
+                        : 'Website + Social'}
+                  </span>
+                )}
                 {item.description && (
                   <p className="text-xs text-slate-600 mb-2 line-clamp-2">
                     {item.description.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
@@ -408,7 +423,7 @@ export default function GalleryPage() {
                   </p>
                 )}
 
-                {item.type === 'image' && (
+                {item.type === 'image' && item.eligible_for_social && (
                   <button
                     onClick={() => handlePostToSocial(item)}
                     disabled={publishingId === item.id}

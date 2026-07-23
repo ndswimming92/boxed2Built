@@ -19,6 +19,8 @@ export interface GalleryItem {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order: number;
   is_active: boolean;
+  show_on_website: boolean;
+  eligible_for_social: boolean;
   focus_x?: number;
   focus_y?: number;
   facebook_post_id?: string | null;
@@ -48,6 +50,8 @@ export interface CreateGalleryItemInput {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
+  show_on_website?: boolean;
+  eligible_for_social?: boolean;
   focus_x?: number;
   focus_y?: number;
 }
@@ -66,6 +70,8 @@ export interface UpdateGalleryItemInput {
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
+  show_on_website?: boolean;
+  eligible_for_social?: boolean;
   focus_x?: number;
   focus_y?: number;
 }
@@ -82,7 +88,7 @@ export class GalleryService {
         .order('display_order', { ascending: true });
 
       if (!includeInactive) {
-        query = query.eq('is_active', true);
+        query = query.eq('is_active', true).eq('show_on_website', true);
       }
 
       const { data, error } = await query;

@@ -120,12 +120,15 @@ Deno.serve(async (req) => {
 
     const { data: item, error: itemErr } = await admin
       .from('gallery_items')
-      .select('id, type, src, title, description')
+      .select('id, type, src, title, description, eligible_for_social')
       .eq('id', galleryItemId)
       .maybeSingle();
     if (itemErr || !item) return json({ error: 'Gallery item not found' }, 404);
     if (item.type !== 'image') {
       return json({ error: 'Only images can be posted to social right now.' }, 400);
+    }
+    if (!item.eligible_for_social) {
+      return json({ error: 'This item is marked website-gallery only and is not eligible for social posting.' }, 400);
     }
 
     const { data: connection, error: connErr } = await admin
