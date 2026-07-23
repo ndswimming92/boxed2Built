@@ -114,51 +114,67 @@ Deno.serve(async (req) => {
       syncError = 'Connected, but could not load account details yet — Google Business Profile API access may still be pending approval.';
     }
 
+    const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
     const vaultSecretName = `gbp_oauth_${crypto.randomUUID()}`;
     const { error: vaultErr } = await admin.rpc('store_vault_secret', {
       p_secret: JSON.stringify({
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token ?? null,
         token_type: tokens.token_type,
+        expires_at: tokenExpiresAt,
         obtained_at: new Date().toISOString(),
       }),
       p_name: vaultSecretName,
     });
     if (vaultErr) throw new Error(`Failed to securely store tokens: ${vaultErr.message}`);
 
-    const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+    const grantedScopes = tokens.scope ? tokens.scope.split(' ') : [];
+    const youtubeGranted = grantedScopes.includes('https://www.googleapis.com/auth/youtube.upload');
 
-    const { data: existing } = await admin
-      .from('integration_connections')
-      .select('id')
-      .eq('provider', PROVIDER)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const upsertConnection = async (provider: string, row: Record<string, unknown>) => {
+      const { data: existing } = await admin
+        .from('integration_connections')
+        .select('id')
+        .eq('provider', provider)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    const row = {
-      provider: PROVIDER,
+      if (existing) {
+        const { error: updateErr } = await admin
+          .from('integration_connections')
+          .update(row)
+          .eq('id', existing.id);
+        if (updateErr) throw new Error(updateErr.message);
+      } else {
+        const { error: insertErr } = await admin.from('integration_connections').insert({ provider, ...row });
+        if (insertErr) throw new Error(insertErr.message);
+      }
+    };
+
+    await upsertConnection(PROVIDER, {
       account_label: account?.accountName ?? null,
       account_identifier: account?.name ?? null,
-      status: 'connected' as const,
-      scopes: tokens.scope ? tokens.scope.split(' ') : [],
+      status: 'connected',
+      scopes: grantedScopes,
       vault_secret_name: vaultSecretName,
       token_expires_at: tokenExpiresAt,
       last_synced_at: account ? new Date().toISOString() : null,
       sync_error: syncError,
       created_by: stateRow.created_by,
-    };
+    });
 
-    if (existing) {
-      const { error: updateErr } = await admin
-        .from('integration_connections')
-        .update(row)
-        .eq('id', existing.id);
-      if (updateErr) throw new Error(updateErr.message);
-    } else {
-      const { error: insertErr } = await admin.from('integration_connections').insert(row);
-      if (insertErr) throw new Error(insertErr.message);
-    }
+    await upsertConnection('youtube', {
+      account_label: null,
+      account_identifier: null,
+      status: youtubeGranted ? 'connected' : 'error',
+      scopes: grantedScopes,
+      vault_secret_name: vaultSecretName,
+      token_expires_at: tokenExpiresAt,
+      last_synced_at: youtubeGranted ? new Date().toISOString() : null,
+      sync_error: youtubeGranted ? null : 'YouTube upload access was not granted during sign-in. Reconnect and make sure the consent screen includes YouTube.',
+      created_by: stateRow.created_by,
+    });
 
     return redirect({ connected: 'google_business' });
   } catch (error) {
