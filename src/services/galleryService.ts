@@ -21,6 +21,12 @@ export interface GalleryItem {
   is_active: boolean;
   focus_x?: number;
   focus_y?: number;
+  facebook_post_id?: string | null;
+  facebook_posted_at?: string | null;
+  facebook_post_error?: string | null;
+  instagram_post_id?: string | null;
+  instagram_posted_at?: string | null;
+  instagram_post_error?: string | null;
   created_at: string;
   updated_at: string;
 }

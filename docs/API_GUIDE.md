@@ -109,31 +109,37 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
 
 ## Deployment notes
 
-1. Apply the migrations `20260722120000_create_api_platform_system.sql` and
-   `20260723120000_create_oauth_states_and_vault_helpers.sql`.
+1. Apply the migrations `20260722120000_create_api_platform_system.sql`,
+   `20260723120000_create_oauth_states_and_vault_helpers.sql`, and
+   `20260724120000_add_gallery_social_publish_columns.sql`.
 2. Deploy the edge functions:
    ```bash
    supabase functions deploy manage-api-keys
    supabase functions deploy api-v1 --no-verify-jwt
    supabase functions deploy google-business-oauth-start
    supabase functions deploy google-business-oauth-callback --no-verify-jwt
+   supabase functions deploy facebook-oauth-start
+   supabase functions deploy facebook-oauth-callback --no-verify-jwt
+   supabase functions deploy publish-gallery-photo
    ```
-   `api-v1` and `google-business-oauth-callback` **must** be deployed with
-   `--no-verify-jwt` (or `verify_jwt = false` in the dashboard): `api-v1`
-   callers authenticate with API keys, and `google-business-oauth-callback` is
-   hit directly by Google's redirect with no Supabase session at all. Both
-   `manage-api-keys` and `google-business-oauth-start` keep JWT verification
-   on — they're only called by logged-in platform admins.
-3. Set the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` edge function secrets
-   (see "Outbound Connections" below) if not already configured.
+   `api-v1`, `google-business-oauth-callback`, and `facebook-oauth-callback`
+   **must** be deployed with `--no-verify-jwt` (or `verify_jwt = false` in the
+   dashboard): `api-v1` callers authenticate with API keys, and the two OAuth
+   callbacks are hit directly by the provider's redirect with no Supabase
+   session at all. The `*-oauth-start` functions and `publish-gallery-photo`
+   keep JWT verification on — they're only called by logged-in platform admins.
+3. Set the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and
+   `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` edge function secrets (see
+   "Outbound Connections" below) if not already configured.
 
 ---
 
 ## Outbound Connections
 
 The `integration_connections` table, the **Admin → Connections** page, and the
-Vault-based token storage convention are in place. Google Business Profile has
-a working Connect flow; other providers follow the same pattern.
+Vault-based token storage convention are in place. Google Business Profile and
+Facebook/Instagram both have working Connect flows; other providers follow the
+same pattern.
 
 ### Registering a provider's developer app
 
@@ -142,44 +148,83 @@ a working Connect flow; other providers follow the same pattern.
   redirect URI `<SUPABASE_URL>/functions/v1/google-business-oauth-callback` →
   separately submit the [Basic API Access request form](https://developers.google.com/my-business/content/basic-setup#request-access)
   (this approval is what's usually slow — often days to weeks).
-- *Facebook / Instagram*: Meta for Developers app + App Review for
-  `pages_manage_posts` / `instagram_content_publish` (allow several weeks).
+- *Facebook / Instagram*: Meta for Developers → create an app → add the
+  Facebook Login product → redirect URI
+  `<SUPABASE_URL>/functions/v1/facebook-oauth-callback` → note the App ID and
+  App Secret. **App Review is not required for the business's own use**: while
+  the app is in Development Mode, its own admins/testers can grant the full
+  `pages_manage_posts` / `instagram_content_publish` permissions to themselves
+  without waiting on Meta's review — that review is only required to let
+  *other* people's accounts use the app. Requires an Instagram **Business or
+  Creator** account already linked to the Facebook Page in Meta Business Suite.
 - *TikTok*: TikTok for Developers app + audit.
 
 Store each provider's client ID/secret as edge-function secrets
-(`supabase secrets set GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=...`).
+(`supabase secrets set GOOGLE_CLIENT_ID=... FACEBOOK_APP_ID=...`, etc.).
 
-### How the Google Business Profile connect flow works
+### How the connect flows work
 
-1. **Admin → Connections** page's Connect button calls
-   `google-business-oauth-start` (admin-JWT protected), which generates a
-   random `state`, stores it in `oauth_states` tied to the calling admin, and
-   returns Google's OAuth consent URL. The browser is redirected there.
-2. After the admin approves access, Google redirects to
-   `google-business-oauth-callback` with a `code` and the `state`.
+Both providers follow the same shape:
+
+1. **Admin → Connections** page's Connect button calls the provider's
+   `*-oauth-start` function (admin-JWT protected), which generates a random
+   `state`, stores it in `oauth_states` tied to the calling admin, and returns
+   the provider's OAuth consent URL. The browser is redirected there.
+2. After the admin approves access, the provider redirects to the matching
+   `*-oauth-callback` function with a `code` and the `state`.
 3. The callback validates and consumes the `state` row (single-use, 10-minute
    expiry — defends against CSRF), exchanges the code for tokens, and stores
-   them in Supabase Vault via the `store_vault_secret` SQL helper — never in an
-   ordinary table column.
-4. It best-effort fetches the account name from the Business Profile Account
-   Management API to label the connection. If Google's Basic API Access
-   approval (above) hasn't landed yet, this call fails harmlessly: the
-   connection is still marked `connected` (the OAuth handshake succeeded) with
-   a `sync_error` note explaining that account details are pending approval.
-   Nothing needs to be redone once approval clears — a future sync simply
-   starts working.
-5. The admin is redirected back to `/admin/connections` with a success or
+   them in Supabase Vault via `store_vault_secret` — never in an ordinary table
+   column.
+4. The admin is redirected back to `/admin/connections` with a success or
    error banner.
+
+Google Business Profile best-effort fetches the account name to label the
+connection; if Basic API Access hasn't been approved yet, this fails
+harmlessly and the connection shows `connected` with a `sync_error` noting
+that account details are pending — nothing needs to be redone once approval
+clears.
+
+Facebook's callback additionally: exchanges the short-lived user token for a
+long-lived one, lists the Pages the admin manages via `/me/accounts` (using
+the *first* Page returned), and reads that Page's linked
+`instagram_business_account`. One Facebook Login authorizes **both** the
+Facebook and Instagram `integration_connections` rows together, since
+Instagram publishing is done through the Page's access token — connecting
+either card on the Connections page kicks off the same flow. If no Instagram
+Business account is linked to the Page, the Facebook connection still
+succeeds; the Instagram row is marked `error` with a note to link one in Meta
+Business Suite and reconnect.
+
+### Publishing a gallery photo to Facebook/Instagram
+
+Auto-posting is intentionally **not** wired to gallery uploads — a bad or
+not-yet-ready photo could otherwise go public immediately. Instead, each image
+gallery item has a **Post to Social** button (Admin → Gallery):
+
+1. The button calls `publish-gallery-photo` (admin-JWT protected) with the
+   gallery item's id.
+2. The function loads the connected Facebook Page's token from Vault (via
+   `read_vault_secret`), builds a caption from the item's title + description,
+   and posts to Facebook (`POST /{page-id}/photos`) and Instagram (create a
+   media container via `POST /{ig-user-id}/media`, then
+   `POST /{ig-user-id}/media_publish`) **independently** — one platform failing
+   doesn't block the other.
+3. Results are written back onto the `gallery_items` row
+   (`facebook_post_id`/`facebook_posted_at`/`facebook_post_error` and the
+   Instagram equivalents) and returned to the UI for immediate feedback.
+4. Only `type: 'image'` items can be posted; video publishing to these APIs
+   needs a different, async upload flow and isn't supported yet.
 
 ### Extending to another provider
 
 1. Add the provider's OAuth start/callback edge functions following the
-   `google-business-oauth-*` pair as a template (same `oauth_states` table,
-   same `store_vault_secret` helper).
+   `google-business-oauth-*` or `facebook-oauth-*` pair as a template (same
+   `oauth_states` table, same `store_vault_secret`/`read_vault_secret` helpers).
 2. Add the provider to `CONNECTABLE_PROVIDERS` in
    `src/pages/admin/ConnectionsPage.tsx` and wire its Connect button to the new
-   start function, following `startGoogleBusinessConnect` in
-   `src/services/apiPlatformService.ts` as a template.
+   start function, following `startGoogleBusinessConnect` /
+   `startFacebookConnect` in `src/services/apiPlatformService.ts` as a template.
 3. **Add a sync function** (scheduled via Supabase cron) that refreshes tokens
    and pulls metrics into local tables — not yet built for any provider.
 
