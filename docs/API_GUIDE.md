@@ -110,8 +110,10 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
 ## Deployment notes
 
 1. Apply the migrations `20260722120000_create_api_platform_system.sql`,
-   `20260723120000_create_oauth_states_and_vault_helpers.sql`, and
-   `20260724120000_add_gallery_social_publish_columns.sql`.
+   `20260723120000_create_oauth_states_and_vault_helpers.sql`,
+   `20260724120000_add_gallery_social_publish_columns.sql`,
+   `20260725120000_add_update_vault_secret_helper.sql`, and
+   `20260726120000_add_external_resource_id_to_connections.sql`.
 2. Deploy the edge functions:
    ```bash
    supabase functions deploy manage-api-keys
@@ -121,13 +123,16 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
    supabase functions deploy facebook-oauth-start
    supabase functions deploy facebook-oauth-callback --no-verify-jwt
    supabase functions deploy publish-gallery-photo
+   supabase functions deploy youtube-upload-start
+   supabase functions deploy sync-google-business-profile
    ```
    `api-v1`, `google-business-oauth-callback`, and `facebook-oauth-callback`
    **must** be deployed with `--no-verify-jwt` (or `verify_jwt = false` in the
    dashboard): `api-v1` callers authenticate with API keys, and the two OAuth
    callbacks are hit directly by the provider's redirect with no Supabase
-   session at all. The `*-oauth-start` functions and `publish-gallery-photo`
-   keep JWT verification on — they're only called by logged-in platform admins.
+   session at all. The `*-oauth-start` functions, `publish-gallery-photo`,
+   `youtube-upload-start`, and `sync-google-business-profile` keep JWT
+   verification on — they're only called by logged-in platform admins.
 3. Set the `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and
    `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` edge function secrets (see
    "Outbound Connections" below) if not already configured.
@@ -137,17 +142,21 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
 ## Outbound Connections
 
 The `integration_connections` table, the **Admin → Connections** page, and the
-Vault-based token storage convention are in place. Google Business Profile and
-Facebook/Instagram both have working Connect flows; other providers follow the
-same pattern.
+Vault-based token storage convention are in place. Google Business Profile,
+YouTube, and Facebook/Instagram all have working Connect flows; other
+providers follow the same pattern.
 
 ### Registering a provider's developer app
 
-- *Google Business Profile*: Google Cloud Console → enable the Business
-  Profile APIs → OAuth consent screen → OAuth client ID (Web application) with
-  redirect URI `<SUPABASE_URL>/functions/v1/google-business-oauth-callback` →
-  separately submit the [Basic API Access request form](https://developers.google.com/my-business/content/basic-setup#request-access)
-  (this approval is what's usually slow — often days to weeks).
+- *Google Business Profile / YouTube*: Google Cloud Console → enable the
+  Business Profile APIs **and** the YouTube Data API v3 → OAuth consent screen
+  → add scope `https://www.googleapis.com/auth/youtube.upload` alongside
+  `business.manage` → OAuth client ID (Web application) with redirect URI
+  `<SUPABASE_URL>/functions/v1/google-business-oauth-callback` → separately
+  submit the [Basic API Access request form](https://developers.google.com/my-business/content/basic-setup#request-access)
+  for Business Profile (this approval is what's usually slow — often days to
+  weeks; YouTube uploads don't need this and work as soon as the scope is
+  granted, same Testing-mode + test-user story as Facebook below).
 - *Facebook / Instagram*: Meta for Developers → create an app → add the
   Facebook Login product → redirect URI
   `<SUPABASE_URL>/functions/v1/facebook-oauth-callback` → note the App ID and
@@ -185,6 +194,62 @@ harmlessly and the connection shows `connected` with a `sync_error` noting
 that account details are pending — nothing needs to be redone once approval
 clears.
 
+One Google login authorizes **both** the `google_business` and `youtube`
+`integration_connections` rows together (same OAuth grant, broadened scope),
+mirroring the Facebook/Instagram pairing below — connecting either card on the
+Connections page kicks off the same flow. The stored secret additionally
+carries an `expires_at` so `youtube-upload-start` knows when to transparently
+refresh the access token via the stored `refresh_token` before calling
+YouTube's API (Google access tokens expire hourly, unlike Facebook's
+long-lived Page tokens).
+
+### Keeping Business Info in sync with Google Business Profile
+
+Saving **Admin → Business Info** or **Admin → Business Hours** automatically
+pushes the change to Google (one-way: this site → Google, never the reverse —
+no conflict resolution needed). This is separate from the manual Post to
+Social pattern above; business facts (name, phone, hours) are low-risk to
+auto-sync, unlike creative content.
+
+1. The page's existing save calls `sync-google-business-profile`
+   (admin-JWT protected) right after its own save succeeds. Sync failure never
+   blocks or rolls back the local save — it's reported as a secondary note in
+   the same success banner (e.g. "Google Business Profile updated." or a
+   `sync_error`-derived message).
+2. The function refreshes the Google access token if stale (same pattern as
+   YouTube), then resolves the account's Business Profile **location**
+   resource name once via a locations-list call and caches it in
+   `integration_connections.external_resource_id` — every subsequent sync
+   reuses the cached id instead of re-resolving it.
+3. It `PATCH`es the location with a fixed `updateMask` covering exactly the
+   fields below, so nothing on Google is touched outside this list.
+4. `integration_connections` (`google_business` row)'s `sync_error` /
+   `last_synced_at` reflect the most recent sync attempt, superseding the
+   original connect-time "pending approval" note once a real sync succeeds or
+   fails with a new error.
+
+**Field mapping (1:1, no transformation beyond format conversion)** — every
+field on both admin pages carries a note stating whether it's in this list:
+
+| Site field | Google field |
+| --- | --- |
+| `business_info.name` | `title` |
+| `business_info.phone` | `phoneNumbers.primaryPhone` |
+| `business_info.website` | `websiteUri` |
+| `business_info.description` | `profile.description` |
+| `business_address.street_address` | `storefrontAddress.addressLines[0]` |
+| `business_address.address_locality` | `storefrontAddress.locality` |
+| `business_address.address_region` | `storefrontAddress.administrativeArea` |
+| `business_address.postal_code` | `storefrontAddress.postalCode` |
+| `business_address.address_country` | `storefrontAddress.regionCode` |
+| `business_hours` (all days) | `regularHours.periods` |
+
+Everything else on those two pages (alternate name, slogan, email, founded
+year, founder name, price range, logo/image URLs, latitude/longitude) has no
+corresponding Google Business Profile field via this API and stays local
+only — same as `service_areas`, which would need Google Places IDs (a
+separate integration) to map to Google's `serviceArea`, and isn't wired up.
+
 Facebook's callback additionally: exchanges the short-lived user token for a
 long-lived one, lists the Pages the admin manages via `/me/accounts` (using
 the *first* Page returned), and reads that Page's linked
@@ -215,6 +280,32 @@ gallery item has a **Post to Social** button (Admin → Gallery):
    Instagram equivalents) and returned to the UI for immediate feedback.
 4. Only `type: 'image'` items can be posted; video publishing to these APIs
    needs a different, async upload flow and isn't supported yet.
+
+### Uploading a video to YouTube
+
+Admin → Gallery has an **Upload to YouTube** button (separate from Post to
+Social, since it's a new video file rather than an existing gallery photo):
+
+1. The browser picks a video file, and calls `youtube-upload-start`
+   (admin-JWT protected) with the title, description, visibility
+   (private/unlisted/public — defaults to private), and the file's content
+   type/length.
+2. The function loads the `youtube` connection's tokens from Vault, refreshes
+   the access token if it's stale (or missing an `expires_at`, for
+   connections made before this field existed — treated as stale, refreshed
+   unconditionally), and calls YouTube's **resumable upload** initiation
+   endpoint (`POST /upload/youtube/v3/videos?uploadType=resumable`), which
+   returns a one-time upload session URL.
+3. The browser then `PUT`s the raw video bytes **directly to that session
+   URL** via `XMLHttpRequest` (for upload-progress events) — the video never
+   passes through our edge functions or database, avoiding any function
+   payload/time-limit concerns for large files.
+4. On success, the resulting video is offered back to be added to the public
+   gallery (`type: 'video'`, `platform: 'youtube'`) — a separate explicit step,
+   not automatic.
+
+YouTube's default quota is 10,000 units/day; each upload costs 1,600 units
+(~6 uploads/day) before a quota increase request to Google is needed.
 
 ### Extending to another provider
 

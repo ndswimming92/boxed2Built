@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
-import { publishGalleryPhoto } from '../../services/socialPublishService';
+import { publishGalleryPhoto, YoutubeUploadResult } from '../../services/socialPublishService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
@@ -11,6 +11,7 @@ import BatchImageUpload from '../../components/admin/BatchImageUpload';
 import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm';
 import GalleryItemModal from '../../components/admin/GalleryItemModal';
 import GalleryReorderGrid from '../../components/admin/GalleryReorderGrid';
+import YoutubeUploadModal from '../../components/admin/YoutubeUploadModal';
 
 const isPostedToFacebook = (item: GalleryItem) => Boolean(item.facebook_posted_at);
 const isPostedToInstagram = (item: GalleryItem) => Boolean(item.instagram_posted_at);
@@ -36,6 +37,7 @@ export default function GalleryPage() {
   const [reorderMode, setReorderMode] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
   const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showYoutubeUpload, setShowYoutubeUpload] = useState(false);
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -126,6 +128,26 @@ export default function GalleryPage() {
     }
   };
 
+  const handleYoutubeUploaded = async (result: YoutubeUploadResult, title: string, description: string) => {
+    try {
+      await GalleryService.createGalleryItem({
+        business_id: businessId,
+        type: 'video',
+        platform: 'youtube',
+        src: result.videoUrl,
+        title,
+        description: description || undefined,
+        category: 'completed-work',
+      });
+      await refresh();
+      setPublishMessage({ type: 'success', text: 'Video uploaded to YouTube and added to your gallery.' });
+    } catch (err) {
+      console.error('Error adding YouTube video to gallery:', err);
+      setPublishMessage({ type: 'error', text: 'Uploaded to YouTube, but could not add it to your gallery automatically. Add it manually with "Add Single Item".' });
+    }
+    setTimeout(() => setPublishMessage(null), 6000);
+  };
+
   const handleDelete = async (id: string, permanent = false) => {
     try {
       setDeleting(true);
@@ -191,6 +213,14 @@ export default function GalleryPage() {
             <Plus size={16} className="mr-1.5" />
             <span className="hidden sm:inline">Add Single Item</span>
             <span className="sm:hidden">Add</span>
+          </Button>
+          <Button
+            onClick={() => setShowYoutubeUpload(true)}
+            variant="outline"
+          >
+            <Youtube size={16} className="mr-1.5" />
+            <span className="hidden sm:inline">Upload to YouTube</span>
+            <span className="sm:hidden">YouTube</span>
           </Button>
         </div>
       </div>
@@ -460,6 +490,13 @@ export default function GalleryPage() {
             setShowItemModal(false);
             setEditingItem(undefined);
           }}
+        />
+      )}
+
+      {showYoutubeUpload && (
+        <YoutubeUploadModal
+          onClose={() => setShowYoutubeUpload(false)}
+          onUploaded={handleYoutubeUploaded}
         />
       )}
 

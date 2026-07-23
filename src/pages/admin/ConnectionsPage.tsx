@@ -6,6 +6,7 @@ import {
   Facebook,
   MapPin,
   Music2,
+  Youtube,
   CheckCircle,
   AlertCircle,
   Unplug,
@@ -22,7 +23,7 @@ import { logAction } from '../../services/auditLogService';
 
 // Providers with a working Connect flow. Others stay disabled until their
 // OAuth callback is built and a developer app is registered with that platform.
-const CONNECTABLE_PROVIDERS = new Set(['google_business', 'facebook', 'instagram']);
+const CONNECTABLE_PROVIDERS = new Set(['google_business', 'facebook', 'instagram', 'youtube']);
 
 interface ProviderInfo {
   id: string;
@@ -61,6 +62,13 @@ const PROVIDERS: ProviderInfo[] = [
     iconClass: 'bg-slate-100 text-slate-700',
     description: 'Publish short-form content and monitor video analytics.',
   },
+  {
+    id: 'youtube',
+    name: 'YouTube',
+    icon: Youtube,
+    iconClass: 'bg-red-100 text-red-600',
+    description: 'Upload videos to your channel straight from the admin panel.',
+  },
 ];
 
 const statusStyles: Record<string, string> = {
@@ -98,10 +106,11 @@ export default function ConnectionsPage() {
     if (!CONNECTABLE_PROVIDERS.has(providerId)) return;
     setConnecting(providerId);
     try {
-      // Facebook and Instagram share a single Facebook Login flow — connecting
-      // either one authorizes the linked Page + Instagram Business account together.
+      // Facebook and Instagram share a single Facebook Login flow, and
+      // google_business/youtube share a single Google login (broadened
+      // scope) — connecting either member of a pair authorizes both.
       const url =
-        providerId === 'google_business'
+        providerId === 'google_business' || providerId === 'youtube'
           ? await startGoogleBusinessConnect()
           : await startFacebookConnect();
       window.location.href = url;
@@ -177,13 +186,14 @@ export default function ConnectionsPage() {
           <p className="font-medium mb-1">Provider setup required before connecting</p>
           <p>
             Each platform requires a registered developer app (with its own approval process) before accounts can be
-            linked here. Google Business Profile, Facebook, and Instagram are all live once their credentials are
-            configured; connecting either Facebook or Instagram authorizes both together, since Instagram publishing
-            works through your linked Facebook Page. See the "Outbound Connections" section of{' '}
-            <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup steps. If
-            Google's Business Profile API access is still pending approval, that connection will show as connected
-            with a note that account details aren't available yet — that resolves automatically once Google approves
-            access.
+            linked here. Google Business Profile, YouTube, Facebook, and Instagram are all live once their
+            credentials are configured; connecting either Facebook or Instagram authorizes both together (Instagram
+            publishing works through your linked Facebook Page), and connecting either Google Business Profile or
+            YouTube authorizes both together (same Google account, broadened scope). See the "Outbound Connections"
+            section of <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup
+            steps. If Google's Business Profile API access is still pending approval, that connection will show as
+            connected with a note that account details aren't available yet — that resolves automatically once
+            Google approves access.
           </p>
         </div>
       </div>

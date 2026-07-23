@@ -13,7 +13,10 @@ const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
 
 const PROVIDER = 'google_business';
-const OAUTH_SCOPE = 'https://www.googleapis.com/auth/business.manage';
+const OAUTH_SCOPE = [
+  'https://www.googleapis.com/auth/business.manage',
+  'https://www.googleapis.com/auth/youtube.upload',
+].join(' ');
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
