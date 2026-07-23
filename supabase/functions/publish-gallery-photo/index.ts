@@ -35,12 +35,17 @@ function json(body: unknown, status = 200) {
   });
 }
 
+const REQUIRED_HASHTAG = '#Boxed2Built';
+
 function buildCaption(title: string, description?: string | null, hashtags?: string[] | null): string {
   let caption = description ? `${title}\n\n${description}` : title;
-  if (hashtags && hashtags.length > 0) {
-    const tagLine = hashtags.map((tag) => (tag.startsWith('#') ? tag : `#${tag}`)).join(' ');
-    caption += `\n\n${tagLine}`;
+
+  const tags = (hashtags || []).map((tag) => (tag.startsWith('#') ? tag : `#${tag}`));
+  if (!tags.some((tag) => tag.toLowerCase() === REQUIRED_HASHTAG.toLowerCase())) {
+    tags.push(REQUIRED_HASHTAG);
   }
+  caption += `\n\n${tags.join(' ')}`;
+
   return caption.slice(0, MAX_CAPTION_LENGTH);
 }
 

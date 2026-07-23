@@ -1,3 +1,5 @@
+export const REQUIRED_HASHTAG = '#Boxed2Built';
+
 export function parseHashtagsInput(value: string): string[] {
   const seen = new Set<string>();
   const tags: string[] = [];
@@ -10,6 +12,10 @@ export function parseHashtagsInput(value: string): string[] {
     if (seen.has(key)) continue;
     seen.add(key);
     tags.push(tag);
+  }
+
+  if (!seen.has(REQUIRED_HASHTAG.toLowerCase())) {
+    tags.push(REQUIRED_HASHTAG);
   }
 
   return tags;
