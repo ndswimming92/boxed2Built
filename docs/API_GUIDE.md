@@ -109,42 +109,80 @@ Errors are JSON: `{ "error": "message" }` with conventional status codes —
 
 ## Deployment notes
 
-1. Apply the migration `20260722120000_create_api_platform_system.sql`.
-2. Deploy the two new edge functions:
+1. Apply the migrations `20260722120000_create_api_platform_system.sql` and
+   `20260723120000_create_oauth_states_and_vault_helpers.sql`.
+2. Deploy the edge functions:
    ```bash
    supabase functions deploy manage-api-keys
    supabase functions deploy api-v1 --no-verify-jwt
+   supabase functions deploy google-business-oauth-start
+   supabase functions deploy google-business-oauth-callback --no-verify-jwt
    ```
-   `api-v1` **must** be deployed with `--no-verify-jwt` (or `verify_jwt = false`
-   in the dashboard) because external callers authenticate with API keys, not
-   Supabase JWTs. Key validation happens inside the function.
-   `manage-api-keys` keeps JWT verification on — it is called only by logged-in
-   platform admins.
+   `api-v1` and `google-business-oauth-callback` **must** be deployed with
+   `--no-verify-jwt` (or `verify_jwt = false` in the dashboard): `api-v1`
+   callers authenticate with API keys, and `google-business-oauth-callback` is
+   hit directly by Google's redirect with no Supabase session at all. Both
+   `manage-api-keys` and `google-business-oauth-start` keep JWT verification
+   on — they're only called by logged-in platform admins.
+3. Set the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` edge function secrets
+   (see "Outbound Connections" below) if not already configured.
 
 ---
 
-## Outbound Connections (scaffolding)
+## Outbound Connections
 
 The `integration_connections` table, the **Admin → Connections** page, and the
-Vault-based token storage convention are in place. To activate a provider:
+Vault-based token storage convention are in place. Google Business Profile has
+a working Connect flow; other providers follow the same pattern.
 
-1. **Register a developer app** with the platform:
-   - *Google Business Profile*: Google Cloud Console → OAuth consent + Business
-     Profile APIs (typically the fastest approval).
-   - *Facebook / Instagram*: Meta for Developers app + App Review for
-     `pages_manage_posts` / `instagram_content_publish` (allow several weeks).
-   - *TikTok*: TikTok for Developers app + audit.
-2. **Store the app's client ID/secret** as edge-function secrets
-   (`supabase secrets set`).
-3. **Build the OAuth callback edge function** for that provider: exchange the
-   code for tokens, store them in Supabase Vault, record the Vault secret name in
-   `integration_connections.vault_secret_name`, and set `status = 'connected'`.
-4. **Add a sync function** (scheduled via Supabase cron) that refreshes tokens
-   and pulls metrics into local tables.
+### Registering a provider's developer app
 
-Tokens never live in ordinary table columns and never reach the browser — the
-`integration_connections` row only stores a *reference* to the Vault secret.
+- *Google Business Profile*: Google Cloud Console → enable the Business
+  Profile APIs → OAuth consent screen → OAuth client ID (Web application) with
+  redirect URI `<SUPABASE_URL>/functions/v1/google-business-oauth-callback` →
+  separately submit the [Basic API Access request form](https://developers.google.com/my-business/content/basic-setup#request-access)
+  (this approval is what's usually slow — often days to weeks).
+- *Facebook / Instagram*: Meta for Developers app + App Review for
+  `pages_manage_posts` / `instagram_content_publish` (allow several weeks).
+- *TikTok*: TikTok for Developers app + audit.
 
-Until providers are registered, the Connect buttons on the Connections page stay
-disabled. A faster interim path for many automations: use the inbound API above
-with Zapier/Make, which already integrate with most social platforms.
+Store each provider's client ID/secret as edge-function secrets
+(`supabase secrets set GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=...`).
+
+### How the Google Business Profile connect flow works
+
+1. **Admin → Connections** page's Connect button calls
+   `google-business-oauth-start` (admin-JWT protected), which generates a
+   random `state`, stores it in `oauth_states` tied to the calling admin, and
+   returns Google's OAuth consent URL. The browser is redirected there.
+2. After the admin approves access, Google redirects to
+   `google-business-oauth-callback` with a `code` and the `state`.
+3. The callback validates and consumes the `state` row (single-use, 10-minute
+   expiry — defends against CSRF), exchanges the code for tokens, and stores
+   them in Supabase Vault via the `store_vault_secret` SQL helper — never in an
+   ordinary table column.
+4. It best-effort fetches the account name from the Business Profile Account
+   Management API to label the connection. If Google's Basic API Access
+   approval (above) hasn't landed yet, this call fails harmlessly: the
+   connection is still marked `connected` (the OAuth handshake succeeded) with
+   a `sync_error` note explaining that account details are pending approval.
+   Nothing needs to be redone once approval clears — a future sync simply
+   starts working.
+5. The admin is redirected back to `/admin/connections` with a success or
+   error banner.
+
+### Extending to another provider
+
+1. Add the provider's OAuth start/callback edge functions following the
+   `google-business-oauth-*` pair as a template (same `oauth_states` table,
+   same `store_vault_secret` helper).
+2. Add the provider to `CONNECTABLE_PROVIDERS` in
+   `src/pages/admin/ConnectionsPage.tsx` and wire its Connect button to the new
+   start function, following `startGoogleBusinessConnect` in
+   `src/services/apiPlatformService.ts` as a template.
+3. **Add a sync function** (scheduled via Supabase cron) that refreshes tokens
+   and pulls metrics into local tables — not yet built for any provider.
+
+A faster interim path for automations that don't need a specific platform's
+native API: use the inbound API above with Zapier/Make, which already
+integrate with most social platforms.
