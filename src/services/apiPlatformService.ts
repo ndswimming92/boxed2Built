@@ -174,6 +174,23 @@ export async function startGoogleBusinessConnect(): Promise<string> {
   return body.url as string;
 }
 
+export async function startFacebookConnect(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/facebook-oauth-start`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to start Facebook connection');
+  return body.url as string;
+}
+
 export async function disconnectConnection(id: string): Promise<void> {
   const { error } = await supabase
     .from('integration_connections')

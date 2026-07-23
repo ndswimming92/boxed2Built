@@ -16,12 +16,13 @@ import {
   listConnections,
   disconnectConnection,
   startGoogleBusinessConnect,
+  startFacebookConnect,
 } from '../../services/apiPlatformService';
 import { logAction } from '../../services/auditLogService';
 
 // Providers with a working Connect flow. Others stay disabled until their
 // OAuth callback is built and a developer app is registered with that platform.
-const CONNECTABLE_PROVIDERS = new Set(['google_business']);
+const CONNECTABLE_PROVIDERS = new Set(['google_business', 'facebook', 'instagram']);
 
 interface ProviderInfo {
   id: string;
@@ -94,13 +95,18 @@ export default function ConnectionsPage() {
   }, [searchParams]);
 
   const handleConnect = async (providerId: string) => {
-    if (providerId !== 'google_business') return;
+    if (!CONNECTABLE_PROVIDERS.has(providerId)) return;
     setConnecting(providerId);
     try {
-      const url = await startGoogleBusinessConnect();
+      // Facebook and Instagram share a single Facebook Login flow — connecting
+      // either one authorizes the linked Page + Instagram Business account together.
+      const url =
+        providerId === 'google_business'
+          ? await startGoogleBusinessConnect()
+          : await startFacebookConnect();
       window.location.href = url;
     } catch (error) {
-      console.error('Error starting Google connection:', error);
+      console.error('Error starting connection:', error);
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Failed to start connection.' });
       setConnecting(null);
     }
@@ -171,10 +177,11 @@ export default function ConnectionsPage() {
           <p className="font-medium mb-1">Provider setup required before connecting</p>
           <p>
             Each platform requires a registered developer app (with its own approval process) before accounts can be
-            linked here. Google Business Profile's Connect button is live once its credentials are configured; the
-            others activate as their OAuth flows are built. See the "Outbound Connections" section of{' '}
+            linked here. Google Business Profile, Facebook, and Instagram are all live once their credentials are
+            configured; connecting either Facebook or Instagram authorizes both together, since Instagram publishing
+            works through your linked Facebook Page. See the "Outbound Connections" section of{' '}
             <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup steps. If
-            Google's Business Profile API access is still pending approval, the connection will show as connected
+            Google's Business Profile API access is still pending approval, that connection will show as connected
             with a note that account details aren't available yet — that resolves automatically once Google approves
             access.
           </p>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
+import { publishGalleryPhoto } from '../../services/socialPublishService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
@@ -10,6 +11,9 @@ import BatchImageUpload from '../../components/admin/BatchImageUpload';
 import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm';
 import GalleryItemModal from '../../components/admin/GalleryItemModal';
 import GalleryReorderGrid from '../../components/admin/GalleryReorderGrid';
+
+const isPostedToFacebook = (item: GalleryItem) => Boolean(item.facebook_posted_at);
+const isPostedToInstagram = (item: GalleryItem) => Boolean(item.instagram_posted_at);
 
 export default function GalleryPage() {
   const [businessId, setBusinessId] = useState<string>('');
@@ -30,6 +34,8 @@ export default function GalleryPage() {
   const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [reorderMode, setReorderMode] = useState(false);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -93,6 +99,30 @@ export default function GalleryPage() {
       alert(`Failed to toggle visibility: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const handlePostToSocial = async (item: GalleryItem) => {
+    try {
+      setPublishingId(item.id);
+      const result = await publishGalleryPhoto(item.id);
+      const parts: string[] = [];
+      if (result.facebook.success) parts.push('Facebook: posted');
+      else parts.push(`Facebook: ${result.facebook.error ?? 'failed'}`);
+      if (result.instagram.success) parts.push('Instagram: posted');
+      else parts.push(`Instagram: ${result.instagram.error ?? 'failed'}`);
+
+      setPublishMessage({
+        type: result.facebook.success || result.instagram.success ? 'success' : 'error',
+        text: parts.join(' · '),
+      });
+      await refresh();
+    } catch (err) {
+      console.error('Error posting to social:', err);
+      setPublishMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to post to social media.' });
+    } finally {
+      setPublishingId(null);
+      setTimeout(() => setPublishMessage(null), 6000);
     }
   };
 
@@ -164,6 +194,13 @@ export default function GalleryPage() {
           </Button>
         </div>
       </div>
+
+      {publishMessage && (
+        <div className={`p-4 rounded-lg flex items-start gap-3 ${publishMessage.type === 'success' ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+          {publishMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+          <p className={`text-sm ${publishMessage.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{publishMessage.text}</p>
+        </div>
+      )}
 
       {reorderMode ? (
         <GalleryReorderGrid
@@ -317,6 +354,39 @@ export default function GalleryPage() {
                       return <span key={index}>{part}</span>;
                     })}
                   </p>
+                )}
+
+                {item.type === 'image' && (isPostedToFacebook(item) || isPostedToInstagram(item)) && (
+                  <div className="flex items-center gap-2 mb-2 text-xs">
+                    {isPostedToFacebook(item) && (
+                      <span className="inline-flex items-center gap-1 text-blue-700" title="Posted to Facebook">
+                        <Facebook size={12} /> Posted
+                      </span>
+                    )}
+                    {isPostedToInstagram(item) && (
+                      <span className="inline-flex items-center gap-1 text-pink-700" title="Posted to Instagram">
+                        <Instagram size={12} /> Posted
+                      </span>
+                    )}
+                  </div>
+                )}
+                {item.type === 'image' && (item.facebook_post_error || item.instagram_post_error) && (
+                  <p className="text-xs text-red-600 mb-2 line-clamp-2">
+                    {item.facebook_post_error && `Facebook: ${item.facebook_post_error}`}
+                    {item.facebook_post_error && item.instagram_post_error && ' · '}
+                    {item.instagram_post_error && `Instagram: ${item.instagram_post_error}`}
+                  </p>
+                )}
+
+                {item.type === 'image' && (
+                  <button
+                    onClick={() => handlePostToSocial(item)}
+                    disabled={publishingId === item.id}
+                    className="w-full mb-1.5 px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    <Share2 size={12} />
+                    {publishingId === item.id ? 'Posting…' : 'Post to Social'}
+                  </button>
                 )}
 
                 <div className="flex items-center gap-1">
