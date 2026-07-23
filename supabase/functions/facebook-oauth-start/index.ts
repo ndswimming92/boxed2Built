@@ -19,7 +19,7 @@ const OAUTH_SCOPES = [
   'pages_read_engagement',
   'pages_manage_posts',
   'instagram_basic',
-  'instagram_content_publishing',
+  'instagram_content_publish',
   'business_management',
 ].join(',');
 
