@@ -4,6 +4,7 @@ import { GalleryService, CreateGalleryItemInput, UpdateGalleryItemInput } from '
 import type { GalleryItem } from '../../services/galleryService';
 import { optimizeImage, validateImageFile, snapshotFileToMemory, normalizeImageFile } from '../../utils/imageOptimizationUpload';
 import { analyzeGalleryImage, analyzeGalleryImageFromUrl } from '../../services/galleryAIService';
+import { parseHashtagsInput, formatHashtagsForInput } from '../../utils/hashtags';
 import { SERVICE_AREAS } from '../../constants/localSEO';
 import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags, flagsToPurpose } from '../../utils/galleryPurpose';
 import Button from '../ui/Button';
@@ -24,6 +25,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     title: item?.title || '',
     description: item?.description || '',
     alt: item?.alt || '',
+    hashtags: formatHashtagsForInput(item?.hashtags),
     category: item?.category || 'completed-work' as const,
     date: item?.date || new Date().toISOString().split('T')[0],
     location: item?.location || 'Spring Hill, TN',
@@ -109,6 +111,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
         title: result.title,
         description: result.description,
         alt: result.alt,
+        hashtags: formatHashtagsForInput(result.hashtags),
       }));
     } catch (err) {
       console.error('AI analysis error:', err);
@@ -177,12 +180,14 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
       }
 
       const purposeFlags = purposeToFlags(purpose);
+      const hashtags = parseHashtagsInput(formData.hashtags);
 
       if (isEdit) {
         const updateData: UpdateGalleryItemInput = {
           title: formData.title,
           description: formData.description || undefined,
           alt: formData.alt || undefined,
+          hashtags,
           category: formData.category,
           date: formData.date || undefined,
           location: formData.location || undefined,
@@ -208,6 +213,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           title: formData.title,
           description: formData.description || undefined,
           alt: formData.alt || formData.title,
+          hashtags,
           category: formData.category,
           date: formData.date || undefined,
           location: formData.location || undefined,
@@ -391,6 +397,21 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                 placeholder="Accessibility description"
               />
             </FormField>
+
+            {type === 'image' && (
+              <FormField label="Hashtags">
+                <input name="hashtags"
+                  type="text"
+                  value={formData.hashtags}
+                  onChange={(e) => setFormData({ ...formData, hashtags: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="#FurnitureAssembly #IKEAAssembly #SpringHillTN"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Space or comma separated. Appended to the caption when posted to Facebook/Instagram.
+                </p>
+              </FormField>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Category *" required>

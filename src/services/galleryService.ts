@@ -10,6 +10,7 @@ export interface GalleryItem {
   description?: string;
   thumbnail?: string;
   alt?: string;
+  hashtags?: string[];
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date?: string;
   location?: string;
@@ -41,6 +42,7 @@ export interface CreateGalleryItemInput {
   description?: string;
   thumbnail?: string;
   alt?: string;
+  hashtags?: string[];
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date?: string;
   location?: string;
@@ -61,6 +63,7 @@ export interface UpdateGalleryItemInput {
   description?: string;
   thumbnail?: string;
   alt?: string;
+  hashtags?: string[];
   category?: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date?: string;
   location?: string;
@@ -155,6 +158,7 @@ export class GalleryService {
           description: input.description,
           thumbnail: input.thumbnail,
           alt: input.alt,
+          hashtags: input.hashtags,
           category: input.category,
           date: input.date,
           location: input.location,
@@ -188,6 +192,7 @@ export class GalleryService {
           description: input.description,
           thumbnail: input.thumbnail,
           alt: input.alt,
+          hashtags: input.hashtags,
           category: input.category,
           date: input.date,
           location: input.location,

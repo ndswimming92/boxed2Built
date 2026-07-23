@@ -4,6 +4,7 @@ import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { GalleryService, CreateGalleryItemInput } from '../../services/galleryService';
 import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags } from '../../utils/galleryPurpose';
 import { analyzeGalleryImage } from '../../services/galleryAIService';
+import { parseHashtagsInput } from '../../utils/hashtags';
 import Button from '../ui/Button';
 import FormField from '../ui/FormField';
 import FocusAreaSelector from './FocusAreaSelector';
@@ -13,6 +14,7 @@ interface ImageDetail {
   title: string;
   description: string;
   alt: string;
+  hashtags: string;
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
   date: string;
   location: string;
@@ -40,6 +42,7 @@ export default function BatchImageDetailsForm({
       title: img.file.name.replace(/\.[^.]+$/, ''),
       description: '',
       alt: '',
+      hashtags: '',
       category: 'completed-work' as const,
       date: new Date().toISOString().split('T')[0],
       location: 'Spring Hill, TN',
@@ -83,7 +86,15 @@ export default function BatchImageDetailsForm({
 
       setImageDetails((prev) =>
         prev.map((d, i) =>
-          i === index ? { ...d, title: result.title, description: result.description, alt: result.alt } : d
+          i === index
+            ? {
+                ...d,
+                title: result.title,
+                description: result.description,
+                alt: result.alt,
+                hashtags: result.hashtags.join(' '),
+              }
+            : d
         )
       );
     } catch (err) {
@@ -133,6 +144,7 @@ export default function BatchImageDetailsForm({
           title: detail.title,
           description: detail.description || undefined,
           alt: detail.alt || detail.title,
+          hashtags: parseHashtagsInput(detail.hashtags),
           category: detail.category,
           date: detail.date || undefined,
           location: detail.location || undefined,
@@ -353,6 +365,19 @@ export default function BatchImageDetailsForm({
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="Accessibility description"
                         />
+                      </FormField>
+
+                      <FormField label="Hashtags" className="md:col-span-2">
+                        <input name="hashtags"
+                          type="text"
+                          value={detail.hashtags}
+                          onChange={(e) => updateImageDetail(index, 'hashtags', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          placeholder="#FurnitureAssembly #IKEAAssembly #SpringHillTN"
+                        />
+                        <p className="mt-1 text-xs text-slate-500">
+                          Space or comma separated. Appended to the caption when posted to Facebook/Instagram.
+                        </p>
                       </FormField>
 
                       <FormField label="Date">

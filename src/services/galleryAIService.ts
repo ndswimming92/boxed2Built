@@ -4,6 +4,7 @@ export interface AIAnalysisResult {
   title: string;
   description: string;
   alt: string;
+  hashtags: string[];
 }
 
 async function fileToBase64(file: File): Promise<{ base64: string; mediaType: string }> {
@@ -61,7 +62,12 @@ export async function analyzeGalleryImage(file: File, options?: AIAnalysisOption
     throw new Error('Incomplete AI response');
   }
 
-  return { title: data.title, description: data.description, alt: data.alt };
+  return {
+    title: data.title,
+    description: data.description,
+    alt: data.alt,
+    hashtags: Array.isArray(data.hashtags) ? data.hashtags : [],
+  };
 }
 
 export async function analyzeGalleryImageFromUrl(imageUrl: string, options?: AIAnalysisOptions): Promise<AIAnalysisResult> {
