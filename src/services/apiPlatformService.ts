@@ -251,3 +251,59 @@ export async function getSocialMetrics(): Promise<SocialMetrics> {
   if (!res.ok) throw new Error(body?.error || 'Failed to load social metrics');
   return body as SocialMetrics;
 }
+
+export type SocialCommentPlatform = 'facebook' | 'instagram';
+
+export interface SocialComment {
+  id: string;
+  platform: SocialCommentPlatform;
+  post_id: string;
+  post_permalink: string | null;
+  author: string;
+  message: string;
+  created_time: string;
+  replied: boolean;
+}
+
+export interface SocialCommentsResult {
+  comments: SocialComment[];
+  unreplied_count: number;
+  facebook_error: string | null;
+  instagram_error: string | null;
+  fetched_at: string;
+}
+
+export async function getSocialComments(): Promise<SocialCommentsResult> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/get-social-comments`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to load comments');
+  return body as SocialCommentsResult;
+}
+
+export async function replySocialComment(
+  platform: SocialCommentPlatform,
+  commentId: string,
+  message: string
+): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/reply-social-comment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ platform, comment_id: commentId, message }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to send reply');
+}

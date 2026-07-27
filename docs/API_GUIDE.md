@@ -163,13 +163,17 @@ providers follow the same pattern.
   App Secret. **App Review is not required for the business's own use**: while
   the app is in Development Mode, its own admins/testers can grant the full
   `pages_manage_posts` / `instagram_content_publish` / `read_insights` /
-  `instagram_manage_insights` permissions to themselves without waiting on
+  `instagram_manage_insights` / `pages_manage_engagement` /
+  `instagram_manage_comments` permissions to themselves without waiting on
   Meta's review — that review is only required to let *other* people's
   accounts use the app. Requires an Instagram **Business or Creator** account
-  already linked to the Facebook Page in Meta Business Suite. If
-  `read_insights`/`instagram_manage_insights` are added to an app that was
-  already connected, existing tokens don't retroactively gain the new scopes —
-  reconnect from **Admin → Connections** once to re-authorize with them.
+  already linked to the Facebook Page in Meta Business Suite. If new scopes
+  are added to an app that was already connected, existing tokens don't
+  retroactively gain them — reconnect from **Admin → Connections** once to
+  re-authorize with the fuller set. Note `pages_manage_engagement` lives under
+  a different "use case" tab in the Meta App Dashboard's permissions list than
+  the Instagram-specific scopes (e.g. under "Facebook Login for Business"
+  rather than "Instagram API").
 - *TikTok*: TikTok for Developers app + audit.
 
 Store each provider's client ID/secret as edge-function secrets
@@ -297,13 +301,42 @@ trend for the connected Facebook Page and its linked Instagram account.
    existing Facebook/Instagram connection.
 2. Follower/media counts come from stable Graph API fields (`fan_count`,
    `followers_count`, `media_count`) that don't depend on Insights permissions
-   staying valid. The 30-day trend comes from the Insights endpoints
-   (`page_impressions_unique`, `page_engaged_users`, `reach`, `profile_views`),
-   fetched one metric at a time so a single metric Meta has deprecated doesn't
-   take down the whole trend chart — whichever metrics succeed are shown, and
-   a friendly banner explains when none do (most often because the connection
-   predates the `read_insights`/`instagram_manage_insights` scopes and needs a
-   one-time reconnect).
+   staying valid. The 30-day trend comes from a short list of Insights metric
+   *candidates* per platform (Facebook: `page_views_total`, `page_fan_adds`,
+   `page_post_engagements`, `page_impressions_unique`; Instagram: `reach`,
+   `profile_views`, `accounts_engaged`), each fetched independently — Meta has
+   deprecated Page/Instagram Insights metrics in several waves, so whichever
+   candidates currently work are shown (with their own friendly label), and a
+   banner explains when none do (most often because the connection predates
+   the `read_insights`/`instagram_manage_insights` scopes and needs a one-time
+   reconnect). Nothing on the frontend hardcodes a metric name, so the next
+   Meta deprecation wave degrades gracefully instead of erroring.
+
+### Replying to Facebook/Instagram comments
+
+**Admin → Social Comments** lists recent comments on the connected Facebook
+Page's posts and the linked Instagram account's media, with an inline reply
+box and a sidebar badge showing how many still need a reply — all without
+leaving the admin.
+
+1. The page calls `get-social-comments` (admin-JWT protected), which loads the
+   same Vault-stored Page token and pulls the last 10 posts/media items with
+   their comments (`/{page-id}/posts` and `/{ig-user-id}/media`, each
+   expanding `comments{...,comments{from}}` one level deep to see if a reply
+   already exists).
+2. A comment counts as already handled if any of its replies has a `from.id`
+   matching the Page/IG account itself — no separate "seen" table is needed,
+   the Graph API data alone determines what still needs a reply.
+3. Sending a reply calls `reply-social-comment` (admin-JWT protected) with
+   `{ platform, comment_id, message }`, which posts to
+   `/{comment-id}/comments` (Facebook) or `/{comment-id}/replies` (Instagram).
+4. The sidebar's "Social Comments" badge polls `get-social-comments` every 5
+   minutes (`useSocialCommentsBadge` hook) and shows the unreplied count;
+   failures (not connected yet, transient Graph API error) are swallowed
+   silently rather than showing an error badge.
+5. Requires the `pages_manage_engagement` and `instagram_manage_comments`
+   scopes — see the Facebook/Instagram app-registration notes above for where
+   to enable them and the one-time reconnect needed for existing connections.
 
 ### Gallery item purpose (website / social / both)
 

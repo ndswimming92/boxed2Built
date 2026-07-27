@@ -18,10 +18,12 @@ const OAUTH_SCOPES = [
   'pages_show_list',
   'pages_read_engagement',
   'pages_manage_posts',
+  'pages_manage_engagement',
   'read_insights',
   'instagram_basic',
   'instagram_content_publish',
   'instagram_manage_insights',
+  'instagram_manage_comments',
   'business_management',
 ].join(',');
 

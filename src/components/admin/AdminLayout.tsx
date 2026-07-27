@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug, Activity } from 'lucide-react';
+import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug, Activity, MessageCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
+import { useSocialCommentsBadge } from '../../hooks/useSocialCommentsBadge';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
 import { PrivacyModeProvider, usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -78,6 +79,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
       { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },
+      { name: 'Social Comments', href: '/admin/social-comments', icon: MessageCircle },
       { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: LinkIcon },
       { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
     ],
@@ -130,6 +132,7 @@ function AdminLayoutContent() {
     businessId,
     enableNotifications: true
   });
+  const unrepliedCommentCount = useSocialCommentsBadge();
 
   const getInitialExpandedState = (): Record<string, boolean> => {
     const stored = localStorage.getItem('admin-nav-expanded');
@@ -352,7 +355,13 @@ function AdminLayoutContent() {
                         {group.items.map((item) => {
                           const Icon = item.icon;
                           const isActive = location.pathname === item.href;
-                          const showBadge = item.name === 'Inquiries' && unviewedCount > 0;
+                          const badgeCount =
+                            item.name === 'Inquiries'
+                              ? unviewedCount
+                              : item.name === 'Social Comments'
+                              ? unrepliedCommentCount
+                              : 0;
+                          const showBadge = badgeCount > 0;
 
                           return (
                             <li key={item.name}>
@@ -370,7 +379,7 @@ function AdminLayoutContent() {
                                 <span className="font-medium text-sm">{item.name}</span>
                                 {showBadge && (
                                   <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
-                                    {unviewedCount > 99 ? '99+' : unviewedCount}
+                                    {badgeCount > 99 ? '99+' : badgeCount}
                                   </span>
                                 )}
                                 {isActive && !showBadge && <ChevronRight className="w-4 h-4 ml-auto" />}
