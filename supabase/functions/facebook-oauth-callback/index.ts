@@ -16,6 +16,7 @@ const OAUTH_SCOPES_FOR_RECORD = [
   'pages_read_engagement',
   'pages_manage_posts',
   'pages_manage_engagement',
+  'pages_read_user_content',
   'read_insights',
   'instagram_basic',
   'instagram_content_publish',
