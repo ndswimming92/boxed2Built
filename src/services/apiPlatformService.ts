@@ -307,3 +307,52 @@ export async function replySocialComment(
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body?.error || 'Failed to send reply');
 }
+
+export interface SocialConversation {
+  id: string;
+  platform: SocialCommentPlatform;
+  participant_id: string;
+  participant_name: string;
+  last_message: string;
+  last_message_time: string;
+  needs_reply: boolean;
+}
+
+export interface SocialConversationsResult {
+  conversations: SocialConversation[];
+  needs_reply_count: number;
+  facebook_error: string | null;
+  instagram_error: string | null;
+  fetched_at: string;
+}
+
+export async function getSocialConversations(): Promise<SocialConversationsResult> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/get-social-conversations`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to load conversations');
+  return body as SocialConversationsResult;
+}
+
+export async function sendSocialMessage(recipientId: string, message: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/send-social-message`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ recipient_id: recipientId, message }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to send message');
+}

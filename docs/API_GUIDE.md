@@ -164,9 +164,10 @@ providers follow the same pattern.
   the app is in Development Mode, its own admins/testers can grant the full
   `pages_manage_posts` / `instagram_content_publish` / `read_insights` /
   `instagram_manage_insights` / `pages_manage_engagement` /
-  `pages_read_user_content` / `instagram_manage_comments` permissions to
-  themselves without waiting on Meta's review — that review is only required
-  to let *other* people's accounts use the app. Requires an Instagram
+  `pages_read_user_content` / `instagram_manage_comments` / `pages_messaging` /
+  `instagram_manage_messages` permissions to themselves without waiting on
+  Meta's review — that review is only required to let *other* people's
+  accounts use the app. Requires an Instagram
   **Business or Creator** account already linked to the Facebook Page in Meta
   Business Suite. If new scopes are added to an app that was already
   connected, existing tokens don't retroactively gain them — reconnect from
@@ -341,6 +342,37 @@ leaving the admin.
    dependency) and `instagram_manage_comments` scopes — see the
    Facebook/Instagram app-registration notes above for where to enable them
    and the one-time reconnect needed for existing connections.
+
+### Replying to Facebook Messenger/Instagram DMs
+
+**Admin → Direct Messages** lists recent Messenger and Instagram DM
+conversations for the connected Page/IG account, with an inline reply box and
+a sidebar badge for how many still need a reply.
+
+1. The page calls `get-social-conversations` (admin-JWT protected), which
+   calls the unified Conversations API twice with the same Page token —
+   `/{page-id}/conversations?platform=messenger` for Facebook and
+   `/{page-id}/conversations?platform=instagram` for the linked Instagram
+   account — each expanding the most recent message per conversation.
+2. A conversation needs a reply if the most recent message's `from.id` is
+   *not* the Page/IG account itself — simpler than the comments case since
+   there's no reply-nesting to check, just "who sent the last message."
+3. Sending a reply calls `send-social-message` (admin-JWT protected) with
+   `{ recipient_id, message }`, POSTing to `/{page-id}/messages` with
+   `messaging_type: RESPONSE` — the same endpoint and Page token handle both
+   Messenger and Instagram DMs; which platform a reply goes to is implied by
+   the recipient id (PSID vs IGSID), not passed explicitly.
+4. Meta only allows a standard `RESPONSE`-type send within 24 hours of the
+   customer's last message; sending outside that window returns a clear error
+   telling the admin the customer needs to message again first (Meta's
+   `HUMAN_AGENT` message tag can extend this to 7 days, but requires enabling
+   the separate "Human Agent" feature in the Meta App Dashboard — not wired up
+   here since it's a bigger commitment than this feature currently needs).
+5. The sidebar's "Direct Messages" badge polls `get-social-conversations`
+   every 5 minutes (`useSocialMessagesBadge` hook), same pattern as the
+   comments badge.
+6. Requires the `pages_messaging` and `instagram_manage_messages` scopes —
+   see the Facebook/Instagram app-registration notes above.
 
 ### Gallery item purpose (website / social / both)
 
