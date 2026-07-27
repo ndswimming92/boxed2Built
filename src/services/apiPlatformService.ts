@@ -202,3 +202,45 @@ export async function disconnectConnection(id: string): Promise<void> {
 export function getApiBaseUrl(): string {
   return `${FN_URL}/api-v1`;
 }
+
+export interface SocialMetricsTrendPoint {
+  date: string;
+  [metric: string]: string | number;
+}
+
+export interface FacebookMetrics {
+  connected: boolean;
+  page_name?: string;
+  followers: number | null;
+  trend: SocialMetricsTrendPoint[];
+  insights_error: string | null;
+}
+
+export interface InstagramMetrics {
+  connected: boolean;
+  username?: string | null;
+  followers?: number | null;
+  media_count?: number | null;
+  trend?: SocialMetricsTrendPoint[];
+  insights_error?: string | null;
+}
+
+export interface SocialMetrics {
+  facebook: FacebookMetrics;
+  instagram: InstagramMetrics;
+  fetched_at: string;
+}
+
+export async function getSocialMetrics(): Promise<SocialMetrics> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/get-social-metrics`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to load social metrics');
+  return body as SocialMetrics;
+}

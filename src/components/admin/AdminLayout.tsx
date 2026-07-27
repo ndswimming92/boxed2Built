@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug } from 'lucide-react';
+import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug, Activity } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { requestNotificationPermission } from '../../utils/notificationService';
@@ -77,6 +77,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
+      { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },
       { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: LinkIcon },
       { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
     ],
