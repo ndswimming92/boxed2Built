@@ -316,6 +316,7 @@ export interface SocialConversation {
   last_message: string;
   last_message_time: string;
   needs_reply: boolean;
+  archived: boolean;
 }
 
 export interface SocialConversationsResult {
@@ -355,4 +356,25 @@ export async function sendSocialMessage(recipientId: string, message: string): P
 
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body?.error || 'Failed to send message');
+}
+
+export async function archiveSocialConversation(
+  conversationId: string,
+  platform: SocialCommentPlatform,
+  archived: boolean
+): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/archive-social-conversation`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ conversation_id: conversationId, platform, archived }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to update conversation');
 }
