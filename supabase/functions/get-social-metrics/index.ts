@@ -27,6 +27,29 @@ interface TrendPoint {
   [metric: string]: string | number;
 }
 
+interface MetricCandidate {
+  key: string;
+  label: string;
+}
+
+// Meta has deprecated Page/Instagram Insights metrics in several waves
+// (impressions/reach-family metrics especially) — a name that works today may
+// 400 next quarter. Each candidate is tried independently; whichever succeed
+// are reported back (with their key/label) so the caller never has to
+// hardcode which metric name is currently alive.
+const FB_PAGE_METRIC_CANDIDATES: MetricCandidate[] = [
+  { key: 'page_views_total', label: 'Page Views' },
+  { key: 'page_fan_adds', label: 'New Followers' },
+  { key: 'page_post_engagements', label: 'Post Engagements' },
+  { key: 'page_impressions_unique', label: 'Reach' },
+];
+
+const IG_METRIC_CANDIDATES: MetricCandidate[] = [
+  { key: 'reach', label: 'Reach' },
+  { key: 'profile_views', label: 'Profile Views' },
+  { key: 'accounts_engaged', label: 'Accounts Engaged' },
+];
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -42,24 +65,25 @@ async function graphGet(path: string, params: Record<string, string>) {
   return { ok: res.ok, body };
 }
 
-// Fetches each metric in the list individually and merges whichever succeed,
+// Fetches each candidate metric individually and merges whichever succeed,
 // since Meta occasionally deprecates individual Insights metrics and a single
 // bad metric name would otherwise fail the whole batched request.
 async function fetchInsightsTrend(
   nodeId: string,
   accessToken: string,
-  metrics: string[],
+  candidates: MetricCandidate[],
   extraParams: Record<string, string> = {}
-): Promise<{ trend: TrendPoint[]; errors: string[] }> {
+): Promise<{ trend: TrendPoint[]; metrics: MetricCandidate[]; errors: string[] }> {
   const since = Math.floor((Date.now() - TREND_DAYS * 24 * 60 * 60 * 1000) / 1000);
   const until = Math.floor(Date.now() / 1000);
   const byDate = new Map<string, TrendPoint>();
   const errors: string[] = [];
+  const succeeded: MetricCandidate[] = [];
 
   await Promise.all(
-    metrics.map(async (metric) => {
+    candidates.map(async (candidate) => {
       const { ok, body } = await graphGet(`/${nodeId}/insights`, {
-        metric,
+        metric: candidate.key,
         period: 'day',
         since: String(since),
         until: String(until),
@@ -67,22 +91,23 @@ async function fetchInsightsTrend(
         ...extraParams,
       });
       if (!ok) {
-        errors.push(body?.error?.message || `Failed to load "${metric}"`);
+        errors.push(body?.error?.message || `Failed to load "${candidate.key}"`);
         return;
       }
       const series = body?.data?.[0]?.values as { end_time: string; value: number }[] | undefined;
-      if (!series) return;
+      if (!series || series.length === 0) return;
+      succeeded.push(candidate);
       for (const point of series) {
         const date = point.end_time.slice(0, 10);
         const row = byDate.get(date) ?? { date };
-        row[metric] = point.value;
+        row[candidate.key] = point.value;
         byDate.set(date, row);
       }
     })
   );
 
   const trend = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
-  return { trend, errors };
+  return { trend, metrics: succeeded, errors };
 }
 
 Deno.serve(async (req) => {
@@ -130,7 +155,7 @@ Deno.serve(async (req) => {
 
     const [pageFields, pageInsights] = await Promise.all([
       graphGet(`/${tokens.page_id}`, { fields: 'fan_count,name', access_token: tokens.page_access_token }),
-      fetchInsightsTrend(tokens.page_id, tokens.page_access_token, ['page_impressions_unique', 'page_engaged_users']),
+      fetchInsightsTrend(tokens.page_id, tokens.page_access_token, FB_PAGE_METRIC_CANDIDATES),
     ]);
 
     const facebook = {
@@ -138,6 +163,7 @@ Deno.serve(async (req) => {
       page_name: tokens.page_name,
       followers: pageFields.ok ? (pageFields.body.fan_count ?? null) : null,
       trend: pageInsights.trend,
+      metrics: pageInsights.metrics,
       insights_error: pageInsights.trend.length === 0 ? pageInsights.errors[0] ?? null : null,
     };
 
@@ -148,7 +174,7 @@ Deno.serve(async (req) => {
           fields: 'followers_count,media_count,username',
           access_token: tokens.page_access_token,
         }),
-        fetchInsightsTrend(tokens.ig_user_id, tokens.page_access_token, ['reach', 'profile_views'], {
+        fetchInsightsTrend(tokens.ig_user_id, tokens.page_access_token, IG_METRIC_CANDIDATES, {
           metric_type: 'time_series',
         }),
       ]);
@@ -159,6 +185,7 @@ Deno.serve(async (req) => {
         followers: igFields.ok ? (igFields.body.followers_count ?? null) : null,
         media_count: igFields.ok ? (igFields.body.media_count ?? null) : null,
         trend: igInsights.trend,
+        metrics: igInsights.metrics,
         insights_error: igInsights.trend.length === 0 ? igInsights.errors[0] ?? null : null,
       };
     }

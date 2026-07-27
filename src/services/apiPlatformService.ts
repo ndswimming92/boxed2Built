@@ -208,11 +208,17 @@ export interface SocialMetricsTrendPoint {
   [metric: string]: string | number;
 }
 
+export interface SocialMetricDescriptor {
+  key: string;
+  label: string;
+}
+
 export interface FacebookMetrics {
   connected: boolean;
   page_name?: string;
   followers: number | null;
   trend: SocialMetricsTrendPoint[];
+  metrics: SocialMetricDescriptor[];
   insights_error: string | null;
 }
 
@@ -222,6 +228,7 @@ export interface InstagramMetrics {
   followers?: number | null;
   media_count?: number | null;
   trend?: SocialMetricsTrendPoint[];
+  metrics?: SocialMetricDescriptor[];
   insights_error?: string | null;
 }
 
