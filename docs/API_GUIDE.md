@@ -162,10 +162,14 @@ providers follow the same pattern.
   `<SUPABASE_URL>/functions/v1/facebook-oauth-callback` → note the App ID and
   App Secret. **App Review is not required for the business's own use**: while
   the app is in Development Mode, its own admins/testers can grant the full
-  `pages_manage_posts` / `instagram_content_publish` permissions to themselves
-  without waiting on Meta's review — that review is only required to let
-  *other* people's accounts use the app. Requires an Instagram **Business or
-  Creator** account already linked to the Facebook Page in Meta Business Suite.
+  `pages_manage_posts` / `instagram_content_publish` / `read_insights` /
+  `instagram_manage_insights` permissions to themselves without waiting on
+  Meta's review — that review is only required to let *other* people's
+  accounts use the app. Requires an Instagram **Business or Creator** account
+  already linked to the Facebook Page in Meta Business Suite. If
+  `read_insights`/`instagram_manage_insights` are added to an app that was
+  already connected, existing tokens don't retroactively gain the new scopes —
+  reconnect from **Admin → Connections** once to re-authorize with them.
 - *TikTok*: TikTok for Developers app + audit.
 
 Store each provider's client ID/secret as edge-function secrets
@@ -280,6 +284,26 @@ gallery item has a **Post to Social** button (Admin → Gallery):
    Instagram equivalents) and returned to the UI for immediate feedback.
 4. Only `type: 'image'` items can be posted; video publishing to these APIs
    needs a different, async upload flow and isn't supported yet.
+
+### Viewing Facebook/Instagram metrics
+
+**Admin → Social Metrics** shows follower counts and a 30-day reach/engagement
+trend for the connected Facebook Page and its linked Instagram account.
+
+1. The page calls `get-social-metrics` (admin-JWT protected), which loads the
+   same Vault-stored Page token used for posting and calls the Graph API's
+   `/{page-id}` and `/{page-id}/insights` (and the Instagram equivalents on
+   `/{ig-user-id}`) — no separate connection or token is needed beyond the
+   existing Facebook/Instagram connection.
+2. Follower/media counts come from stable Graph API fields (`fan_count`,
+   `followers_count`, `media_count`) that don't depend on Insights permissions
+   staying valid. The 30-day trend comes from the Insights endpoints
+   (`page_impressions_unique`, `page_engaged_users`, `reach`, `profile_views`),
+   fetched one metric at a time so a single metric Meta has deprecated doesn't
+   take down the whole trend chart — whichever metrics succeed are shown, and
+   a friendly banner explains when none do (most often because the connection
+   predates the `read_insights`/`instagram_manage_insights` scopes and needs a
+   one-time reconnect).
 
 ### Gallery item purpose (website / social / both)
 
