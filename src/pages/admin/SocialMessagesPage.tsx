@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, RefreshCw, AlertCircle, CheckCircle2, Send } from 'lucide-react';
+import { Facebook, Instagram, RefreshCw, AlertCircle, CheckCircle2, Send, Archive, ArchiveRestore } from 'lucide-react';
 import {
   getSocialConversations,
   sendSocialMessage,
+  archiveSocialConversation,
   SocialConversation,
   SocialConversationsResult,
 } from '../../services/apiPlatformService';
@@ -22,10 +23,11 @@ export default function SocialMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'needs_reply' | 'all'>('needs_reply');
+  const [filter, setFilter] = useState<'needs_reply' | 'all' | 'archived'>('needs_reply');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendError, setSendError] = useState<Record<string, string>>({});
+  const [archivingId, setArchivingId] = useState<string | null>(null);
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true);
@@ -63,6 +65,21 @@ export default function SocialMessagesPage() {
     }
   };
 
+  const handleArchiveToggle = async (conversation: SocialConversation) => {
+    setArchivingId(conversation.id);
+    try {
+      await archiveSocialConversation(conversation.id, conversation.platform, !conversation.archived);
+      await fetchData(true);
+    } catch (err) {
+      setSendError((prev) => ({
+        ...prev,
+        [conversation.id]: err instanceof Error ? err.message : 'Failed to update conversation.',
+      }));
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -97,7 +114,14 @@ export default function SocialMessagesPage() {
 
   if (!result) return null;
 
-  const conversations = filter === 'needs_reply' ? result.conversations.filter((c) => c.needs_reply) : result.conversations;
+  const activeConversations = result.conversations.filter((c) => !c.archived);
+  const archivedConversations = result.conversations.filter((c) => c.archived);
+  const conversations =
+    filter === 'needs_reply'
+      ? activeConversations.filter((c) => c.needs_reply)
+      : filter === 'archived'
+      ? archivedConversations
+      : activeConversations;
   const platformError = result.facebook_error || result.instagram_error;
 
   return (
@@ -131,7 +155,7 @@ export default function SocialMessagesPage() {
             filter === 'needs_reply' ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          Needs Reply ({result.conversations.filter((c) => c.needs_reply).length})
+          Needs Reply ({activeConversations.filter((c) => c.needs_reply).length})
         </button>
         <button
           onClick={() => setFilter('all')}
@@ -139,7 +163,15 @@ export default function SocialMessagesPage() {
             filter === 'all' ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          All ({result.conversations.length})
+          All ({activeConversations.length})
+        </button>
+        <button
+          onClick={() => setFilter('archived')}
+          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+            filter === 'archived' ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+          }`}
+        >
+          Archived ({archivedConversations.length})
         </button>
       </div>
 
@@ -147,7 +179,11 @@ export default function SocialMessagesPage() {
         <div className="p-8 text-center bg-white rounded-xl border border-slate-200">
           <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
           <p className="text-sm text-slate-600">
-            {filter === 'needs_reply' ? "You're all caught up — no messages waiting on a reply." : 'No conversations found.'}
+            {filter === 'needs_reply'
+              ? "You're all caught up — no messages waiting on a reply."
+              : filter === 'archived'
+              ? 'No archived conversations.'
+              : 'No conversations found.'}
           </p>
         </div>
       ) : (
@@ -172,29 +208,48 @@ export default function SocialMessagesPage() {
                         Replied
                       </span>
                     )}
+                    <button
+                      onClick={() => handleArchiveToggle(conversation)}
+                      disabled={archivingId === conversation.id}
+                      className="ml-auto inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {conversation.archived ? (
+                        <>
+                          <ArchiveRestore className="w-3.5 h-3.5" />
+                          Unarchive
+                        </>
+                      ) : (
+                        <>
+                          <Archive className="w-3.5 h-3.5" />
+                          Archive
+                        </>
+                      )}
+                    </button>
                   </div>
                   <p className="text-sm text-slate-700 mt-1">{conversation.last_message}</p>
 
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      value={drafts[conversation.id] || ''}
-                      onChange={(e) => setDrafts((prev) => ({ ...prev, [conversation.id]: e.target.value }))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleReply(conversation);
-                      }}
-                      placeholder="Write a reply…"
-                      className="flex-1 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    <button
-                      onClick={() => handleReply(conversation)}
-                      disabled={sendingId === conversation.id || !(drafts[conversation.id] || '').trim()}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      {sendingId === conversation.id ? 'Sending…' : 'Reply'}
-                    </button>
-                  </div>
+                  {!conversation.archived && (
+                    <div className="mt-3 flex gap-2">
+                      <input
+                        type="text"
+                        value={drafts[conversation.id] || ''}
+                        onChange={(e) => setDrafts((prev) => ({ ...prev, [conversation.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleReply(conversation);
+                        }}
+                        placeholder="Write a reply…"
+                        className="flex-1 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <button
+                        onClick={() => handleReply(conversation)}
+                        disabled={sendingId === conversation.id || !(drafts[conversation.id] || '').trim()}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        {sendingId === conversation.id ? 'Sending…' : 'Reply'}
+                      </button>
+                    </div>
+                  )}
                   {sendError[conversation.id] && (
                     <p className="text-xs text-red-600 mt-1">{sendError[conversation.id]}</p>
                   )}

@@ -30,6 +30,7 @@ interface SocialConversation {
   last_message: string;
   last_message_time: string;
   needs_reply: boolean;
+  archived: boolean;
 }
 
 function json(body: unknown, status = 200) {
@@ -51,7 +52,8 @@ async function fetchConversations(
   pageId: string,
   accessToken: string,
   platform: 'facebook' | 'instagram',
-  ownerId: string
+  ownerId: string,
+  archivedIds: Set<string>
 ): Promise<{ conversations: SocialConversation[]; error: string | null }> {
   const { ok, body } = await graphGet(`/${pageId}/conversations`, {
     platform: platform === 'facebook' ? 'messenger' : 'instagram',
@@ -82,6 +84,7 @@ async function fetchConversations(
       last_message: lastMessage.message ?? '',
       last_message_time: lastMessage.created_time ?? convo.updated_time,
       needs_reply: lastMessage?.from?.id !== ownerId,
+      archived: archivedIds.has(convo.id),
     });
   }
   return { conversations, error: null };
@@ -130,17 +133,22 @@ Deno.serve(async (req) => {
     }
     const tokens = JSON.parse(secretJson) as FacebookTokens;
 
+    const { data: archivedRows } = await admin
+      .from('social_conversation_archive')
+      .select('conversation_id');
+    const archivedIds = new Set((archivedRows ?? []).map((row) => row.conversation_id as string));
+
     const [facebookResult, instagramResult] = await Promise.all([
-      fetchConversations(tokens.page_id, tokens.page_access_token, 'facebook', tokens.page_id),
+      fetchConversations(tokens.page_id, tokens.page_access_token, 'facebook', tokens.page_id, archivedIds),
       tokens.ig_user_id
-        ? fetchConversations(tokens.page_id, tokens.page_access_token, 'instagram', tokens.ig_user_id)
+        ? fetchConversations(tokens.page_id, tokens.page_access_token, 'instagram', tokens.ig_user_id, archivedIds)
         : Promise.resolve({ conversations: [] as SocialConversation[], error: null }),
     ]);
 
     const conversations = [...facebookResult.conversations, ...instagramResult.conversations].sort(
       (a, b) => new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime()
     );
-    const needsReplyCount = conversations.filter((c) => c.needs_reply).length;
+    const needsReplyCount = conversations.filter((c) => c.needs_reply && !c.archived).length;
 
     return json({
       conversations,

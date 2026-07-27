@@ -373,6 +373,14 @@ a sidebar badge for how many still need a reply.
    comments badge.
 6. Requires the `pages_messaging` and `instagram_manage_messages` scopes —
    see the Facebook/Instagram app-registration notes above.
+7. A conversation stuck outside the 24-hour window (or just no longer
+   relevant) can be **archived** — this only writes a row to the local
+   `social_conversation_archive` table (conversation id + platform); nothing
+   on Meta's side is touched or deleted. Archived conversations drop out of
+   "Needs Reply"/"All" and the sidebar badge count, and live under their own
+   "Archived" tab with an "Unarchive" action. Handled by
+   `archive-social-conversation` (admin-JWT protected), which upserts or
+   deletes the archive row depending on the `archived` flag in the request.
 
 ### Gallery item purpose (website / social / both)
 
