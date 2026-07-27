@@ -164,16 +164,19 @@ providers follow the same pattern.
   the app is in Development Mode, its own admins/testers can grant the full
   `pages_manage_posts` / `instagram_content_publish` / `read_insights` /
   `instagram_manage_insights` / `pages_manage_engagement` /
-  `instagram_manage_comments` permissions to themselves without waiting on
-  Meta's review — that review is only required to let *other* people's
-  accounts use the app. Requires an Instagram **Business or Creator** account
-  already linked to the Facebook Page in Meta Business Suite. If new scopes
-  are added to an app that was already connected, existing tokens don't
-  retroactively gain them — reconnect from **Admin → Connections** once to
-  re-authorize with the fuller set. Note `pages_manage_engagement` lives under
-  a different "use case" tab in the Meta App Dashboard's permissions list than
-  the Instagram-specific scopes (e.g. under "Facebook Login for Business"
-  rather than "Instagram API").
+  `pages_read_user_content` / `instagram_manage_comments` permissions to
+  themselves without waiting on Meta's review — that review is only required
+  to let *other* people's accounts use the app. Requires an Instagram
+  **Business or Creator** account already linked to the Facebook Page in Meta
+  Business Suite. If new scopes are added to an app that was already
+  connected, existing tokens don't retroactively gain them — reconnect from
+  **Admin → Connections** once to re-authorize with the fuller set. Note
+  `pages_manage_engagement` and `pages_read_user_content` (a dependency of
+  `pages_manage_engagement` — Meta's OAuth dialog rejects the whole request
+  with "Invalid Scopes: pages_read_user_content" if it's requested but not
+  enabled) live under a different "use case" tab in the Meta App Dashboard's
+  permissions list than the Instagram-specific scopes (e.g. under "Facebook
+  Login for Business" rather than "Instagram API").
 - *TikTok*: TikTok for Developers app + audit.
 
 Store each provider's client ID/secret as edge-function secrets
@@ -334,9 +337,10 @@ leaving the admin.
    minutes (`useSocialCommentsBadge` hook) and shows the unreplied count;
    failures (not connected yet, transient Graph API error) are swallowed
    silently rather than showing an error badge.
-5. Requires the `pages_manage_engagement` and `instagram_manage_comments`
-   scopes — see the Facebook/Instagram app-registration notes above for where
-   to enable them and the one-time reconnect needed for existing connections.
+5. Requires the `pages_manage_engagement` (plus its `pages_read_user_content`
+   dependency) and `instagram_manage_comments` scopes — see the
+   Facebook/Instagram app-registration notes above for where to enable them
+   and the one-time reconnect needed for existing connections.
 
 ### Gallery item purpose (website / social / both)
 
