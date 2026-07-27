@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       // Meta rejects a RESPONSE-type send once the customer's last message is
       // more than 24 hours old — surface that plainly instead of a raw Graph error.
       const rawMessage = resBody?.error?.message || '';
-      const outsideWindow = /24.?hour|message window|OutsideWindow/i.test(rawMessage);
+      const outsideWindow = /window|24.?hour/i.test(rawMessage);
       return json({
         error: outsideWindow
           ? 'This conversation is outside the 24-hour reply window Meta allows for standard replies. The customer needs to message again before a reply can be sent.'
