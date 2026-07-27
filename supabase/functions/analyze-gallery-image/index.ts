@@ -109,6 +109,11 @@ Let CATEGORY set the framing: "Completed Work" = the finished result;
 Describe only what you can see. If a product link is provided, use verified
 brand/product details from the lookup, but never invent specs.
 
+Never use a literal straight double-quote character (") anywhere in title,
+description, or alt — not for inches, not for quoting a phrase. Spell inches
+out instead (e.g. "72-inch" not 72"). An unescaped quote breaks the JSON
+output below.
+
 Respond with ONLY valid JSON, no markdown or backticks:
 {"title": "...", "description": "...", "alt": "...", "hashtags": ["...", "..."]}`,
       messages: [{ role: "user", content: userContent }],
@@ -118,81 +123,78 @@ Respond with ONLY valid JSON, no markdown or backticks:
       body.tools = tools;
     }
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(body),
-    });
+    const maxAttempts = 2;
+    let lastError: { status: number; message: string; details?: string } | null = null;
+    let parsed: Record<string, unknown> | null = null;
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Claude API error:", response.status, errorBody);
-      return new Response(
-        JSON.stringify({
-          error: `AI analysis failed (${response.status})`,
-          details: errorBody,
-        }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+    for (let attempt = 0; attempt < maxAttempts && !parsed; attempt++) {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Claude API error:", response.status, errorBody);
+        lastError = { status: 502, message: `AI analysis failed (${response.status})`, details: errorBody };
+        continue;
+      }
+
+      const result = await response.json();
+
+      // Find the last text block (web search adds intermediate blocks before the final answer)
+      const textBlocks = result.content?.filter(
+        (block: { type: string }) => block.type === "text"
       );
-    }
+      const lastTextBlock = textBlocks?.[textBlocks.length - 1];
 
-    const result = await response.json();
+      if (!lastTextBlock?.text) {
+        lastError = { status: 502, message: "No response from AI" };
+        continue;
+      }
 
-    // Find the last text block (web search adds intermediate blocks before the final answer)
-    const textBlocks = result.content?.filter(
-      (block: { type: string }) => block.type === "text"
-    );
-    const lastTextBlock = textBlocks?.[textBlocks.length - 1];
+      let jsonText = lastTextBlock.text.trim();
+      if (jsonText.startsWith("```")) {
+        jsonText = jsonText
+          .replace(/^```(?:json)?\s*/, "")
+          .replace(/\s*```$/, "");
+      }
+      // The model occasionally wraps the JSON in a sentence or two. Extract the
+      // object so a stray preamble doesn't blow up JSON.parse.
+      const objStart = jsonText.indexOf("{");
+      const objEnd = jsonText.lastIndexOf("}");
+      if (objStart !== -1 && objEnd > objStart) {
+        jsonText = jsonText.slice(objStart, objEnd + 1);
+      }
 
-    if (!lastTextBlock?.text) {
-      return new Response(
-        JSON.stringify({ error: "No response from AI" }),
-        {
+      try {
+        parsed = JSON.parse(jsonText);
+      } catch (_parseErr) {
+        console.error(`Failed to parse AI response as JSON (attempt ${attempt + 1}):`, lastTextBlock.text);
+        lastError = {
           status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    let jsonText = lastTextBlock.text.trim();
-    if (jsonText.startsWith("```")) {
-      jsonText = jsonText
-        .replace(/^```(?:json)?\s*/, "")
-        .replace(/\s*```$/, "");
-    }
-    // The model occasionally wraps the JSON in a sentence or two. Extract the
-    // object so a stray preamble doesn't blow up JSON.parse.
-    const objStart = jsonText.indexOf("{");
-    const objEnd = jsonText.lastIndexOf("}");
-    if (objStart !== -1 && objEnd > objStart) {
-      jsonText = jsonText.slice(objStart, objEnd + 1);
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(jsonText);
-    } catch (_parseErr) {
-      console.error("Failed to parse AI response as JSON:", lastTextBlock.text);
-      return new Response(
-        JSON.stringify({
-          error: "AI returned an unexpected format. Please try again.",
+          message: "AI returned an unexpected format. Please try again.",
           details: lastTextBlock.text.slice(0, 500),
-        }),
+        };
+      }
+    }
+
+    if (!parsed) {
+      return new Response(
+        JSON.stringify({ error: lastError!.message, details: lastError!.details }),
         {
-          status: 502,
+          status: lastError!.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    const hashtags: string[] = Array.isArray(parsed.hashtags) ? parsed.hashtags : [];
+    const hashtags: string[] = Array.isArray(parsed.hashtags) ? parsed.hashtags as string[] : [];
     const hasRequiredTag = hashtags.some(
       (tag: string) => typeof tag === "string" && tag.toLowerCase() === "#boxed2built"
     );
