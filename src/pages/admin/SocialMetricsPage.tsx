@@ -20,9 +20,15 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { getSocialMetrics, SocialMetrics } from '../../services/apiPlatformService';
+import {
+  getSocialMetrics,
+  SocialMetrics,
+  SocialMetricsTrendPoint,
+} from '../../services/apiPlatformService';
 import MetricCard from '../../components/analytics/MetricCard';
 import ChartCard from '../../components/analytics/ChartCard';
+
+const LINE_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#db2777', '#7c3aed'];
 
 function formatTrendDate(value: string): string {
   const d = new Date(value);
@@ -36,7 +42,7 @@ export default function SocialMetricsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async (isRefresh = false) => {
-    isRefresh ? setRefreshing(true) : setLoading(true);
+    if (isRefresh) setRefreshing(true); else setLoading(true);
     setError(null);
     try {
       const data = await getSocialMetrics();
@@ -44,7 +50,7 @@ export default function SocialMetricsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load social metrics.');
     } finally {
-      isRefresh ? setRefreshing(false) : setLoading(false);
+      if (isRefresh) setRefreshing(false); else setLoading(false);
     }
   };
 
@@ -124,18 +130,23 @@ export default function SocialMetricsPage() {
                 iconColor="text-blue-600"
                 iconBgColor="bg-blue-100"
               />
-              <MetricCard
-                title="Reach (last 30 days)"
-                value={sumMetric(facebook.trend, 'page_impressions_unique')}
-                icon={Eye}
-                iconColor="text-blue-600"
-                iconBgColor="bg-blue-100"
-              />
+              {facebook.metrics[0] && (
+                <MetricCard
+                  title={`${facebook.metrics[0].label} (last 30 days)`}
+                  value={sumMetric(facebook.trend, facebook.metrics[0].key)}
+                  icon={Eye}
+                  iconColor="text-blue-600"
+                  iconBgColor="bg-blue-100"
+                />
+              )}
             </div>
             {facebook.insights_error ? (
               <InsightsUnavailableNotice message={facebook.insights_error} />
             ) : facebook.trend.length > 0 ? (
-              <ChartCard title="Facebook Page Trend" subtitle="Daily reach and engaged users, last 30 days">
+              <ChartCard
+                title="Facebook Page Trend"
+                subtitle={`Daily ${facebook.metrics.map((m) => m.label.toLowerCase()).join(' and ')}, last 30 days`}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={facebook.trend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -143,8 +154,17 @@ export default function SocialMetricsPage() {
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip labelFormatter={formatTrendDate} />
                     <Legend />
-                    <Line type="monotone" dataKey="page_impressions_unique" name="Reach" stroke="#2563eb" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="page_engaged_users" name="Engaged Users" stroke="#10b981" strokeWidth={2} dot={false} />
+                    {facebook.metrics.map((m, i) => (
+                      <Line
+                        key={m.key}
+                        type="monotone"
+                        dataKey={m.key}
+                        name={m.label}
+                        stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
                   </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
@@ -181,18 +201,23 @@ export default function SocialMetricsPage() {
                 iconColor="text-pink-600"
                 iconBgColor="bg-pink-100"
               />
-              <MetricCard
-                title="Reach (last 30 days)"
-                value={sumMetric(instagram.trend, 'reach')}
-                icon={Eye}
-                iconColor="text-pink-600"
-                iconBgColor="bg-pink-100"
-              />
+              {instagram.metrics?.[0] && (
+                <MetricCard
+                  title={`${instagram.metrics[0].label} (last 30 days)`}
+                  value={sumMetric(instagram.trend, instagram.metrics[0].key)}
+                  icon={Eye}
+                  iconColor="text-pink-600"
+                  iconBgColor="bg-pink-100"
+                />
+              )}
             </div>
             {instagram.insights_error ? (
               <InsightsUnavailableNotice message={instagram.insights_error} />
             ) : instagram.trend && instagram.trend.length > 0 ? (
-              <ChartCard title="Instagram Trend" subtitle="Daily reach and profile views, last 30 days">
+              <ChartCard
+                title="Instagram Trend"
+                subtitle={`Daily ${(instagram.metrics ?? []).map((m) => m.label.toLowerCase()).join(' and ')}, last 30 days`}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={instagram.trend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -200,8 +225,17 @@ export default function SocialMetricsPage() {
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip labelFormatter={formatTrendDate} />
                     <Legend />
-                    <Line type="monotone" dataKey="reach" name="Reach" stroke="#db2777" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="profile_views" name="Profile Views" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                    {(instagram.metrics ?? []).map((m, i) => (
+                      <Line
+                        key={m.key}
+                        type="monotone"
+                        dataKey={m.key}
+                        name={m.label}
+                        stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
                   </LineChart>
                 </ResponsiveContainer>
               </ChartCard>
@@ -213,7 +247,7 @@ export default function SocialMetricsPage() {
   );
 }
 
-function sumMetric(trend: { [metric: string]: string | number }[] | undefined, key: string): string {
+function sumMetric(trend: SocialMetricsTrendPoint[] | undefined, key: string): string {
   if (!trend || trend.length === 0) return '—';
   const total = trend.reduce((acc, row) => acc + (typeof row[key] === 'number' ? (row[key] as number) : 0), 0);
   return total.toLocaleString();
