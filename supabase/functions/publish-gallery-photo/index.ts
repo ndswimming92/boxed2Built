@@ -75,6 +75,28 @@ async function postToFacebook(
   }
 }
 
+async function waitForContainerReady(creationId: string, accessToken: string): Promise<void> {
+  const maxAttempts = 15;
+  const delayMs = 2000;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const statusRes = await fetch(
+      `${GRAPH_URL}/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`
+    );
+    const statusBody = await statusRes.json();
+    if (!statusRes.ok) throw new Error(statusBody?.error?.message || 'Failed to check Instagram media container status');
+
+    if (statusBody.status_code === 'FINISHED') return;
+    if (statusBody.status_code === 'ERROR' || statusBody.status_code === 'EXPIRED') {
+      throw new Error(`Instagram media container failed to process (${statusBody.status_code})`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  throw new Error('Instagram media container took too long to process. Try publishing again.');
+}
+
 async function postToInstagram(
   tokens: FacebookTokens,
   imageUrl: string,
@@ -99,6 +121,8 @@ async function postToInstagram(
     const createBody = await createRes.json();
     if (!createRes.ok) throw new Error(createBody?.error?.message || 'Instagram rejected the media container');
     const creationId = createBody.id as string;
+
+    await waitForContainerReady(creationId, tokens.page_access_token);
 
     const publishRes = await fetch(`${GRAPH_URL}/${tokens.ig_user_id}/media_publish`, {
       method: 'POST',
