@@ -97,6 +97,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'API Keys', href: '/admin/api-keys', icon: KeyRound },
       { name: 'Connections', href: '/admin/connections', icon: Plug },
+      { name: 'Claude Usage', href: '/admin/claude-usage', icon: DollarSign },
       { name: 'Attributes', href: '/admin/attributes', icon: Settings },
       { name: 'Branding', href: '/admin/branding', icon: Palette },
       { name: 'Test Identifiers', href: '/admin/test-identifiers', icon: FlaskConical },
