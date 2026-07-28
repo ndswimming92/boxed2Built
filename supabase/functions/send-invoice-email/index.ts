@@ -17,6 +17,7 @@ const WEBSITE_URL = 'https://boxed2built.com';
 const CONTACT_PHONE = '(615) 403-4538';
 const CONTACT_EMAIL = 'nicholas.davidson@boxed2built.com';
 const APP_URL = 'https://www.boxed2built.com';
+const LOGO_URL = 'https://boxed2built.com/boxed2built_logo.png';
 
 const COOLDOWN_MINUTES = 10;
 const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
@@ -76,53 +77,57 @@ function formatDate(d: string): string {
   return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function buildLineItemsTable(lineItems: LineItem[], invoice: Invoice): string {
-  const rows = lineItems.map((item) => `
+function buildLineItemsTable(lineItems: LineItem[]): string {
+  return lineItems.map((item) => `
     <tr>
-      <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#374151;font-size:14px;line-height:1.5;">
-        ${escapeHtml(item.description)}
-        <div style="color:#9ca3af;font-size:12px;margin-top:2px;text-transform:capitalize;">${escapeHtml(item.item_type)}</div>
+      <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;text-align:left;vertical-align:top;">
+        <div style="font-size:15px;font-weight:600;color:#111827;">${escapeHtml(item.description)}</div>
+        <div style="margin-top:2px;font-size:13px;color:#9ca3af;text-transform:capitalize;">${escapeHtml(item.item_type)}</div>
       </td>
-      <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#374151;font-size:14px;text-align:center;white-space:nowrap;">${item.quantity}</td>
-      <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#374151;font-size:14px;text-align:right;white-space:nowrap;">${formatCurrency(item.unit_price)}</td>
-      <td style="padding:10px 16px;border-bottom:1px solid #f1f5f9;color:#111827;font-size:14px;font-weight:600;text-align:right;white-space:nowrap;">${formatCurrency(item.total)}</td>
+      <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;text-align:center;font-size:14px;color:#4b5563;vertical-align:top;">${item.quantity}</td>
+      <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;text-align:right;font-size:14px;color:#4b5563;vertical-align:top;">${formatCurrency(item.unit_price)}</td>
+      <td style="padding:16px 0;border-bottom:1px solid #f3f4f6;text-align:right;font-size:15px;font-weight:700;color:#111827;vertical-align:top;">${formatCurrency(item.total)}</td>
     </tr>`).join('');
+}
 
+function buildTotalsBlock(invoice: Invoice): string {
   const taxRow = invoice.tax_amount > 0 ? `
     <tr>
-      <td colspan="3" style="padding:8px 16px;color:#6b7280;font-size:13px;text-align:right;">Tax (${invoice.tax_rate}%)</td>
-      <td style="padding:8px 16px;color:#6b7280;font-size:13px;text-align:right;white-space:nowrap;">${formatCurrency(invoice.tax_amount)}</td>
+      <td style="padding:6px 0;font-size:14px;color:#6b7280;text-align:left;">Tax (${invoice.tax_rate}%)</td>
+      <td style="padding:6px 0;font-size:14px;font-weight:600;color:#374151;text-align:right;">${formatCurrency(invoice.tax_amount)}</td>
     </tr>` : '';
 
   const paidRow = invoice.amount_paid > 0 ? `
     <tr>
-      <td colspan="3" style="padding:8px 16px;color:#16a34a;font-size:13px;text-align:right;">Amount Paid</td>
-      <td style="padding:8px 16px;color:#16a34a;font-size:13px;text-align:right;white-space:nowrap;">-${formatCurrency(invoice.amount_paid)}</td>
+      <td style="padding:6px 0;font-size:14px;color:#16a34a;text-align:left;">Amount Paid</td>
+      <td style="padding:6px 0;font-size:14px;font-weight:600;color:#16a34a;text-align:right;">-${formatCurrency(invoice.amount_paid)}</td>
     </tr>` : '';
 
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:8px;">
-    <thead>
-      <tr style="background:#f8fafc;">
-        <th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb;">Description</th>
-        <th style="padding:10px 16px;text-align:center;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Qty</th>
-        <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Unit Price</th>
-        <th style="padding:10px 16px;text-align:right;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rows}
-      <tr style="background:#f8fafc;">
-        <td colspan="3" style="padding:10px 16px;font-size:13px;font-weight:600;color:#374151;text-align:right;border-top:1px solid #e5e7eb;">Subtotal</td>
-        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#374151;text-align:right;white-space:nowrap;border-top:1px solid #e5e7eb;">${formatCurrency(invoice.subtotal)}</td>
-      </tr>
-      ${taxRow}
-      ${paidRow}
-      <tr style="background:#1e3a5f;">
-        <td colspan="3" style="padding:12px 16px;font-size:15px;font-weight:700;color:#ffffff;text-align:right;">Total Due</td>
-        <td style="padding:12px 16px;font-size:15px;font-weight:700;color:#ffffff;text-align:right;white-space:nowrap;">${formatCurrency(invoice.amount_due)}</td>
-      </tr>
-    </tbody>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <tr>
+      <td></td>
+      <td width="260">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;font-size:14px;color:#6b7280;text-align:left;">Subtotal</td>
+            <td style="padding:6px 0;font-size:14px;font-weight:600;color:#374151;text-align:right;">${formatCurrency(invoice.subtotal)}</td>
+          </tr>
+          ${taxRow}
+          ${paidRow}
+          <tr>
+            <td colspan="2" style="padding:8px 0 0 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background:#0E2748;border-radius:10px;">
+                <tr>
+                  <td style="padding:13px 16px;font-size:14px;font-weight:700;color:#ffffff;text-align:left;">Total Due</td>
+                  <td style="padding:13px 16px;font-size:17px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:-0.01em;">${formatCurrency(invoice.amount_due)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
   </table>`;
 }
 
@@ -134,87 +139,204 @@ function buildHtml(
   businessName: string,
 ): string {
   const firstName = escapeHtml((clientName.trim() || 'there').split(' ')[0] || 'there');
+  const clientNameEsc = escapeHtml(clientName.trim() || 'there');
   const invoiceNum = escapeHtml(invoice.invoice_number);
   const typeLabel = (invoice.invoice_type || 'invoice').charAt(0).toUpperCase() + (invoice.invoice_type || 'invoice').slice(1);
   const dueDateStr = invoice.due_date ? formatDate(invoice.due_date) : null;
   const invoiceDateStr = formatDate(invoice.invoice_date);
+  const amountDueStr = formatCurrency(invoice.amount_due);
   const notesBlock = invoice.notes
-    ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-        <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Notes</p>
-        <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;white-space:pre-line;">${escapeHtml(invoice.notes)}</p>
-       </div>`
+    ? `<tr><td style="padding:18px 40px 0 40px;">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;">Notes</div>
+          <p style="margin:5px 0 0;color:#374151;font-size:14px;line-height:1.6;white-space:pre-line;">${escapeHtml(invoice.notes)}</p>
+        </div>
+      </td></tr>`
     : '';
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
-  <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<body style="margin:0;padding:0;background:#EEF1F5;">
+<div style="background:#EEF1F5;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;border-collapse:separate;background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 12px 34px -10px rgba(14,39,72,0.22);">
 
-      <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Your Invoice from ${escapeHtml(businessName)}</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Hi ${firstName} — your ${typeLabel.toLowerCase()} invoice is ready for review.</p>
-      </td></tr>
+          <!-- Header -->
+          <tr>
+            <td style="background:#0E2748;padding:28px 40px 24px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="vertical-align:middle;padding-right:16px;">
+                          <div style="width:72px;height:72px;background:#FFFFFF;border-radius:9999px;text-align:center;line-height:72px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+                            <img src="${LOGO_URL}" alt="${escapeHtml(businessName)}" width="60" style="width:60px;height:60px;vertical-align:middle;">
+                          </div>
+                        </td>
+                        <td style="vertical-align:middle;">
+                          <div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#FFFFFF;line-height:1;">Boxed<span style="color:#D9A441;">2</span>Built</div>
+                          <div style="margin-top:7px;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8FA6C4;">We assemble. You enjoy.</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <span style="display:inline-block;background:rgba(217,164,65,0.16);border:1px solid rgba(217,164,65,0.5);color:#F0C877;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:7px 13px;border-radius:9999px;">${escapeHtml(typeLabel)}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-      <tr><td style="background:#ffffff;padding:32px;">
-        <p style="margin:0 0 6px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Please find your ${typeLabel.toLowerCase()} invoice details below. You can pay securely online using the button at the bottom of this email.</p>
+          <!-- Invoice number band -->
+          <tr>
+            <td style="background:#0B1F3A;padding:18px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">${escapeHtml(typeLabel)}</div>
+                    <div style="margin-top:3px;font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:-0.01em;">${invoiceNum}</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">Amount Due</div>
+                    <div style="margin-top:3px;font-size:20px;font-weight:800;color:#4ADE80;letter-spacing:-0.01em;">${amountDueStr}</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-        <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="font-size:13px;color:#6b7280;padding-bottom:6px;">Invoice #</td>
-              <td style="font-size:13px;font-weight:700;color:#1e3a5f;text-align:right;padding-bottom:6px;">${invoiceNum}</td>
-            </tr>
-            <tr>
-              <td style="font-size:13px;color:#6b7280;padding-bottom:6px;">Invoice Date</td>
-              <td style="font-size:13px;color:#374151;text-align:right;padding-bottom:6px;">${invoiceDateStr}</td>
-            </tr>
-            ${dueDateStr ? `<tr>
-              <td style="font-size:13px;color:#6b7280;padding-bottom:6px;">Due Date</td>
-              <td style="font-size:13px;color:#374151;text-align:right;padding-bottom:6px;">${dueDateStr}</td>
-            </tr>` : ''}
-            ${invoice.payment_terms ? `<tr>
-              <td style="font-size:13px;color:#6b7280;">Payment Terms</td>
-              <td style="font-size:13px;color:#374151;text-align:right;">${escapeHtml(invoice.payment_terms)}</td>
-            </tr>` : ''}
-          </table>
-        </div>
+          <!-- Greeting -->
+          <tr>
+            <td style="padding:34px 40px 0 40px;">
+              <p style="margin:0 0 14px 0;font-size:17px;font-weight:700;color:#111827;letter-spacing:-0.01em;">Hi ${firstName},</p>
+              <p style="margin:0;font-size:15px;line-height:1.65;color:#4B5563;">Thanks for choosing ${escapeHtml(businessName)}. Your ${typeLabel.toLowerCase()} is ready — the details are below, and you can pay securely online whenever you're ready. No payment is due until the job is done.</p>
+            </td>
+          </tr>
 
-        ${buildLineItemsTable(lineItems, invoice)}
+          <!-- Meta grid -->
+          <tr>
+            <td style="padding:24px 40px 0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;">
+                <tr>
+                  <td width="50%" style="padding:16px 20px;border-right:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Billed To</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${clientNameEsc}</div>
+                  </td>
+                  <td width="50%" style="padding:16px 20px;border-bottom:1px solid #E5E7EB;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Invoice Date</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoiceDateStr}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="padding:16px 20px;border-right:1px solid #E5E7EB;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Due Date</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:${dueDateStr ? '#B91C1C' : '#111827'};">${dueDateStr ?? 'Due on receipt'}</div>
+                  </td>
+                  <td width="50%" style="padding:16px 20px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Payment Terms</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoice.payment_terms ? escapeHtml(invoice.payment_terms) : 'N/A'}</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-        ${notesBlock}
+          <!-- Line items -->
+          <tr>
+            <td style="padding:28px 40px 0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="padding:0 0 10px 0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9CA3AF;text-align:left;border-bottom:2px solid #E5E7EB;">Description</td>
+                  <td style="padding:0 0 10px 0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9CA3AF;text-align:center;border-bottom:2px solid #E5E7EB;">Qty</td>
+                  <td style="padding:0 0 10px 0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9CA3AF;text-align:right;border-bottom:2px solid #E5E7EB;">Unit</td>
+                  <td style="padding:0 0 10px 0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9CA3AF;text-align:right;border-bottom:2px solid #E5E7EB;">Total</td>
+                </tr>
+                ${buildLineItemsTable(lineItems)}
+              </table>
+            </td>
+          </tr>
 
-        <div style="text-align:center;padding:28px 0 4px;">
-          <p style="margin:0 0 6px;color:#6b7280;font-size:13px;">Amount Due</p>
-          <p style="margin:0 0 20px;font-size:36px;font-weight:800;color:#1e3a5f;">${formatCurrency(invoice.amount_due)}</p>
-          <a href="${payUrl}" style="display:inline-block;background:#16a34a;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;">Pay Now &rarr;</a>
-          <p style="margin:14px 0 0;font-size:11px;color:#9ca3af;">Secured by Stripe. Your payment info is never stored on our servers.</p>
-        </div>
+          <!-- Totals -->
+          <tr>
+            <td style="padding:18px 40px 0 40px;">
+              ${buildTotalsBlock(invoice)}
+            </td>
+          </tr>
 
-        <div style="margin-top:28px;padding-top:24px;border-top:1px solid #f3f4f6;">
-          <p style="margin:0 0 8px;color:#374151;font-size:14px;line-height:1.7;">Questions? Call or text <span style="color:#111827;font-weight:600;">${CONTACT_PHONE}</span> anytime.</p>
-          <p style="margin:0;color:#374151;font-size:14px;">— The Boxed2Built Team</p>
-        </div>
-      </td></tr>
+          ${notesBlock}
 
-      <tr><td style="background:#f9fafb;padding:20px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;">
-        <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;text-align:center;">
-          ${escapeHtml(businessName)} &bull; Spring Hill, TN &bull;
-          <a href="${WEBSITE_URL}" style="color:#9ca3af;text-decoration:underline;">boxed2built.com</a>
-        </p>
-        <p style="margin:0;color:#9ca3af;font-size:11px;text-align:center;line-height:1.7;">
-          <a href="${WEBSITE_URL}/privacy-policy" style="color:#9ca3af;text-decoration:underline;">Privacy Policy</a>
-          &nbsp;&bull;&nbsp;
-          <a href="${WEBSITE_URL}/terms-of-service" style="color:#9ca3af;text-decoration:underline;">Terms of Service</a>
-          &nbsp;&bull;&nbsp;
-          <a href="mailto:${CONTACT_EMAIL}" style="color:#9ca3af;text-decoration:underline;">${CONTACT_EMAIL}</a>
-        </p>
-      </td></tr>
+          <!-- Pay panel -->
+          <tr>
+            <td style="padding:30px 40px 0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;">
+                <tr>
+                  <td align="center" style="padding:26px 24px;">
+                    <div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#15803D;">Amount Due</div>
+                    <div style="margin:6px 0 18px 0;font-size:42px;font-weight:800;color:#0E2748;letter-spacing:-0.02em;line-height:1;">${amountDueStr}</div>
+                    <a href="${payUrl}" style="display:inline-block;background:#15803D;color:#FFFFFF;font-size:16px;font-weight:700;padding:15px 42px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px -4px rgba(21,128,61,0.5);">Pay Now &rarr;</a>
+                    <div style="margin-top:14px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-    </table>
-  </td></tr>
-</table>
+          <!-- Trust bar -->
+          <tr>
+            <td style="padding:22px 40px 0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td align="center" style="font-size:12px;font-weight:600;color:#6B7280;">
+                    <span style="color:#EAB308;">&#9733;&#9733;&#9733;&#9733;&#9733;</span>&nbsp; 5-Star Rated &nbsp;&middot;&nbsp; No Payment Until Done &nbsp;&middot;&nbsp; Locally Owned
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Help -->
+          <tr>
+            <td style="padding:26px 40px 30px 40px;">
+              <div style="border-top:1px solid #EEF1F5;padding-top:22px;">
+                <p style="margin:0 0 4px 0;font-size:14px;color:#4B5563;line-height:1.6;">Questions about this invoice? Call or text <strong style="color:#111827;">${CONTACT_PHONE}</strong> anytime.</p>
+                <p style="margin:0;font-size:14px;color:#4B5563;">&mdash; The ${escapeHtml(businessName)} Team</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#0E2748;padding:26px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td align="center">
+                    <div style="width:64px;height:64px;background:#FFFFFF;border-radius:9999px;display:inline-block;text-align:center;line-height:64px;"><img src="${LOGO_URL}" alt="${escapeHtml(businessName)}" width="52" style="width:52px;height:52px;vertical-align:middle;"></div>
+                    <div style="margin-top:8px;font-size:12px;color:#8FA6C4;">Furniture assembly &amp; TV mounting &middot; Spring Hill, TN</div>
+                    <div style="margin-top:12px;font-size:12px;">
+                      <a href="${WEBSITE_URL}" style="color:#B7C6DC;text-decoration:none;">boxed2built.com</a>
+                      <span style="color:#3C567A;">&nbsp;&middot;&nbsp;</span>
+                      <a href="mailto:${CONTACT_EMAIL}" style="color:#B7C6DC;text-decoration:none;">Email</a>
+                      <span style="color:#3C567A;">&nbsp;&middot;&nbsp;</span>
+                      <a href="${WEBSITE_URL}/privacy-policy" style="color:#B7C6DC;text-decoration:none;">Privacy</a>
+                      <span style="color:#3C567A;">&nbsp;&middot;&nbsp;</span>
+                      <a href="${WEBSITE_URL}/terms-of-service" style="color:#B7C6DC;text-decoration:none;">Terms</a>
+                    </div>
+                    <div style="margin-top:14px;font-size:11px;color:#5C749A;font-style:italic;">Turning boxes into comfort, one home at a time.</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <div style="margin-top:16px;font-size:11px;color:#9CA3AF;">This invoice was sent by ${escapeHtml(businessName)}, Spring Hill, TN.</div>
+      </td>
+    </tr>
+  </table>
+</div>
 </body></html>`;
 }
 
