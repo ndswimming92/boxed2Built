@@ -13,6 +13,42 @@ interface BusinessInfo {
   website?: string;
 }
 
+const LOGO_URL = 'https://boxed2built.com/boxed2built_logo.png';
+
+const NAVY: [number, number, number] = [14, 39, 72];
+const NAVY_DARK: [number, number, number] = [11, 31, 58];
+const AMBER: [number, number, number] = [217, 164, 65];
+const AMBER_LIGHT_TEXT: [number, number, number] = [240, 200, 119];
+const AMBER_PILL_BG: [number, number, number] = [39, 51, 76];
+const GREEN_ACCENT: [number, number, number] = [74, 222, 128];
+const GREEN_TEXT: [number, number, number] = [22, 163, 74];
+const RED_TEXT: [number, number, number] = [185, 28, 28];
+const SLATE_LABEL: [number, number, number] = [156, 163, 175];
+const SLATE_MUTED: [number, number, number] = [107, 114, 128];
+const INK: [number, number, number] = [17, 24, 39];
+const BODY_TEXT: [number, number, number] = [55, 65, 81];
+const PANEL_BG: [number, number, number] = [249, 250, 251];
+const PANEL_BORDER: [number, number, number] = [229, 231, 235];
+const ROW_BORDER: [number, number, number] = [243, 244, 246];
+const PALE_BLUE: [number, number, number] = [143, 166, 196];
+const LINK_BLUE: [number, number, number] = [183, 198, 220];
+
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const res = await fetch(LOGO_URL);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function generateInvoicePDF(
   invoice: InvoiceWithDetails,
   businessInfo: BusinessInfo
@@ -23,129 +59,201 @@ export async function generateInvoicePDF(
   const margin = 20;
   let yPosition = 0;
 
-  doc.setFillColor(16, 185, 129);
-  doc.rect(0, 0, pageWidth, 45, 'F');
+  const logoDataUrl = await loadLogoDataUrl();
 
-  doc.setFontSize(32);
+  // ---- Header (navy) ----
+  const headerHeight = 48;
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageWidth, headerHeight, 'F');
+
+  const badgeCx = margin + 9;
+  const badgeCy = 20;
+  const badgeR = 9;
+  doc.setFillColor(255, 255, 255);
+  doc.circle(badgeCx, badgeCy, badgeR, 'F');
+  if (logoDataUrl) {
+    try {
+      const imgSize = badgeR * 1.8;
+      doc.addImage(logoDataUrl, 'PNG', badgeCx - imgSize / 2, badgeCy - imgSize / 2, imgSize, imgSize);
+    } catch {
+      // fall back to plain white badge if the image fails to decode
+    }
+  }
+
+  let wordX = margin + 24;
+  const wordY = 21;
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
   doc.setTextColor(255, 255, 255);
-  doc.text(getDocumentHeaderText(invoice.invoice_type), margin, 25);
+  doc.text('Boxed', wordX, wordY);
+  wordX += doc.getTextWidth('Boxed');
+  doc.setTextColor(...AMBER);
+  doc.text('2', wordX, wordY);
+  wordX += doc.getTextWidth('2');
+  doc.setTextColor(255, 255, 255);
+  doc.text('Built', wordX, wordY);
 
-  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(businessInfo.name, pageWidth - margin, 18, { align: 'right' });
+  doc.setFontSize(7.5);
+  doc.setTextColor(...PALE_BLUE);
+  doc.text('WE ASSEMBLE. YOU ENJOY.', margin + 24, wordY + 5.5);
 
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  yPosition = 24;
-
-  if (businessInfo.phone) {
-    doc.text(businessInfo.phone, pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 4.5;
-  }
-
-  if (businessInfo.email) {
-    doc.text(businessInfo.email, pageWidth - margin, yPosition, { align: 'right' });
-    yPosition += 4.5;
-  }
-
-  if (businessInfo.website) {
-    doc.text(businessInfo.website, pageWidth - margin, yPosition, { align: 'right' });
-  }
-
-  doc.setTextColor(0, 0, 0);
-  yPosition = 58;
-
-  doc.setFillColor(248, 250, 252);
-  doc.rect(margin, yPosition, 75, 46, 'F');
-
-  yPosition += 8;
-  doc.setFontSize(9);
+  const pillText = getDocumentHeaderText(invoice.invoice_type);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(100, 116, 139);
-  doc.text(getDocumentDetailsLabel(invoice.invoice_type), margin + 3, yPosition);
+  doc.setFontSize(9);
+  const pillPadX = 4;
+  const pillTextW = doc.getTextWidth(pillText);
+  const pillW = pillTextW + 2 * pillPadX;
+  const pillH = 8;
+  const pillX = pageWidth - margin - pillW;
+  const pillY = 12;
+  doc.setFillColor(...AMBER_PILL_BG);
+  doc.roundedRect(pillX, pillY, pillW, pillH, 4, 4, 'F');
+  doc.setDrawColor(...AMBER);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(pillX, pillY, pillW, pillH, 4, 4, 'S');
+  doc.setTextColor(...AMBER_LIGHT_TEXT);
+  doc.text(pillText, pillX + pillW / 2, pillY + 5.5, { align: 'center' });
 
-  yPosition += 7;
+  let bizY = pillY + pillH + 6;
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text(businessInfo.name, pageWidth - margin, bizY, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...PALE_BLUE);
+  bizY += 4.5;
+  if (businessInfo.phone) {
+    doc.text(businessInfo.phone, pageWidth - margin, bizY, { align: 'right' });
+    bizY += 4;
+  }
+  if (businessInfo.email) {
+    doc.text(businessInfo.email, pageWidth - margin, bizY, { align: 'right' });
+  }
+
+  // ---- Invoice #/Amount due sub-band (dark navy) ----
+  const bandY = headerHeight;
+  const bandHeight = 15;
+  doc.setFillColor(...NAVY_DARK);
+  doc.rect(0, bandY, pageWidth, bandHeight, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...PALE_BLUE);
+  doc.text(getDocumentDetailsLabel(invoice.invoice_type).replace(' DETAILS', ''), margin, bandY + 6);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(255, 255, 255);
+  doc.text(invoice.invoice_number, margin, bandY + 12);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...PALE_BLUE);
+  doc.text('AMOUNT DUE', pageWidth - margin, bandY + 6, { align: 'right' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...GREEN_ACCENT);
+  doc.text(`$${invoice.amount_due.toFixed(2)}`, pageWidth - margin, bandY + 12, { align: 'right' });
+
   doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'bold');
-  doc.text(getDocumentNumberLabel(invoice.invoice_type), margin + 3, yPosition);
-  doc.setFont('helvetica', 'normal');
-  doc.text(invoice.invoice_number, margin + 30, yPosition);
+  yPosition = bandY + bandHeight + 12;
 
-  yPosition += 6;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Type:', margin + 3, yPosition);
-  doc.setFont('helvetica', 'normal');
-  doc.text(formatInvoiceType(invoice.invoice_type), margin + 30, yPosition);
+  // ---- Details / Bill To boxes ----
+  const boxTop = yPosition;
+  const boxW = 85;
+  const boxH = 44;
 
-  yPosition += 6;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Date:', margin + 3, yPosition);
-  doc.setFont('helvetica', 'normal');
-  doc.text(formatDate(invoice.invoice_date), margin + 30, yPosition);
+  doc.setFillColor(...PANEL_BG);
+  doc.setDrawColor(...PANEL_BORDER);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(margin, boxTop, boxW, boxH, 2, 2, 'FD');
+  doc.roundedRect(pageWidth - margin - boxW, boxTop, boxW, boxH, 2, 2, 'FD');
 
-  yPosition += 6;
+  let leftY = boxTop + 8;
   doc.setFont('helvetica', 'bold');
-  doc.text('Due Date:', margin + 3, yPosition);
-  doc.setFont('helvetica', 'normal');
-  doc.text(formatDate(invoice.due_date), margin + 30, yPosition);
+  doc.setFontSize(8);
+  doc.setTextColor(...SLATE_LABEL);
+  doc.text('DETAILS', margin + 4, leftY);
 
-  yPosition += 6;
+  leftY += 7;
+  doc.setFontSize(9.5);
+  doc.setTextColor(...INK);
   doc.setFont('helvetica', 'bold');
-  doc.text('Terms:', margin + 3, yPosition);
+  doc.text('Type:', margin + 4, leftY);
   doc.setFont('helvetica', 'normal');
-  const termsText = doc.splitTextToSize(invoice.payment_terms, 40);
-  doc.text(termsText, margin + 30, yPosition);
+  doc.text(formatInvoiceType(invoice.invoice_type), margin + 26, leftY);
+
+  leftY += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Date:', margin + 4, leftY);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatDate(invoice.invoice_date), margin + 26, leftY);
+
+  leftY += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Due Date:', margin + 4, leftY);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...RED_TEXT);
+  doc.text(invoice.due_date ? formatDate(invoice.due_date) : 'On receipt', margin + 26, leftY);
+  doc.setTextColor(...INK);
+
+  leftY += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Terms:', margin + 4, leftY);
+  doc.setFont('helvetica', 'normal');
+  const termsText = doc.splitTextToSize(invoice.payment_terms || 'N/A', 40);
+  doc.text(termsText, margin + 26, leftY);
 
   const statusColors = getStatusColors(invoice.status);
-  doc.setFillColor(statusColors.bg[0], statusColors.bg[1], statusColors.bg[2]);
-  doc.roundedRect(margin + 3, yPosition + 3, 35, 6, 1, 1, 'F');
+  doc.setFillColor(...statusColors.bg);
+  doc.roundedRect(margin + 4, leftY + 3, 34, 6, 1, 1, 'F');
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...statusColors.text);
+  doc.text(invoice.status.toUpperCase().replace('_', ' '), margin + 21, leftY + 7, { align: 'center' });
+
+  doc.setTextColor(0, 0, 0);
+
+  let rightY = boxTop + 8;
+  const rightX = pageWidth - margin - boxW + 4;
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(statusColors.text[0], statusColors.text[1], statusColors.text[2]);
-  doc.text(invoice.status.toUpperCase().replace('_', ' '), margin + 20.5, yPosition + 7, { align: 'center' });
+  doc.setTextColor(...SLATE_LABEL);
+  doc.text('BILLED TO', rightX, rightY);
 
-  doc.setTextColor(0, 0, 0);
-  yPosition = 58;
-
-  doc.setFillColor(248, 250, 252);
-  doc.rect(pageWidth - margin - 80, yPosition, 80, 46, 'F');
-
-  yPosition += 8;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(100, 116, 139);
-  doc.text('BILL TO', pageWidth - margin - 77, yPosition);
-
-  yPosition += 7;
+  rightY += 7;
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(...INK);
   doc.setFont('helvetica', 'bold');
-  doc.text(invoice.client_name, pageWidth - margin - 77, yPosition);
+  doc.text(invoice.client_name, rightX, rightY);
 
-  yPosition += 5.5;
+  rightY += 5.5;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text(invoice.client_email, pageWidth - margin - 77, yPosition);
-
+  doc.setTextColor(...BODY_TEXT);
+  if (invoice.client_email) {
+    doc.text(invoice.client_email, rightX, rightY);
+    rightY += 4.5;
+  }
   if (invoice.client_phone) {
-    yPosition += 4.5;
-    doc.text(invoice.client_phone, pageWidth - margin - 77, yPosition);
+    doc.text(invoice.client_phone, rightX, rightY);
+    rightY += 4.5;
   }
-
   if (invoice.client_address) {
-    yPosition += 4.5;
-    const addressLines = doc.splitTextToSize(invoice.client_address, 75);
-    doc.text(addressLines, pageWidth - margin - 77, yPosition);
+    const addressLines = doc.splitTextToSize(invoice.client_address, boxW - 8);
+    doc.text(addressLines, rightX, rightY);
   }
 
-  yPosition = 116;
+  doc.setTextColor(0, 0, 0);
+  yPosition = boxTop + boxH + 12;
 
-  doc.setFillColor(16, 185, 129);
+  // ---- Line items table ----
+  doc.setFillColor(...NAVY);
   doc.rect(margin, yPosition, pageWidth - 2 * margin, 8, 'F');
 
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
   doc.text('TYPE', margin + 2, yPosition + 5.5);
@@ -168,16 +276,16 @@ export async function generateInvoicePDF(
     }
 
     if (index % 2 === 0) {
-      doc.setFillColor(249, 250, 251);
+      doc.setFillColor(...PANEL_BG);
       doc.rect(margin, yPosition - 2, pageWidth - 2 * margin, lineHeight + 2, 'F');
     }
 
     doc.setFontSize(8);
-    doc.setTextColor(71, 85, 105);
+    doc.setTextColor(...SLATE_MUTED);
     doc.text(formatItemType(item.item_type), margin + 2, yPosition + 3);
 
     doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(...INK);
     doc.text(descLines, margin + 25, yPosition + 3);
     doc.text(item.quantity.toString(), margin + 108, yPosition + 3, { align: 'right' });
     doc.text(`$${item.unit_price.toFixed(2)}`, margin + 145, yPosition + 3, { align: 'right' });
@@ -185,7 +293,7 @@ export async function generateInvoicePDF(
 
     if (item.is_taxable) {
       doc.setFontSize(7);
-      doc.setTextColor(16, 185, 129);
+      doc.setTextColor(...AMBER);
       doc.text('*', margin + 22, yPosition + 2);
     }
 
@@ -193,45 +301,49 @@ export async function generateInvoicePDF(
   });
 
   yPosition += 5;
-  doc.setDrawColor(226, 232, 240);
+  doc.setDrawColor(...ROW_BORDER);
   doc.line(margin, yPosition, pageWidth - margin, yPosition);
   yPosition += 10;
 
+  // ---- Totals ----
   const totalsX = pageWidth - margin - 65;
 
-  doc.setFillColor(248, 250, 252);
+  doc.setFillColor(...PANEL_BG);
   doc.rect(totalsX - 5, yPosition - 5, 70, invoice.late_fee_charged > 0 ? 32 : 26, 'F');
 
   doc.setFontSize(10);
-  doc.setTextColor(71, 85, 105);
+  doc.setTextColor(...SLATE_MUTED);
   doc.setFont('helvetica', 'bold');
   doc.text('Subtotal:', totalsX, yPosition);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...BODY_TEXT);
   doc.text(`$${invoice.subtotal.toFixed(2)}`, pageWidth - margin - 2, yPosition, { align: 'right' });
 
   yPosition += 6;
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...SLATE_MUTED);
   doc.text(`Tax (${invoice.tax_rate}%):`, totalsX, yPosition);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...BODY_TEXT);
   doc.text(`$${invoice.tax_amount.toFixed(2)}`, pageWidth - margin - 2, yPosition, { align: 'right' });
 
   if (invoice.late_fee_charged > 0) {
     yPosition += 6;
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(239, 68, 68);
+    doc.setTextColor(...RED_TEXT);
     doc.text('Late Fee:', totalsX, yPosition);
     doc.setFont('helvetica', 'normal');
     doc.text(`$${invoice.late_fee_charged.toFixed(2)}`, pageWidth - margin - 2, yPosition, { align: 'right' });
   }
 
   yPosition += 2;
-  doc.setDrawColor(16, 185, 129);
+  doc.setDrawColor(...AMBER);
   doc.setLineWidth(0.8);
   doc.line(totalsX - 5, yPosition, pageWidth - margin, yPosition);
   doc.setLineWidth(0.2);
   yPosition += 7;
 
-  doc.setFillColor(16, 185, 129);
+  doc.setFillColor(...NAVY);
   doc.rect(totalsX - 5, yPosition - 5, 70, 10, 'F');
 
   doc.setFontSize(12);
@@ -246,44 +358,48 @@ export async function generateInvoicePDF(
   if (invoice.amount_paid > 0) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
+    doc.setTextColor(...SLATE_MUTED);
     doc.text('Amount Paid:', totalsX, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(34, 197, 94);
+    doc.setTextColor(...GREEN_TEXT);
     doc.text(`-$${invoice.amount_paid.toFixed(2)}`, pageWidth - margin - 2, yPosition, { align: 'right' });
 
     yPosition += 6;
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(...INK);
     doc.text('Amount Due:', totalsX, yPosition);
-    doc.setTextColor(239, 68, 68);
+    doc.setTextColor(...RED_TEXT);
     doc.text(`$${invoice.amount_due.toFixed(2)}`, pageWidth - margin - 2, yPosition, { align: 'right' });
   }
 
   doc.setTextColor(0, 0, 0);
   yPosition += 15;
 
+  // ---- Notes ----
   if (invoice.notes) {
-    doc.setFillColor(254, 252, 232);
-    doc.rect(margin, yPosition - 3, pageWidth - 2 * margin, 2, 'F');
-    yPosition += 2;
+    doc.setFillColor(...PANEL_BG);
+    const notesLines = doc.splitTextToSize(invoice.notes, pageWidth - 2 * margin - 10);
+    const notesBoxH = 8 + notesLines.length * 4.5 + 4;
+    doc.roundedRect(margin, yPosition - 4, pageWidth - 2 * margin, notesBoxH, 2, 2, 'F');
+    doc.setFillColor(...AMBER);
+    doc.rect(margin, yPosition - 4, 1.4, notesBoxH, 'F');
 
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(113, 63, 18);
-    doc.text('NOTES:', margin + 3, yPosition);
-    yPosition += 5;
+    doc.setTextColor(...SLATE_LABEL);
+    doc.text('NOTES', margin + 6, yPosition + 2);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(120, 53, 15);
-    const notesLines = doc.splitTextToSize(invoice.notes, pageWidth - 2 * margin - 6);
-    doc.text(notesLines, margin + 3, yPosition);
-    yPosition += notesLines.length * 4.5 + 8;
+    doc.setFontSize(9);
+    doc.setTextColor(...BODY_TEXT);
+    doc.text(notesLines, margin + 6, yPosition + 7);
+    yPosition += notesBoxH + 8;
   }
 
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(...SLATE_MUTED);
 
   if (invoice.tax_amount > 0) {
     doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
     doc.text('* Indicates taxable items per TN state law', margin, yPosition);
     yPosition += 5;
   }
@@ -291,30 +407,49 @@ export async function generateInvoicePDF(
   if (invoice.payment_terms_description) {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(71, 85, 105);
+    doc.setTextColor(...SLATE_MUTED);
     doc.text('PAYMENT TERMS:', margin, yPosition);
     yPosition += 4;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
     const termsLines = doc.splitTextToSize(invoice.payment_terms_description, pageWidth - 2 * margin);
     doc.text(termsLines, margin, yPosition);
   }
 
+  // ---- Footer (navy) ----
   const pageHeight = doc.internal.pageSize.getHeight();
-  doc.setFillColor(248, 250, 252);
-  doc.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+  const footerHeight = 32;
+  doc.setFillColor(...NAVY);
+  doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
 
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(16, 185, 129);
-  doc.text('Thank you for your business!', pageWidth / 2, pageHeight - 15, { align: 'center' });
+  const footCx = pageWidth / 2;
+  const footBadgeR = 6.5;
+  const footBadgeCy = pageHeight - footerHeight + 10;
+  doc.setFillColor(255, 255, 255);
+  doc.circle(footCx, footBadgeCy, footBadgeR, 'F');
+  if (logoDataUrl) {
+    try {
+      const imgSize = footBadgeR * 1.8;
+      doc.addImage(logoDataUrl, 'PNG', footCx - imgSize / 2, footBadgeCy - imgSize / 2, imgSize, imgSize);
+    } catch {
+      // fall back to plain white badge if the image fails to decode
+    }
+  }
+
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PALE_BLUE);
+  doc.text('Furniture assembly & TV mounting · Spring Hill, TN', footCx, footBadgeCy + 10, { align: 'center' });
 
   if (businessInfo.website) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
-    doc.text(businessInfo.website, pageWidth / 2, pageHeight - 9, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setTextColor(...LINK_BLUE);
+    doc.text(businessInfo.website, footCx, footBadgeCy + 15, { align: 'center' });
   }
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(92, 116, 154);
+  doc.text('Turning boxes into comfort, one home at a time.', footCx, footBadgeCy + 20, { align: 'center' });
 
   return doc.output('blob');
 }
@@ -397,17 +532,6 @@ function getDocumentDetailsLabel(type: string): string {
     general: 'INVOICE DETAILS',
   };
   return labelMap[type] || 'INVOICE DETAILS';
-}
-
-function getDocumentNumberLabel(type: string): string {
-  const labelMap: { [key: string]: string } = {
-    estimate: 'Quote #:',
-    deposit: 'Invoice #:',
-    progress: 'Invoice #:',
-    final: 'Invoice #:',
-    general: 'Invoice #:',
-  };
-  return labelMap[type] || 'Invoice #:';
 }
 
 function formatItemType(type: string): string {
