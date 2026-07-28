@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle, Clock, X } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
@@ -15,6 +15,20 @@ import YoutubeUploadModal from '../../components/admin/YoutubeUploadModal';
 
 const isPostedToFacebook = (item: GalleryItem) => Boolean(item.facebook_posted_at);
 const isPostedToInstagram = (item: GalleryItem) => Boolean(item.instagram_posted_at);
+
+function toDatetimeLocalValue(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatScheduledTime(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
 
 export default function GalleryPage() {
   const [businessId, setBusinessId] = useState<string>('');
@@ -37,6 +51,9 @@ export default function GalleryPage() {
   const [reorderMode, setReorderMode] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
   const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
+  const [scheduleValue, setScheduleValue] = useState('');
+  const [schedulingBusyId, setSchedulingBusyId] = useState<string | null>(null);
   const [showYoutubeUpload, setShowYoutubeUpload] = useState(false);
 
   useEffect(() => {
@@ -125,6 +142,50 @@ export default function GalleryPage() {
     } finally {
       setPublishingId(null);
       setTimeout(() => setPublishMessage(null), 6000);
+    }
+  };
+
+  const handleOpenSchedule = (item: GalleryItem) => {
+    const defaultTime = new Date(Date.now() + 60 * 60 * 1000);
+    setScheduleValue(toDatetimeLocalValue(defaultTime));
+    setSchedulingId(item.id);
+  };
+
+  const handleConfirmSchedule = async (item: GalleryItem) => {
+    if (!scheduleValue) return;
+    const scheduledDate = new Date(scheduleValue);
+    if (scheduledDate.getTime() <= Date.now()) {
+      setPublishMessage({ type: 'error', text: 'Pick a time in the future to schedule a post.' });
+      setTimeout(() => setPublishMessage(null), 6000);
+      return;
+    }
+    try {
+      setSchedulingBusyId(item.id);
+      await GalleryService.updateGalleryItem(item.id, {
+        social_scheduled_at: scheduledDate.toISOString(),
+      });
+      setSchedulingId(null);
+      await refresh();
+    } catch (err) {
+      console.error('Error scheduling post:', err);
+      setPublishMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to schedule post.' });
+      setTimeout(() => setPublishMessage(null), 6000);
+    } finally {
+      setSchedulingBusyId(null);
+    }
+  };
+
+  const handleCancelScheduledPost = async (item: GalleryItem) => {
+    try {
+      setSchedulingBusyId(item.id);
+      await GalleryService.updateGalleryItem(item.id, { social_scheduled_at: null });
+      await refresh();
+    } catch (err) {
+      console.error('Error cancelling scheduled post:', err);
+      setPublishMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to cancel scheduled post.' });
+      setTimeout(() => setPublishMessage(null), 6000);
+    } finally {
+      setSchedulingBusyId(null);
     }
   };
 
@@ -423,15 +484,68 @@ export default function GalleryPage() {
                   </p>
                 )}
 
-                {item.type === 'image' && item.eligible_for_social && (
-                  <button
-                    onClick={() => handlePostToSocial(item)}
-                    disabled={publishingId === item.id}
-                    className="w-full mb-1.5 px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                  >
-                    <Share2 size={12} />
-                    {publishingId === item.id ? 'Posting…' : 'Post to Social'}
-                  </button>
+                {item.type === 'image' && item.eligible_for_social && item.social_scheduled_at && (
+                  <div className="w-full mb-1.5 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded text-xs font-medium text-amber-800 flex items-center justify-between gap-1.5">
+                    <span className="flex items-center gap-1.5 truncate">
+                      <Clock size={12} className="flex-shrink-0" />
+                      Scheduled {formatScheduledTime(item.social_scheduled_at)}
+                    </span>
+                    <button
+                      onClick={() => handleCancelScheduledPost(item)}
+                      disabled={schedulingBusyId === item.id}
+                      className="flex-shrink-0 text-amber-700 hover:text-amber-900 disabled:opacity-50"
+                      title="Cancel scheduled post"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {item.type === 'image' && item.eligible_for_social && !item.social_scheduled_at && schedulingId === item.id && (
+                  <div className="w-full mb-1.5 flex flex-col gap-1.5">
+                    <input
+                      type="datetime-local"
+                      value={scheduleValue}
+                      min={toDatetimeLocalValue(new Date())}
+                      onChange={(e) => setScheduleValue(e.target.value)}
+                      className="w-full px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => handleConfirmSchedule(item)}
+                        disabled={schedulingBusyId === item.id}
+                        className="flex-1 px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition-colors disabled:opacity-50"
+                      >
+                        {schedulingBusyId === item.id ? 'Saving…' : 'Confirm'}
+                      </button>
+                      <button
+                        onClick={() => setSchedulingId(null)}
+                        className="flex-1 px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {item.type === 'image' && item.eligible_for_social && !item.social_scheduled_at && schedulingId !== item.id && (
+                  <div className="w-full mb-1.5 flex gap-1.5">
+                    <button
+                      onClick={() => handlePostToSocial(item)}
+                      disabled={publishingId === item.id}
+                      className="flex-1 px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      <Share2 size={12} />
+                      {publishingId === item.id ? 'Posting…' : 'Post Now'}
+                    </button>
+                    <button
+                      onClick={() => handleOpenSchedule(item)}
+                      className="flex-1 px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Clock size={12} />
+                      Schedule
+                    </button>
+                  </div>
                 )}
 
                 <div className="flex items-center gap-1">

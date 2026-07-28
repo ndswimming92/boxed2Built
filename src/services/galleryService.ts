@@ -30,6 +30,7 @@ export interface GalleryItem {
   instagram_post_id?: string | null;
   instagram_posted_at?: string | null;
   instagram_post_error?: string | null;
+  social_scheduled_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +78,7 @@ export interface UpdateGalleryItemInput {
   eligible_for_social?: boolean;
   focus_x?: number;
   focus_y?: number;
+  social_scheduled_at?: string | null;
 }
 
 export class GalleryService {

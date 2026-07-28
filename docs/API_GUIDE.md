@@ -277,7 +277,13 @@ Business Suite and reconnect.
 
 Auto-posting is intentionally **not** wired to gallery uploads — a bad or
 not-yet-ready photo could otherwise go public immediately. Instead, each image
-gallery item has a **Post to Social** button (Admin → Gallery):
+gallery item has **Post Now** and **Schedule** actions (Admin → Gallery). The
+actual Facebook/Instagram posting logic (caption building, the Graph API
+calls, writing results back onto the row) lives in
+`supabase/functions/_shared/socialPublish.ts`, shared by both the immediate
+and scheduled paths below so they can never drift apart.
+
+**Post Now:**
 
 1. The button calls `publish-gallery-photo` (admin-JWT protected) with the
    gallery item's id.
@@ -292,6 +298,32 @@ gallery item has a **Post to Social** button (Admin → Gallery):
    Instagram equivalents) and returned to the UI for immediate feedback.
 4. Only `type: 'image'` items can be posted; video publishing to these APIs
    needs a different, async upload flow and isn't supported yet.
+
+**Schedule:**
+
+1. Picking a future date/time writes it straight onto
+   `gallery_items.social_scheduled_at` from the admin UI (a normal,
+   RLS-protected update — no edge function needed for the scheduling step
+   itself). A "Scheduled for …" badge with a Cancel button replaces the
+   Post Now/Schedule buttons while a schedule is pending.
+2. A `pg_cron` job (`run-scheduled-social-posts`, every 5 minutes, added in
+   migration `20260727160000_add_scheduled_social_posting.sql`) calls the
+   `run-scheduled-social-posts` edge function via `pg_net`, authenticated with
+   the project's anon key (safe to store in the migration — it's the same
+   public key already shipped in the site's frontend bundle; the function
+   itself doesn't need a real user, it only processes items an admin already
+   scheduled through the authenticated admin UI).
+3. That function finds every `gallery_items` row where `social_scheduled_at`
+   is set and has passed, **claims** each one with a conditional update
+   (`social_scheduled_at = null WHERE ... AND social_scheduled_at = <original
+   value>`) so an overlapping cron tick can't double-post it, then runs the
+   same shared posting logic as Post Now and writes results to the same
+   columns.
+4. `pg_net`'s extension registration shows a Supabase linter WARN
+   ("Extension in Public") because Postgres doesn't support moving pg_net's
+   extension entry out of `public` (`ALTER EXTENSION ... SET SCHEMA` is
+   rejected) — this is an accepted limitation of using `pg_net` at all, not
+   something specific to this setup.
 
 ### Viewing Facebook/Instagram metrics
 
