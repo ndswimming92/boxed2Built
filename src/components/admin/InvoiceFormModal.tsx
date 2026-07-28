@@ -8,7 +8,7 @@ import {
   updateLineItem,
   deleteLineItem,
   getInvoice,
-  markInvoiceAsSent,
+  sendInvoiceEmail,
   calculatePaymentTermsDueDate,
   getInvoiceSettings,
 } from '../../services/invoiceService';
@@ -109,6 +109,10 @@ export default function InvoiceFormModal({
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  // Tracks the invoice ID once created in this modal session, so a retry after
+  // a failed "Save & Send" (e.g. cooldown) updates the same row instead of
+  // inserting a duplicate invoice (the `invoice` prop never updates mid-session).
+  const [savedInvoiceId, setSavedInvoiceId] = useState<string | null>(null);
 
   const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>('general');
   const [clientName, setClientName] = useState('');
@@ -282,7 +286,7 @@ export default function InvoiceFormModal({
     setMessage(null);
 
     try {
-      let invoiceId = invoice?.id;
+      let invoiceId = invoice?.id || savedInvoiceId || undefined;
 
       if (!invoiceId) {
         const newInvoice = await createInvoice({
@@ -306,6 +310,7 @@ export default function InvoiceFormModal({
           late_fee_grace_days: lateFeesEnabled ? lateFeeGraceDays : undefined,
         });
         invoiceId = newInvoice.id;
+        setSavedInvoiceId(newInvoice.id);
       } else {
         await updateInvoice(invoiceId, {
           invoice_type: invoiceType,
@@ -364,7 +369,33 @@ export default function InvoiceFormModal({
       }
 
       if (sendEmail) {
-        await markInvoiceAsSent(invoiceId);
+        const trimmedEmail = clientEmail.trim();
+        if (!trimmedEmail) {
+          throw new Error('Add a client email before sending the invoice.');
+        }
+        if (!existingInvoice?.client_id || !existingInvoice?.organization_id) {
+          throw new Error(
+            `This invoice isn't linked to a saved client record for ${trimmedEmail}. Add this person as a Client with a matching email first, then Save & Send again.`
+          );
+        }
+
+        const result = await sendInvoiceEmail({
+          clientId: existingInvoice.client_id,
+          organizationId: existingInvoice.organization_id,
+          invoiceId,
+          overrideEmail: trimmedEmail,
+        });
+
+        if (!result.success) {
+          if (result.error === 'cooldown') {
+            const mins = Math.max(1, Math.ceil((result.remainingSeconds || 0) / 60));
+            throw new Error(`An invoice email was already sent to this client recently. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
+          }
+          if (result.error === 'no_email') {
+            throw new Error('This client has no email on file. Add one and try again.');
+          }
+          throw new Error(result.error || 'Failed to send the invoice email.');
+        }
       }
 
       setMessage({
