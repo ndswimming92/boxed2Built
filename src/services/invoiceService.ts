@@ -549,6 +549,43 @@ export async function markInvoiceAsSent(invoiceId: string): Promise<void> {
   }
 }
 
+export interface SendInvoiceEmailResult {
+  success: boolean;
+  error?: string;
+  remainingSeconds?: number;
+  sentAt?: string;
+}
+
+export async function sendInvoiceEmail(params: {
+  clientId: string;
+  organizationId: string;
+  invoiceId: string;
+  overrideEmail?: string;
+}): Promise<SendInvoiceEmailResult> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invoice-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      clientId: params.clientId,
+      organizationId: params.organizationId,
+      invoiceId: params.invoiceId,
+      ...(params.overrideEmail ? { overrideEmail: params.overrideEmail } : {}),
+    }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body.success) {
+    return { success: false, error: body.error || 'Failed to send invoice email.', remainingSeconds: body.remainingSeconds };
+  }
+  return { success: true, sentAt: body.sentAt };
+}
+
 export async function logInvoiceCommunication(
   invoiceId: string,
   method: 'email' | 'phone',

@@ -369,6 +369,8 @@ export type InvoiceSettings = {
 export type Invoice = {
   id: string;
   business_id: string;
+  organization_id: string;
+  client_id: string | null;
   inquiry_id: string | null;
   job_id: string | null;
   invoice_number: string;
