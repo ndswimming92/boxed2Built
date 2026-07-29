@@ -21,6 +21,7 @@ interface ImageDetail {
   purpose: GalleryPurpose;
   focusX: number;
   focusY: number;
+  aiPrompt: string;
 }
 
 interface BatchImageDetailsFormProps {
@@ -49,6 +50,7 @@ export default function BatchImageDetailsForm({
       purpose: 'both' as GalleryPurpose,
       focusX: 50,
       focusY: 50,
+      aiPrompt: '',
     }))
   );
 
@@ -82,6 +84,7 @@ export default function BatchImageDetailsForm({
       const result = await analyzeGalleryImage(detail.optimizedImage.file, {
         location: detail.location,
         category: detail.category,
+        customPrompt: detail.aiPrompt || undefined,
       });
 
       setImageDetails((prev) =>
@@ -302,11 +305,23 @@ export default function BatchImageDetailsForm({
 
                 {expandedIndex === index && (
                   <div className="px-4 pb-4 border-t border-slate-200 bg-slate-50">
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-slate-600 mb-1">
+                        AI Instructions <span className="text-slate-400 font-normal">(optional)</span>
+                      </label>
+                      <textarea
+                        value={detail.aiPrompt}
+                        onChange={(e) => updateImageDetail(index, 'aiPrompt', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                        rows={2}
+                        placeholder="e.g. Mention this took 3 hours, focus on the nursery setup, keep it short..."
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={() => handleAnalyze(index)}
                       disabled={analyzingIndex !== null || saving}
-                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-300 text-amber-800 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-300 text-amber-800 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {analyzingIndex === index ? (
                         <>

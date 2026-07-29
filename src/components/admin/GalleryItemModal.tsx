@@ -43,6 +43,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(item?.src || '');
   const [productUrl, setProductUrl] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
         productUrl: productUrl || undefined,
         location: formData.location,
         category: formData.category,
+        customPrompt: aiPrompt || undefined,
       };
       if (selectedFile) {
         // Downscale before sending to the AI. The stored image is optimized on
@@ -328,6 +330,23 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                   />
                   <p className="mt-1 text-xs text-slate-500">
                     Paste a product link for richer AI-generated descriptions
+                  </p>
+                </div>
+              )}
+              {previewUrl && (
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-slate-600 mb-1">
+                    AI Instructions <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                    rows={2}
+                    placeholder="e.g. Mention this took 3 hours, focus on the nursery setup, keep it short..."
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Tell the AI anything specific to include or focus on. Leave blank to use the defaults.
                   </p>
                 </div>
               )}
