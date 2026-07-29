@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { image, mediaType, productUrl, location, category } = await req.json();
+    const { image, mediaType, productUrl, location, category, customPrompt } = await req.json();
 
     if (!image || !mediaType) {
       return new Response(
@@ -55,6 +55,13 @@ if (productUrl) {
     `Product link: ${productUrl}\n` +
     `Use web search to confirm the brand, product name, materials, and notable ` +
     `features, then fold accurate details into the description.\n`;
+}
+
+if (customPrompt && typeof customPrompt === "string" && customPrompt.trim()) {
+  textPrompt +=
+    `\nAdmin notes for this photo (use as guidance, but stay true to what's ` +
+    `actually visible and keep following the format/voice rules above):\n` +
+    `"${customPrompt.trim().slice(0, 1000)}"\n`;
 }
 
 textPrompt +=

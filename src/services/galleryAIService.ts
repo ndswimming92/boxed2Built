@@ -24,6 +24,7 @@ export interface AIAnalysisOptions {
   productUrl?: string;
   location?: string;
   category?: string;
+  customPrompt?: string;
 }
 
 export async function analyzeGalleryImage(file: File, options?: AIAnalysisOptions): Promise<AIAnalysisResult> {
@@ -38,6 +39,9 @@ export async function analyzeGalleryImage(file: File, options?: AIAnalysisOption
   }
   if (options?.category?.trim()) {
     body.category = options.category.trim();
+  }
+  if (options?.customPrompt?.trim()) {
+    body.customPrompt = options.customPrompt.trim();
   }
 
   const { data, error } = await supabase.functions.invoke('analyze-gallery-image', {
