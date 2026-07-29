@@ -666,28 +666,6 @@ export type LocationData = {
   accuracy?: number;
 };
 
-export type MileageRecord = {
-  id: string;
-  business_id: string;
-  job_id: string;
-  trip_date: string;
-  start_time: string;
-  end_time: string | null;
-  start_location: LocationData | null;
-  end_location: LocationData | null;
-  waypoints: GPSCoordinate[];
-  distance_miles: number;
-  is_manual_entry: boolean;
-  purpose: string | null;
-  irs_rate_per_mile: number;
-  deduction_amount: number;
-  expense_id: string | null;
-  notes: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
 export type MileageSettings = {
   id: string;
   business_id: string;
