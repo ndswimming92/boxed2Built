@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar, ChevronDown, Phone, Mail } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -73,6 +73,19 @@ export default function JobsPage() {
   const [showInactiveJobs, setShowInactiveJobs] = useState(false);
   const [showMissingHoursOnly, setShowMissingHoursOnly] = useState(false);
   const [invoiceToConvert, setInvoiceToConvert] = useState<JobsPageLocationState['createJobFromInvoice'] | null>(null);
+  const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
+
+  const toggleJobExpanded = (jobId: string) => {
+    setExpandedJobIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(jobId)) {
+        next.delete(jobId);
+      } else {
+        next.add(jobId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchData();
@@ -497,12 +510,19 @@ export default function JobsPage() {
             const statusLabel = jobStatusService.getStatusLabel(job.job_status);
             const statusColor = jobStatusService.getStatusColor(job.job_status);
             const isInactive = job.job_status === 'lost' || job.job_status === 'cancelled';
+            const missingHours = isCompletedMissingHoursWorked(job);
+            const isExpanded = expandedJobIds.has(job.id);
 
             return (
-              <div key={job.id} className={`bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow ${isInactive ? 'opacity-60' : ''}`}>
-                <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+              <div key={job.id} className={`bg-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow overflow-hidden ${isInactive ? 'opacity-60' : ''}`}>
+                <button
+                  type="button"
+                  onClick={() => toggleJobExpanded(job.id)}
+                  aria-expanded={isExpanded}
+                  className="w-full text-left px-6 py-5 flex items-start justify-between gap-4 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <h3 className={`text-xl font-semibold ${isInactive ? 'line-through text-slate-500' : 'text-slate-900'}`}>
                         {job.client_name}
                       </h3>
@@ -538,182 +558,216 @@ export default function JobsPage() {
                           Signed Off
                         </span>
                       )}
+                      {missingHours && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Missing Hours
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
-                      {job.client_phone && <span>{job.client_phone}</span>}
-                      {job.client_email && <span>{job.client_email}</span>}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    {!isInactive && (
-                      <>
-                        {(job.date_scheduled || job.date_completed) && !job.has_signature && (
-                          <button
-                            onClick={() => setCompletingJob(job)}
-                            className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-                            title="Complete job with customer signature"
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Complete Job
-                          </button>
-                        )}
-                        {(job.job_status === 'quoted' || job.job_status === 'scheduled') && (
-                          <button
-                            onClick={() => setMarkingJobLost(job)}
-                            className="px-3 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-medium hover:bg-amber-200 transition-colors flex items-center gap-2 text-sm"
-                            title="Mark job as lost"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Mark Lost
-                          </button>
-                        )}
-                        {(job.job_status === 'accepted' || job.job_status === 'scheduled' || job.job_status === 'in_progress') && (
-                          <button
-                            onClick={() => setCancellingJob(job)}
-                            className="px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2 text-sm"
-                            title="Cancel job"
-                          >
-                            <Ban className="w-4 h-4" />
-                            Cancel
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setCreatingInvoiceForJob(job)}
-                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                          title="Create invoice from job"
-                        >
-                          <FileText className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => setAttachingInvoiceToJob(job)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Attach existing invoice"
-                        >
-                          <LinkIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleCopyJob(job)}
-                          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Copy job"
-                        >
-                          <Copy className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => { setEditingJob(job); setCopyingJob(null); setShowModal(true); }}
-                          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Edit job"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => handleDelete(job.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete job"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
-                      <Briefcase className="w-3 h-3" />
-                      Job Type
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900 truncate" title={job.job_type || 'N/A'}>{job.job_type || 'N/A'}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
-                      <MapPin className="w-3 h-3" />
-                      Location
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900 truncate" title={job.location_city || 'N/A'}>{job.location_city || 'N/A'}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3" />
-                      Completed
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">{formatDate(job.date_completed)}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" />
-                      Hours Worked
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">{formatHours(job.hours_worked)}</p>
-                  </div>
-                </div>
-
-                {isCompletedMissingHoursWorked(job) && (
-                  <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    This completed job is missing hours worked. Please edit and backfill to keep profitability metrics reliable.
-                  </div>
-                )}
-
-                {job.is_free ? (
-                  <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
-                    <div className="flex items-center gap-3 rounded-lg bg-cyan-50 border border-cyan-100 px-4 py-3 w-full">
-                      <Gift className="w-5 h-5 text-cyan-600 shrink-0" />
-                      <p className="text-sm font-semibold text-cyan-800">Free Job — no financial tracking</p>
-                      {job.hours_worked && job.hours_worked > 0 && (
-                        <span className="ml-auto text-sm font-medium text-cyan-700">{formatHours(job.hours_worked)} hrs worked</span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+                      {job.client_phone && (
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                          {job.client_phone}
+                        </span>
+                      )}
+                      {job.client_email && (
+                        <span className="flex items-center gap-1.5 min-w-0 truncate">
+                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate">{job.client_email}</span>
+                        </span>
+                      )}
+                      {job.job_type && (
+                        <span className="flex items-center gap-1.5">
+                          <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                          {job.job_type}
+                        </span>
+                      )}
+                      {job.location_city && (
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          {job.location_city}
+                        </span>
                       )}
                     </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-slate-200">
-                    <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Final Price</p>
-                      <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
+                  <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 mt-1.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isExpanded && (
+                  <div className="px-6 pb-6 pt-1 border-t border-slate-200">
+                    <div className="flex flex-wrap items-center justify-end gap-2 mb-4 pt-4">
+                      {!isInactive && (
+                        <>
+                          {(job.date_scheduled || job.date_completed) && !job.has_signature && (
+                            <button
+                              onClick={() => setCompletingJob(job)}
+                              className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                              title="Complete job with customer signature"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              Complete Job
+                            </button>
+                          )}
+                          {(job.job_status === 'quoted' || job.job_status === 'scheduled') && (
+                            <button
+                              onClick={() => setMarkingJobLost(job)}
+                              className="px-3 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-medium hover:bg-amber-200 transition-colors flex items-center gap-2 text-sm"
+                              title="Mark job as lost"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              Mark Lost
+                            </button>
+                          )}
+                          {(job.job_status === 'accepted' || job.job_status === 'scheduled' || job.job_status === 'in_progress') && (
+                            <button
+                              onClick={() => setCancellingJob(job)}
+                              className="px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium hover:bg-red-100 transition-colors flex items-center gap-2 text-sm"
+                              title="Cancel job"
+                            >
+                              <Ban className="w-4 h-4" />
+                              Cancel
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setCreatingInvoiceForJob(job)}
+                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Create invoice from job"
+                          >
+                            <FileText className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => setAttachingInvoiceToJob(job)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Attach existing invoice"
+                          >
+                            <LinkIcon className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleCopyJob(job)}
+                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Copy job"
+                          >
+                            <Copy className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => { setEditingJob(job); setCopyingJob(null); setShowModal(true); }}
+                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Edit job"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => handleDelete(job.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete job"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
-                    <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Materials Cost</p>
-                      <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                      <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                          <Briefcase className="w-3 h-3" />
+                          Job Type
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 truncate" title={job.job_type || 'N/A'}>{job.job_type || 'N/A'}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                          <MapPin className="w-3 h-3" />
+                          Location
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 truncate" title={job.location_city || 'N/A'}>{job.location_city || 'N/A'}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3" />
+                          Completed
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{formatDate(job.date_completed)}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                          <Clock className="w-3 h-3" />
+                          Hours Worked
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900">{formatHours(job.hours_worked)}</p>
+                      </div>
                     </div>
-                    {contractorCost > 0 && (
-                      <div className="rounded-lg bg-rose-50 border border-rose-100 px-3 py-2.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-400 mb-1">Contractor Pay</p>
-                        <p className="text-lg font-bold text-rose-600">{maskFinancialValue(formatCurrency(contractorCost))}</p>
+
+                    {missingHours && (
+                      <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                        This completed job is missing hours worked. Please edit and backfill to keep profitability metrics reliable.
                       </div>
                     )}
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Net Profit</p>
-                      <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
-                    </div>
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Hourly Rate</p>
-                      <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
-                    </div>
+
+                    {job.is_free ? (
+                      <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                        <div className="flex items-center gap-3 rounded-lg bg-cyan-50 border border-cyan-100 px-4 py-3 w-full">
+                          <Gift className="w-5 h-5 text-cyan-600 shrink-0" />
+                          <p className="text-sm font-semibold text-cyan-800">Free Job — no financial tracking</p>
+                          {job.hours_worked && job.hours_worked > 0 && (
+                            <span className="ml-auto text-sm font-medium text-cyan-700">{formatHours(job.hours_worked)} hrs worked</span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-4 border-t border-slate-200">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Final Price</p>
+                          <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.final_price))}</p>
+                        </div>
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">Materials Cost</p>
+                          <p className="text-lg font-bold text-slate-900">{maskFinancialValue(formatCurrency(job.materials_cost))}</p>
+                        </div>
+                        {contractorCost > 0 && (
+                          <div className="rounded-lg bg-rose-50 border border-rose-100 px-3 py-2.5">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-400 mb-1">Contractor Pay</p>
+                            <p className="text-lg font-bold text-rose-600">{maskFinancialValue(formatCurrency(contractorCost))}</p>
+                          </div>
+                        )}
+                        <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Net Profit</p>
+                          <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(netProfit))}</p>
+                        </div>
+                        <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 mb-1">Hourly Rate</p>
+                          <p className="text-lg font-bold text-emerald-600">{maskFinancialValue(formatCurrency(hourlyRate))}/hr</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {job.job_description && (
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Description</p>
+                        <p className="text-sm text-slate-700 leading-relaxed rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">{job.job_description}</p>
+                      </div>
+                    )}
+
+                    {businessInfo && (
+                      <JobInvoicesList
+                        jobId={job.id}
+                        businessInfo={businessInfo}
+                        onInvoiceDetached={fetchData}
+                      />
+                    )}
+
+                    {businessId && (
+                      <JobContractorsList
+                        jobId={job.id}
+                        businessId={businessId}
+                        organizationId={currentOrganization?.id ?? null}
+                        jobRevenue={job.final_price}
+                        onChange={fetchData}
+                      />
+                    )}
                   </div>
-                )}
-
-                {job.job_description && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Description</p>
-                    <p className="text-sm text-slate-700 leading-relaxed rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">{job.job_description}</p>
-                  </div>
-                )}
-
-                {businessInfo && (
-                  <JobInvoicesList
-                    jobId={job.id}
-                    businessInfo={businessInfo}
-                    onInvoiceDetached={fetchData}
-                  />
-                )}
-
-                {businessId && (
-                  <JobContractorsList
-                    jobId={job.id}
-                    businessId={businessId}
-                    organizationId={currentOrganization?.id ?? null}
-                    jobRevenue={job.final_price}
-                    onChange={fetchData}
-                  />
                 )}
               </div>
             );
