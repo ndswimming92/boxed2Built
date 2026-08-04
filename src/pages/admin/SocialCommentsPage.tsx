@@ -183,9 +183,9 @@ export default function SocialCommentsPage() {
                       </a>
                     )}
                   </div>
-                  <p className="text-sm text-slate-700 mt-1">{comment.message}</p>
+                  <p className={`text-sm mt-1 ${comment.content_unavailable ? 'text-amber-700 italic' : 'text-slate-700'}`}>{comment.message}</p>
 
-                  {!comment.replied && (
+                  {!comment.replied && !comment.content_unavailable && (
                     <div className="mt-3 flex gap-2">
                       <input
                         type="text"

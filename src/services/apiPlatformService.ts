@@ -263,6 +263,7 @@ export interface SocialComment {
   message: string;
   created_time: string;
   replied: boolean;
+  content_unavailable?: boolean;
 }
 
 export interface SocialCommentsResult {

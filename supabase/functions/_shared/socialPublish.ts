@@ -86,9 +86,13 @@ export interface PostRemovalCheck {
 // that were deleted or taken down (e.g. by its spam/policy enforcement) after
 // publishing. Other error codes (rate limits, transient permission hiccups)
 // are left alone since they don't reliably mean the post is gone.
+//
+// Deliberately no `fields` param: requesting `fields=id` alone (or hitting
+// `/{id}/comments` as its own edge) makes the Graph API falsely report some
+// live, commentable posts as nonexistent. Falling back to the default field
+// set avoids that false positive and still 400s on genuinely deleted posts.
 export async function checkPostRemoved(objectId: string, accessToken: string): Promise<PostRemovalCheck> {
   const url = new URL(`${GRAPH_URL}/${objectId}`);
-  url.searchParams.set('fields', 'id');
   url.searchParams.set('access_token', accessToken);
   const res = await fetch(url.toString());
   if (res.ok) return { removed: false };

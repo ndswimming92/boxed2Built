@@ -33,6 +33,7 @@ interface SocialComment {
   message: string;
   created_time: string;
   replied: boolean;
+  content_unavailable?: boolean;
 }
 
 function json(body: unknown, status = 200) {
@@ -54,31 +55,102 @@ function repliedByOwner(replies: { data?: { from?: { id?: string } }[] } | undef
   return !!replies?.data?.some((reply) => reply?.from?.id === ownerId);
 }
 
-async function fetchFacebookComments(pageId: string, accessToken: string): Promise<{ comments: SocialComment[]; error: string | null }> {
-  const { ok, body } = await graphGet(`/${pageId}/posts`, {
-    fields: `id,permalink_url,comments.limit(${COMMENTS_PER_POST_LIMIT}){id,message,from,created_time,comments.limit(${REPLIES_PER_COMMENT_LIMIT}){from}}`,
-    limit: String(RECENT_POSTS_LIMIT),
-    access_token: accessToken,
-  });
-  if (!ok) return { comments: [], error: body?.error?.message || 'Failed to load Facebook comments' };
+// The Page's /posts edge quietly omits some published photo posts (seen in
+// practice for posts made via the Photos API) even though they're live and
+// commentable. /photos?type=uploaded reliably lists every photo post via its
+// page_story_id, so it's merged in to fill the gaps /posts leaves.
+async function collectFacebookPostIds(pageId: string, accessToken: string): Promise<{ ids: Map<string, string | null>; error: string | null }> {
+  const [postsResult, photosResult] = await Promise.all([
+    graphGet(`/${pageId}/posts`, {
+      fields: 'id,permalink_url',
+      limit: String(RECENT_POSTS_LIMIT),
+      access_token: accessToken,
+    }),
+    graphGet(`/${pageId}/photos`, {
+      type: 'uploaded',
+      fields: 'page_story_id,link',
+      limit: String(RECENT_POSTS_LIMIT * 2),
+      access_token: accessToken,
+    }),
+  ]);
 
-  const comments: SocialComment[] = [];
-  for (const post of body?.data ?? []) {
-    for (const comment of post?.comments?.data ?? []) {
-      if (comment?.from?.id === pageId) continue; // skip the Page's own comments/replies
-      comments.push({
-        id: comment.id,
-        platform: 'facebook',
-        post_id: post.id,
-        post_permalink: post.permalink_url ?? null,
-        author: comment?.from?.name ?? 'Facebook user',
-        message: comment.message ?? '',
-        created_time: comment.created_time,
-        replied: repliedByOwner(comment.comments, pageId),
-      });
+  if (!postsResult.ok && !photosResult.ok) {
+    return { ids: new Map(), error: postsResult.body?.error?.message || photosResult.body?.error?.message || 'Failed to load Facebook posts' };
+  }
+
+  const ids = new Map<string, string | null>();
+  for (const post of postsResult.body?.data ?? []) {
+    ids.set(post.id, post.permalink_url ?? null);
+  }
+  for (const photo of photosResult.body?.data ?? []) {
+    if (photo?.page_story_id && !ids.has(photo.page_story_id)) {
+      ids.set(photo.page_story_id, photo.link ?? null);
     }
   }
-  return { comments, error: null };
+  return { ids, error: null };
+}
+
+async function fetchFacebookComments(pageId: string, accessToken: string): Promise<{ comments: SocialComment[]; error: string | null }> {
+  const { ids: postIds, error: idsError } = await collectFacebookPostIds(pageId, accessToken);
+  if (postIds.size === 0) return { comments: [], error: idsError };
+
+  const comments: SocialComment[] = [];
+  let commentsError: string | null = null;
+
+  for (const [postId, permalink] of postIds) {
+    // Fetched per-post (not via /posts field expansion) because requesting
+    // `fields=id` alone on some of these posts falsely 400s as nonexistent —
+    // nesting the comments field on the object itself avoids that.
+    const { ok, body } = await graphGet(`/${postId}`, {
+      fields: `comments.limit(${COMMENTS_PER_POST_LIMIT}){id,message,from,created_time,comments.limit(${REPLIES_PER_COMMENT_LIMIT}){from}}`,
+      access_token: accessToken,
+    });
+
+    if (ok) {
+      for (const comment of body?.comments?.data ?? []) {
+        if (comment?.from?.id === pageId) continue; // skip the Page's own comments/replies
+        comments.push({
+          id: comment.id,
+          platform: 'facebook',
+          post_id: postId,
+          post_permalink: permalink,
+          author: comment?.from?.name ?? 'Facebook user',
+          message: comment.message ?? '',
+          created_time: comment.created_time,
+          replied: repliedByOwner(comment.comments, pageId),
+        });
+      }
+      continue;
+    }
+
+    // A handful of posts 400 on this nested comment-data expansion even
+    // though they're live and commentable (a reproducible Graph API quirk —
+    // summary-only requests still resolve). Fall back to a count so the
+    // admin isn't left thinking there's nothing here, with a link to view
+    // and reply directly on Facebook.
+    const summary = await graphGet(`/${postId}`, {
+      fields: 'comments.summary(true).limit(0)',
+      access_token: accessToken,
+    });
+    const count = summary.ok ? summary.body?.comments?.summary?.total_count ?? 0 : 0;
+    if (count > 0) {
+      comments.push({
+        id: `${postId}-unavailable`,
+        platform: 'facebook',
+        post_id: postId,
+        post_permalink: permalink,
+        author: 'Facebook',
+        message: `${count} comment${count === 1 ? '' : 's'} on this post. Facebook isn't letting us load the content here — open the post to view and reply.`,
+        created_time: new Date().toISOString(),
+        replied: false,
+        content_unavailable: true,
+      });
+    } else if (!summary.ok) {
+      if (!commentsError) commentsError = body?.error?.message || 'Failed to load comments for a post';
+    }
+  }
+
+  return { comments, error: idsError || commentsError };
 }
 
 async function fetchInstagramComments(igUserId: string, accessToken: string): Promise<{ comments: SocialComment[]; error: string | null }> {
