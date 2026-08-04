@@ -113,9 +113,13 @@ Deno.serve(async (req) => {
             facebook_post_id: facebookResult.success ? facebookResult.post_id : null,
             facebook_posted_at: facebookResult.success ? new Date().toISOString() : null,
             facebook_post_error: facebookResult.success ? null : facebookResult.error,
+            facebook_post_removed_at: null,
+            facebook_post_removed_reason: null,
             instagram_post_id: instagramResult.success ? instagramResult.post_id : null,
             instagram_posted_at: instagramResult.success ? new Date().toISOString() : null,
             instagram_post_error: instagramResult.success ? null : instagramResult.error,
+            instagram_post_removed_at: null,
+            instagram_post_removed_reason: null,
           })
           .eq('id', item.id);
 

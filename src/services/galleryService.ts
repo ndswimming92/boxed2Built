@@ -27,9 +27,13 @@ export interface GalleryItem {
   facebook_post_id?: string | null;
   facebook_posted_at?: string | null;
   facebook_post_error?: string | null;
+  facebook_post_removed_at?: string | null;
+  facebook_post_removed_reason?: string | null;
   instagram_post_id?: string | null;
   instagram_posted_at?: string | null;
   instagram_post_error?: string | null;
+  instagram_post_removed_at?: string | null;
+  instagram_post_removed_reason?: string | null;
   social_scheduled_at?: string | null;
   created_at: string;
   updated_at: string;

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle, Clock, X } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle, ShieldAlert, Clock, X } from 'lucide-react';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
-import { publishGalleryPhoto, YoutubeUploadResult } from '../../services/socialPublishService';
+import { publishGalleryPhoto, checkSocialPostStatus, YoutubeUploadResult } from '../../services/socialPublishService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
@@ -15,6 +15,8 @@ import YoutubeUploadModal from '../../components/admin/YoutubeUploadModal';
 
 const isPostedToFacebook = (item: GalleryItem) => Boolean(item.facebook_posted_at);
 const isPostedToInstagram = (item: GalleryItem) => Boolean(item.instagram_posted_at);
+const isFacebookRemoved = (item: GalleryItem) => Boolean(item.facebook_post_removed_at);
+const isInstagramRemoved = (item: GalleryItem) => Boolean(item.instagram_post_removed_at);
 
 function toDatetimeLocalValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -74,6 +76,19 @@ export default function GalleryPage() {
     };
     fetchBusinessId();
   }, []);
+
+  useEffect(() => {
+    if (!businessId) return;
+    checkSocialPostStatus()
+      .then((result) => {
+        if (result.facebook_removed.length > 0 || result.instagram_removed.length > 0) {
+          refresh();
+        }
+      })
+      .catch((err) => console.error('Error checking social post status:', err));
+    // Runs once per page load to flag posts Facebook/Instagram took down after publishing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessId]);
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -465,16 +480,35 @@ export default function GalleryPage() {
                 {item.type === 'image' && (isPostedToFacebook(item) || isPostedToInstagram(item)) && (
                   <div className="flex items-center gap-2 mb-2 text-xs">
                     {isPostedToFacebook(item) && (
-                      <span className="inline-flex items-center gap-1 text-blue-700" title="Posted to Facebook">
-                        <Facebook size={12} /> Posted
-                      </span>
+                      isFacebookRemoved(item) ? (
+                        <span className="inline-flex items-center gap-1 text-red-700" title={item.facebook_post_removed_reason || 'Facebook removed this post'}>
+                          <ShieldAlert size={12} /> Removed by Facebook
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-blue-700" title="Posted to Facebook">
+                          <Facebook size={12} /> Posted
+                        </span>
+                      )
                     )}
                     {isPostedToInstagram(item) && (
-                      <span className="inline-flex items-center gap-1 text-pink-700" title="Posted to Instagram">
-                        <Instagram size={12} /> Posted
-                      </span>
+                      isInstagramRemoved(item) ? (
+                        <span className="inline-flex items-center gap-1 text-red-700" title={item.instagram_post_removed_reason || 'Instagram removed this post'}>
+                          <ShieldAlert size={12} /> Removed by Instagram
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-pink-700" title="Posted to Instagram">
+                          <Instagram size={12} /> Posted
+                        </span>
+                      )
                     )}
                   </div>
+                )}
+                {item.type === 'image' && (isFacebookRemoved(item) || isInstagramRemoved(item)) && (
+                  <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1 mb-2 line-clamp-3">
+                    {isFacebookRemoved(item) && `Facebook took this post down, likely for spam/policy reasons${item.facebook_post_removed_reason ? ` — ${item.facebook_post_removed_reason}` : ''}.`}
+                    {isFacebookRemoved(item) && isInstagramRemoved(item) && ' '}
+                    {isInstagramRemoved(item) && `Instagram took this post down, likely for spam/policy reasons${item.instagram_post_removed_reason ? ` — ${item.instagram_post_removed_reason}` : ''}.`}
+                  </p>
                 )}
                 {item.type === 'image' && (item.facebook_post_error || item.instagram_post_error) && (
                   <p className="text-xs text-red-600 mb-2 line-clamp-2">
