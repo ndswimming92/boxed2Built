@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { buildCaption, postToFacebook, postToInstagram, FacebookTokens } from '../_shared/socialPublish.ts';
+import { checkPostRemoved, FacebookTokens } from '../_shared/socialPublish.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +11,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const MAX_ITEMS_PER_RUN = 40;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -41,24 +42,7 @@ Deno.serve(async (req) => {
       return json({ error: 'Forbidden' }, 403);
     }
 
-    const body = await req.json().catch(() => ({}));
-    const galleryItemId = body?.gallery_item_id as string | undefined;
-    if (!galleryItemId) return json({ error: 'gallery_item_id is required' }, 400);
-
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const { data: item, error: itemErr } = await admin
-      .from('gallery_items')
-      .select('id, type, src, title, description, alt, hashtags, eligible_for_social')
-      .eq('id', galleryItemId)
-      .maybeSingle();
-    if (itemErr || !item) return json({ error: 'Gallery item not found' }, 404);
-    if (item.type !== 'image') {
-      return json({ error: 'Only images can be posted to social right now.' }, 400);
-    }
-    if (!item.eligible_for_social) {
-      return json({ error: 'This item is marked website-gallery only and is not eligible for social posting.' }, 400);
-    }
 
     const { data: connection, error: connErr } = await admin
       .from('integration_connections')
@@ -80,31 +64,62 @@ Deno.serve(async (req) => {
     }
     const tokens = JSON.parse(secretJson) as FacebookTokens;
 
-    const caption = buildCaption(item.title, item.description, item.hashtags);
-    const [facebookResult, instagramResult] = await Promise.all([
-      postToFacebook(tokens, item.src, caption, item.alt),
-      postToInstagram(tokens, item.src, caption, item.alt),
-    ]);
+    const body = await req.json().catch(() => ({}));
+    const requestedIds = Array.isArray(body?.gallery_item_ids) ? (body.gallery_item_ids as string[]) : null;
 
-    await admin
+    let query = admin
       .from('gallery_items')
-      .update({
-        facebook_post_id: facebookResult.success ? facebookResult.post_id : null,
-        facebook_posted_at: facebookResult.success ? new Date().toISOString() : null,
-        facebook_post_error: facebookResult.success ? null : facebookResult.error,
-        facebook_post_removed_at: null,
-        facebook_post_removed_reason: null,
-        instagram_post_id: instagramResult.success ? instagramResult.post_id : null,
-        instagram_posted_at: instagramResult.success ? new Date().toISOString() : null,
-        instagram_post_error: instagramResult.success ? null : instagramResult.error,
-        instagram_post_removed_at: null,
-        instagram_post_removed_reason: null,
-      })
-      .eq('id', galleryItemId);
+      .select('id, facebook_post_id, facebook_post_removed_at, instagram_post_id, instagram_post_removed_at')
+      .or('facebook_post_id.not.is.null,instagram_post_id.not.is.null')
+      .order('facebook_posted_at', { ascending: false, nullsFirst: false });
 
-    return json({ facebook: facebookResult, instagram: instagramResult });
+    if (requestedIds && requestedIds.length > 0) {
+      query = query.in('id', requestedIds);
+    } else {
+      query = query
+        .or('facebook_post_removed_at.is.null,instagram_post_removed_at.is.null')
+        .limit(MAX_ITEMS_PER_RUN);
+    }
+
+    const { data: items, error: itemsErr } = await query;
+    if (itemsErr) throw new Error(itemsErr.message);
+
+    const removedFacebook: string[] = [];
+    const removedInstagram: string[] = [];
+
+    for (const item of items ?? []) {
+      const updates: Record<string, unknown> = {};
+
+      if (item.facebook_post_id && !item.facebook_post_removed_at) {
+        const result = await checkPostRemoved(item.facebook_post_id, tokens.page_access_token);
+        if (result.removed) {
+          updates.facebook_post_removed_at = new Date().toISOString();
+          updates.facebook_post_removed_reason = result.reason;
+          removedFacebook.push(item.id);
+        }
+      }
+
+      if (item.instagram_post_id && !item.instagram_post_removed_at) {
+        const result = await checkPostRemoved(item.instagram_post_id, tokens.page_access_token);
+        if (result.removed) {
+          updates.instagram_post_removed_at = new Date().toISOString();
+          updates.instagram_post_removed_reason = result.reason;
+          removedInstagram.push(item.id);
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await admin.from('gallery_items').update(updates).eq('id', item.id);
+      }
+    }
+
+    return json({
+      checked: items?.length ?? 0,
+      facebook_removed: removedFacebook,
+      instagram_removed: removedInstagram,
+    });
   } catch (error) {
-    console.error('publish-gallery-photo error:', error);
+    console.error('check-social-post-status error:', error);
     const msg = error instanceof Error ? error.message : 'Unknown error';
     return json({ error: msg }, 500);
   }

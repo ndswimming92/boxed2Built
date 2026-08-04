@@ -31,6 +31,30 @@ export async function publishGalleryPhoto(galleryItemId: string): Promise<Publis
   return body as PublishGalleryPhotoResult;
 }
 
+export interface CheckSocialPostStatusResult {
+  checked: number;
+  facebook_removed: string[];
+  instagram_removed: string[];
+}
+
+export async function checkSocialPostStatus(galleryItemIds?: string[]): Promise<CheckSocialPostStatusResult> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/check-social-post-status`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify(galleryItemIds ? { gallery_item_ids: galleryItemIds } : {}),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to check social post status');
+  return body as CheckSocialPostStatusResult;
+}
+
 export type YoutubePrivacyStatus = 'private' | 'unlisted' | 'public';
 
 export interface StartYoutubeUploadParams {

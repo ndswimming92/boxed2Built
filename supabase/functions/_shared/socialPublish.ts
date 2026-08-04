@@ -77,6 +77,31 @@ async function waitForContainerReady(creationId: string, accessToken: string): P
   throw new Error('Instagram media container took too long to process. Try publishing again.');
 }
 
+export interface PostRemovalCheck {
+  removed: boolean;
+  reason?: string;
+}
+
+// Facebook returns error code 100 ("Object does not exist...") for posts/media
+// that were deleted or taken down (e.g. by its spam/policy enforcement) after
+// publishing. Other error codes (rate limits, transient permission hiccups)
+// are left alone since they don't reliably mean the post is gone.
+export async function checkPostRemoved(objectId: string, accessToken: string): Promise<PostRemovalCheck> {
+  const url = new URL(`${GRAPH_URL}/${objectId}`);
+  url.searchParams.set('fields', 'id');
+  url.searchParams.set('access_token', accessToken);
+  const res = await fetch(url.toString());
+  if (res.ok) return { removed: false };
+
+  const body = await res.json().catch(() => ({}));
+  const code = body?.error?.code;
+  const message = body?.error?.message as string | undefined;
+  if (code === 100) {
+    return { removed: true, reason: message || 'Facebook reports this post no longer exists.' };
+  }
+  return { removed: false };
+}
+
 export async function postToInstagram(
   tokens: FacebookTokens,
   imageUrl: string,
