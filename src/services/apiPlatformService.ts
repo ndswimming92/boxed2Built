@@ -264,6 +264,7 @@ export interface SocialComment {
   created_time: string;
   replied: boolean;
   content_unavailable?: boolean;
+  unavailable_count?: number;
 }
 
 export interface SocialCommentsResult {
@@ -286,6 +287,27 @@ export async function getSocialComments(): Promise<SocialCommentsResult> {
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body?.error || 'Failed to load comments');
   return body as SocialCommentsResult;
+}
+
+export async function dismissSocialNotice(
+  platform: SocialCommentPlatform,
+  postId: string,
+  count: number
+): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/dismiss-social-notice`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ platform, post_id: postId, count }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to dismiss notice');
 }
 
 export async function replySocialComment(

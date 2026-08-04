@@ -4,6 +4,7 @@ import { Facebook, Instagram, RefreshCw, AlertCircle, CheckCircle2, Send } from 
 import {
   getSocialComments,
   replySocialComment,
+  dismissSocialNotice,
   SocialComment,
   SocialCommentsResult,
 } from '../../services/apiPlatformService';
@@ -61,6 +62,18 @@ export default function SocialCommentsPage() {
     } finally {
       setSendingId(null);
     }
+  };
+
+  const handleDismiss = (comment: SocialComment) => {
+    if (comment.unavailable_count === undefined) return;
+    setResult((prev) =>
+      prev
+        ? { ...prev, comments: prev.comments.map((c) => (c.id === comment.id ? { ...c, replied: true } : c)) }
+        : prev
+    );
+    dismissSocialNotice(comment.platform, comment.post_id, comment.unavailable_count).catch((err) => {
+      console.error('Error dismissing social notice:', err);
+    });
   };
 
   if (loading) {
@@ -169,7 +182,7 @@ export default function SocialCommentsPage() {
                     {comment.replied && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
-                        Replied
+                        {comment.content_unavailable ? 'Dismissed' : 'Replied'}
                       </span>
                     )}
                     {comment.post_permalink && (
@@ -178,6 +191,9 @@ export default function SocialCommentsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-slate-500 underline hover:text-slate-700"
+                        onClick={() => {
+                          if (comment.content_unavailable && !comment.replied) handleDismiss(comment);
+                        }}
                       >
                         View post
                       </a>

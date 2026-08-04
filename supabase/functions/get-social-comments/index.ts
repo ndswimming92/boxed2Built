@@ -34,6 +34,7 @@ interface SocialComment {
   created_time: string;
   replied: boolean;
   content_unavailable?: boolean;
+  unavailable_count?: number;
 }
 
 function json(body: unknown, status = 200) {
@@ -90,7 +91,11 @@ async function collectFacebookPostIds(pageId: string, accessToken: string): Prom
   return { ids, error: null };
 }
 
-async function fetchFacebookComments(pageId: string, accessToken: string): Promise<{ comments: SocialComment[]; error: string | null }> {
+async function fetchFacebookComments(
+  pageId: string,
+  accessToken: string,
+  dismissedCounts: Map<string, number>
+): Promise<{ comments: SocialComment[]; error: string | null }> {
   const { ids: postIds, error: idsError } = await collectFacebookPostIds(pageId, accessToken);
   if (postIds.size === 0) return { comments: [], error: idsError };
 
@@ -134,6 +139,11 @@ async function fetchFacebookComments(pageId: string, accessToken: string): Promi
     });
     const count = summary.ok ? summary.body?.comments?.summary?.total_count ?? 0 : 0;
     if (count > 0) {
+      // Dismissed from the admin UI ("View post" on a content-unavailable
+      // notice) stays dismissed unless the live count has grown since,
+      // meaning new comments came in that haven't been looked at yet.
+      const dismissedAt = dismissedCounts.get(postId);
+      const dismissed = dismissedAt !== undefined && dismissedAt >= count;
       comments.push({
         id: `${postId}-unavailable`,
         platform: 'facebook',
@@ -142,8 +152,9 @@ async function fetchFacebookComments(pageId: string, accessToken: string): Promi
         author: 'Facebook',
         message: `${count} comment${count === 1 ? '' : 's'} on this post. Facebook isn't letting us load the content here — open the post to view and reply.`,
         created_time: new Date().toISOString(),
-        replied: false,
+        replied: dismissed,
         content_unavailable: true,
+        unavailable_count: count,
       });
     } else if (!summary.ok) {
       if (!commentsError) commentsError = body?.error?.message || 'Failed to load comments for a post';
@@ -223,8 +234,14 @@ Deno.serve(async (req) => {
     }
     const tokens = JSON.parse(secretJson) as FacebookTokens;
 
+    const { data: dismissalRows } = await admin
+      .from('social_comment_dismissals')
+      .select('post_id, dismissed_count')
+      .eq('platform', 'facebook');
+    const dismissedCounts = new Map<string, number>((dismissalRows ?? []).map((row) => [row.post_id, row.dismissed_count]));
+
     const [facebookResult, instagramResult] = await Promise.all([
-      fetchFacebookComments(tokens.page_id, tokens.page_access_token),
+      fetchFacebookComments(tokens.page_id, tokens.page_access_token, dismissedCounts),
       tokens.ig_user_id
         ? fetchInstagramComments(tokens.ig_user_id, tokens.page_access_token)
         : Promise.resolve({ comments: [] as SocialComment[], error: null }),
