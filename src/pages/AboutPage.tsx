@@ -5,12 +5,12 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { CheckCircle, Users, Clock, Award, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
-import OptimizedImage from '../components/ui/OptimizedImage';
 import ImageLightbox, { ClickableImage, LightboxImage } from '../components/ui/ImageLightbox';
 
 import { Head } from 'vite-react-ssg';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../constants/marketingImages';
 
 const AboutPage: React.FC = () => {
   const businessData = useBusinessLoaderData();
@@ -92,19 +92,16 @@ const AboutPage: React.FC = () => {
                 
                 <div className="relative">
                   <ClickableImage
-                    src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
+                    src={MARKETING_IMAGES.founderPortrait.src}
                     alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
                     onOpen={setLightbox}
                   >
-                    <OptimizedImage
-                      src="/images/nicholas-davidson-founder-portrait-spring-hill.jpg"
+                    <img
+                      {...MARKETING_IMAGES.founderPortrait}
+                      sizes="(max-width: 1024px) 100vw, 500px"
                       alt="Nicholas Davidson, owner and founder of Boxed2Built furniture assembly service, smiling outdoors in Spring Hill Tennessee"
-                      className="rounded-lg shadow-lg object-cover"
-                      width={500}
-                      height={667}
-                      imageType="gallery"
-                      quality={85}
-                      enableAvif={true}
+                      className="rounded-lg shadow-lg object-cover w-full h-auto"
+                      loading="lazy"
                     />
                   </ClickableImage>
                   <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
@@ -147,12 +144,13 @@ const AboutPage: React.FC = () => {
                   </div>
                   <div>
                     <ClickableImage
-                      src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
+                      src={MARKETING_IMAGES.timeForWhatMatters.src}
                       alt="Family enjoying time together while Boxed2Built handles furniture assembly"
                       onOpen={setLightbox}
                     >
                       <img
-                        src="/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.png"
+                        {...MARKETING_IMAGES.timeForWhatMatters}
+                        sizes={HALF_COLUMN_SIZES}
                         alt="Family enjoying time together while Boxed2Built handles furniture assembly"
                         className="rounded-xl shadow-lg w-full h-auto object-cover"
                         loading="lazy"
@@ -221,12 +219,13 @@ const AboutPage: React.FC = () => {
 
                 <div className="max-w-md mx-auto mb-8">
                   <ClickableImage
-                    src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
+                    src={MARKETING_IMAGES.nurseryAssembly.src}
                     alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
                     onOpen={setLightbox}
                   >
                     <img
-                      src="/images/marketing-images/Boxed2Built_Nursery_Assembly.png"
+                      {...MARKETING_IMAGES.nurseryAssembly}
+                      sizes={HALF_COLUMN_SIZES}
                       alt="Professional nursery furniture assembly by Boxed2Built - crib and dresser setup"
                       className="rounded-xl shadow-md w-full h-auto object-cover"
                       loading="lazy"

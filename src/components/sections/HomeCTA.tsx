@@ -1,13 +1,15 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import CallButton from '../ui/CallButton';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../../constants/marketingImages';
 
 const HomeCTA: React.FC = () => {
   return (
     <section className="py-16 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <img
-          src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+          {...MARKETING_IMAGES.skipTheBuild}
+          sizes={HALF_COLUMN_SIZES}
           alt=""
           className="w-full h-full object-cover"
           loading="lazy"
