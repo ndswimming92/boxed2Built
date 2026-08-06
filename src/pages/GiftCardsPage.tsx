@@ -1,3 +1,4 @@
+import { Head } from 'vite-react-ssg';
 import React, { useRef, useState } from 'react';
 import { Gift, Sparkles, ShieldCheck, Infinity as InfinityIcon, Mail, User, MessageSquareHeart } from 'lucide-react';
 import Header from '../components/layout/Header';
@@ -13,7 +14,6 @@ import {
 import { createGiftCardCheckout } from '../services/giftCardService';
 import { useToast } from '../contexts/ToastContext';
 import type { GiftCardDeliveryType } from '../types/giftCard';
-import { usePageMeta } from '../hooks/usePageMeta';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -38,16 +38,6 @@ const initialForm: FormState = {
 };
 
 const GiftCardsPage: React.FC = () => {
-  usePageMeta({
-    title: 'Boxed2Built Gift Cards | Furniture Assembly Gift Cards in Spring Hill, TN',
-    description:
-      'Give the gift of a stress-free move-in day. Boxed2Built service credit for furniture assembly and TV mounting in Spring Hill, TN.',
-    canonicalUrl: 'https://boxed2built.com/gift-cards',
-    ogTitle: 'Boxed2Built Gift Cards | The Perfect Closing or Housewarming Gift',
-    ogDescription: 'Give the gift of professional furniture assembly. Boxed2Built gift cards for stress-free move-in days in Spring Hill, TN.',
-    twitterTitle: 'Boxed2Built Gift Cards | Furniture Assembly in Spring Hill, TN',
-    twitterDescription: 'Give the gift of professional furniture assembly. Perfect for housewarmings and closing gifts.',
-  });
 
   const [form, setForm] = useState<FormState>(initialForm);
   const [customMode, setCustomMode] = useState(false);
@@ -130,6 +120,16 @@ const GiftCardsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Head>
+        <title>Furniture Assembly Gift Cards | Spring Hill, TN | Boxed2Built</title>
+        <meta name="description" content="Give the gift of a stress-free move-in day. Boxed2Built service credit for furniture assembly and TV mounting in Spring Hill, TN. Perfect closing gift." />
+        <link rel="canonical" href="https://boxed2built.com/gift-cards" />
+        <meta property="og:url" content="https://boxed2built.com/gift-cards" />
+        <meta property="og:title" content="Boxed2Built Gift Cards | The Perfect Closing or Housewarming Gift" />
+        <meta property="og:description" content="Give the gift of professional furniture assembly. Boxed2Built gift cards for stress-free move-in days in Spring Hill, TN." />
+        <meta name="twitter:title" content="Boxed2Built Gift Cards | Furniture Assembly in Spring Hill, TN" />
+        <meta name="twitter:description" content="Give the gift of professional furniture assembly. Perfect for housewarmings and closing gifts." />
+      </Head>
       <Header />
       <main className="pt-40 pb-20">
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

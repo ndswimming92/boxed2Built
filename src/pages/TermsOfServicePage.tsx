@@ -1,24 +1,25 @@
+import { Head } from 'vite-react-ssg';
 import React from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import TermsOfService from '../components/sections/TermsOfService';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const TermsOfServicePage: React.FC = () => {
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.termsOfService.title,
-    description: LOCAL_SEO_CONTENT.termsOfService.description,
-    canonicalUrl: 'https://boxed2built.com/terms-of-service',
-    ogTitle: 'Boxed2Built Terms of Service',
-    ogDescription: 'Review service terms for furniture assembly bookings with Boxed2Built.',
-    twitterTitle: 'Terms of Service | Boxed2Built',
-    twitterDescription: 'Read the service terms for Boxed2Built appointments and payments.',
-  });
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.termsOfService.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.termsOfService.description} />
+        <link rel="canonical" href="https://boxed2built.com/terms-of-service" />
+        <meta property="og:url" content="https://boxed2built.com/terms-of-service" />
+        <meta property="og:title" content="Boxed2Built Terms of Service" />
+        <meta property="og:description" content="Review service terms for furniture assembly bookings with Boxed2Built." />
+        <meta name="twitter:title" content="Terms of Service | Boxed2Built" />
+        <meta name="twitter:description" content="Read the service terms for Boxed2Built appointments and payments." />
+      </Head>
       <Header />
       <main className="pt-20">
         <section className="py-8 bg-gray-50">

@@ -6,6 +6,28 @@ import { trackEvent } from '../../utils/analytics';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
 import CallButton from '../ui/CallButton';
 import { useNotificationBarContext } from '../../contexts/NotificationBarContext';
+import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
+
+const SERVICE_MENU_ITEMS = [
+  {
+    href: '/services/furniture-assembly',
+    label: 'Furniture Assembly',
+    description: 'IKEA, Target, Walmart & more',
+    trackingId: 'furniture_assembly',
+  },
+  {
+    href: '/services/tv-mounting',
+    label: 'TV Mounting',
+    description: 'Professional installation & cable management',
+    trackingId: 'tv_mounting',
+  },
+  ...SERVICE_LANDING_PAGES.map((page) => ({
+    href: `/services/${page.slug}`,
+    label: page.navLabel,
+    description: page.navDescription,
+    trackingId: page.slug.replace(/-/g, '_'),
+  })),
+];
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,19 +103,10 @@ const Header: React.FC = () => {
     });
   };
 
-  const handleClientLoginClick = (location: 'desktop' | 'mobile') => {
-    setIsMenuOpen(false);
-    trackEvent('client_login_nav_click', 'header', {
-      event_category: 'navigation',
-      event_label: `client_login_${location}`,
-      action_type: 'click',
-      action_value: '/portal/login',
-    });
-  };
 
   const isActivePage = (path: string) => {
-    if (path === '/services') {
-      return location.pathname === '/services' || location.pathname.startsWith('/services/');
+    if (path === '/services' || path === '/service-areas') {
+      return location.pathname === path || location.pathname.startsWith(`${path}/`);
     }
     return location.pathname === path;
   };
@@ -124,8 +137,8 @@ const Header: React.FC = () => {
           <div
             className="
               absolute left-1/2 -translate-x-1/2
-              md:static md:translate-x-0
-              flex-shrink-0 md:mr-6
+              xl:static xl:translate-x-0
+              flex-shrink-0 xl:mr-6
             "
           >
             <a
@@ -151,10 +164,10 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav
-            className="hidden md:flex flex-1 justify-center"
+            className="hidden xl:flex flex-1 justify-center min-w-0"
             aria-label="Main navigation"
           >
-            <ul className="flex items-center gap-6 lg:gap-9">
+            <ul className="flex items-center gap-3 lg:gap-5 xl:gap-7">
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About', href: '/about' },
@@ -165,7 +178,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium transition-colors
+                    className={`relative font-medium whitespace-nowrap transition-colors text-sm lg:text-base
                       ${
                         isActivePage(item.href)
                           ? 'text-blue-700 font-semibold'
@@ -188,7 +201,7 @@ const Header: React.FC = () => {
                     window.location.href = '/services';
                     handleNavClick('services', '/services');
                   }}
-                  className={`relative font-medium transition-colors flex items-center gap-1
+                  className={`relative font-medium whitespace-nowrap transition-colors flex items-center gap-1 text-sm lg:text-base
                     ${
                       isActivePage('/services')
                         ? 'text-blue-700 font-semibold'
@@ -211,28 +224,24 @@ const Header: React.FC = () => {
                         <div className="text-sm text-gray-600">View complete service list</div>
                       </a>
                       <div className="border-t border-gray-200 my-2"></div>
-                      <a
-                        href="/services/furniture-assembly"
-                        onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
-                        className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                      >
-                        <div className="font-semibold">Furniture Assembly</div>
-                        <div className="text-sm text-gray-600">IKEA, Target, Walmart & more</div>
-                      </a>
-                      <a
-                        href="/services/tv-mounting"
-                        onClick={() => handleNavClick('tv_mounting', '/services/tv-mounting')}
-                        className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                      >
-                        <div className="font-semibold">TV Mounting</div>
-                        <div className="text-sm text-gray-600">Professional installation & cable management</div>
-                      </a>
+                      {SERVICE_MENU_ITEMS.map((item) => (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => handleNavClick(item.trackingId, item.href)}
+                          className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                        >
+                          <div className="font-semibold">{item.label}</div>
+                          <div className="text-sm text-gray-600">{item.description}</div>
+                        </a>
+                      ))}
                     </div>
                   </div>
                 )}
               </li>
 
               {[
+                { label: 'Service Areas', href: '/service-areas' },
                 { label: 'Partners', href: '/partners' },
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Gift Cards', href: '/gift-cards' },
@@ -245,7 +254,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium transition-colors
+                    className={`relative font-medium whitespace-nowrap transition-colors text-sm lg:text-base
                       ${
                         isActivePage(item.href)
                           ? 'text-blue-700 font-semibold'
@@ -261,14 +270,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
-          <div className="hidden md:flex flex-shrink-0 items-center gap-3">
-            <a
-              href="/portal/login"
-              onClick={() => handleClientLoginClick('desktop')}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 transition-colors"
-            >
-              Customer Login
-            </a>
+          <div className="hidden xl:flex flex-shrink-0 items-center gap-3">
             <CallButton size="md" pageSection="header" />
           </div>
 
@@ -276,7 +278,7 @@ const Header: React.FC = () => {
           <button
             ref={mobileMenuButtonRef}
             onClick={toggleMenu}
-            className="md:hidden ml-auto p-2 rounded-lg hover:bg-gray-50"
+            className="xl:hidden ml-auto p-2 rounded-lg hover:bg-gray-50"
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMenuOpen}
           >
@@ -286,7 +288,7 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 bg-white rounded-xl shadow-lg border">
+          <div className="xl:hidden mt-4 bg-white rounded-xl shadow-lg border">
             <nav className="flex flex-col p-2">
               {[
                 { label: 'Home', href: '/' },
@@ -334,25 +336,22 @@ const Header: React.FC = () => {
                     >
                       All Services
                     </a>
-                    <a
-                      href="/services/furniture-assembly"
-                      onClick={() => handleNavClick('furniture_assembly', '/services/furniture-assembly')}
-                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Furniture Assembly
-                    </a>
-                    <a
-                      href="/services/tv-mounting"
-                      onClick={() => handleNavClick('tv_mounting', '/services/tv-mounting')}
-                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      TV Mounting
-                    </a>
+                    {SERVICE_MENU_ITEMS.map((item) => (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => handleNavClick(item.trackingId, item.href)}
+                        className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {item.label}
+                      </a>
+                    ))}
                   </div>
                 )}
               </div>
 
               {[
+                { label: 'Service Areas', href: '/service-areas' },
                 { label: 'Partners', href: '/partners' },
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Gift Cards', href: '/gift-cards' },
@@ -376,14 +375,6 @@ const Header: React.FC = () => {
                   {item.label}
                 </a>
               ))}
-
-              <a
-                href="/portal/login"
-                onClick={() => handleClientLoginClick('mobile')}
-                className="px-4 py-3 rounded-lg font-medium text-gray-700 border border-gray-300 hover:bg-gray-50"
-              >
-                Customer Login
-              </a>
 
               <div className="mt-4 pt-4 border-t">
                 <CallButton

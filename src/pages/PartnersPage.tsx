@@ -97,7 +97,7 @@ const PartnersPage: React.FC = () => {
 
       <noscript>
         <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f3f4f6' }}>
-          <h1>Partner with Boxed2Built</h1>
+          <h2>Partner with Boxed2Built</h2>
           <p>Professional furniture assembly partnerships for realtors and movers in Spring Hill, TN.</p>
           <p>Call us at {phoneDisplay} or visit our contact page.</p>
         </div>

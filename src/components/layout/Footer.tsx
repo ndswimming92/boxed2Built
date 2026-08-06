@@ -7,6 +7,8 @@ import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { calculateRatingStats } from '../../utils/ratingCalculations';
+import { SERVICE_LOCATIONS, locationPath } from '../../constants/serviceLocations';
+import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
 
 const currentYear = new Date().getFullYear();
 
@@ -38,6 +40,21 @@ const serviceLinksSection = {
     { href: '/services', label: 'Services & Pricing' },
     { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
     { href: '/services/tv-mounting', label: 'TV Mounting' },
+    ...SERVICE_LANDING_PAGES.map((page) => ({
+      href: `/services/${page.slug}`,
+      label: page.navLabel,
+    })),
+  ],
+};
+
+const serviceAreaLinksSection = {
+  title: 'Service Areas',
+  links: [
+    { href: '/service-areas', label: 'All Service Areas' },
+    ...SERVICE_LOCATIONS.map((location) => ({
+      href: locationPath(location.slug),
+      label: `${location.shortLabel}, ${location.region}`,
+    })),
   ],
 };
 
@@ -76,6 +93,15 @@ const sitemapLinks = [
   { href: '/services', label: 'Services & Pricing' },
   { href: '/services/furniture-assembly', label: 'Furniture Assembly' },
   { href: '/services/tv-mounting', label: 'TV Mounting' },
+  ...SERVICE_LANDING_PAGES.map((page) => ({
+    href: `/services/${page.slug}`,
+    label: page.navLabel,
+  })),
+  { href: '/service-areas', label: 'Service Areas' },
+  ...SERVICE_LOCATIONS.map((location) => ({
+    href: locationPath(location.slug),
+    label: `${location.shortLabel}, ${location.region}`,
+  })),
   { href: '/partners', label: 'Partners' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/contact', label: 'Contact' },
@@ -332,6 +358,13 @@ const Footer: React.FC = () => {
                   ? `${serviceAreas.slice(0, 6).join(' • ')}${serviceAreas.length > 6 ? ' • …' : ''}`
                   : `${locality}, ${region}`}
               </p>
+              <InternalLink
+                href="/service-areas"
+                className="text-blue-300 hover:text-white text-sm font-medium mt-1.5 inline-block transition-colors"
+                trackingCategory="footer_service_areas"
+              >
+                See all service areas →
+              </InternalLink>
             </div>
 
             <div>
@@ -436,7 +469,7 @@ const Footer: React.FC = () => {
 
         {/* Navigation Links — 4 cols */}
         <nav aria-label="Footer navigation" className="mb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-7">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-7">
             {/* Services */}
             <div>
               <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
@@ -444,6 +477,26 @@ const Footer: React.FC = () => {
               </h3>
               <ul className="space-y-2 text-sm">
                 {serviceLinksSection.links.map((link) => (
+                  <li key={link.href}>
+                    <InternalLink
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors"
+                      trackingCategory="footer_nav"
+                    >
+                      {link.label}
+                    </InternalLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Service Areas — one link per local landing page */}
+            <div>
+              <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
+                {serviceAreaLinksSection.title}
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {serviceAreaLinksSection.links.map((link) => (
                   <li key={link.href}>
                     <InternalLink
                       href={link.href}

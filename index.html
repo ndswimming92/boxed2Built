@@ -121,14 +121,19 @@
     data-analytics="ga4"
   ></script>
 
-  <!-- Enhanced Title and Meta Description -->
-  <title>Furniture Assembly Spring Hill TN | IKEA, Wayfair & More | Boxed2Built</title>
-  <meta name="description" content="Hire a local furniture assembler in Spring Hill, TN. Boxed2Built builds IKEA, Wayfair, Amazon, Target & Walmart furniture. Flat pack specialists — free quotes, same-day available." />
+  <!--
+    Page-level title, description and canonical are owned entirely by each
+    route's <Head> (vite-react-ssg / react-helmet-async), which injects them at
+    the very top of <head> during pre-render.
+
+    They must NOT be duplicated here. Helmet's tags are prepended rather than
+    merged, so anything restated below survives into every pre-rendered page as
+    a second, conflicting copy — and Google discards rel="canonical" outright
+    when a page carries two different values, which previously pointed every
+    interior page at the homepage.
+  -->
   <meta name="author" content="Boxed2Built" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-
-  <!-- Static canonical for root; inner routes set their own via usePageMeta -->
-  <link rel="canonical" href="https://boxed2built.com/" />
 
   <!-- Preload optimization -->
   <link rel="dns-prefetch" href="//images.pexels.com" />
@@ -179,11 +184,11 @@
   <meta name="ICBM" content="35.7512, -86.9300" />
 
   <!-- Open Graph (Facebook, LinkedIn, iMessage, Slack) -->
+  <!-- Site-wide values only. og:title, og:description and og:url are set per
+       route via <Head> — restating them here makes every interior page share
+       the homepage's social preview, because scrapers read the last match. -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Boxed2Built" />
-<meta property="og:title" content="Furniture Assembly in Spring Hill, TN | Boxed2Built" />
-<meta property="og:description" content="Fast, reliable furniture assembly in Spring Hill, TN. Boxed2Built helps families save time with expert assembly and wall mounting services." />
-<meta property="og:url" content="https://boxed2built.com/" />
 <meta property="og:image" content="https://boxed2built.com/boxed2built_logo.png" />
 <meta property="og:image:alt" content="Boxed2Built logo" />
 <meta property="og:image:width" content="1024" />
@@ -194,8 +199,6 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@boxed2built" />
 <meta name="twitter:creator" content="@boxed2built" />
-<meta name="twitter:title" content="Furniture Assembly in Spring Hill, TN | Boxed2Built" />
-<meta name="twitter:description" content="Reliable furniture assembly and wall mounting for families in Spring Hill, TN. Friendly service, clear pricing, and fast scheduling." />
 <meta name="twitter:image" content="https://boxed2built.com/boxed2built_logo.png" />
 
 
@@ -352,7 +355,7 @@
     <div id="root"></div>
     <noscript>
       <div style="max-width:800px;margin:0 auto;padding:2rem;font-family:system-ui,sans-serif">
-        <h1>Boxed2Built - Professional Furniture Assembly in Spring Hill, TN</h1>
+        <h2>Boxed2Built - Professional Furniture Assembly in Spring Hill, TN</h2>
         <p>Expert furniture assembly and handyman services for IKEA, Target, Walmart, and all major brands. Serving Spring Hill, Franklin, Columbia, Thompson's Station, and Brentwood, Tennessee.</p>
         <p>Email: <a href="mailto:nicholas.davidson@boxed2built.com">nicholas.davidson@boxed2built.com</a></p>
         <nav>
@@ -361,6 +364,11 @@
             <li><a href="/services">Services</a></li>
             <li><a href="/services/furniture-assembly">Furniture Assembly</a></li>
             <li><a href="/services/tv-mounting">TV Mounting</a></li>
+            <li><a href="/services/ikea-furniture-assembly">IKEA Furniture Assembly</a></li>
+            <li><a href="/services/nursery-setup">Nursery &amp; Crib Setup</a></li>
+            <li><a href="/services/garage-organization">Garage Organization</a></li>
+            <li><a href="/services/move-in-assembly">Move-In Assembly</a></li>
+            <li><a href="/service-areas">Service Areas</a></li>
             <li><a href="/about">About Us</a></li>
             <li><a href="/gallery">Project Gallery</a></li>
             <li><a href="/contact">Contact</a></li>

@@ -1,24 +1,25 @@
+import { Head } from 'vite-react-ssg';
 import React from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PrivacyPolicy from '../components/sections/PrivacyPolicy';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 
 const PrivacyPolicyPage: React.FC = () => {
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.privacyPolicy.title,
-    description: LOCAL_SEO_CONTENT.privacyPolicy.description,
-    canonicalUrl: 'https://boxed2built.com/privacy-policy',
-    ogTitle: 'Boxed2Built Privacy Policy',
-    ogDescription: 'Read the Boxed2Built privacy policy for furniture assembly services and website usage.',
-    twitterTitle: 'Privacy Policy | Boxed2Built',
-    twitterDescription: 'Learn how Boxed2Built handles personal information.',
-  });
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.privacyPolicy.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.privacyPolicy.description} />
+        <link rel="canonical" href="https://boxed2built.com/privacy-policy" />
+        <meta property="og:url" content="https://boxed2built.com/privacy-policy" />
+        <meta property="og:title" content="Boxed2Built Privacy Policy" />
+        <meta property="og:description" content="Read the Boxed2Built privacy policy for furniture assembly services and website usage." />
+        <meta name="twitter:title" content="Privacy Policy | Boxed2Built" />
+        <meta name="twitter:description" content="Learn how Boxed2Built handles personal information." />
+      </Head>
       <Header />
       <main className="pt-20">
         <section className="py-8 bg-gray-50">

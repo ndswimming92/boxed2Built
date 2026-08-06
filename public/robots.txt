@@ -1,73 +1,25 @@
-# Robots.txt for Boxed2Built - Professional Furniture Assembly Service
-# Spring Hill, TN - IKEA, Target, Walmart Assembly
+# Robots.txt for Boxed2Built — Professional Furniture Assembly & TV Mounting
+# Spring Hill, TN — serving Williamson, Maury and Marshall counties and the
+# Nashville metro.
 
 User-agent: *
 Allow: /
 
-# Block admin, portal, and private areas
+# Private and auth-gated areas. These are also served with
+# X-Robots-Tag: noindex (see netlify.toml) and are excluded from pre-rendering.
 Disallow: /admin/
 Disallow: /portal/
 Disallow: /private/
-Disallow: /*.pdf$
 Disallow: /api/
+Disallow: /go/
+Disallow: /pay/
+Disallow: /*.pdf$
 
-# Explicitly allow all important pages for SEO
-Allow: /
-Allow: /services
-Allow: /services/
-Allow: /services/furniture-assembly
-Allow: /services/furniture-assembly/
-Allow: /services/tv-mounting
-Allow: /services/tv-mounting/
-Allow: /contact
-Allow: /contact/
-Allow: /about
-Allow: /about/
-Allow: /gallery
-Allow: /gallery/
-Allow: /partners
-Allow: /partners/
-Allow: /faq
-Allow: /faq/
-Allow: /lookup-request
-Allow: /lookup-request/
-Allow: /privacy-policy
-Allow: /privacy-policy/
-Allow: /terms-of-service
-Allow: /terms-of-service/
-Allow: /gift-cards
-Allow: /gift-cards/
-Allow: /redeem-gift-card
-Allow: /redeem-gift-card/
+# Note: a blanket "Allow: /" above already permits every public page. There is
+# no need to enumerate them here, and doing so only creates a second list to
+# forget to update — the sitemap is the canonical inventory of indexable URLs.
 
-# Allow all static assets
-Allow: /images/
-Allow: /fonts/
-Allow: /assets/
-Allow: /*.css
-Allow: /*.js
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /*.svg
-Allow: /*.woff2
-Allow: /*.ico
-
-# Allow important files
-Allow: /sitemap.xml
-Allow: /sitemap-images.xml
-Allow: /robots.txt
-Allow: /favicon.ico
-Allow: /manifest.json
-
-# Crawl-delay for better server performance
 Crawl-delay: 1
 
-# Primary sitemap location
 Sitemap: https://boxed2built.com/sitemap.xml
-
-# Additional sitemaps for comprehensive indexing
 Sitemap: https://boxed2built.com/sitemap-images.xml
-
-# Host directive for preferred domain

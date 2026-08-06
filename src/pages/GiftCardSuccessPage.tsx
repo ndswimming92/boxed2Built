@@ -1,24 +1,15 @@
+import { Head } from 'vite-react-ssg';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, Copy, Gift, Mail, Loader2 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Button from '../components/ui/Button';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { getGiftCardConfirmation, GiftCardConfirmation } from '../services/giftCardService';
 import { formatGiftCardDollars } from '../constants/giftCards';
 import { useToast } from '../contexts/ToastContext';
 
 const GiftCardSuccessPage: React.FC = () => {
-  usePageMeta({
-    title: 'Gift Card Purchase Complete | Boxed2Built',
-    description: 'Thanks for supporting Boxed2Built. Your gift card purchase is confirmed and on its way.',
-    canonicalUrl: 'https://boxed2built.com/gift-cards/success',
-    ogTitle: 'Gift Card Purchase Complete | Boxed2Built',
-    ogDescription: 'Your Boxed2Built gift card purchase is confirmed. The recipient will love stress-free furniture assembly.',
-    twitterTitle: 'Gift Card Purchase Complete | Boxed2Built',
-    twitterDescription: 'Your Boxed2Built gift card purchase is confirmed.',
-  });
 
   const [params] = useSearchParams();
   const sessionId = params.get('session_id');
@@ -72,6 +63,17 @@ const GiftCardSuccessPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Head>
+        <title>Gift Card Purchase Complete | Boxed2Built</title>
+        <meta name="description" content="Thanks for supporting Boxed2Built. Your gift card purchase is confirmed and on its way." />
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href="https://boxed2built.com/gift-cards/success" />
+        <meta property="og:url" content="https://boxed2built.com/gift-cards/success" />
+        <meta property="og:title" content="Gift Card Purchase Complete | Boxed2Built" />
+        <meta property="og:description" content="Your Boxed2Built gift card purchase is confirmed. The recipient will love stress-free furniture assembly." />
+        <meta name="twitter:title" content="Gift Card Purchase Complete | Boxed2Built" />
+        <meta name="twitter:description" content="Your Boxed2Built gift card purchase is confirmed." />
+      </Head>
       <Header />
       <main className="pt-28 pb-20 min-h-[60vh]">
         <section className="max-w-2xl mx-auto px-4 sm:px-6">

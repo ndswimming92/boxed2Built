@@ -1,127 +1,158 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<!--
+  GENERATED FILE — do not edit by hand.
+  Run `npm run sitemap` (or `npm run build`) to regenerate from
+  src/constants/serviceLocations.ts and src/constants/serviceLandingPages.ts.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://boxed2built.com/</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/Modern%20Minimalist%20Logo%20for%20Boxed2Built.png</image:loc>
-      <image:title>Boxed2Built - Professional Furniture Assembly Service in Spring Hill TN</image:title>
-      <image:caption>Expert IKEA, Target, Walmart furniture assembly in Spring Hill, Columbia, Franklin Tennessee</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0217.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Service in Spring Hill Tennessee</image:title>
-      <image:caption>Expert furniture assembly tools and workspace for IKEA, Target, Walmart furniture in Spring Hill TN</image:caption>
-    </image:image>
   </url>
 
-  <!-- Services Page - High Priority for SEO -->
   <url>
     <loc>https://boxed2built.com/services</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
-      <image:title>Furniture Assembly Services and Pricing in Spring Hill TN</image:title>
-      <image:caption>Professional furniture assembly services with transparent pricing for IKEA, Target, Walmart furniture</image:caption>
-    </image:image>
   </url>
 
-  <!-- Furniture Assembly Service Page - High Priority SEO Landing Page -->
   <url>
     <loc>https://boxed2built.com/services/furniture-assembly</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Services in Spring Hill TN</image:title>
-      <image:caption>Expert IKEA, Target, Walmart, Wayfair furniture assembly in Spring Hill, Franklin, Columbia Tennessee</image:caption>
-    </image:image>
   </url>
 
-  <!-- TV Mounting Service Page - High Priority SEO Landing Page -->
   <url>
     <loc>https://boxed2built.com/services/tv-mounting</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0214.jpeg</image:loc>
-      <image:title>Professional TV Mounting Service in Spring Hill TN</image:title>
-      <image:caption>Expert TV installation and mounting for all sizes in Spring Hill, Franklin, Columbia Tennessee</image:caption>
-    </image:image>
   </url>
 
-  <!-- About Page - Important for Trust Signals -->
   <url>
-    <loc>https://boxed2built.com/about</loc>
-    <lastmod>2026-05-04</lastmod>
+    <loc>https://boxed2built.com/services/ikea-furniture-assembly</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/services/nursery-setup</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/services/garage-organization</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/services/move-in-assembly</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/spring-hill-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/franklin-tn</loc>
+    <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0220.jpeg</image:loc>
-      <image:title>About Boxed2Built - Professional Furniture Assembly Expert</image:title>
-      <image:caption>Meet Nicholas Davidson, professional furniture assembly expert serving Spring Hill, Columbia, Franklin Tennessee</image:caption>
-    </image:image>
   </url>
 
-  <!-- Contact Page - High Priority for Local Business -->
+  <url>
+    <loc>https://boxed2built.com/service-areas/brentwood-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/thompsons-station-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/nolensville-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/columbia-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/nashville-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/mount-pleasant-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/service-areas/chapel-hill-tn</loc>
+    <lastmod>2026-08-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <url>
     <loc>https://boxed2built.com/contact</loc>
     <lastmod>2026-05-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/contact/phone-number.svg</image:loc>
-      <image:title>Contact Boxed2Built for Furniture Assembly Service</image:title>
-      <image:caption>Contact Boxed2Built for professional furniture assembly in Spring Hill, Columbia, Franklin TN</image:caption>
-    </image:image>
-  </url>
-
-  <!-- Gallery Page - High Priority for Visual Content -->
-  <url>
-    <loc>https://boxed2built.com/gallery</loc>
-    <lastmod>2026-05-04</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0199.jpeg</image:loc>
-      <image:title>Furniture Assembly Gallery - Before and After Photos</image:title>
-      <image:caption>Professional furniture assembly work gallery showing completed projects in Spring Hill Tennessee</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0223.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Work in Progress</image:title>
-      <image:caption>Time-lapse and process photos of furniture assembly services in Tennessee</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0224.jpeg</image:loc>
-      <image:title>Quality Furniture Assembly Results</image:title>
-      <image:caption>High-quality furniture assembly work with professional attention to detail</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://boxed2built.com/images/IMG_0225.jpeg</image:loc>
-      <image:title>Completed Furniture Assembly Projects</image:title>
-      <image:caption>Finished furniture assembly projects ready for use in Tennessee homes</image:caption>
-    </image:image>
   </url>
 
-  <!-- Partners Page - Partnership Inquiries -->
   <url>
-    <loc>https://boxed2built.com/partners</loc>
+    <loc>https://boxed2built.com/about</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
-  <!-- FAQ Page - Support Content -->
+  <url>
+    <loc>https://boxed2built.com/gallery</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <url>
     <loc>https://boxed2built.com/faq</loc>
     <lastmod>2026-05-04</lastmod>
@@ -129,31 +160,34 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Gift Cards Page -->
   <url>
-    <loc>https://boxed2built.com/gift-cards</loc>
-    <lastmod>2026-05-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Redeem Gift Card Page -->
-  <url>
-    <loc>https://boxed2built.com/redeem-gift-card</loc>
+    <loc>https://boxed2built.com/partners</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
-  <!-- Request Lookup Page -->
+  <url>
+    <loc>https://boxed2built.com/gift-cards</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/redeem-gift-card</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
   <url>
     <loc>https://boxed2built.com/lookup-request</loc>
     <lastmod>2026-05-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 
-  <!-- Legal Pages - Lower Priority but Important for Compliance -->
   <url>
     <loc>https://boxed2built.com/privacy-policy</loc>
     <lastmod>2026-05-04</lastmod>
