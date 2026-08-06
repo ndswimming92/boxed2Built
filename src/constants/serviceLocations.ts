@@ -65,7 +65,7 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
       'We live and work here. Spring Hill is our home base, which means shorter lead times, same-day slots when the schedule allows, and no travel fee anywhere in 37174.',
     intro: [
       'Boxed2Built started in Spring Hill and still runs out of Spring Hill. That matters more than it sounds: when a Wayfair delivery lands on your porch Thursday afternoon, we are minutes away rather than an hour up I-65. Spring Hill has been one of the fastest-growing cities in Tennessee for a decade, and most weeks our calendar is a mix of brand-new closings in Wyngate and Benevento East, GM families relocating in from out of state, and long-time residents finally replacing the guest room set.',
-      'New construction is the through-line here. A lot of Spring Hill homes are five years old or newer, which means clean drywall, predictable stud spacing, and straightforward TV mounts — but it also means whole houses arriving in boxes at once. We regularly handle full move-in days: beds and dressers in every bedroom, a desk for the office, bar stools for the kitchen island, the patio set for the back deck, and every scrap of cardboard hauled off before we leave.',
+      'New construction is the through-line here. A lot of Spring Hill homes are five years old or newer, which means clean drywall, predictable stud spacing, and straightforward TV mounts. If you have several pieces to get through after a move, we book them across however many visits the job honestly needs rather than promising an impossible single day — and every scrap of cardboard is hauled off before we leave.',
     ],
     highlights: [
       {
@@ -74,9 +74,9 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
           'Spring Hill is our home ZIP. You get the tightest scheduling window we offer and zero trip charge anywhere in 37174, on either the Williamson or Maury County side of town.',
       },
       {
-        title: 'Built for new-construction move-ins',
+        title: 'We start with what you need most',
         description:
-          'Whole-house assembly days are routine here. We sequence rooms so your bedrooms are usable by evening, then finish the living areas and haul away every box.',
+          'Settling into a new build? Tell us which room matters first — usually a bed you can actually sleep in — and we work outward from there across as many visits as the list needs.',
       },
       {
         title: 'We know the delivery rhythm',
@@ -97,7 +97,7 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
       'Hardison Hills',
     ],
     popularServices: [
-      'Whole-house move-in assembly for new builds off Buckner and Duplex',
+      'Bed frames and dressers for new builds off Buckner and Duplex',
       'Nursery and crib setup for first-time parents',
       'TV mounting over the fireplace in open-concept great rooms',
       'Garage shelving and overhead storage before winter',
@@ -175,7 +175,7 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
       'Home office and built-in style shelving assembly in Cool Springs',
       'Premium hardwood bedroom sets in Westhaven and Ladd Park',
       'Playset and swing set builds on larger Fieldstone Farms lots',
-      'Move-in assembly for relocations into Berry Farms',
+      'Bedroom and living room assembly for relocations into Berry Farms',
     ],
     faqs: [
       {
@@ -210,10 +210,10 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
       'Furniture assembly and TV mounting in Brentwood, TN 37027. Media rooms, home offices, large-format displays and premium furniture handled properly. Free quote.',
     h1: 'Furniture Assembly & TV Mounting in Brentwood, TN',
     heroSubtitle:
-      'Bigger rooms, bigger displays, and furniture worth being careful with. We handle Brentwood media rooms, home offices and multi-room projects start to finish.',
+      'Bigger rooms, bigger displays, and furniture worth being careful with. We handle Brentwood media rooms and home offices with the time each one actually deserves.',
     intro: [
       'Brentwood jobs tend to be larger than average, and not just in square footage. A typical 37027 call is a 75-inch or larger display going up in a great room with a two-story wall, a full home office build-out, or a media room where the mount, the sound bar and the component shelf all have to line up and the cabling has to disappear. Large-format TVs are genuinely unforgiving — the leverage on the bracket is significant, and a mount that catches only one stud is a real hazard. We find structure, we use hardware rated for the load, and we will tell you when a wall needs a different approach.',
-      'The furniture side skews premium here too: solid hardwood office suites, custom closet systems, oversized sectionals, and Peloton and home-gym equipment that arrives in three heavy boxes with a manual written for someone else. Multi-room and whole-floor projects are common, so we usually block a longer window for Brentwood rather than squeezing it between jobs, and we bring floor protection for hardwood and stair runners.',
+      'The furniture side skews premium here too: solid hardwood office suites, custom closet systems, oversized sectionals, and Peloton and home-gym equipment that arrives in three heavy boxes with a manual written for someone else. These take real time, so we block a longer window for Brentwood rather than squeezing it between jobs, and we bring floor protection for hardwood and stair runners.',
     ],
     highlights: [
       {
@@ -227,9 +227,9 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
           'Mount, sound bar, center channel and components aligned and levelled, with in-wall routing or clean channel work so nothing dangles.',
       },
       {
-        title: 'Multi-room days, properly scheduled',
+        title: 'Unhurried, properly scheduled',
         description:
-          'Whole-floor and multi-room Brentwood projects get a dedicated block, floor and stair protection, and a room-by-room walkthrough before we call it done.',
+          'Larger Brentwood pieces get a dedicated block rather than a squeezed slot, with floor and stair protection and a walkthrough before we call it done.',
       },
     ],
     neighborhoods: [
@@ -263,9 +263,9 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
           'Usually, yes. Stone, brick and stacked-veneer fireplaces need masonry anchors set into the substrate rather than the veneer face, and heat above a working firebox is worth discussing before you commit to the location. We will look at the specific fireplace, tell you what is safe, and route cabling so the finished wall stays clean.',
       },
       {
-        question: 'Do you handle whole-floor or multi-room projects?',
+        question: 'I have several rooms to furnish. Can you take it all on?',
         answer:
-          'Yes. Brentwood projects are frequently several rooms at once, so we block a longer window rather than fitting it between other jobs. We bring floor and stair protection, sequence the rooms with you at the start, and walk every completed space before we ask for payment.',
+          'Yes, though usually across more than one visit. Boxed2Built is a one-person operation, so rather than promising a whole floor in a single day we will look at your list, tell you honestly how many visits it needs, and book them close together. We bring floor and stair protection, agree the order with you up front, and walk every completed space before asking for payment.',
       },
     ],
     nearbySlugs: ['franklin-tn', 'nolensville-tn', 'nashville-tn', 'spring-hill-tn'],
@@ -281,13 +281,13 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
     driveTime: 'About 10 minutes from our Spring Hill base',
     metaTitle: "Furniture Assembly Thompson's Station, TN | Boxed2Built",
     metaDescription:
-      "Furniture assembly and TV mounting in Thompson's Station, TN 37179. New-build move-ins, nursery setup and garage storage. Ten minutes from our Spring Hill base.",
+      "Furniture assembly and TV mounting in Thompson's Station, TN 37179. Bed frames, nursery setup and garage storage. Ten minutes from our Spring Hill base.",
     h1: "Furniture Assembly & TV Mounting in Thompson's Station, TN",
     heroSubtitle:
       "Our closest neighbor. Thompson's Station is about ten minutes up the road, so scheduling here is nearly as flexible as Spring Hill itself.",
     intro: [
       "Thompson's Station is the shortest drive on our map, and it shows in how we schedule it — short-notice requests in 37179 are usually easy to accommodate. The town has grown quickly around Tollgate Village, Bridgemore Village and Canterbury, which means a steady stream of first-time closings and young families furnishing an entire house on a budget and a deadline.",
-      'That produces a very particular kind of job: several rooms of flat-pack at once, mostly from Wayfair, Amazon, Target and IKEA, all delivered within a week of each other. We are happy to take the whole stack in one visit. Bedrooms first so the house is livable that night, then the office and living areas, then garage shelving if it is on the list — and every box, bag and foam corner leaves with us.',
+      'That produces a very particular kind of job: several rooms of flat-pack, mostly from Wayfair, Amazon, Target and IKEA, all delivered within a week of each other. Send us the list and we will tell you honestly how many visits it takes and book them close together. Bedrooms come first so you have somewhere to sleep, then the office and living areas, then garage shelving if it is on the list — and every box, bag and foam corner leaves with us.',
     ],
     highlights: [
       {
@@ -301,9 +301,9 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
           'Tollgate Village, Bridgemore and Canterbury are largely recent construction — clean framing, predictable studs, and TV mounts that go up without drama.',
       },
       {
-        title: 'Whole-house in one visit',
+        title: 'Bedrooms first',
         description:
-          'Rather than three separate appointments, we will take the full stack of boxes in a single block and sequence the rooms so the bedrooms are usable first.',
+          'When there is a stack of boxes to get through, we start with the bed you need that night and work outward, booking as many visits as the list genuinely takes.',
       },
     ],
     neighborhoods: [
@@ -317,7 +317,7 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
       'Fountain Brooke',
     ],
     popularServices: [
-      'Full move-in assembly for new closings in Tollgate Village',
+      'Bed frames and dressers for new closings in Tollgate Village',
       'Crib and nursery furniture setup',
       'Bunk beds and kids’ bedroom furniture',
       'Garage shelving and overhead racks',
@@ -330,9 +330,9 @@ export const SERVICE_LOCATIONS: ServiceLocation[] = [
           "Thompson's Station is our closest service area — roughly ten minutes from our Spring Hill base. Short-notice and same-day requests in 37179 are usually the easiest ones on our schedule to accommodate. Call or text and we will tell you what is open today.",
       },
       {
-        question: 'Can you assemble an entire house of furniture in one appointment?',
+        question: 'I have a whole delivery to get through. How do you handle that?',
         answer:
-          'Yes, and it is common here. Rather than booking three separate visits, we will block the time to take the whole delivery at once. We start with bedrooms so the house is livable by that evening, move through the office and living areas, and finish with anything headed for the garage. All packaging leaves with us.',
+          'We work through it in the order that helps you most — bedrooms first, so you have somewhere to sleep, then the office and living areas. Boxed2Built is a one-person operation, so a large delivery usually means more than one visit rather than a single marathon day. We will tell you up front how many it needs and book them close together. All packaging leaves with us.',
       },
       {
         question: 'Do you build bunk beds and kids’ furniture?',
