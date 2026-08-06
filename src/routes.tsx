@@ -105,7 +105,7 @@ export const routes: RouteRecord[] = [
       { path: 'services/furniture-assembly', Component: FurnitureAssemblyPage, loader: businessDataLoader },
       { path: 'services/tv-mounting', Component: TVMountingPage, loader: businessDataLoader },
       // Service landing pages added off the 2026 presence audit (IKEA, nursery,
-      // garage, move-in). One pre-rendered route per entry in the content file.
+      // garage). One pre-rendered route per entry in the content file.
       ...SERVICE_LANDING_PAGES.map((content) => ({
         path: `services/${content.slug}`,
         element: <ServiceLandingPage content={content} />,

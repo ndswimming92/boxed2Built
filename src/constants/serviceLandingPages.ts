@@ -1,7 +1,10 @@
 // Content for the service landing pages added off the back of the 2026 online
-// presence audit: IKEA assembly, nursery setup, garage organization and
-// move-in assembly. Each entry renders one pre-rendered page through
-// <ServiceLandingPage />.
+// presence audit: IKEA assembly, nursery setup and garage organization. Each
+// entry renders one pre-rendered page through <ServiceLandingPage />.
+//
+// A move-in / whole-house assembly page was removed: as a one-person
+// operation Boxed2Built cannot commit to a whole house in a single visit, and
+// the site should not advertise capacity it does not have.
 //
 // Prices are never invented here — every dollar figure comes from
 // PRIMARY_SERVICES in localSEO.ts so the pricing a visitor sees on a landing
@@ -240,14 +243,14 @@ export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
         subtitle: 'Wayfair, Target, Walmart, Amazon and more',
       },
       {
-        href: '/services/move-in-assembly',
-        title: 'Move-In Assembly',
-        subtitle: 'Whole-house setup on closing week',
-      },
-      {
         href: '/services/nursery-setup',
         title: 'Nursery & Crib Setup',
         subtitle: 'Built to spec and safely anchored',
+      },
+      {
+        href: '/services/tv-mounting',
+        title: 'TV Mounting',
+        subtitle: 'Secure installation on any wall type',
       },
       {
         href: '/service-areas/spring-hill-tn',
@@ -423,9 +426,9 @@ export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
         subtitle: 'PAX, MALM, KALLAX and the rest',
       },
       {
-        href: '/services/move-in-assembly',
-        title: 'Move-In Assembly',
-        subtitle: 'Nursery plus the rest of the house',
+        href: '/services/garage-organization',
+        title: 'Garage Organization',
+        subtitle: 'Shelving, racks and workbenches',
       },
       {
         href: '/service-areas/nolensville-tn',
@@ -596,197 +599,19 @@ export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
         subtitle: 'Every brand, every room',
       },
       {
-        href: '/services/move-in-assembly',
-        title: 'Move-In Assembly',
-        subtitle: 'Get the whole house set up at once',
-      },
-      {
         href: '/services/tv-mounting',
         title: 'TV Mounting',
         subtitle: 'Secure installation on any wall type',
       },
       {
+        href: '/services/ikea-furniture-assembly',
+        title: 'IKEA Assembly',
+        subtitle: 'PAX, MALM, KALLAX and the rest',
+      },
+      {
         href: '/service-areas',
         title: 'All Service Areas',
         subtitle: 'Nine Middle Tennessee cities',
-      },
-    ],
-  },
-  {
-    slug: 'move-in-assembly',
-    navLabel: 'Move-In Assembly',
-    navDescription: 'Whole-house setup on closing week',
-    metaTitle: 'Move-In Furniture Assembly Spring Hill, TN | Boxed2Built',
-    metaDescription:
-      'Whole-house move-in assembly in Spring Hill, TN. Beds, dressers, desks and TVs set up in one visit so your first night is comfortable. Realtor packages available.',
-    ogTitle: 'Move-In Assembly Services in Spring Hill, TN | Boxed2Built',
-    ogDescription:
-      'One visit, whole house. Bedrooms first so you can sleep, then living areas — and every box gone before we leave. Serving Spring Hill and Middle Tennessee.',
-    breadcrumbLabel: 'Move-In Assembly',
-    h1: 'Move-In Assembly Services in Spring Hill, TN',
-    heroSubtitle:
-      'One visit, whole house. We sequence the rooms so your beds are made up the first night — and every box leaves with us.',
-    schemaName: 'Move-In Furniture Assembly Service',
-    schemaDescription:
-      'Whole-house move-in assembly in Spring Hill, TN. Multi-room furniture assembly, bed and dresser setup, TV mounting and packaging removal scheduled around closing and delivery dates, for homeowners, renters, realtors and property managers.',
-    serviceType: 'Move-In Assembly',
-    intro: [
-      'Moving into a new house in Spring Hill usually means every piece of furniture you own arriving inside the same seven days — the movers on one day, the Wayfair freight on another, the mattress on a third, and a garage full of boxes in between. Doing that yourself costs a weekend you do not have during the week you can least afford it.',
-      'We take the whole stack in a single block and sequence it deliberately: bedrooms first, so the house is genuinely livable that night, then the office if you are working the next morning, then living and dining, then anything headed for the garage. TVs go up the same day. Every box, bag and foam corner leaves with us. You spend closing week unpacking the things that matter instead of arguing with an Allen key at midnight.',
-    ],
-    highlights: [
-      {
-        title: 'Bedrooms first, always',
-        description:
-          'The single most useful thing on move-in day is a bed you can sleep in. We build the bedrooms before anything else, then work outward.',
-      },
-      {
-        title: 'Scheduled around your closing',
-        description:
-          'Closings move and deliveries slip. Tell us your date and we will keep the appointment flexible rather than charging you to reschedule.',
-      },
-      {
-        title: 'One visit, not four appointments',
-        description:
-          'Assembly, TV mounting, garage shelving and packaging removal handled in the same block, by the same people, with one invoice at the end.',
-      },
-      {
-        title: 'Realtor and property manager packages',
-        description:
-          'Closing-gift assembly for buyers and turn-day setup for rentals. We coordinate directly with your client so you do not have to project-manage it.',
-      },
-    ],
-    pricingHeading: 'Move-In Assembly Pricing',
-    pricingIntro:
-      'Whole-house projects are quoted as a package, built from the same per-item rates we publish everywhere else — with volume discounts that get better the more rooms are involved.',
-    pricing: [
-      {
-        name: 'Single bedroom setup',
-        description: 'Bed frame, dresser and nightstands assembled, placed and anchored.',
-        priceNote: 'Custom quote — from the per-item rates below',
-      },
-      {
-        name: 'Bed frames & headboards',
-        description: 'Per item, including slats, storage drawers and headboard attachment.',
-        price: BED_PRICE,
-      },
-      {
-        name: 'Dressers & wardrobes',
-        description: 'Per item, with drawer alignment and anti-tip anchoring.',
-        price: DRESSER_PRICE,
-      },
-      {
-        name: 'Desks, tables & dining sets',
-        description: 'Per item, for the home office and dining room.',
-        price: DESK_PRICE,
-      },
-      {
-        name: 'Whole-house move-in package',
-        description: 'Every room in a single visit, TV mounting included, all packaging removed.',
-        priceNote: 'Custom quote — best volume discount',
-      },
-    ],
-    alsoIncluded: [
-      'Room-by-room sequencing agreed with you before we start',
-      'Furniture placed exactly where you want it, floors protected',
-      'Anti-tip anchoring on tall pieces in every room',
-      'TV mounting and cable management on the same visit',
-      'Complete removal of all boxes, packaging and pallet wrap',
-    ],
-    processHeading: 'How Move-In Day Works',
-    process: [
-      {
-        title: 'Tell us the closing date',
-        description:
-          'Even an approximate date is enough to start. We will pencil in a window and firm it up as your delivery schedule settles.',
-      },
-      {
-        title: 'Send the inventory',
-        description:
-          'A list or a few order screenshots lets us quote accurately and block the right amount of time. Guessing at the door helps nobody.',
-      },
-      {
-        title: 'Agree the running order',
-        description:
-          'We walk the house with you at the start and confirm the sequence — bedrooms, office, living areas, garage — and where each piece is going.',
-      },
-      {
-        title: 'Build the house',
-        description:
-          'Straight through, room by room. Beds first so the house is livable tonight, TVs mounted the same day, tall furniture anchored as we go.',
-      },
-      {
-        title: 'Clear out completely',
-        description:
-          'Every box, bag and pallet wrap goes with us. Then a full walkthrough, and payment only once you are satisfied.',
-      },
-    ],
-    showcase: {
-      heading: 'What a Move-In Day Usually Covers',
-      intro:
-        'A typical whole-house visit in Spring Hill or Thompson’s Station runs through most of this list in a single block.',
-      items: [
-        'Bed frames & headboards',
-        'Dressers & nightstands',
-        'Bunk beds',
-        'Home office desks',
-        'Dining tables & chairs',
-        'Bar stools',
-        'TV stands & media units',
-        'TV wall mounting',
-        'Bookcases & shelving',
-        'Patio & deck furniture',
-        'Garage shelving',
-        'Packaging removal',
-      ],
-    },
-    faqs: [
-      {
-        question: 'Can you assemble an entire house of furniture in one day?',
-        answer:
-          'In most cases, yes. A typical three- to four-bedroom move-in fits into a single block if we know the inventory in advance and can block the time properly. Very large projects, or ones where deliveries arrive across several days, sometimes make more sense as two visits — we will tell you honestly which one your job is when we quote it, rather than promising one day and returning for a second.',
-      },
-      {
-        question: 'My closing date keeps moving. Will you charge me to reschedule?',
-        answer:
-          'No. Closings slip and furniture deliveries slip, and we have never thought it reasonable to charge someone for that. Contact us as soon as you know the new date and we will move the appointment at no additional cost.',
-      },
-      {
-        question: 'Do you work with realtors and property managers?',
-        answer:
-          'Yes. Move-in assembly makes a genuinely useful closing gift, and we coordinate directly with the buyer so the agent does not have to project-manage it. We also handle turn-day setup for rentals and property managers. Our partners page has the details on how those arrangements work.',
-      },
-      {
-        question: 'What do you do with all the boxes?',
-        answer:
-          'We take them. Every box, bag, foam insert, plastic wrap and pallet wrap leaves with us and gets disposed of on our end. On a whole-house move-in that is often a truck bed’s worth of cardboard, and it is included in the price — not an add-on.',
-      },
-      {
-        question: 'Can you mount the TVs on the same visit?',
-        answer:
-          'Yes, and it is the sensible way to do it. Mounting on move-in day means the cabling is handled before the furniture is placed against the wall. We will do the mounts as part of the same block rather than sending you back to book a separate appointment.',
-      },
-    ],
-    related: [
-      {
-        href: '/services/furniture-assembly',
-        title: 'All Furniture Assembly',
-        subtitle: 'Every brand, every room',
-      },
-      {
-        href: '/services/tv-mounting',
-        title: 'TV Mounting',
-        subtitle: 'Mounted the same day as your move-in',
-      },
-      {
-        href: '/partners',
-        title: 'Realtor & Mover Partnerships',
-        subtitle: 'Closing gifts and turn-day setup',
-      },
-      {
-        href: '/service-areas/spring-hill-tn',
-        title: 'Serving Spring Hill, TN',
-        subtitle: 'And eight more Middle Tennessee cities',
       },
     ],
   },
