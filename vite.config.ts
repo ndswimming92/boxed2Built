@@ -19,9 +19,13 @@ export default defineConfig({
     script: 'defer',
     mock: true,
     includedRoutes(paths) {
-      return paths.filter(path => {
-        if (path.startsWith('/admin')) return false;
-        if (path.startsWith('/portal')) return false;
+      // vite-react-ssg hands nested child routes over without a leading slash
+      // ("admin/dashboard", not "/admin/dashboard"), so normalise before
+      // matching — otherwise every auth-gated page gets pre-rendered into dist.
+      return paths.filter(rawPath => {
+        const path = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+        if (path === '/admin' || path.startsWith('/admin/')) return false;
+        if (path === '/portal' || path.startsWith('/portal/')) return false;
         if (path.startsWith('/go/')) return false;
         if (path.startsWith('/pay/')) return false;
         if (path.includes(':')) return false;

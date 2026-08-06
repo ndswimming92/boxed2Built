@@ -1,25 +1,16 @@
+import { Head } from 'vite-react-ssg';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Gift, Search, CheckCircle2, XCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Button from '../components/ui/Button';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { formatGiftCardCodeInput, isValidGiftCardCode, normalizeGiftCardCode } from '../utils/giftCardCode';
 import { formatGiftCardDollars } from '../constants/giftCards';
 import { lookupGiftCardByCode } from '../services/giftCardService';
 import type { GiftCardLookupResult } from '../types/giftCard';
 
 const RedeemGiftCardPage: React.FC = () => {
-  usePageMeta({
-    title: 'Redeem a Boxed2Built Gift Card | Check Balance & Apply Credit',
-    description: 'Check your balance and apply a Boxed2Built gift card to your next furniture assembly or TV mounting service in Spring Hill, TN.',
-    canonicalUrl: 'https://boxed2built.com/redeem-gift-card',
-    ogTitle: 'Redeem a Boxed2Built Gift Card',
-    ogDescription: 'Check your gift card balance and apply credit toward your next Boxed2Built furniture assembly service.',
-    twitterTitle: 'Redeem a Boxed2Built Gift Card',
-    twitterDescription: 'Check your gift card balance and apply credit toward your next service.',
-  });
 
   const [params] = useSearchParams();
   const [code, setCode] = useState(() => formatGiftCardCodeInput(params.get('code') || ''));
@@ -69,6 +60,16 @@ const RedeemGiftCardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Head>
+        <title>Redeem a Gift Card | Check Your Balance | Boxed2Built</title>
+        <meta name="description" content="Check your balance and apply a Boxed2Built gift card to your next furniture assembly or TV mounting service in Spring Hill, TN. Takes under a minute." />
+        <link rel="canonical" href="https://boxed2built.com/redeem-gift-card" />
+        <meta property="og:url" content="https://boxed2built.com/redeem-gift-card" />
+        <meta property="og:title" content="Redeem a Boxed2Built Gift Card" />
+        <meta property="og:description" content="Check your gift card balance and apply credit toward your next Boxed2Built furniture assembly service." />
+        <meta name="twitter:title" content="Redeem a Boxed2Built Gift Card" />
+        <meta name="twitter:description" content="Check your gift card balance and apply credit toward your next service." />
+      </Head>
       <Header />
       <main className="pt-28 pb-20">
         <section className="max-w-2xl mx-auto px-4 sm:px-6">

@@ -14,8 +14,9 @@ import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
 import { Head } from 'vite-react-ssg';
 import { formatPhoneForDisplay } from '../../services/communicationService';
-import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT, SERVICE_AREAS } from '../../constants/localSEO';
+import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT } from '../../constants/localSEO';
 import { useBusinessLoaderData } from '../../hooks/useBusinessLoaderData';
+import { SERVICE_LOCATIONS, locationLabel, locationPath } from '../../constants/serviceLocations';
 
 const FurnitureAssemblyPage: React.FC = () => {
   const businessData = useBusinessLoaderData();
@@ -358,13 +359,25 @@ const FurnitureAssemblyPage: React.FC = () => {
               <p className="text-lg text-gray-700 mb-8 text-center">
                 Proudly serving Spring Hill and surrounding communities in Tennessee
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                {SERVICE_AREAS.map((area, index) => (
-                  <div key={index} className="bg-white rounded-lg shadow p-4 text-gray-700 font-medium">
-                    {area}
-                  </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                {SERVICE_LOCATIONS.map((location) => (
+                  <Link
+                    key={location.slug}
+                    to={locationPath(location.slug)}
+                    className="bg-white rounded-lg shadow p-4 text-gray-700 hover:text-blue-800 hover:shadow-md font-medium transition-all"
+                  >
+                    {locationLabel(location)}
+                  </Link>
                 ))}
               </div>
+              <p className="text-center mt-6">
+                <Link
+                  to="/service-areas"
+                  className="inline-flex items-center text-blue-700 font-semibold hover:text-blue-800 transition-colors"
+                >
+                  See all service areas
+                </Link>
+              </p>
               <p className="text-center text-gray-600 mt-8">
                 Not sure if we serve your area? <Link to="/contact" className="text-blue-700 hover:text-blue-800 font-semibold">Contact us</Link> to find out!
               </p>

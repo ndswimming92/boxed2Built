@@ -2,6 +2,8 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import type { RouteRecord } from 'vite-react-ssg';
 import { businessDataLoader } from './loaders/businessDataLoader';
+import { SERVICE_LOCATIONS } from './constants/serviceLocations';
+import { SERVICE_LANDING_PAGES } from './constants/serviceLandingPages';
 import AppShell from './components/AppShell';
 // Deliberately not lazy: the error page must render even when loading a
 // hashed chunk is exactly what failed.
@@ -11,6 +13,9 @@ const HomePage = React.lazy(() => import('./pages/HomePage'));
 const ServicesPage = React.lazy(() => import('./pages/ServicesPage'));
 const FurnitureAssemblyPage = React.lazy(() => import('./pages/services/FurnitureAssemblyPage'));
 const TVMountingPage = React.lazy(() => import('./pages/services/TVMountingPage'));
+const ServiceLandingPage = React.lazy(() => import('./pages/services/ServiceLandingPage'));
+const ServiceAreasHubPage = React.lazy(() => import('./pages/locations/ServiceAreasHubPage'));
+const ServiceAreaPage = React.lazy(() => import('./pages/locations/ServiceAreaPage'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const GalleryPage = React.lazy(() => import('./pages/GalleryPage'));
@@ -99,6 +104,20 @@ export const routes: RouteRecord[] = [
       { path: 'services', Component: ServicesPage, loader: businessDataLoader },
       { path: 'services/furniture-assembly', Component: FurnitureAssemblyPage, loader: businessDataLoader },
       { path: 'services/tv-mounting', Component: TVMountingPage, loader: businessDataLoader },
+      // Service landing pages added off the 2026 presence audit (IKEA, nursery,
+      // garage, move-in). One pre-rendered route per entry in the content file.
+      ...SERVICE_LANDING_PAGES.map((content) => ({
+        path: `services/${content.slug}`,
+        element: <ServiceLandingPage content={content} />,
+        loader: businessDataLoader,
+      })),
+      // Local SEO landing pages — a hub plus one page per city we serve.
+      { path: 'service-areas', Component: ServiceAreasHubPage, loader: businessDataLoader },
+      ...SERVICE_LOCATIONS.map((location) => ({
+        path: `service-areas/${location.slug}`,
+        element: <ServiceAreaPage location={location} />,
+        loader: businessDataLoader,
+      })),
       { path: 'about', Component: AboutPage, loader: businessDataLoader },
       { path: 'contact', Component: ContactPage, loader: businessDataLoader },
       { path: 'partners', Component: PartnersPage, loader: businessDataLoader },

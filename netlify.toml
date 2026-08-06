@@ -21,13 +21,9 @@ for = "/*"
 X-Robots-Tag = "index, follow"
 Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-[[headers]]
-for = "/partners"
-
-[headers.values]
-X-Robots-Tag = "index, follow"
-Cache-Control = "public, max-age=0, must-revalidate"
-
+# Public marketing pages: always revalidate so content edits go live promptly.
+# Wildcards cover /services/* and /service-areas/* so new landing pages inherit
+# these headers without another entry here.
 [[headers]]
 for = "/services"
 
@@ -36,21 +32,28 @@ X-Robots-Tag = "index, follow"
 Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+for = "/services/*"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/service-areas"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/service-areas/*"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
 for = "/about"
-
-[headers.values]
-X-Robots-Tag = "index, follow"
-Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-for = "/services/furniture-assembly"
-
-[headers.values]
-X-Robots-Tag = "index, follow"
-Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-for = "/services/tv-mounting"
 
 [headers.values]
 X-Robots-Tag = "index, follow"
@@ -72,6 +75,13 @@ Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
 for = "/faq"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/partners"
 
 [headers.values]
 X-Robots-Tag = "index, follow"

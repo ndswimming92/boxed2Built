@@ -1,3 +1,4 @@
+import { Head } from 'vite-react-ssg';
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
@@ -11,7 +12,6 @@ import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
-import { usePageMeta } from '../hooks/usePageMeta';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../services/communicationService';
 
@@ -20,15 +20,6 @@ const RequestLookupPage: React.FC = () => {
   const phoneRaw = businessData?.info?.phone || "+16154034538";
   const phoneDisplay = formatPhoneForDisplay(phoneRaw.replace(/^\+1/, ""));
 
-  usePageMeta({
-    title: LOCAL_SEO_CONTENT.requestLookup.title,
-    description: LOCAL_SEO_CONTENT.requestLookup.description,
-    canonicalUrl: 'https://boxed2built.com/lookup-request',
-    ogTitle: 'Request Lookup | Boxed2Built',
-    ogDescription: 'Need to review your Boxed2Built request? Use the request lookup page to find your inquiry details fast.',
-    twitterTitle: 'Boxed2Built Request Lookup',
-    twitterDescription: 'Look up your furniture assembly request details with Boxed2Built.',
-  });
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
@@ -124,6 +115,16 @@ const RequestLookupPage: React.FC = () => {
 
   return (
     <>
+      <Head>
+        <title>{LOCAL_SEO_CONTENT.requestLookup.title}</title>
+        <meta name="description" content={LOCAL_SEO_CONTENT.requestLookup.description} />
+        <link rel="canonical" href="https://boxed2built.com/lookup-request" />
+        <meta property="og:url" content="https://boxed2built.com/lookup-request" />
+        <meta property="og:title" content="Request Lookup | Boxed2Built" />
+        <meta property="og:description" content="Need to review your Boxed2Built request? Use the request lookup page to find your inquiry details fast." />
+        <meta name="twitter:title" content="Boxed2Built Request Lookup" />
+        <meta name="twitter:description" content="Look up your furniture assembly request details with Boxed2Built." />
+      </Head>
       <Header />
       <main className="pt-20 min-h-screen bg-gray-50">
         <section className="py-12 bg-gradient-to-br from-blue-50 to-gray-100">
