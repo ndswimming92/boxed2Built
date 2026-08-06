@@ -1,5 +1,6 @@
 import React from 'react';
 import { Truck, Wrench, Armchair, ArrowRight, BadgeCheck, MapPin, Star } from 'lucide-react';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../../constants/marketingImages';
 
 interface Step {
   icon: React.ReactNode;
@@ -113,12 +114,11 @@ const WhyChooseSection: React.FC = () => {
           {/* Right column — proof */}
           <div className="flex flex-col gap-6">
             <img
-              src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+              {...MARKETING_IMAGES.skipTheBuild}
+              sizes={HALF_COLUMN_SIZES}
               alt="Skip the build — Boxed2Built assembles your flat-pack furniture so you can enjoy the room"
               className="w-full rounded-xl shadow-lg block"
               loading="lazy"
-              width="600"
-              height="400"
             />
 
             <div className="flex flex-col gap-3">

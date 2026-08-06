@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "sitemap": "node scripts/generate-sitemap.mjs",
+    "images": "node scripts/optimize-images.mjs",
     "build": "node scripts/generate-sitemap.mjs && vite-react-ssg build",
     "lint": "eslint .",
     "preview": "vite preview",

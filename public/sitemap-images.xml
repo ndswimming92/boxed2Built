@@ -1,50 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+<!--
+  GENERATED FILE — do not edit by hand.
+  Run `npm run sitemap` (or `npm run build`) to regenerate from
+  PAGE_IMAGES in src/constants/marketingImages.ts.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  
-  <!-- Image sitemap for better image SEO -->
+
   <url>
     <loc>https://boxed2built.com/</loc>
     <image:image>
-      <image:loc>https://boxed2built.com/Modern%20Minimalist%20Logo%20for%20Boxed2Built.png</image:loc>
-      <image:title>Boxed2Built Logo - Professional Furniture Assembly Service</image:title>
-      <image:caption>Boxed2Built provides expert furniture assembly services in Spring Hill, Columbia, Franklin, Thompson's Station, and Brentwood Tennessee. Specializing in IKEA, Target, Walmart furniture assembly.</image:caption>
-      <image:geo_location>Spring Hill, TN</image:geo_location>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Living_Room_Assembly.webp</image:loc>
+      <image:title>Living room furniture assembly in Spring Hill, TN</image:title>
+      <image:caption>Boxed2Built assembling living room furniture for a family in Spring Hill, Tennessee.</image:caption>
     </image:image>
-    
-    <!-- Hero section images -->
     <image:image>
-      <image:loc>https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Service in Spring Hill Tennessee</image:title>
-      <image:caption>Expert furniture assembly tools and workspace for IKEA, Target, Walmart furniture in Spring Hill TN</image:caption>
-      <image:geo_location>Spring Hill, TN</image:geo_location>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.webp</image:loc>
+      <image:title>Skip the flat-pack build — Boxed2Built furniture assembly</image:title>
+      <image:caption>Professional flat-pack furniture assembly so Middle Tennessee families can enjoy the finished room instead of the instructions.</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/services</loc>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Garage_Assembly.webp</image:loc>
+      <image:title>Garage storage and shelving assembly in Spring Hill, TN</image:title>
+      <image:caption>Garage shelving and storage installation anchored into framing by Boxed2Built.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Outdoor_Living.webp</image:loc>
+      <image:title>Patio and outdoor furniture assembly in Middle Tennessee</image:title>
+      <image:caption>Outdoor and patio furniture assembly for homes across Williamson and Maury counties.</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://boxed2built.com/services/furniture-assembly</loc>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Bedroom_Assembly.webp</image:loc>
+      <image:title>Bedroom furniture assembly — bed frame, dresser and nightstand</image:title>
+      <image:caption>Bed frame, dresser and nightstand assembled and anchored by Boxed2Built in Spring Hill, TN.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.webp</image:loc>
+      <image:title>Professional flat-pack furniture assembly service</image:title>
+      <image:caption>IKEA, Wayfair, Target and Walmart furniture assembled, placed and cleaned up.</image:caption>
     </image:image>
   </url>
 
   <url>
     <loc>https://boxed2built.com/about</loc>
     <image:image>
-      <image:loc>https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Tools and Workspace</image:title>
-      <image:caption>Professional tools used for furniture assembly services in Spring Hill, Columbia, Franklin Tennessee</image:caption>
-      <image:geo_location>Spring Hill, TN</image:geo_location>
+      <image:loc>https://boxed2built.com/images/marketing-images/nicholas-davidson-founder-portrait-spring-hill.webp</image:loc>
+      <image:title>Nicholas Davidson, founder of Boxed2Built</image:title>
+      <image:caption>Nicholas Davidson, owner and founder of Boxed2Built furniture assembly in Spring Hill, Tennessee.</image:caption>
     </image:image>
-  </url>
-
-  <url>
-    <loc>https://boxed2built.com/gallery</loc>
     <image:image>
-      <image:loc>https://images.pexels.com/photos/1669799/pexels-photo-1669799.jpeg</image:loc>
-      <image:title>Professional Furniture Assembly Gallery - Spring Hill TN</image:title>
-      <image:caption>Gallery of professional furniture assembly work by Boxed2Built in Spring Hill, Columbia, Franklin Tennessee</image:caption>
-      <image:geo_location>Spring Hill, TN</image:geo_location>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Time_For_What_Matters_Most.webp</image:loc>
+      <image:title>Time for what matters most — Boxed2Built</image:title>
+      <image:caption>Families spend time together while Boxed2Built handles the furniture assembly.</image:caption>
     </image:image>
-    
     <image:image>
-      <image:loc>https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg</image:loc>
-      <image:title>Before and After Furniture Assembly Photos</image:title>
-      <image:caption>Before and after photos showing professional furniture assembly transformation in Tennessee homes</image:caption>
-      <image:geo_location>Spring Hill, TN</image:geo_location>
+      <image:loc>https://boxed2built.com/images/marketing-images/Boxed2Built_Nursery_Assembly.webp</image:loc>
+      <image:title>Nursery furniture and crib assembly in Spring Hill, TN</image:title>
+      <image:caption>Crib and nursery furniture assembled to manufacturer specification with anti-tip anchoring.</image:caption>
     </image:image>
   </url>
 

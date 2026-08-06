@@ -1,11 +1,17 @@
 #!/usr/bin/env node
-// Generates public/sitemap.xml from the route data that actually drives the app.
+// Generates public/sitemap.xml and public/sitemap-images.xml from the data that
+// actually drives the app.
 //
 // The sitemap used to be maintained by hand, which meant every new page needed
 // a second edit in a second file and drifted the moment someone forgot. This
 // reads src/constants/serviceLocations.ts and serviceLandingPages.ts directly
 // (bundled through esbuild, since they are TypeScript) so a new city or service
 // page shows up in the sitemap automatically on the next build.
+//
+// The image sitemap is generated the same way, from PAGE_IMAGES in
+// src/constants/marketingImages.ts. The old hand-written one had rotted
+// completely: every local image it listed 404'd, and the rest pointed at Pexels
+// stock photography the business does not own.
 //
 // Run via `npm run sitemap`, or automatically as part of `npm run build`.
 
@@ -19,6 +25,7 @@ import { build } from 'esbuild';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://boxed2built.com';
 const SITEMAP_PATH = join(ROOT, 'public', 'sitemap.xml');
+const IMAGE_SITEMAP_PATH = join(ROOT, 'public', 'sitemap-images.xml');
 
 /**
  * Bundle a TypeScript module to a temp .mjs and import it, so this plain-Node
@@ -93,11 +100,64 @@ async function readExistingLastmods() {
   return entries;
 }
 
+function xmlEscape(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Image sitemap. Only lists images that a page genuinely renders, keyed off the
+ * same constants the components import, so it cannot drift out of sync.
+ */
+function buildImageSitemap(pageImages, images) {
+  const blocks = pageImages.map(({ path, images: entries }) => {
+    const imageTags = entries
+      .map(({ key, title, caption }) => {
+        const image = images[key];
+        if (!image) throw new Error(`PAGE_IMAGES references unknown image key "${key}"`);
+        return [
+          '    <image:image>',
+          `      <image:loc>${SITE_URL}${image.src}</image:loc>`,
+          `      <image:title>${xmlEscape(title)}</image:title>`,
+          `      <image:caption>${xmlEscape(caption)}</image:caption>`,
+          '    </image:image>',
+        ].join('\n');
+      })
+      .join('\n');
+
+    return [
+      '  <url>',
+      `    <loc>${SITE_URL}${path}</loc>`,
+      imageTags,
+      '  </url>',
+    ].join('\n');
+  });
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  GENERATED FILE — do not edit by hand.
+  Run \`npm run sitemap\` (or \`npm run build\`) to regenerate from
+  PAGE_IMAGES in src/constants/marketingImages.ts.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+${blocks.join('\n\n')}
+
+</urlset>
+`;
+}
+
 async function main() {
-  const [{ SERVICE_LOCATIONS }, { SERVICE_LANDING_PAGES }] = await Promise.all([
-    importTypeScript('src/constants/serviceLocations.ts'),
-    importTypeScript('src/constants/serviceLandingPages.ts'),
-  ]);
+  const [{ SERVICE_LOCATIONS }, { SERVICE_LANDING_PAGES }, { PAGE_IMAGES, MARKETING_IMAGES }] =
+    await Promise.all([
+      importTypeScript('src/constants/serviceLocations.ts'),
+      importTypeScript('src/constants/serviceLandingPages.ts'),
+      importTypeScript('src/constants/marketingImages.ts'),
+    ]);
 
   const today = new Date().toISOString().slice(0, 10);
   const existing = await readExistingLastmods();
@@ -151,6 +211,12 @@ ${body}
 
   await writeFile(SITEMAP_PATH, xml, 'utf-8');
   console.log(`[sitemap] wrote ${seen.size} URLs to public/sitemap.xml`);
+
+  await writeFile(IMAGE_SITEMAP_PATH, buildImageSitemap(PAGE_IMAGES, MARKETING_IMAGES), 'utf-8');
+  const imageCount = PAGE_IMAGES.reduce((sum, page) => sum + page.images.length, 0);
+  console.log(
+    `[sitemap] wrote ${imageCount} images across ${PAGE_IMAGES.length} pages to public/sitemap-images.xml`,
+  );
 }
 
 main().catch((error) => {

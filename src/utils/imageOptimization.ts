@@ -101,48 +101,23 @@ export const generateResponsiveImageSources = (
       srcSet: jpegSrcSet
     };
   } else {
-    // For local images, generate optimized versions
-    if (baseUrl.startsWith('/images/')) {
-      // Generate AVIF sources for local images
-      if (enableAvif) {
-        const avifSrcSet = sizes
-          .map(width => `${baseUrl}?fm=avif&q=${quality}&w=${width} ${width}w`)
-          .join(', ');
-        
-        sources.avif = {
-          src: `${baseUrl}?fm=avif&q=${quality}&w=800`,
-          srcSet: avifSrcSet
-        };
-      }
-      
-      // Generate WebP sources for local images
-      if (formats.includes('webp')) {
-        const webpSrcSet = sizes
-          .map(width => `${baseUrl}?fm=webp&q=${Math.min(quality + 5, 95)}&w=${width} ${width}w`)
-          .join(', ');
-        
-        sources.webp = {
-          src: `${baseUrl}?fm=webp&q=${Math.min(quality + 5, 95)}&w=800`,
-          srcSet: webpSrcSet
-        };
-      }
-      
-      // Generate JPEG sources for local images
-      const jpegSrcSet = sizes
-        .map(width => `${baseUrl}?fm=jpg&q=${Math.max(quality - 5, 75)}&w=${width} ${width}w`)
-        .join(', ');
-      
-      sources.fallback = {
-        src: `${baseUrl}?fm=jpg&q=${Math.max(quality - 5, 75)}&w=800`,
-        srcSet: jpegSrcSet
-      };
-    } else {
-      // For other URLs, use the original URL as fallback
-      sources.fallback = {
-        src: baseUrl,
-        srcSet: baseUrl
-      };
-    }
+    // Locally hosted images are served verbatim.
+    //
+    // This branch used to synthesise "responsive" variants for /images/ paths
+    // by appending ?fm=avif&q=85&w=400 style query strings. Netlify serves
+    // static files as-is and ignores those parameters, so the browser was
+    // handed a <source type="image/avif"> whose URL returned the original
+    // PNG — no bytes saved, and several redundant cache entries per image.
+    //
+    // Pre-built variants are the real fix: see scripts/optimize-images.mjs and
+    // src/constants/marketingImages.ts, which generate and reference genuine
+    // WebP files at multiple widths. If on-the-fly transforms are ever wanted
+    // here, Netlify's Image CDN (/.netlify/images?url=…&w=…&fm=…) is the API
+    // that actually performs them.
+    sources.fallback = {
+      src: baseUrl,
+      srcSet: baseUrl
+    };
   }
 
   return sources;

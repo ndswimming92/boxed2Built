@@ -17,6 +17,7 @@ import { formatPhoneForDisplay } from '../../services/communicationService';
 import { LOCAL_SEO_CONTENT, PRIMARY_SERVICES, FAQ_CONTENT } from '../../constants/localSEO';
 import { useBusinessLoaderData } from '../../hooks/useBusinessLoaderData';
 import { SERVICE_LOCATIONS, locationLabel, locationPath } from '../../constants/serviceLocations';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../../constants/marketingImages';
 
 const FurnitureAssemblyPage: React.FC = () => {
   const businessData = useBusinessLoaderData();
@@ -109,12 +110,13 @@ const FurnitureAssemblyPage: React.FC = () => {
                 </div>
                 <div className="hidden lg:block">
                   <ClickableImage
-                    src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
+                    src={MARKETING_IMAGES.bedroomAssembly.src}
                     alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
                     onOpen={setLightbox}
                   >
                     <img
-                      src="/images/marketing-images/Boxed2Built_Bedroom_Assembly.png"
+                      {...MARKETING_IMAGES.bedroomAssembly}
+                      sizes={HALF_COLUMN_SIZES}
                       alt="Professional bedroom furniture assembly - dresser, bed frame, and nightstand built by Boxed2Built"
                       className="rounded-xl shadow-xl w-full h-auto object-cover"
                       loading="eager"
@@ -258,12 +260,13 @@ const FurnitureAssemblyPage: React.FC = () => {
                 </div>
                 <div className="hidden lg:block sticky top-24">
                   <ClickableImage
-                    src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+                    src={MARKETING_IMAGES.skipTheBuild.src}
                     alt="Skip the build and enjoy the moments - professional furniture assembly service"
                     onOpen={setLightbox}
                   >
                     <img
-                      src="/images/marketing-images/Boxed2Built_Skip_The_Build_Enjoy_Moments.png"
+                      {...MARKETING_IMAGES.skipTheBuild}
+                      sizes={HALF_COLUMN_SIZES}
                       alt="Skip the build and enjoy the moments - professional furniture assembly service"
                       className="rounded-xl shadow-lg w-full h-auto object-cover"
                       loading="lazy"

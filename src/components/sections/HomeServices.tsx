@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Wrench, Clock, CheckCircle } from 'lucide-react';
 import InternalLink from '../ui/InternalLink';
 import ImageLightbox, { ClickableImage, LightboxImage } from '../ui/ImageLightbox';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../../constants/marketingImages';
 
 const HomeServices: React.FC = () => {
   const [lightbox, setLightbox] = useState<LightboxImage | null>(null);
@@ -22,17 +23,16 @@ const HomeServices: React.FC = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
           <div className="lg:col-span-2 order-2 lg:order-1">
             <ClickableImage
-              src="/images/marketing-images/Boxed2Built_Living_Room_Assembly.png"
+              src={MARKETING_IMAGES.livingRoomAssembly.src}
               alt="Professional living room furniture assembly by Boxed2Built in Spring Hill, TN"
               onOpen={setLightbox}
             >
               <img
-                src="/images/marketing-images/Boxed2Built_Living_Room_Assembly.png"
+                {...MARKETING_IMAGES.livingRoomAssembly}
+                sizes={HALF_COLUMN_SIZES}
                 alt="Professional living room furniture assembly by Boxed2Built in Spring Hill, TN"
                 className="rounded-xl shadow-lg w-full h-auto object-cover"
                 loading="lazy"
-                width="600"
-                height="400"
               />
             </ClickableImage>
           </div>

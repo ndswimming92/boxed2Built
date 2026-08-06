@@ -14,6 +14,7 @@ import { trackEvent } from '../utils/analytics';
 import { Head } from 'vite-react-ssg';
 import { LOCAL_SEO_CONTENT, FAQ_CONTENT } from '../constants/localSEO';
 import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
+import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../constants/marketingImages';
 
 const ServicesPage: React.FC = () => {
   const businessData = useBusinessLoaderData();
@@ -160,13 +161,14 @@ const ServicesPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
                   <ClickableImage
-                    src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
+                    src={MARKETING_IMAGES.garageAssembly.src}
                     alt="Professional garage furniture and storage assembly by Boxed2Built"
                     onOpen={setLightbox}
                     className="block w-full"
                   >
                     <img
-                      src="/images/marketing-images/Boxed2Built_Garage_Assembly.png"
+                      {...MARKETING_IMAGES.garageAssembly}
+                      sizes={HALF_COLUMN_SIZES}
                       alt="Professional garage furniture and storage assembly by Boxed2Built"
                       className="w-full h-auto"
                       loading="lazy"
@@ -198,13 +200,14 @@ const ServicesPage: React.FC = () => {
 
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
                   <ClickableImage
-                    src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
+                    src={MARKETING_IMAGES.outdoorLiving.src}
                     alt="Outdoor furniture assembly and patio setup by Boxed2Built"
                     onOpen={setLightbox}
                     className="block w-full"
                   >
                     <img
-                      src="/images/marketing-images/Boxed2Built_Outdoor_Living.png"
+                      {...MARKETING_IMAGES.outdoorLiving}
+                      sizes={HALF_COLUMN_SIZES}
                       alt="Outdoor furniture assembly and patio setup by Boxed2Built"
                       className="w-full h-auto"
                       loading="lazy"
