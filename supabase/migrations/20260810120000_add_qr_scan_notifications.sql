@@ -66,8 +66,15 @@ COMMENT ON COLUMN qr_codes.notification_email IS
   'Optional recipient override for scan emails. Falls back to the QR_SCAN_NOTIFY_EMAIL edge function secret when null or blank.';
 
 -- Keep the notification recipient out of the publicly readable redirect row.
--- anon still needs the rest of the columns to resolve /go/{slug}.
-REVOKE SELECT (notification_email) ON qr_codes FROM anon;
+--
+-- A column-level REVOKE alone is a no-op here: anon holds a table-wide SELECT
+-- grant on qr_codes, which covers every column including ones added later. The
+-- table-level grant has to be dropped first, then SELECT re-granted on exactly
+-- the columns the public /go/{slug} redirect reads. A consequence worth knowing:
+-- columns added to qr_codes from now on are not readable by anon until granted
+-- here, and an anonymous select('*') is rejected outright.
+REVOKE SELECT ON qr_codes FROM anon;
+GRANT SELECT (id, slug, title, default_destination_url, status) ON qr_codes TO anon;
 
 -- qr_scans: richer per-scan telemetry
 ALTER TABLE qr_scans
