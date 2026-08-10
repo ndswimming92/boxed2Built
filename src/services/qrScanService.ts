@@ -65,36 +65,156 @@ function extractUTMParams(url: string): { utm_source: string; utm_medium: string
   }
 }
 
-export async function logScan(
-  qrCodeId: string,
-  userAgent: string,
-  referrer: string,
-  fullURL: string
-): Promise<void> {
-  const { device_type, browser, os } = parseUserAgent(userAgent);
-  const { utm_source, utm_medium, utm_campaign } = extractUTMParams(fullURL);
+type UserAgentData = {
+  getHighEntropyValues: (hints: string[]) => Promise<{
+    model?: string;
+    platformVersion?: string;
+    fullVersionList?: { brand: string; version: string }[];
+  }>;
+  brands?: { brand: string; version: string }[];
+};
 
-  const scanData = {
-    qr_code_id: qrCodeId,
-    user_agent: userAgent,
+export type ScanDeviceContext = {
+  timezone: string;
+  language: string;
+  screenResolution: string;
+  deviceModel: string;
+  osVersion: string;
+  browserVersion: string;
+};
+
+/**
+ * Collects what the scanning device is willing to tell us. User-Agent Client
+ * Hints give the real device model and OS version on Chromium/Android, where
+ * the plain user-agent string has been frozen; everything else degrades to an
+ * empty string rather than failing the scan.
+ */
+export async function collectDeviceContext(): Promise<ScanDeviceContext> {
+  const context: ScanDeviceContext = {
+    timezone: '',
+    language: '',
+    screenResolution: '',
+    deviceModel: '',
+    osVersion: '',
+    browserVersion: ''
+  };
+
+  if (typeof window === 'undefined') return context;
+
+  try {
+    context.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  } catch {
+    // Timezone is best-effort.
+  }
+
+  context.language = navigator.language || '';
+
+  if (window.screen) {
+    const ratio = window.devicePixelRatio && window.devicePixelRatio !== 1
+      ? ` @${window.devicePixelRatio}x`
+      : '';
+    context.screenResolution = `${window.screen.width}x${window.screen.height}${ratio}`;
+  }
+
+  const uaData = (navigator as Navigator & { userAgentData?: UserAgentData }).userAgentData;
+  if (uaData) {
+    try {
+      const hints = await uaData.getHighEntropyValues(['model', 'platformVersion', 'fullVersionList']);
+      context.deviceModel = hints.model || '';
+      context.osVersion = hints.platformVersion || '';
+
+      // The last brand in fullVersionList is the actual browser; the earlier
+      // entries are the deliberately-nonsensical GREASE brands plus Chromium.
+      const brands = hints.fullVersionList?.filter((entry) => !/not.a.brand/i.test(entry.brand));
+      context.browserVersion = brands?.[brands.length - 1]?.version || '';
+    } catch {
+      // Client hints are permission-gated in some browsers; ignore refusals.
+    }
+  }
+
+  return context;
+}
+
+export type LogScanParams = {
+  qrCodeId: string;
+  slug: string;
+  destinationUrl: string;
+  userAgent: string;
+  referrer: string;
+  pageUrl: string;
+};
+
+/**
+ * Falls back to a direct insert when the edge function is unreachable, so a
+ * scan is still counted even if the notification email cannot be sent.
+ */
+async function insertScanDirectly(params: LogScanParams): Promise<void> {
+  const { device_type, browser, os } = parseUserAgent(params.userAgent);
+  const { utm_source, utm_medium, utm_campaign } = extractUTMParams(params.pageUrl);
+
+  const { error } = await supabase.from('qr_scans').insert({
+    qr_code_id: params.qrCodeId,
+    user_agent: params.userAgent,
     device_type,
     browser,
     os,
-    referrer,
+    referrer: params.referrer,
+    destination_url: params.destinationUrl,
     utm_source,
     utm_medium,
     utm_campaign,
     ip_address: '',
     country: '',
     city: ''
-  };
-
-  const { error } = await supabase
-    .from('qr_scans')
-    .insert(scanData);
+  });
 
   if (error) {
     console.error('Error logging scan:', error);
+  }
+}
+
+/**
+ * Records a scan through the notify-qr-scan edge function, which resolves the
+ * IP and location the browser cannot see, then emails the business with the
+ * code's running scan total and the device details.
+ */
+export async function logScan(params: LogScanParams): Promise<void> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !anonKey) {
+    await insertScanDirectly(params);
+    return;
+  }
+
+  try {
+    const device = await collectDeviceContext();
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/notify-qr-scan`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${anonKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        slug: params.slug,
+        qrCodeId: params.qrCodeId,
+        destinationUrl: params.destinationUrl,
+        referrer: params.referrer,
+        pageUrl: params.pageUrl,
+        userAgent: params.userAgent,
+        ...device
+      }),
+      // Let the request finish even though we redirect away immediately after.
+      keepalive: true
+    });
+
+    if (!res.ok) {
+      throw new Error(`notify-qr-scan responded ${res.status}`);
+    }
+  } catch (error) {
+    console.error('Error notifying scan, falling back to direct insert:', error);
+    await insertScanDirectly(params);
   }
 }
 
@@ -207,32 +327,55 @@ export async function exportScanDataToCSV(qrCodeId: string): Promise<string> {
   const headers = [
     'Scanned At',
     'Device Type',
+    'Device Model',
     'Browser',
+    'Browser Version',
     'OS',
+    'OS Version',
+    'Screen',
+    'Language',
+    'Device Timezone',
     'Referrer',
+    'Destination URL',
     'UTM Source',
     'UTM Medium',
     'UTM Campaign',
+    'IP Address',
+    'City',
+    'Region',
     'Country',
-    'City'
+    'Bot',
+    'Notified At'
   ];
 
   const rows = scans.map(scan => [
     scan.scanned_at,
     scan.device_type,
+    scan.device_model,
     scan.browser,
+    scan.browser_version,
     scan.os,
+    scan.os_version,
+    scan.screen_resolution,
+    scan.language,
+    scan.timezone,
     scan.referrer,
+    scan.destination_url,
     scan.utm_source,
     scan.utm_medium,
     scan.utm_campaign,
+    scan.ip_address,
+    scan.city,
+    scan.region,
     scan.country,
-    scan.city
+    scan.is_bot ? 'yes' : 'no',
+    scan.notification_sent_at ?? ''
   ]);
 
   const csvContent = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    // Escape embedded quotes so a user agent or URL cannot break out of its cell.
+    ...rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
   ].join('\n');
 
   return csvContent;

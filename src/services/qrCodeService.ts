@@ -76,10 +76,22 @@ export async function getQRCode(id: string): Promise<QRCodeWithSchedules | null>
   };
 }
 
-export async function getQRCodeBySlug(slug: string): Promise<QRCodeWithSchedules | null> {
+/**
+ * Only the columns the public redirect needs. `select('*')` would hand the
+ * notification recipient to every anonymous visitor, and anon has no column
+ * privilege on `notification_email` anyway.
+ */
+export type PublicQRCode = Pick<
+  QRCode,
+  'id' | 'slug' | 'title' | 'default_destination_url' | 'status'
+> & {
+  schedules: QRCodeSchedule[];
+};
+
+export async function getQRCodeBySlug(slug: string): Promise<PublicQRCode | null> {
   const { data: qrCode, error: qrError } = await supabase
     .from('qr_codes')
-    .select('*')
+    .select('id, slug, title, default_destination_url, status')
     .eq('slug', slug)
     .eq('status', 'active')
     .maybeSingle();
@@ -173,6 +185,8 @@ export async function duplicateQRCode(id: string, newSlug: string, newTitle: str
       title: newTitle,
       description: original.description,
       default_destination_url: original.default_destination_url,
+      notify_on_scan: original.notify_on_scan,
+      notification_email: original.notification_email,
       status: 'inactive'
     })
     .select()

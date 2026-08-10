@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wand2, Check, AlertCircle } from 'lucide-react';
+import { Wand2, Check, AlertCircle, Mail } from 'lucide-react';
 import Modal from '../Modal';
 import { QRCodeWithSchedules } from '../../services/qrCodeService';
 import {
@@ -32,7 +32,9 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
     slug: '',
     description: '',
     default_destination_url: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive',
+    notify_on_scan: true,
+    notification_email: ''
   });
 
   useEffect(() => {
@@ -42,7 +44,9 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
         slug: qrCode.slug,
         description: qrCode.description,
         default_destination_url: qrCode.default_destination_url,
-        status: qrCode.status
+        status: qrCode.status,
+        notify_on_scan: qrCode.notify_on_scan ?? true,
+        notification_email: qrCode.notification_email ?? ''
       });
     } else {
       setFormData({
@@ -50,7 +54,9 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
         slug: '',
         description: '',
         default_destination_url: '',
-        status: 'active'
+        status: 'active',
+        notify_on_scan: true,
+        notification_email: ''
       });
     }
     setActiveTab('basic');
@@ -100,10 +106,17 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
 
     setLoading(true);
     try {
+      // A blank override means "use the default recipient", which the edge
+      // function only recognises as null.
+      const payload = {
+        ...formData,
+        notification_email: formData.notification_email.trim() || null
+      };
+
       if (qrCode) {
-        await updateQRCode(qrCode.id, formData);
+        await updateQRCode(qrCode.id, payload);
       } else {
-        await createQRCode(businessId, formData);
+        await createQRCode(businessId, payload);
       }
       onSuccess();
       onClose();
@@ -263,6 +276,40 @@ export default function QRCodeFormModal({ isOpen, onClose, qrCode, businessId, o
                 <p className="text-sm text-gray-500 mt-1 ml-6">
                   Inactive QR codes will show a 404 error when scanned
                 </p>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-center gap-2">
+                  <input name="notify_on_scan"
+                    type="checkbox"
+                    checked={formData.notify_on_scan}
+                    onChange={(e) => setFormData({ ...formData, notify_on_scan: e.target.checked })}
+                    className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-gray-400" />
+                    Email me every time this code is scanned
+                  </span>
+                </label>
+                <p className="text-sm text-gray-500 mt-1 ml-6">
+                  Each email includes which code was scanned, its running scan total, and
+                  what the scanning device reported. Turn this off for high-traffic codes.
+                </p>
+
+                {formData.notify_on_scan && (
+                  <div className="mt-3 ml-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Send notifications to
+                    </label>
+                    <input name="notification_email"
+                      type="email"
+                      value={formData.notification_email}
+                      onChange={(e) => setFormData({ ...formData, notification_email: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="Leave blank to use the default address"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
