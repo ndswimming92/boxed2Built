@@ -6,11 +6,24 @@ import {
   BarChart3,
   Download,
   Eye,
-  Globe
+  Globe,
+  Mail,
+  BellOff
 } from 'lucide-react';
+import { QRScan } from '../../lib/supabase';
 import { getQRCode, getShortURL, QRCodeWithSchedules } from '../../services/qrCodeService';
 import { getScanAnalytics, exportScanDataToCSV, ScanAnalytics } from '../../services/qrScanService';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+function formatVersioned(name: string, version: string): string {
+  if (!name) return 'Unknown';
+  return version ? `${name} ${version}` : name;
+}
+
+function formatScanLocation(scan: QRScan): string {
+  const parts = [scan.city, scan.region, scan.country].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : 'Unknown';
+}
 
 export default function QRCodeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -121,6 +134,19 @@ export default function QRCodeDetailPage() {
             </h1>
             <p className="text-gray-600 mt-1">
               <code className="bg-blue-50 text-blue-600 px-2 py-1 rounded">{shortURL}</code>
+            </p>
+            <p className="mt-2">
+              {qrCode.notify_on_scan ? (
+                <span className="inline-flex items-center gap-1.5 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                  <Mail className="w-3.5 h-3.5" />
+                  Emailing {qrCode.notification_email || 'the default address'} on every scan
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-full">
+                  <BellOff className="w-3.5 h-3.5" />
+                  Scan emails off for this code
+                </span>
+              )}
             </p>
           </div>
           <div className="flex gap-3">
@@ -296,7 +322,9 @@ export default function QRCodeDetailPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Browser</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OS</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referrer</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Emailed</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -305,10 +333,25 @@ export default function QRCodeDetailPage() {
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {new Date(scan.scanned_at).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">{scan.device_type || 'Unknown'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{scan.browser || 'Unknown'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{scan.os || 'Unknown'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 capitalize">
+                      {scan.device_type || 'Unknown'}
+                      {scan.device_model && (
+                        <span className="block text-xs text-gray-400 normal-case">{scan.device_model}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{formatVersioned(scan.browser, scan.browser_version)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{formatVersioned(scan.os, scan.os_version)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{formatScanLocation(scan)}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 truncate max-w-xs">{scan.referrer || 'Direct'}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {scan.notification_sent_at ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600" title={new Date(scan.notification_sent_at).toLocaleString()}>
+                          <Mail className="w-4 h-4" />
+                        </span>
+                      ) : (
+                        <span className="text-gray-300" title={scan.is_bot ? 'Skipped — looked like a bot or link preview' : 'No email sent for this scan'}>—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
