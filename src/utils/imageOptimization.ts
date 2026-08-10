@@ -193,21 +193,26 @@ export const generateOptimizedImageUrl = (
     return `${baseImageUrl}?${params.toString()}`;
   }
   
-  // For local images (would need server-side processing)
-  if (baseUrl.startsWith('/images/')) {
-    const params = new URLSearchParams();
-    
-    if (format !== 'auto') params.set('fm', format);
-    if (width) params.set('w', width.toString());
-    if (height) params.set('h', height.toString());
-    if (quality) params.set('q', quality.toString());
-    if (fit !== 'cover') params.set('fit', fit);
-    
-    return `${baseUrl}?${params.toString()}`;
-  }
-  
+  // Locally hosted images cannot be transformed by URL. This used to append
+  // ?fm=…&w=… to /images/ paths, but Netlify serves static files verbatim and
+  // ignores those parameters — so the caller got a URL that looked converted
+  // and resolved to the untouched original. Return it unchanged instead; use
+  // the pre-built variants in src/constants/marketingImages.ts for real
+  // responsive local images.
   return baseUrl;
 };
+
+/**
+ * Whether `generateOptimizedImageUrl` can actually produce different formats
+ * and widths for this URL.
+ *
+ * Only remote hosts with an image-transforming CDN qualify. Callers must check
+ * this before emitting <source type="image/avif"> and friends: advertising a
+ * format the URL does not serve is what made the old local-image handling a
+ * silent no-op.
+ */
+export const supportsUrlTransforms = (baseUrl: string): boolean =>
+  baseUrl.includes('pexels.com');
 /**
  * Generate sizes attribute for responsive images
  */

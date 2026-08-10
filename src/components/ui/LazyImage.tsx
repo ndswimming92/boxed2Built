@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateOptimizedImageUrl, getOptimalQuality } from '../../utils/imageOptimization';
+import { generateOptimizedImageUrl, getOptimalQuality, supportsUrlTransforms } from '../../utils/imageOptimization';
 import LoadingSpinner from './LoadingSpinner';
 
 interface LazyImageProps {
@@ -64,16 +64,22 @@ const LazyImage: React.FC<LazyImageProps> = ({
         </div>
       ) : (
         <picture>
-          {/* Modern browsers get optimized formats */}
-          <source
-            srcSet={generateOptimizedImageUrl(src, { width, height, format: 'avif', quality: optimalQuality, imageType })}
-            type="image/avif"
-          />
-          <source
-            srcSet={generateOptimizedImageUrl(src, { width, height, format: 'webp', quality: optimalQuality, imageType })}
-            type="image/webp"
-          />
-          
+          {/* Format sources only where the URL can genuinely be transformed —
+              declaring image/avif for a host that ignores the parameter serves
+              the original bytes under a false content type. */}
+          {supportsUrlTransforms(src) && (
+            <>
+              <source
+                srcSet={generateOptimizedImageUrl(src, { width, height, format: 'avif', quality: optimalQuality, imageType })}
+                type="image/avif"
+              />
+              <source
+                srcSet={generateOptimizedImageUrl(src, { width, height, format: 'webp', quality: optimalQuality, imageType })}
+                type="image/webp"
+              />
+            </>
+          )}
+
           {/* Fallback */}
           <img
             src={optimizedSrc}
