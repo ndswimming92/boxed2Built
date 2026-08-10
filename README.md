@@ -156,6 +156,50 @@ This website is optimized for local search results in:
 - Brentwood furniture assembly
 - Nashville Metro furniture services
 
+### Verifying the SEO build
+
+The metadata, structured data and sitemaps live in pre-rendered HTML, where a
+mistake is silent — nothing fails to compile and the page still looks correct in
+a browser. `index.html` once duplicated a `<link rel="canonical">` onto every
+page, and because Google discards canonicals when a page carries conflicting
+values, every interior page was being kept out of the index by one extra line.
+
+`npm run verify:seo` asserts the invariants that would catch that class of bug.
+Run it against a completed build:
+
+```bash
+npm run build && npm run verify:seo
+```
+
+It checks, per page: exactly one `<title>`, description, canonical, `og:url` and
+`<h1>`; that the canonical and `og:url` point at that page and not another; that
+titles and descriptions fit SERP limits; that all JSON-LD parses and landing
+pages still carry `Service`, `FAQPage` and `BreadcrumbList`. Across the site it
+checks that no two pages share a title, description or canonical, that no
+auth-gated page was pre-rendered, that every referenced image exists and is
+served as WebP without transform query strings, and that both sitemaps agree
+with what was actually built.
+
+### Regenerating assets
+
+```bash
+npm run sitemap   # sitemap.xml + sitemap-images.xml, from the route constants
+npm run images    # WebP variants from assets/images-src/ (see below)
+```
+
+`npm run sitemap` also runs as part of `npm run build`. Image generation does
+not, because it needs `sharp`, which is deliberately not a project dependency —
+installing a native binary on every deploy to support a script that runs a few
+times a year is a bad trade. To add new photography:
+
+```bash
+# 1. drop the original in assets/images-src/  (stays unpublished)
+npm install --no-save sharp
+npm run images                 # writes WebP at 640/960/full into public/images/
+# 2. add it to MARKETING_IMAGES in src/constants/marketingImages.ts
+# 3. commit the generated .webp files
+```
+
 ---
 
 **Ready to get started?** [Book your free consultation today](https://boxed2built.com/contact) or call [(615) 403-4538](tel:+16154034538) for immediate assistance.
