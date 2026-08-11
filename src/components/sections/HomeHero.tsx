@@ -5,7 +5,7 @@ import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { useHeroImage } from '../../hooks/useHeroImage';
-import { calculateRatingStats } from '../../utils/ratingCalculations';
+import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 
 
@@ -16,8 +16,11 @@ const HomeHero: React.FC = () => {
   const { images: heroImages, activeIndex, goToIndex } = useHeroImage();
 
   const allReviews = businessData?.reviews || [];
-  const headerReviews = allReviews.filter((r) => r.show_in_header);
-  const displayReviews = headerReviews.length > 0 ? headerReviews : allReviews.slice(0, 1);
+  // The hero quotes a review body, so a star-only rating can't fill this slot.
+  // It still counts in the rating summary, which mirrors the Google total.
+  const quotableReviews = getWrittenReviews(allReviews);
+  const headerReviews = quotableReviews.filter((r) => r.show_in_header);
+  const displayReviews = headerReviews.length > 0 ? headerReviews : quotableReviews.slice(0, 1);
 
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);

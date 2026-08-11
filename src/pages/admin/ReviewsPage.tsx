@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, CustomerReview } from '../../lib/supabase';
+import { getWrittenReviews, isRatingOnly } from '../../utils/ratingCalculations';
 import { Plus, CreditCard as Edit2, Trash2, Save, X, AlertCircle, CheckCircle, Star, LayoutGrid as Layout } from 'lucide-react';
 
 function formatDateWithoutTimezone(dateString: string): string {
@@ -63,11 +64,15 @@ export default function ReviewsPage() {
   const handleSave = async () => {
     if (!businessId) return;
 
+    // Trimmed so a body of only whitespace is stored as a star-only rating
+    // rather than rendering as a blank testimonial on the site.
+    const payload = { ...formData, review_body: (formData.review_body || '').trim() };
+
     try {
       if (editingId) {
         const { error } = await supabase
           .from('customer_reviews')
-          .update(formData)
+          .update(payload)
           .eq('id', editingId);
 
         if (error) throw error;
@@ -75,7 +80,7 @@ export default function ReviewsPage() {
       } else {
         const { error } = await supabase
           .from('customer_reviews')
-          .insert([{ ...formData, business_id: businessId }]);
+          .insert([{ ...payload, business_id: businessId }]);
 
         if (error) throw error;
         setMessage({ type: 'success', text: 'Review added!' });
@@ -139,13 +144,27 @@ export default function ReviewsPage() {
   }
 
   const headerCount = reviews.filter((r) => r.show_in_header).length;
+  // Mirrors what the site publishes: every active rating counts toward the total,
+  // and only the ones with text can be displayed or sent to Google as a review.
+  const activeReviews = reviews.filter((r) => r.is_active);
+  const writtenCount = getWrittenReviews(activeReviews).length;
+  const ratingOnlyCount = activeReviews.length - writtenCount;
 
   return (
     <div className="max-w-6xl px-0">
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Customer Reviews</h1>
-          <p className="text-sm sm:text-base text-slate-600">Manage customer testimonials</p>
+          <p className="text-sm sm:text-base text-slate-600">
+            Manage customer testimonials
+            {activeReviews.length > 0 && (
+              <>
+                {' — '}
+                {activeReviews.length} active {activeReviews.length === 1 ? 'rating' : 'ratings'}
+                {ratingOnlyCount > 0 && `, ${writtenCount} with written reviews`}
+              </>
+            )}
+          </p>
         </div>
         {!isAdding && !editingId && (
           <button
@@ -198,8 +217,12 @@ export default function ReviewsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Review *</label>
-              <textarea name="review_body" value={formData.review_body || ''} onChange={(e) => setFormData({ ...formData, review_body: e.target.value })} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required />
+              <label className="block text-sm font-medium text-slate-700 mb-2">Review</label>
+              <textarea name="review_body" value={formData.review_body || ''} onChange={(e) => setFormData({ ...formData, review_body: e.target.value })} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
+              <p className="mt-1.5 text-xs text-slate-500">
+                Leave blank for a star-only rating — someone who rated you on Google without writing anything.
+                It counts toward your rating total but is never shown on the site.
+              </p>
             </div>
 
             <div>
@@ -276,6 +299,7 @@ export default function ReviewsPage() {
                     {review.is_featured && <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded">Featured</span>}
                     {review.is_verified && <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded">Verified</span>}
                     {!review.is_active && <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded">Inactive</span>}
+                    {isRatingOnly(review) && <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded">Rating only</span>}
                     {review.show_in_header && (
                       <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded flex items-center gap-1">
                         <Layout className="w-3 h-3" />
@@ -288,7 +312,11 @@ export default function ReviewsPage() {
                       <Star key={i} className={`w-4 h-4 ${i < review.rating_value ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
                     ))}
                   </div>
-                  <p className="text-slate-600 mb-2">{review.review_body}</p>
+                  {isRatingOnly(review) ? (
+                    <p className="text-slate-500 italic mb-2">No written review — counts toward the rating total only.</p>
+                  ) : (
+                    <p className="text-slate-600 mb-2">{review.review_body}</p>
+                  )}
                   <p className="text-sm text-slate-500">{formatDateWithoutTimezone(review.date_published)}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">

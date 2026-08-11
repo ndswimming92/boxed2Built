@@ -1,5 +1,6 @@
 import React from 'react';
 import { CompleteBusinessData } from '../../lib/supabase';
+import { getWrittenReviews } from '../../utils/ratingCalculations';
 
 interface EnhancedLocalBusinessSchemaProps {
   businessData: CompleteBusinessData | null | undefined;
@@ -180,29 +181,36 @@ const EnhancedLocalBusinessSchema: React.FC<EnhancedLocalBusinessSchemaProps> = 
   if (includeReviews && reviews.length > 0) {
     const totalRating = reviews.reduce((sum, review) => sum + review.rating_value, 0);
     const averageRating = totalRating / reviews.length;
+    // Star-only ratings count toward the total Google shows but have no body, so
+    // they belong in ratingCount and must stay out of reviewCount and `review`.
+    const writtenReviews = getWrittenReviews(reviews);
 
     schemaData.aggregateRating = {
       "@type": "AggregateRating",
       "ratingValue": averageRating.toFixed(1),
-      "reviewCount": reviews.length.toString(),
+      "ratingCount": reviews.length.toString(),
       "bestRating": "5",
       "worstRating": "1"
     };
 
-    schemaData.review = reviews.map(review => ({
-      "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": review.author_name
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": review.rating_value.toString(),
-        "bestRating": "5"
-      },
-      "reviewBody": review.review_body,
-      "datePublished": review.date_published
-    }));
+    if (writtenReviews.length > 0) {
+      schemaData.aggregateRating.reviewCount = writtenReviews.length.toString();
+
+      schemaData.review = writtenReviews.map(review => ({
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": review.author_name
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": review.rating_value.toString(),
+          "bestRating": "5"
+        },
+        "reviewBody": review.review_body,
+        "datePublished": review.date_published
+      }));
+    }
   }
 
   return (

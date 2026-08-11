@@ -66,6 +66,79 @@ function pathFor(file) {
 
 const all = (html, re) => [...html.matchAll(re)].map((m) => m[1]);
 
+/** Every aggregateRating found across the build, for the site-wide drift check. */
+const aggregateRatings = [];
+
+/**
+ * Review totals are partly hand-maintained in index.html and partly derived from
+ * the database, so they drift silently — the site claimed 8 reviews while the
+ * Google Business Profile showed 9 ratings.
+ *
+ * ratingCount is every rating; reviewCount is only the ones with written text
+ * (Google lets customers leave a star rating with no words). So ratingCount can
+ * exceed reviewCount, never the reverse, and reviewCount has to match the number
+ * of Review nodes actually published alongside it.
+ */
+function checkAggregateRating(page, node) {
+  const rating = node?.aggregateRating;
+  if (!rating || typeof rating !== 'object') return;
+
+  const num = (value) => (value === undefined ? undefined : Number(value));
+  const ratingCount = num(rating.ratingCount);
+  const reviewCount = num(rating.reviewCount);
+  const ratingValue = num(rating.ratingValue);
+
+  if (ratingCount === undefined && reviewCount === undefined) {
+    fail(page, 'aggregateRating has neither ratingCount nor reviewCount — Google needs one');
+  }
+  for (const [label, value] of [['ratingCount', ratingCount], ['reviewCount', reviewCount]]) {
+    if (value !== undefined && (!Number.isInteger(value) || value < 1)) {
+      fail(page, `aggregateRating ${label} is "${rating[label]}" (want a positive integer)`);
+    }
+  }
+  if (ratingCount !== undefined && reviewCount !== undefined && reviewCount > ratingCount) {
+    fail(page, `aggregateRating reviewCount (${reviewCount}) exceeds ratingCount (${ratingCount})`);
+  }
+
+  const best = num(rating.bestRating) ?? 5;
+  const worst = num(rating.worstRating) ?? 1;
+  if (ratingValue === undefined || Number.isNaN(ratingValue)) {
+    fail(page, 'aggregateRating is missing a numeric ratingValue');
+  } else if (ratingValue < worst || ratingValue > best) {
+    fail(page, `aggregateRating ratingValue ${ratingValue} is outside ${worst}-${best}`);
+  }
+
+  // Star-only ratings carry no body, so they must not appear as Review nodes.
+  const published = [].concat(node.review ?? []);
+  if (published.length > 0) {
+    const bodied = published.filter((r) => String(r?.reviewBody ?? '').trim().length > 0);
+    if (bodied.length !== published.length) {
+      fail(page, `${published.length - bodied.length} Review node(s) have an empty reviewBody`);
+    }
+    if (reviewCount !== undefined && reviewCount !== published.length) {
+      fail(page, `aggregateRating reviewCount is ${reviewCount} but ${published.length} Review node(s) are published`);
+    }
+  }
+
+  aggregateRatings.push({ page, ratingValue, ratingCount, reviewCount });
+}
+
+/** All pages must publish the same review totals — one stale copy poisons the SERP. */
+function reportRatingDrift() {
+  const seen = new Map();
+  for (const entry of aggregateRatings) {
+    const key = `${entry.ratingValue} / ${entry.ratingCount ?? '-'} ratings / ${entry.reviewCount ?? '-'} reviews`;
+    if (!seen.has(key)) seen.set(key, []);
+    seen.get(key).push(entry.page);
+  }
+  if (seen.size > 1) {
+    const variants = [...seen]
+      .map(([key, pages]) => `${key} on ${[...new Set(pages)].sort().join(', ')}`)
+      .join(' | ');
+    fail('site-wide', `aggregateRating totals disagree between pages: ${variants}`);
+  }
+}
+
 function checkPage(file, html) {
   const page = pathFor(file);
   const head = html.slice(0, html.indexOf('</head>'));
@@ -132,6 +205,7 @@ function checkPage(file, html) {
     }
     for (const node of Array.isArray(data) ? data : [data]) {
       for (const t of [].concat(node['@type'] ?? [])) types.add(t);
+      checkAggregateRating(page, node);
     }
   }
 
@@ -254,6 +328,7 @@ async function main() {
 
   checkNoPrivatePages(pages);
   reportDuplicates(pages);
+  reportRatingDrift();
   await checkSitemaps(pages);
 
   console.log(`[verify:seo] checked ${pages.length} pre-rendered pages`);

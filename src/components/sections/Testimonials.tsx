@@ -5,7 +5,7 @@ import ReviewCard from '../ReviewCard';
 import StarRating from '../ui/StarRating';
 import { Review } from '../../types';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
-import { calculateRatingStats } from '../../utils/ratingCalculations';
+import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 
 const AUTOSCROLL_MS = 5000;
 const RESUME_AFTER_MS = 10000;
@@ -48,9 +48,11 @@ const Testimonials: React.FC = () => {
     );
   }, []);
 
+  // Carousel cards need text, so star-only ratings are excluded here. They still
+  // count in ratingStats below — that badge mirrors the Google review total.
   const REVIEWS: Review[] = useMemo(() => {
     if (!businessData?.reviews) return [];
-    return businessData.reviews.map((review, index) => ({
+    return getWrittenReviews(businessData.reviews).map((review, index) => ({
       id: review.id,
       author: review.author_name,
       text: review.review_body,
