@@ -125,36 +125,69 @@ export const PAYMENT_METHODS = [
   "Square"
 ];
 
+/**
+ * Mirror of the active rows in `customer_reviews`, used only when a build or page
+ * load can't reach Supabase. Keep it in step with that table so the fallback
+ * publishes the same review total as the live site.
+ *
+ * An entry with an empty `reviewBody` is a star-only Google rating: it counts
+ * toward the rating total but is filtered out of every display surface and out of
+ * the schema.org `review` list. See `getWrittenReviews` in utils/ratingCalculations.
+ */
 export const CUSTOMER_REVIEWS = [
   {
-    author: "Adria Longmire",
+    author: "Google user",
+    reviewBody: "",
+    ratingValue: 5,
+    datePublished: "2026-08-11"
+  },
+  {
+    author: "Tia L.",
+    reviewBody: "Enjoyed having Nick in my home. Put two pieces of furniture together in 2 hours on a Friday night.",
+    ratingValue: 5,
+    datePublished: "2026-06-13"
+  },
+  {
+    author: "Adria L.",
     reviewBody: "I highly recommend Boxed2Built! Communication was excellent and he arrived on time. The wall mount installation of my TV was completed professionally and with great attention to detail. The quality of work was outstanding, the price was very reasonable, and the entire experience was seamless!",
     ratingValue: 5,
-    datePublished: "2026-05-30"
+    datePublished: "2026-05-31"
+  },
+  {
+    author: "Cathy H.",
+    reviewBody: "Nicholas is a great handyman. He has helped me with so many projects. Putting things together, putting up shades and hanging pictures. Such a nice personality.",
+    ratingValue: 5,
+    datePublished: "2026-04-12"
+  },
+  {
+    author: "Valerie G.",
+    reviewBody: "I just wanted to sing the praises of Nicholas Davidson of Boxed2Built! He recently built a stunning fireplace and mounted my TV, and I couldn't be happier with the results. He's incredibly dependable, thoughtful, and talented. If you're looking for a skilled professional to get the job done right, look no further! Highly recommend.",
+    ratingValue: 5,
+    datePublished: "2025-11-25"
   },
   {
     author: "Natalie R.",
     reviewBody: "Incredible service! Nicholas was extremely professional, punctual, and detail-oriented. He came out to set up our lawn chairs and mount our TV, and everything was done perfectly. He went above and beyond to make sure we were happy with the setup. Highly recommend this company — we're extremely pleased with the entire experience!",
     ratingValue: 5,
-    datePublished: "2025-10-22"
-  },
-  {
-    author: "Samantha H.",
-    reviewBody: "Highly recommend Nicholas if you need someone reliable, trustworthy and punctual! He took care of our furniture like it was his own and completed the tasks he said he'd do! Super professional and kind! Great quality of work!",
-    ratingValue: 5,
-    datePublished: "2024-12-15"
+    datePublished: "2025-10-21"
   },
   {
     author: "Taylor M.",
     reviewBody: "My man, Nicholas did an amazing job!",
     ratingValue: 5,
-    datePublished: "2024-12-10"
+    datePublished: "2025-08-17"
+  },
+  {
+    author: "Samantha H.",
+    reviewBody: "Highly recommend Nicholas if you need someone reliable, trustworthy and punctual! He took care of our furniture like it was his own and completed the tasks he said he'd do! Super professional and kind! Great quality of work!",
+    ratingValue: 5,
+    datePublished: "2025-08-17"
   },
   {
     author: "Jena C.",
     reviewBody: "Nicholas is an awesome person! He was so professional and kind! He did an amazing job building our blackstone grill for us! He was so quick, cleaned up after himself and made sure everything was working properly! I highly recommend hiring him to build any furniture or self-assembly products for your home!",
     ratingValue: 5,
-    datePublished: "2024-12-05"
+    datePublished: "2025-06-22"
   }
 ];
 

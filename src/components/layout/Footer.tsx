@@ -6,7 +6,7 @@ import QuickContactForm from '../QuickContactForm';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
-import { calculateRatingStats } from '../../utils/ratingCalculations';
+import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 import { SERVICE_LOCATIONS, locationPath } from '../../constants/serviceLocations';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
 
@@ -166,7 +166,9 @@ const Footer: React.FC = () => {
   // Real review data drives the review CTA card — no hardcoded counts.
   const reviews = businessData?.reviews || [];
   const reviewStats = calculateRatingStats(reviews);
-  const avatarReviews = reviews.slice(0, 3);
+  // Initials come from named reviewers; the overflow badge counts every rating,
+  // so the avatars plus "+N" add up to the total quoted in the copy below.
+  const avatarReviews = getWrittenReviews(reviews).slice(0, 3);
   const overflowCount = reviews.length - avatarReviews.length;
   const roundedRating = Math.round(reviewStats.averageRating);
   const allFiveStar =

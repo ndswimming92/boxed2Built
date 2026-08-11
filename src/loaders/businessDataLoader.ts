@@ -122,7 +122,9 @@ export function buildFallbackData(): CompleteBusinessData {
       review_body: review.reviewBody,
       rating_value: review.ratingValue,
       date_published: review.datePublished,
-      is_featured: index < 3,
+      // A star-only rating has nothing to feature, so featuring starts at the
+      // first entry that carries text.
+      is_featured: review.reviewBody.trim().length > 0 && index < 4,
       is_verified: true,
       show_in_header: false,
       job_completion_id: null,
