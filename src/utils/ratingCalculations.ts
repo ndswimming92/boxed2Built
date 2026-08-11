@@ -1,4 +1,7 @@
-import { CustomerReview } from '../lib/supabase';
+// Type-only so this module carries no runtime import: the Vite build plugin that
+// fills the review totals in index.html imports isRatingOnly from here, and
+// pulling in lib/supabase would construct a Supabase client at config load.
+import type { CustomerReview } from '../lib/supabase';
 
 /** Anything with a `review_body` — lets these helpers run against the DB row,
  *  the SSG fallback shape, or a mapped view model. */

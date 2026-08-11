@@ -204,10 +204,10 @@
 
 
 
-  <!-- Review totals mirror the Google Business Profile: ratingCount is every
-       rating, reviewCount only the ones with written text (star-only ratings
-       have no body to show). Keep both in sync with customer_reviews; `npm run
-       verify:seo` fails if they drift out of step with the rendered pages. -->
+  <!-- Review totals are filled at build time from customer_reviews by the
+       review-aggregate-rating Vite plugin — do not hand-edit the placeholders.
+       ratingCount is every rating; reviewCount only the ones with written text,
+       since a star-only rating has no body to show. -->
   <!-- Organization Schema -->
   <script type="application/ld+json">
   {
@@ -245,9 +245,9 @@
     ],
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "ratingCount": "9",
-      "reviewCount": "8",
+      "ratingValue": "__GBP_RATING_VALUE__",
+      "ratingCount": "__GBP_RATING_COUNT__",
+      "reviewCount": "__GBP_REVIEW_COUNT__",
       "bestRating": "5",
       "worstRating": "1"
     },
@@ -297,10 +297,10 @@
   }
   </script>
 
-  <!-- Review totals mirror the Google Business Profile: ratingCount is every
-       rating, reviewCount only the ones with written text (star-only ratings
-       have no body to show). Keep both in sync with customer_reviews; `npm run
-       verify:seo` fails if they drift out of step with the rendered pages. -->
+  <!-- Review totals are filled at build time from customer_reviews by the
+       review-aggregate-rating Vite plugin — do not hand-edit the placeholders.
+       ratingCount is every rating; reviewCount only the ones with written text,
+       since a star-only rating has no body to show. -->
   <!-- LocalBusiness Schema -->
   <script type="application/ld+json">
   {
@@ -344,9 +344,9 @@
     ],
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "5.0",
-      "ratingCount": "9",
-      "reviewCount": "8",
+      "ratingValue": "__GBP_RATING_VALUE__",
+      "ratingCount": "__GBP_RATING_COUNT__",
+      "reviewCount": "__GBP_REVIEW_COUNT__",
       "bestRating": "5",
       "worstRating": "1"
     },

@@ -139,10 +139,23 @@ function reportRatingDrift() {
   }
 }
 
+/**
+ * index.html's review totals are placeholders that the review-aggregate-rating
+ * plugin fills at build time. If one ships unfilled, the JSON-LD carries
+ * "__GBP_RATING_COUNT__" where a number belongs.
+ */
+function checkNoUnfilledPlaceholders(page, html) {
+  for (const token of new Set(all(html, /(__GBP_[A-Z_]*__)/g))) {
+    fail(page, `build-time placeholder ${token} was never filled in`);
+  }
+}
+
 function checkPage(file, html) {
   const page = pathFor(file);
   const head = html.slice(0, html.indexOf('</head>'));
   const noIndex = /content="[^"]*noindex/i.test(head);
+
+  checkNoUnfilledPlaceholders(page, html);
 
   const titles = all(html, /<title[^>]*>([\s\S]*?)<\/title>/g).map(unescapeHtml);
   const descs = all(html, /<meta[^>]*name="description"[^>]*content="([^"]*)"/g).map(unescapeHtml);
