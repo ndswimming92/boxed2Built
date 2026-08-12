@@ -3,6 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift, Home, Building2 } from 'lucide-react';
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
+import {
+  FURNITURE_CATEGORIES,
+  OTHER_CATEGORY_VALUE,
+  getEstimateBasis,
+  isFurnitureCategory,
+} from '../constants/furnitureCategories';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -97,8 +103,7 @@ const validationRules: Record<string, ValidationRule> = {
   furnitureType: {
     required: true,
     custom: (value) => {
-      const validTypes = ['Chair', 'Table', 'Bed', 'Dresser', 'Bookshelf', 'IKEA', 'Other'];
-      if (!validTypes.includes(value)) {
+      if (!isFurnitureCategory(value)) {
         return 'Please select a valid furniture type';
       }
       return null;
@@ -122,7 +127,7 @@ const validationRules: Record<string, ValidationRule> = {
     maxLength: 500,
     custom: (value, allValues) => {
       // Only require notes if "Other" is selected for furniture type
-      if (allValues?.furnitureType === 'Other' && !value?.trim()) {
+      if (allValues?.furnitureType === OTHER_CATEGORY_VALUE && !value?.trim()) {
         return 'Please specify the furniture type';
       }
       return null;
@@ -246,42 +251,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     const pieces = parseInt(fields.pieces?.value) || 0;
 
     if (furnitureType && pieces > 0) {
-      let baseTime = 0;
-      let basePrice = 0;
-
-      switch (furnitureType) {
-        case 'Chair':
-          baseTime = 60;
-          basePrice = 85;
-          break;
-        case 'Table':
-          baseTime = 120;
-          basePrice = 185;
-          break;
-        case 'Bookshelf':
-          baseTime = 150;
-          basePrice = 220;
-          break;
-        case 'Dresser':
-          baseTime = 210;
-          basePrice = 320;
-          break;
-        case 'Bed':
-          baseTime = 180;
-          basePrice = 295;
-          break;
-        case 'IKEA':
-          baseTime = 120;
-          basePrice = 185;
-          break;
-        case 'Multiple':
-          baseTime = 60;
-          basePrice = 85;
-          break;
-        default:
-          baseTime = 120;
-          basePrice = 185;
-      }
+      const { baseMinutes: baseTime, basePrice } = getEstimateBasis(furnitureType);
 
       const totalTime = baseTime * pieces;
       const totalPrice = basePrice * pieces;
@@ -307,7 +277,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     const requiredFields = ['name', 'email', 'serviceZip', 'furnitureType', 'pieces'];
 
     // Add notes as required if furniture type is "Other"
-    const isOtherSelected = fields.furnitureType?.value === 'Other';
+    const isOtherSelected = fields.furnitureType?.value === OTHER_CATEGORY_VALUE;
     if (isOtherSelected) {
       requiredFields.push('notes');
     }
@@ -892,13 +862,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   {...getFieldProps('furnitureType')}
                 >
                   <option value="">Select furniture type</option>
-                  <option value="Chair">Dining Chairs</option>
-                  <option value="Table">Tables & Desks</option>
-                  <option value="Bed">Bed Frames</option>
-                  <option value="Dresser">Dressers & Storage</option>
-                  <option value="Bookshelf">Bookshelves & Media Units</option>
-                  <option value="IKEA">IKEA Furniture</option>
-                  <option value="Other">Other (please specify in notes)</option>
+                  {FURNITURE_CATEGORIES.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
                 </select>
               </FormField>
 
@@ -926,7 +894,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
             </div>
 
             {/* Conditional Notes Field for "Other" Selection */}
-            {fields.furnitureType?.value === 'Other' && (
+            {fields.furnitureType?.value === OTHER_CATEGORY_VALUE && (
               <div className="mt-4">
                 <FormField
                   label="Please specify the furniture type"
@@ -1037,7 +1005,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 </FormField>
 
                 {/* Additional Notes */}
-                {fields.furnitureType?.value !== 'Other' && (
+                {fields.furnitureType?.value !== OTHER_CATEGORY_VALUE && (
                   <FormField
                     label="Additional Details"
                     error={fields.notes?.error}
