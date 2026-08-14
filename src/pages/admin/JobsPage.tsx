@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar, ChevronDown, Phone, Mail } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar, ChevronDown, Phone, Mail, Home } from 'lucide-react';
 import {
   calculateNetProfit,
   calculateHourlyRate,
@@ -9,6 +9,7 @@ import {
   formatDate,
   formatHours,
 } from '../../utils/jobCalculations';
+import { getDirectionsUrl, hasSeparateWorkAddress, normalizeAddress, resolveWorkAddress } from '../../utils/jobAddress';
 import JobFormModal from '../../components/admin/JobFormModal';
 import ImportJobsModal from '../../components/admin/ImportJobsModal';
 import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
@@ -181,7 +182,9 @@ export default function JobsPage() {
         job.client_name?.toLowerCase().includes(term) ||
         job.client_phone?.toLowerCase().includes(term) ||
         job.client_email?.toLowerCase().includes(term) ||
-        job.job_type?.toLowerCase().includes(term)
+        job.job_type?.toLowerCase().includes(term) ||
+        job.client_address?.toLowerCase().includes(term) ||
+        job.service_address?.toLowerCase().includes(term)
       );
     }
 
@@ -252,9 +255,11 @@ export default function JobsPage() {
       client_name: job.client_name,
       client_phone: job.client_phone,
       client_email: job.client_email,
+      client_address: job.client_address,
       job_type: job.job_type,
       job_description: job.job_description,
       location_city: job.location_city,
+      service_address: job.service_address,
       quoted_price: job.quoted_price,
       materials_cost: job.materials_cost,
       payment_method: job.payment_method,
@@ -400,7 +405,7 @@ export default function JobsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input name="searchTerm"
               type="text"
-              placeholder="Search by client name, phone, email, or job type..."
+              placeholder="Search by client name, phone, email, address, or job type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -512,6 +517,9 @@ export default function JobsPage() {
             const isInactive = job.job_status === 'lost' || job.job_status === 'cancelled';
             const missingHours = isCompletedMissingHoursWorked(job);
             const isExpanded = expandedJobIds.has(job.id);
+            const clientAddress = normalizeAddress(job.client_address);
+            const workAddress = resolveWorkAddress(job);
+            const separateWorkAddress = hasSeparateWorkAddress(job);
 
             return (
               <div key={job.id} className={`bg-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow overflow-hidden ${isInactive ? 'opacity-60' : ''}`}>
@@ -584,12 +592,17 @@ export default function JobsPage() {
                           {job.job_type}
                         </span>
                       )}
-                      {job.location_city && (
+                      {workAddress ? (
+                        <span className="flex items-center gap-1.5 min-w-0 truncate" title={workAddress}>
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate">{workAddress}</span>
+                        </span>
+                      ) : job.location_city ? (
                         <span className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-slate-400" />
                           {job.location_city}
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 mt-1.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -699,6 +712,57 @@ export default function JobsPage() {
                         <p className="text-sm font-semibold text-slate-900">{formatHours(job.hours_worked)}</p>
                       </div>
                     </div>
+
+                    {(clientAddress || workAddress) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                            <Home className="w-3 h-3" />
+                            Client Address
+                          </p>
+                          {clientAddress ? (
+                            <a
+                              href={getDirectionsUrl(clientAddress)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-semibold text-slate-900 break-words underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
+                              title="Open directions"
+                            >
+                              {clientAddress}
+                            </a>
+                          ) : (
+                            <p className="text-sm font-semibold text-slate-400">Not on file</p>
+                          )}
+                        </div>
+                        <div className="rounded-lg bg-slate-50 border border-slate-100 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1 flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3" />
+                            Work Location
+                            {separateWorkAddress && (
+                              <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 normal-case tracking-normal">
+                                Different address
+                              </span>
+                            )}
+                          </p>
+                          {workAddress ? (
+                            <a
+                              href={getDirectionsUrl(workAddress)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-semibold text-slate-900 break-words underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
+                              title="Open directions"
+                            >
+                              {workAddress}
+                            </a>
+                          ) : (
+                            <p className="text-sm font-semibold text-slate-400">Not on file</p>
+                          )}
+                          {!separateWorkAddress && workAddress && (
+                            <p className="text-[11px] text-slate-400 mt-0.5">Same as client address</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {missingHours && (
                       <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
@@ -853,6 +917,7 @@ export default function JobsPage() {
             client_name: creatingInvoiceForJob.client_name,
             client_email: creatingInvoiceForJob.client_email || undefined,
             client_phone: creatingInvoiceForJob.client_phone || undefined,
+            client_address: creatingInvoiceForJob.client_address || undefined,
           }}
           onClose={() => setCreatingInvoiceForJob(null)}
           onSaved={() => {

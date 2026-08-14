@@ -4,6 +4,8 @@ export interface JobCSVRow {
   'Client Name': string;
   'Client Phone': string;
   'Client Email': string;
+  'Client Address': string;
+  'Work Address': string;
   'Job Type': string;
   'Job Description': string;
   'Status': string;
@@ -34,6 +36,8 @@ const CSV_HEADERS: (keyof JobCSVRow)[] = [
   'Client Name',
   'Client Phone',
   'Client Email',
+  'Client Address',
+  'Work Address',
   'Job Type',
   'Job Description',
   'Status',
@@ -112,6 +116,9 @@ function jobToCSVRow(job: Job): JobCSVRow {
     'Client Name': job.client_name || '',
     'Client Phone': job.client_phone || '',
     'Client Email': job.client_email || '',
+    'Client Address': job.client_address || '',
+    // Blank means the work happened at the client's address.
+    'Work Address': job.service_address || '',
     'Job Type': job.job_type || '',
     'Job Description': job.job_description || '',
     'Status': statusLabels[job.job_status] || job.job_status,
@@ -145,6 +152,8 @@ export function generateCSVTemplate(): string {
     'Client Name': 'John Smith',
     'Client Phone': '615-555-0123',
     'Client Email': 'john.smith@example.com',
+    'Client Address': '123 Main St, Spring Hill, TN 37174',
+    'Work Address': '',
     'Job Type': 'Furniture Assembly',
     'Job Description': 'Assemble office desk and filing cabinet',
     'Status': 'Completed',

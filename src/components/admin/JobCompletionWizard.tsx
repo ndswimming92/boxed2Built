@@ -4,6 +4,7 @@ import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
 import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
+import { hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 
 type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
 
@@ -268,6 +269,15 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 <div>
                   <label className="text-sm font-medium text-slate-600">Job Type</label>
                   <p className="text-lg text-slate-900">{job.job_type}</p>
+                </div>
+              )}
+              {resolveWorkAddress(job) && (
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Work Location</label>
+                  <p className="text-lg text-slate-900">{resolveWorkAddress(job)}</p>
+                  {hasSeparateWorkAddress(job) && (
+                    <p className="text-xs text-amber-700 mt-0.5">Different from the client's address</p>
+                  )}
                 </div>
               )}
               {job.job_description && (
