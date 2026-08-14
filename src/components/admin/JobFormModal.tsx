@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase, Job, ServiceArea, PaymentMethod } from '../../lib/supabase';
-import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon, Gift } from 'lucide-react';
+import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon, Gift, MapPin } from 'lucide-react';
 import { REFERRAL_SOURCES, calculateNetProfit, calculateHourlyRate, formatCurrency } from '../../utils/jobCalculations';
+import { getDirectionsUrl, isSameAddress, normalizeAddress } from '../../utils/jobAddress';
+
+interface LinkedClient {
+  id: string;
+  name: string;
+  address: string | null;
+}
+
+type WorkLocationMode = 'same' | 'different';
 
 interface JobFormModalProps {
   job: Job | null;
@@ -20,11 +29,16 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [linkedClient, setLinkedClient] = useState<LinkedClient | null>(null);
+  const [workLocationMode, setWorkLocationMode] = useState<WorkLocationMode>('same');
+  const [serviceAddressDraft, setServiceAddressDraft] = useState('');
 
   const [formData, setFormData] = useState<Partial<Job>>({
     client_name: '',
     client_phone: '',
     client_email: '',
+    client_address: '',
+    service_address: null,
     job_type: '',
     job_description: '',
     date_quoted: null,
@@ -57,10 +71,113 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
     if (job) {
       setFormData(job);
+      applyWorkLocationFrom(job);
     } else if (initialData) {
       setFormData(prev => ({ ...prev, ...initialData }));
+      applyWorkLocationFrom(initialData);
     }
   }, [job, initialData, businessId]);
+
+  // The client profile attached to the job is the source of truth for the customer address.
+  useEffect(() => {
+    if (!job?.client_id) return;
+
+    let cancelled = false;
+
+    supabase
+      .from('clients')
+      .select('id, name, address')
+      .eq('id', job.client_id)
+      .maybeSingle()
+      .then(({ data, error: clientError }) => {
+        if (cancelled) return;
+        if (clientError) {
+          console.error('Error fetching client profile for job:', clientError);
+          return;
+        }
+        if (data) setLinkedClient(data as LinkedClient);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [job?.client_id]);
+
+  // New jobs aren't linked to a client yet, so match on what has been typed so far and
+  // carry that profile's address over. Saving re-runs the same matching in the database.
+  useEffect(() => {
+    if (job?.client_id || !organizationId) return;
+
+    const email = formData.client_email?.trim() || '';
+    const phone = formData.client_phone?.trim() || '';
+
+    if (!email && !phone) {
+      setLinkedClient(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const match = await findClientByContact(organizationId, email, phone);
+      if (cancelled) return;
+
+      setLinkedClient(match);
+
+      const profileAddress = normalizeAddress(match?.address);
+      if (profileAddress) {
+        setFormData(prev => (normalizeAddress(prev.client_address) ? prev : { ...prev, client_address: profileAddress }));
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [formData.client_email, formData.client_phone, organizationId, job?.client_id]);
+
+  const applyWorkLocationFrom = (source: Partial<Job>) => {
+    const serviceAddress = normalizeAddress(source.service_address);
+    setWorkLocationMode(serviceAddress ? 'different' : 'same');
+    setServiceAddressDraft(serviceAddress || '');
+  };
+
+  const findClientByContact = async (
+    orgId: string,
+    email: string,
+    phone: string
+  ): Promise<LinkedClient | null> => {
+    try {
+      if (email) {
+        // Escape LIKE wildcards so a literal _ or % can't match the wrong profile.
+        const emailPattern = email.replace(/[%_\\]/g, (char) => `\\${char}`);
+        const { data } = await supabase
+          .from('clients')
+          .select('id, name, address')
+          .eq('organization_id', orgId)
+          .ilike('email', emailPattern)
+          .limit(1)
+          .maybeSingle();
+
+        if (data) return data as LinkedClient;
+      }
+
+      if (phone) {
+        const { data } = await supabase
+          .from('clients')
+          .select('id, name, address')
+          .eq('organization_id', orgId)
+          .eq('phone', phone)
+          .limit(1)
+          .maybeSingle();
+
+        if (data) return data as LinkedClient;
+      }
+    } catch (err) {
+      console.error('Error looking up client profile:', err);
+    }
+
+    return null;
+  };
 
   const fetchDropdownData = async () => {
     try {
@@ -124,12 +241,20 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     return orgData?.id ?? null;
   };
 
+  // "Same as client address" is stored as a null service address so the work location keeps
+  // following the client profile instead of holding a copy that goes stale.
+  const buildJobPayload = (): Partial<Job> => ({
+    ...formData,
+    client_address: normalizeAddress(formData.client_address),
+    service_address: workLocationMode === 'different' ? normalizeAddress(serviceAddressDraft) : null,
+  });
+
   const buildNewJobPayload = async () => {
     // Merge-safe behavior: always include business_id, and include organization_id when it can be resolved.
     const resolvedOrganizationId = organizationId ?? await fetchOrganizationId();
 
     return {
-      ...formData,
+      ...buildJobPayload(),
       business_id: businessId,
       ...(resolvedOrganizationId ? { organization_id: resolvedOrganizationId } : {}),
     };
@@ -154,13 +279,18 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
     try {
       if (job) {
-        const { error: updateError } = await supabase
+        const payload = buildJobPayload();
+        // Read the row back so address syncing done by the database (client profile pulled in,
+        // "same as client" collapsed to null) is what the caller sees.
+        const { data: updatedJob, error: updateError } = await supabase
           .from('jobs')
-          .update(formData)
-          .eq('id', job.id);
+          .update(payload)
+          .eq('id', job.id)
+          .select()
+          .maybeSingle();
 
         if (updateError) throw updateError;
-        onSave({ ...job, ...formData } as Job);
+        onSave((updatedJob as Job) ?? ({ ...job, ...payload } as Job));
       } else {
         const newJobPayload = await buildNewJobPayload();
         if (newJobPayload.organization_id && !organizationId) {
@@ -194,6 +324,19 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   const availableJobTypes = currentJobType && !jobTypeOptions.includes(currentJobType)
     ? [currentJobType, ...jobTypeOptions]
     : jobTypeOptions;
+
+  const clientAddress = normalizeAddress(formData.client_address);
+  const profileAddress = normalizeAddress(linkedClient?.address);
+  const canPullProfileAddress = Boolean(profileAddress && !isSameAddress(profileAddress, clientAddress));
+  const workAddress = workLocationMode === 'different' ? normalizeAddress(serviceAddressDraft) : clientAddress;
+
+  const selectWorkLocationMode = (mode: WorkLocationMode) => {
+    setWorkLocationMode(mode);
+    // Start a different work address from the client's, so only the parts that differ need editing.
+    if (mode === 'different' && !serviceAddressDraft.trim() && clientAddress) {
+      setServiceAddressDraft(clientAddress);
+    }
+  };
 
   const isFree = formData.is_free === true;
   const netProfit = isFree ? 0 : calculateNetProfit(formData.final_price ?? null, formData.materials_cost ?? null);
@@ -381,6 +524,39 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
+              <div className="md:col-span-3">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Client Address</label>
+                <input name="client_address"
+                  type="text"
+                  value={formData.client_address || ''}
+                  onChange={(e) => setFormData({ ...formData, client_address: e.target.value })}
+                  placeholder="123 Main St, Franklin, TN 37064"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {canPullProfileAddress ? (
+                    <>
+                      <p className="text-xs text-amber-700">
+                        {linkedClient?.name ? `${linkedClient.name}'s` : 'The'} client profile has{' '}
+                        <span className="font-medium">{profileAddress}</span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, client_address: profileAddress })}
+                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 underline"
+                      >
+                        Use profile address
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      {linkedClient
+                        ? `Shared with ${linkedClient.name}'s client profile — saving here updates the profile too.`
+                        : 'Saved to the matching client profile when this job is linked to a client.'}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -476,6 +652,83 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 rows={3}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-1">Work Location</h3>
+            <p className="text-sm text-slate-500 mb-4">Where the work takes place.</p>
+            <div className="space-y-3">
+              <label
+                className={`flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                  workLocationMode === 'same' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <input name="work_location_mode"
+                  type="radio"
+                  checked={workLocationMode === 'same'}
+                  onChange={() => selectWorkLocationMode('same')}
+                  className="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
+                />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-slate-800">Same as client address</span>
+                  <span className="block text-xs text-slate-500 mt-0.5 break-words">
+                    {clientAddress || 'Add a client address above to use this option.'}
+                  </span>
+                </span>
+              </label>
+
+              <label
+                className={`flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                  workLocationMode === 'different' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <input name="work_location_mode"
+                  type="radio"
+                  checked={workLocationMode === 'different'}
+                  onChange={() => selectWorkLocationMode('different')}
+                  className="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
+                />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-slate-800">A different address</span>
+                  <span className="block text-xs text-slate-500 mt-0.5">
+                    Storage unit, office, second property, or anywhere else the work happens.
+                  </span>
+                </span>
+              </label>
+
+              {workLocationMode === 'different' && (
+                <div className="space-y-2">
+                  <textarea name="service_address"
+                    value={serviceAddressDraft}
+                    onChange={(e) => setServiceAddressDraft(e.target.value)}
+                    rows={2}
+                    placeholder="456 Oak Ave, Spring Hill, TN 37174"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                  {clientAddress && !isSameAddress(clientAddress, serviceAddressDraft) && (
+                    <button
+                      type="button"
+                      onClick={() => setServiceAddressDraft(clientAddress)}
+                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 underline"
+                    >
+                      Copy client address
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {workAddress && (
+                <a
+                  href={getDirectionsUrl(workAddress)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Open directions
+                </a>
+              )}
             </div>
           </div>
 

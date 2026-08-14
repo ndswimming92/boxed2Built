@@ -14,16 +14,22 @@ The Analytics Dashboard and Jobs page now include full import/export functionali
 
 ### Export Format
 
-The exported CSV includes 23 columns matching your Google Sheets format:
+The exported CSV includes 29 columns matching your Google Sheets format:
 
 - Client Name
 - Client Phone
 - Client Email
+- Client Address
+- Work Address (blank when the work happened at the client's address)
 - Job Type
 - Job Description
+- Status
 - Date Quoted
 - Date Scheduled
 - Date Completed
+- Lost Reason Category
+- Lost Reason Notes
+- Status Changed At
 - Hours Worked
 - Quoted Price
 - Final Price
@@ -44,6 +50,8 @@ The exported CSV includes 23 columns matching your Google Sheets format:
 
 - Dates are formatted as M/D/YYYY (e.g., 1/15/2025)
 - Boolean fields export as "Yes" or "No"
+- Client Address is shared with the client profile; editing it on either side updates the other
+- Work Address is only filled in when the work happened somewhere other than the client's address
 - Numbers export without currency symbols or commas
 - Analytics Dashboard export respects time period filter (Current Year vs All Time)
 - Jobs page exports all jobs

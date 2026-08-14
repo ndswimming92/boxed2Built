@@ -31,6 +31,7 @@ import InvoiceFormModal from './InvoiceFormModal';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { getDirectionsUrl as getAddressDirectionsUrl, hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 
 interface ClientDetailModalProps {
   client: Client;
@@ -119,17 +120,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [quoteMessage, setQuoteMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [quoteCooldownRemaining, setQuoteCooldownRemaining] = useState<number>(0);
   const quoteCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const getAddressDirectionsUrl = useCallback((address: string) => {
-    const encodedAddress = encodeURIComponent(address);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-    if (isIOS) {
-      return `https://maps.apple.com/?daddr=${encodedAddress}`;
-    }
-
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
-  }, []);
 
   const getEmailHref = useCallback((email: string) => {
     return `mailto:${encodeURIComponent(email.trim())}`;
@@ -1495,6 +1485,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                       {activity.type === 'invoice' && `${activity.data.status} - ${formatCurrency(activity.data.total_amount || 0)}`}
                       {activity.type === 'followup_email' && 'Post-job follow-up email delivered'}
                     </p>
+                    {activity.type === 'job' && hasSeparateWorkAddress(activity.data) && (
+                      <p className="text-xs text-gray-500 mt-1 flex items-start gap-1">
+                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                        <span className="break-words">Worked at {resolveWorkAddress(activity.data)}</span>
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500 mt-1">{formatDateTime(activity.date)}</p>
                   </div>
                 </div>

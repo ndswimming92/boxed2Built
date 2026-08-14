@@ -3,6 +3,7 @@ import { supabase, ServiceArea, PaymentMethod, Job } from '../../lib/supabase';
 import { X, Upload, Download, AlertCircle, CheckCircle, FileText, AlertTriangle } from 'lucide-react';
 import { validateCSVData, generateErrorReportCSV, ValidationError } from '../../services/jobImportService';
 import { generateCSVTemplate, downloadCSV } from '../../services/jobExportService';
+import { resolveWorkAddress } from '../../utils/jobAddress';
 
 interface ImportJobsModalProps {
   businessId: string;
@@ -280,7 +281,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
                   <td className="px-3 py-2 text-right text-slate-900">
                     ${job.final_price?.toFixed(2) || '0.00'}
                   </td>
-                  <td className="px-3 py-2 text-slate-600">{job.location_city || '-'}</td>
+                  <td className="px-3 py-2 text-slate-600">{resolveWorkAddress(job) || job.location_city || '-'}</td>
                 </tr>
               ))}
             </tbody>

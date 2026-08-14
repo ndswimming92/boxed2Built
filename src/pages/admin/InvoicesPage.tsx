@@ -135,7 +135,7 @@ export default function InvoicesPage() {
             client_name: invoice.client_name,
             client_email: invoice.client_email || '',
             client_phone: invoice.client_phone || '',
-            location_city: invoice.client_address || '',
+            client_address: invoice.client_address || '',
             quoted_price: invoiceAmount,
             final_price: invoiceAmount,
             date_quoted: invoiceDate,

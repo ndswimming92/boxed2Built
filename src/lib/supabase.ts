@@ -211,9 +211,12 @@ export type LostReasonCategory =
 export type Job = {
   id: string;
   business_id: string;
+  client_id: string | null;
   client_name: string;
   client_phone: string | null;
   client_email: string | null;
+  /** Customer address, kept in sync with the linked client profile. */
+  client_address: string | null;
   job_type: string | null;
   job_description: string | null;
   date_quoted: string | null;
@@ -224,6 +227,8 @@ export type Job = {
   final_price: number | null;
   materials_cost: number | null;
   location_city: string | null;
+  /** Where the work took place. null means the same as client_address. */
+  service_address: string | null;
   payment_method: string | null;
   payment_date: string | null;
   reviews_received: boolean;

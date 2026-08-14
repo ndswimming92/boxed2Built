@@ -272,6 +272,9 @@ export async function validateCSVData(
       client_name: clientName.trim(),
       client_phone: row['Client Phone']?.trim() || null,
       client_email: row['Client Email']?.trim() || null,
+      client_address: row['Client Address']?.trim() || null,
+      // Left blank when the work happened at the client's address.
+      service_address: row['Work Address']?.trim() || null,
       job_type: row['Job Type']?.trim() || null,
       job_description: row['Job Description']?.trim() || null,
       notes: row['Notes']?.trim() || null,
