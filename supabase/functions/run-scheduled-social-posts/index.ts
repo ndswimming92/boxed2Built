@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { buildCaption, postToFacebook, postToInstagram, FacebookTokens } from '../_shared/socialPublish.ts';
+import { annotateInstagramError, prepareInstagramImage } from '../_shared/instagramImage.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -102,10 +103,19 @@ Deno.serve(async (req) => {
         }
 
         const caption = buildCaption(item.title, item.description, item.hashtags);
-        const [facebookResult, instagramResult] = await Promise.all([
+
+        // Instagram only accepts JPEGs inside its aspect-ratio window, so it
+        // gets a reformatted copy when the original wouldn't pass. Facebook is
+        // happy with the original file either way.
+        const instagramImage = await prepareInstagramImage(admin, item.id, item.src);
+        if (instagramImage.note) console.log(`run-scheduled-social-posts ${item.id}: ${instagramImage.note}`);
+        if (instagramImage.error) console.error(`run-scheduled-social-posts ${item.id}: ${instagramImage.error}`);
+
+        const [facebookResult, rawInstagramResult] = await Promise.all([
           postToFacebook(tokens, item.src, caption, item.alt),
-          postToInstagram(tokens, item.src, caption, item.alt),
+          postToInstagram(tokens, instagramImage.url, caption, item.alt),
         ]);
+        const instagramResult = annotateInstagramError(instagramImage, rawInstagramResult);
 
         await admin
           .from('gallery_items')

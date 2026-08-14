@@ -254,6 +254,15 @@ export class GalleryService {
           }
         }
 
+        // Publishing to Instagram may have stored a reformatted JPEG copy
+        // alongside the original (see supabase/functions/_shared/instagramImage.ts);
+        // it is keyed by item id and has no row of its own to clean it up.
+        if (item && item.type === 'image') {
+          await supabase.storage
+            .from(this.BUCKET_NAME)
+            .remove([`instagram-ready/${id}.jpg`]);
+        }
+
         const { error } = await supabase
           .from('gallery_items')
           .delete()

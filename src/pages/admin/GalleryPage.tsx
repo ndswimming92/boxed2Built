@@ -143,8 +143,15 @@ export default function GalleryPage() {
       const parts: string[] = [];
       if (result.facebook.success) parts.push('Facebook: posted');
       else parts.push(`Facebook: ${result.facebook.error ?? 'failed'}`);
-      if (result.instagram.success) parts.push('Instagram: posted');
-      else parts.push(`Instagram: ${result.instagram.error ?? 'failed'}`);
+      if (result.instagram.success) {
+        parts.push(
+          result.instagram_reformatted
+            ? 'Instagram: posted (photo reformatted to fit Instagram)'
+            : 'Instagram: posted',
+        );
+      } else {
+        parts.push(`Instagram: ${result.instagram.error ?? 'failed'}`);
+      }
 
       setPublishMessage({
         type: result.facebook.success || result.instagram.success ? 'success' : 'error',

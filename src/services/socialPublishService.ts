@@ -11,6 +11,10 @@ export interface PlatformPublishResult {
 export interface PublishGalleryPhotoResult {
   facebook: PlatformPublishResult;
   instagram: PlatformPublishResult;
+  /** True when the photo had to be re-rendered to satisfy Instagram's rules. */
+  instagram_reformatted?: boolean;
+  /** What was changed, e.g. padded to a supported aspect ratio. */
+  instagram_reformat_note?: string | null;
 }
 
 export async function publishGalleryPhoto(galleryItemId: string): Promise<PublishGalleryPhotoResult> {
