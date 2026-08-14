@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { buildCaption, postToFacebook, postToInstagram, FacebookTokens } from '../_shared/socialPublish.ts';
+import { annotateInstagramError, prepareInstagramImage } from '../_shared/instagramImage.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,10 +82,19 @@ Deno.serve(async (req) => {
     const tokens = JSON.parse(secretJson) as FacebookTokens;
 
     const caption = buildCaption(item.title, item.description, item.hashtags);
-    const [facebookResult, instagramResult] = await Promise.all([
+
+    // Instagram rejects anything that isn't a JPEG inside its aspect-ratio
+    // window, so it gets a reformatted copy when the original wouldn't pass.
+    // Facebook is happy with the original file either way.
+    const instagramImage = await prepareInstagramImage(admin, item.id, item.src);
+    if (instagramImage.note) console.log(`publish-gallery-photo ${item.id}: ${instagramImage.note}`);
+    if (instagramImage.error) console.error(`publish-gallery-photo ${item.id}: ${instagramImage.error}`);
+
+    const [facebookResult, rawInstagramResult] = await Promise.all([
       postToFacebook(tokens, item.src, caption, item.alt),
-      postToInstagram(tokens, item.src, caption, item.alt),
+      postToInstagram(tokens, instagramImage.url, caption, item.alt),
     ]);
+    const instagramResult = annotateInstagramError(instagramImage, rawInstagramResult);
 
     await admin
       .from('gallery_items')
@@ -102,7 +112,12 @@ Deno.serve(async (req) => {
       })
       .eq('id', galleryItemId);
 
-    return json({ facebook: facebookResult, instagram: instagramResult });
+    return json({
+      facebook: facebookResult,
+      instagram: instagramResult,
+      instagram_reformatted: instagramImage.reformatted,
+      instagram_reformat_note: instagramImage.note ?? null,
+    });
   } catch (error) {
     console.error('publish-gallery-photo error:', error);
     const msg = error instanceof Error ? error.message : 'Unknown error';
