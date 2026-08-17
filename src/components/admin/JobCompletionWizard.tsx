@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2, ExternalLink } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
-import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, canShare } from '../../utils/photoDownload';
+import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, isMobileDevice, canShare } from '../../utils/photoDownload';
 import { hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 
 type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
@@ -48,8 +48,12 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   });
   const [reminderType, setReminderType] = useState<'follow_up_call' | 'warranty_check' | 'repeat_business' | 'custom'>('follow_up_call');
 
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
   const steps: WizardStep[] = ['review', 'checklist', 'photos', 'satisfaction', 'signature', 'notes', 'reminders', 'confirm'];
   const currentStepIndex = steps.indexOf(currentStep);
+  const onMobile = isMobileDevice();
 
   const stepTitles: Record<WizardStep, string> = {
     review: 'Review Job Details',
@@ -103,11 +107,13 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+    const input = e.target;
+    const files = input.files;
     if (!files || files.length === 0) return;
 
     if (photos.length + files.length > 10) {
       alert('Maximum 10 photos allowed');
+      input.value = '';
       return;
     }
 
@@ -129,6 +135,9 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     }
 
     setPhotos([...photos, ...newPhotos]);
+    // Clear the input so re-picking the same file, or taking a second photo,
+    // still fires a change event.
+    input.value = '';
   };
 
   const removePhoto = (index: number) => {
@@ -354,14 +363,51 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 Upload Photos (Optional, max 10)
               </label>
               <input name="file"
+                ref={galleryInputRef}
                 type="file"
                 accept="image/*"
                 multiple
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              <input name="file"
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
                 capture="environment"
                 onChange={handlePhotoUpload}
-                disabled={photos.length >= 10}
-                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50"
+                className="hidden"
               />
+
+              <div className={`grid gap-3 ${onMobile ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  disabled={photos.length >= 10}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  {onMobile ? 'Choose from Gallery' : 'Choose Files'}
+                </button>
+                {onMobile && (
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    disabled={photos.length >= 10}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Camera className="w-5 h-5" />
+                    Take Photo
+                  </button>
+                )}
+              </div>
+
+              {photos.length >= 10 && (
+                <p className="mt-2 text-xs text-slate-500">
+                  Photo limit reached (10 of 10)
+                </p>
+              )}
+
               {isIOS() && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-blue-900 font-medium mb-1">iPhone Users:</p>
