@@ -5,7 +5,6 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ProductCard from '../components/store/ProductCard';
 import ProductDetailModal from '../components/store/ProductDetailModal';
-import CartDrawer from '../components/store/CartDrawer';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useCart } from '../contexts/CartContext';
 import { getShopSettings, listActiveProducts } from '../services/shopService';
@@ -21,7 +20,7 @@ const StorePage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [detailProduct, setDetailProduct] = useState<ShopProduct | null>(null);
 
-  const { addItem, openCart, itemCount } = useCart();
+  const { addItem } = useCart();
 
   useEffect(() => {
     let canceled = false;
@@ -44,6 +43,8 @@ const StorePage: React.FC = () => {
     };
 
     load();
+    void import('../components/store/CartDrawer');
+
     return () => {
       canceled = true;
     };
@@ -199,17 +200,6 @@ const StorePage: React.FC = () => {
         </section>
       </main>
 
-      {itemCount > 0 && (
-        <button
-          type="button"
-          onClick={openCart}
-          className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-3 font-semibold text-white shadow-xl transition-colors hover:bg-blue-800 xl:hidden"
-        >
-          <ShoppingBag className="h-5 w-5" />
-          View cart ({itemCount})
-        </button>
-      )}
-
       {detailProduct && (
         <ProductDetailModal
           product={detailProduct}
@@ -217,8 +207,6 @@ const StorePage: React.FC = () => {
           onAdd={handleAdd}
         />
       )}
-
-      <CartDrawer settings={settings} />
 
       <Footer />
     </div>
