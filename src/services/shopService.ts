@@ -25,11 +25,22 @@ const FN_HEADERS: Record<string, string> = {
   'Content-Type': 'application/json',
 };
 
+/** jsonb text arrays come back as unknown; keep only the strings. */
+function toStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
 /** Rows come back with `image_urls` as jsonb; normalize it to a string array. */
 function normalizeProduct(row: Record<string, unknown>): ShopProduct {
-  const raw = row.image_urls;
-  const image_urls = Array.isArray(raw) ? raw.filter((u): u is string => typeof u === 'string') : [];
-  return { ...(row as unknown as ShopProduct), image_urls };
+  return { ...(row as unknown as ShopProduct), image_urls: toStringArray(row.image_urls) };
+}
+
+function normalizeSettings(row: Record<string, unknown>): ShopSettings {
+  return {
+    ...(row as unknown as ShopSettings),
+    material_options: toStringArray(row.material_options),
+    color_options: toStringArray(row.color_options),
+  };
 }
 
 export function formatMoney(cents: number): string {
@@ -98,7 +109,7 @@ export async function getShopSettings(): Promise<ShopSettings | null> {
     .maybeSingle();
 
   if (error) throw error;
-  return (data as ShopSettings | null) ?? null;
+  return data ? normalizeSettings(data) : null;
 }
 
 // ───────────────────────────── Admin: products ─────────────────────────────
@@ -198,7 +209,28 @@ export async function saveShopSettings(
     .single();
 
   if (error) throw error;
-  return data as ShopSettings;
+  return normalizeSettings(data);
+}
+
+/**
+ * Appends a filament material or color to the shop's option list.
+ *
+ * Lets the product form add a new spool on the spot instead of sending the
+ * owner to Store settings mid-edit. Comparison is case-insensitive so "petg"
+ * doesn't land next to "PETG".
+ */
+export async function addFilamentOption(
+  businessId: string,
+  kind: 'material' | 'color',
+  value: string,
+  current: string[],
+): Promise<ShopSettings | null> {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (current.some((option) => option.toLowerCase() === trimmed.toLowerCase())) return null;
+
+  const key = kind === 'material' ? 'material_options' : 'color_options';
+  return saveShopSettings(businessId, { [key]: [...current, trimmed] });
 }
 
 // ────────────────────────────── Admin: orders ──────────────────────────────

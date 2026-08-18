@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, Save, X } from 'lucide-react';
+import { AlertCircle, Loader2, Plus, Save, X } from 'lucide-react';
 import { centsToDollarsInput, parseDollarsToCents, saveShopSettings } from '../../services/shopService';
 import type { ShopSettings } from '../../types/shop';
 
@@ -30,6 +30,8 @@ const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({
   const [pickupEnabled, setPickupEnabled] = useState(settings?.local_pickup_enabled ?? true);
   const [pickupInstructions, setPickupInstructions] = useState(settings?.pickup_instructions ?? '');
   const [taxRate, setTaxRate] = useState(String(settings?.tax_rate_percent ?? 0));
+  const [materialOptions, setMaterialOptions] = useState<string[]>(settings?.material_options ?? []);
+  const [colorOptions, setColorOptions] = useState<string[]>(settings?.color_options ?? []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +59,8 @@ const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({
     setSaving(true);
     try {
       const saved = await saveShopSettings(businessId, {
+        material_options: materialOptions,
+        color_options: colorOptions,
         announcement: announcement.trim() || null,
         shipping_enabled: shippingEnabled,
         flat_shipping_cents: flatCents,
@@ -177,6 +181,28 @@ const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({
             />
           </div>
 
+          <div className="rounded-xl border border-slate-200 p-4">
+            <p className="text-sm font-semibold text-slate-900">Filament on hand</p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              These fill the Material and Color dropdowns when you add a product.
+            </p>
+
+            <div className="mt-4 space-y-4">
+              <OptionList
+                label="Materials"
+                placeholder="PETG"
+                values={materialOptions}
+                onChange={setMaterialOptions}
+              />
+              <OptionList
+                label="Colors"
+                placeholder="Matte Black"
+                values={colorOptions}
+                onChange={setColorOptions}
+              />
+            </div>
+          </div>
+
           <div className="max-w-[10rem]">
             <label htmlFor="shop_tax" className={labelClass}>
               Sales tax (%)
@@ -212,6 +238,80 @@ const ShopSettingsModal: React.FC<ShopSettingsModalProps> = ({
             Save settings
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Chip editor for one filament list. Removing a value only takes it out of
+ * future dropdowns — products already using it keep their own copy.
+ */
+const OptionList: React.FC<{
+  label: string;
+  placeholder: string;
+  values: string[];
+  onChange: (values: string[]) => void;
+}> = ({ label, placeholder, values, onChange }) => {
+  const [draft, setDraft] = useState('');
+
+  const add = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    if (values.some((value) => value.toLowerCase() === trimmed.toLowerCase())) {
+      setDraft('');
+      return;
+    }
+    onChange([...values, trimmed]);
+    setDraft('');
+  };
+
+  return (
+    <div>
+      <p className="mb-1.5 text-xs font-semibold text-slate-600">{label}</p>
+
+      {values.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          {values.map((value) => (
+            <span
+              key={value}
+              className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-1 pl-3 pr-1.5 text-sm text-slate-700"
+            >
+              {value}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((item) => item !== value))}
+                className="rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-rose-600"
+                aria-label={`Remove ${value}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              add();
+            }
+          }}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          <Plus className="h-4 w-4" />
+          Add
+        </button>
       </div>
     </div>
   );

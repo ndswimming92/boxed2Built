@@ -18,6 +18,7 @@ import ShopProductModal from '../../components/admin/ShopProductModal';
 import ShopSettingsModal from '../../components/admin/ShopSettingsModal';
 import { useToast } from '../../contexts/ToastContext';
 import {
+  addFilamentOption,
   deleteProduct,
   formatMoney,
   getShopSettings,
@@ -109,6 +110,19 @@ const StoreProductsPage: React.FC = () => {
       showToast({ message: 'Could not update that product.', type: 'error' });
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const handleAddFilamentOption = async (kind: 'material' | 'color', value: string) => {
+    if (!businessId) return;
+    try {
+      const current =
+        (kind === 'material' ? settings?.material_options : settings?.color_options) ?? [];
+      const saved = await addFilamentOption(businessId, kind, value, current);
+      if (saved) setSettings(saved);
+    } catch (optionError) {
+      console.error('Failed to save filament option:', optionError);
+      showToast({ message: 'Could not save that to your filament list.', type: 'error' });
     }
   };
 
@@ -312,6 +326,9 @@ const StoreProductsPage: React.FC = () => {
           businessId={businessId}
           product={editing ?? undefined}
           categories={categories}
+          materialOptions={settings?.material_options ?? []}
+          colorOptions={settings?.color_options ?? []}
+          onAddFilamentOption={handleAddFilamentOption}
           onSaved={() => {
             setCreating(false);
             setEditing(null);
