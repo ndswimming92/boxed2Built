@@ -9,9 +9,8 @@ or environment variables are needed.
 
 ## Flow summary
 
-1. A visitor opens `/store` (or taps **Store** in the header, next to the phone
-   number). The page loads active products and store settings straight from
-   Supabase with the anon key.
+1. A visitor opens `/store` (or taps **Store** in the header). The page loads
+   active products and store settings straight from Supabase with the anon key.
 2. Adding an item opens the cart drawer, which holds the cart in
    `localStorage` (`boxed2built.store.cart`) so it survives a refresh.
 3. The shopper picks shipping or local pickup, fills in contact (and address)
@@ -38,7 +37,8 @@ or environment variables are needed.
   draft that only the admin sees.
 - **`shop_settings`** — one row per business: storefront banner, shipping
   toggle, flat rate, free-shipping threshold, pickup toggle and instructions,
-  sales-tax rate.
+  sales-tax rate, and the `material_options` / `color_options` filament lists
+  that drive the product form's dropdowns.
 - **`shop_orders`** — one row per checkout attempt. `order_number` defaults to
   `SP-YYYYMMDD-XXXXX`. Statuses: `pending → paid → in_production → shipped →
   completed`, plus `canceled`, `refunded`, `failed`. Money is in cents;
@@ -97,10 +97,17 @@ preview of the same calculation (`calculateCartTotals` in
 **Store Products** (`/admin/store`)
 
 - Add, edit, hide, and delete products; upload a main photo plus extra photos.
+- Material and Color are dropdowns fed by the filament lists in Store settings.
+  Picking **+ New filament type / New color** adds one inline and saves it back
+  to the list, so a new spool doesn't mean abandoning a half-filled form. A
+  product holding a value that has since been removed from the list still shows
+  it, labelled "(not in your list)", so editing can't silently blank it.
 - Toggle inventory tracking per product, set stock, lead time, max per order,
   and whether an item ships or is pickup-only.
 - **Store settings** opens the shipping rate, free-shipping threshold, pickup
-  instructions, sales-tax rate, and the storefront banner.
+  instructions, sales-tax rate, the storefront banner, and the **Filament on
+  hand** lists (materials and colors). Removing a filament there only affects
+  future dropdowns — products keep their own copy of the text.
 - Hiding a product (`is_active = false`) is the safe way to retire something —
   deleting is fine too, since orders keep their own snapshot of the item.
 
@@ -129,7 +136,8 @@ preview of the same calculation (`calculateCartTotals` in
 
 ## Deploying
 
-The migration is `supabase/migrations/20260818120000_create_print_shop_system.sql`.
+The migrations are `supabase/migrations/20260818120000_create_print_shop_system.sql`
+and `20260818170000_add_shop_filament_options.sql`.
 The store also needs these functions deployed:
 
 ```

@@ -15,6 +15,11 @@ interface ShopProductModalProps {
   businessId: string;
   product?: ShopProduct;
   categories: string[];
+  /** Filament lists from Store settings, shown in the Material/Color dropdowns. */
+  materialOptions: string[];
+  colorOptions: string[];
+  /** Persists a filament added from this form back to Store settings. */
+  onAddFilamentOption: (kind: 'material' | 'color', value: string) => Promise<void>;
   onSaved: () => void;
   onCancel: () => void;
 }
@@ -49,7 +54,7 @@ function initialState(product?: ShopProduct): FormState {
     description: product?.description ?? '',
     price: centsToDollarsInput(product?.price_cents ?? 0),
     compare_at_price: centsToDollarsInput(product?.compare_at_price_cents ?? null),
-    material: product?.material ?? 'PLA',
+    material: product?.material ?? '',
     color: product?.color ?? '',
     lead_time_days: String(product?.lead_time_days ?? 3),
     max_per_order: String(product?.max_per_order ?? 10),
@@ -67,6 +72,9 @@ const ShopProductModal: React.FC<ShopProductModalProps> = ({
   businessId,
   product,
   categories,
+  materialOptions,
+  colorOptions,
+  onAddFilamentOption,
   onSaved,
   onCancel,
 }) => {
@@ -387,31 +395,25 @@ const ShopProductModal: React.FC<ShopProductModalProps> = ({
               />
             </div>
 
-            <div>
-              <label htmlFor="product_material" className={labelClass}>
-                Material
-              </label>
-              <input
-                id="product_material"
-                value={form.material}
-                onChange={(event) => set('material', event.target.value)}
-                className={inputClass}
-                placeholder="PLA / PETG"
-              />
-            </div>
+            <FilamentSelect
+              id="product_material"
+              label="Material"
+              value={form.material}
+              options={materialOptions}
+              onChange={(value) => set('material', value)}
+              onAddOption={(value) => onAddFilamentOption('material', value)}
+              addLabel="New filament type"
+            />
 
-            <div>
-              <label htmlFor="product_color" className={labelClass}>
-                Color
-              </label>
-              <input
-                id="product_color"
-                value={form.color}
-                onChange={(event) => set('color', event.target.value)}
-                className={inputClass}
-                placeholder="Matte black"
-              />
-            </div>
+            <FilamentSelect
+              id="product_color"
+              label="Color"
+              value={form.color}
+              options={colorOptions}
+              onChange={(value) => set('color', value)}
+              onAddOption={(value) => onAddFilamentOption('color', value)}
+              addLabel="New color"
+            />
 
             <div>
               <label htmlFor="product_lead" className={labelClass}>
@@ -535,6 +537,118 @@ const ShopProductModal: React.FC<ShopProductModalProps> = ({
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+const ADD_NEW = '__add_new__';
+
+/**
+ * Dropdown over a list the owner keeps in Store settings, with an inline
+ * "Add new" so a fresh spool can be added without leaving a half-filled form.
+ *
+ * A value that is no longer in the list (a filament they used up and removed)
+ * still appears as a choice, so editing an old product can't silently blank it.
+ */
+const FilamentSelect: React.FC<{
+  id: string;
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+  onAddOption: (value: string) => Promise<void>;
+  addLabel: string;
+}> = ({ id, label, value, options, onChange, onAddOption, addLabel }) => {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const knownValue = value && !options.includes(value) ? value : null;
+
+  const commit = async () => {
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      setAdding(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await onAddOption(trimmed);
+      onChange(trimmed);
+      setDraft('');
+      setAdding(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-xs font-semibold text-slate-600">
+        {label}
+      </label>
+
+      {adding ? (
+        <div className="flex gap-2">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                void commit();
+              } else if (event.key === 'Escape') {
+                setAdding(false);
+                setDraft('');
+              }
+            }}
+            placeholder={addLabel}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+          />
+          <button
+            type="button"
+            onClick={() => void commit()}
+            disabled={saving}
+            className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:bg-slate-400"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAdding(false);
+              setDraft('');
+            }}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <select
+          id={id}
+          value={value}
+          onChange={(event) => {
+            if (event.target.value === ADD_NEW) {
+              setAdding(true);
+              return;
+            }
+            onChange(event.target.value);
+          }}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+        >
+          <option value="">Not specified</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+          {knownValue && <option value={knownValue}>{knownValue} (not in your list)</option>}
+          <option value={ADD_NEW}>+ {addLabel}…</option>
+        </select>
+      )}
     </div>
   );
 };

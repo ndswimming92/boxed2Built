@@ -49,6 +49,10 @@ export interface ShopSettings {
   local_pickup_enabled: boolean;
   pickup_instructions: string | null;
   tax_rate_percent: number;
+  /** Filament types offered in the product form's Material dropdown. */
+  material_options: string[];
+  /** Colors offered in the product form's Color dropdown. */
+  color_options: string[];
   created_at: string;
   updated_at: string;
 }
