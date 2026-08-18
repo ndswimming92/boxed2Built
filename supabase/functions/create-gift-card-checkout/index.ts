@@ -196,8 +196,8 @@ Deno.serve(async (req) => {
       console.error('Stripe session create failed', e);
       // Roll back the pending row
       await supabase.from('gift_cards').delete().eq('id', giftCardId);
-      const msg = e instanceof Error ? e.message : 'Stripe error';
-      return json({ error: msg }, 500);
+      // Upstream detail stays in the logs; the browser gets a generic message.
+      return json({ error: 'We could not start checkout. Please try again.' }, 500);
     }
 
     await supabase
@@ -207,8 +207,7 @@ Deno.serve(async (req) => {
 
     return json({ url: session.url, gift_card_id: giftCardId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('create-gift-card-checkout error:', error);
-    return json({ error: message }, 500);
+    return json({ error: 'We could not start checkout. Please try again.' }, 500);
   }
 });

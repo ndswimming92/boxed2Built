@@ -27,7 +27,7 @@ export default function InvoiceThankYouPage() {
     noIndex: true,
   });
 
-  const { invoiceId } = useParams<{ invoiceId: string }>();
+  const { invoiceId, paymentToken } = useParams<{ invoiceId: string; paymentToken: string }>();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
 
@@ -36,19 +36,19 @@ export default function InvoiceThankYouPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (invoiceId) fetchData();
-  }, [invoiceId]);
+    if (invoiceId && paymentToken) fetchData();
+    else setLoading(false);
+  }, [invoiceId, paymentToken]);
 
   const fetchData = async () => {
     try {
-      const { data: inv } = await supabase
-        .from('invoices')
-        .select('invoice_number, client_name, total_amount, business_id')
-        .eq('id', invoiceId)
-        .maybeSingle();
+      const { data: inv } = await supabase.rpc('get_invoice_receipt', {
+        p_invoice_id: invoiceId,
+        p_token: paymentToken,
+      });
 
       if (inv) {
-        setInvoice(inv);
+        setInvoice(inv as InvoiceSummary);
 
         const { data: biz } = await supabase
           .from('business_info')

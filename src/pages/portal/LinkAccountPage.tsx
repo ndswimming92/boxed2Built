@@ -13,7 +13,6 @@ export default function PortalLinkAccountPage() {
 
   const verifyMode = useMemo(() => Boolean(token), [token]);
 
-  const appBaseUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   const handleRequestLink = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -39,12 +38,9 @@ export default function PortalLinkAccountPage() {
         return;
       }
 
-      const linkUrl = `${appBaseUrl}/portal/link-account?token=${encodeURIComponent(result.token)}`;
-      await portalAccountLinkingService.sendVerificationEmail({
-        email: result.deliveryTarget,
-        linkUrl,
-        expiresAt: result.expiresAt,
-      });
+      // The recipient address and the link URL are both derived server-side
+      // from this one-time token, so neither can be chosen by the caller.
+      await portalAccountLinkingService.sendVerificationEmail({ token: result.token });
 
       setMessage('Verification email sent. Check your inbox and click the secure link to finish linking.');
     } catch (err) {

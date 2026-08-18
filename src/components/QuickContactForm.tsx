@@ -233,20 +233,18 @@ const QuickContactForm: React.FC = () => {
           console.warn('Partial submission success:', errors);
         }
       } else {
-        // Both submissions failed
-        throw new Error(
-          errors.length > 0
-            ? `Submission failed: ${errors.join(', ')}`
-            : 'Unable to send message. Please try again or call us directly.'
-        );
+        // Both submissions failed. Detail stays in the console; the visitor
+        // only ever sees a generic message.
+        if (errors.length > 0) {
+          console.error('Quick contact submission errors:', errors);
+        }
+        throw new Error('Unable to send message. Please try again or call us directly.');
       }
 
     } catch (error) {
       console.error('Quick contact form submission error:', error);
 
-      const message = error instanceof Error
-        ? error.message
-        : 'Unable to send message. Please try again or call us directly.';
+      const message = 'Unable to send message. Please try again or call us directly.';
 
       setErrorMessage(message);
       setSubmitStatus('error');

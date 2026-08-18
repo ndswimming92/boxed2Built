@@ -35,9 +35,8 @@ export interface AutoCreateResult {
 }
 
 interface SendPortalVerificationEmailPayload {
-  email: string;
-  linkUrl: string;
-  expiresAt: string | null;
+  /** One-time link token. The server resolves the recipient and builds the URL. */
+  token: string;
 }
 
 const getUserAgent = () => (typeof navigator !== 'undefined' ? navigator.userAgent : null);
@@ -86,13 +85,24 @@ export const portalAccountLinkingService = {
   },
 
   async sendVerificationEmail(payload: SendPortalVerificationEmailPayload): Promise<void> {
+    // The verification email always goes to the signed-in account's own
+    // address, which the server derives from this token. Sending the anon key
+    // here would let anyone mail an arbitrary link from the business address.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('You need to be signed in to request a verification email.');
+    }
+
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-portal-link-email`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${accessToken}`,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ token: payload.token }),
     });
 
     const data = await response.json().catch(() => ({}));

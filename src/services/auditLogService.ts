@@ -199,50 +199,27 @@ export async function logAction(params: LogActionParams): Promise<void> {
 
 export async function logPublicAction(params: LogActionParams & { userEmail: string }): Promise<void> {
   try {
-    const organizationId = await getOrganizationId();
-    if (!organizationId) {
-      console.warn('No organization found for public audit log');
-      return;
-    }
-
-    const changesSummary = generateChangesSummary(
-      params.actionType,
-      params.tableName,
-      params.recordIdentifier,
-      params.oldValues,
-      params.newValues
-    );
-
     const traceContext = getRequestTraceContext();
 
-    const logEntry = {
-      user_id: null,
-      user_email: params.userEmail,
-      action_type: params.actionType,
-      table_name: params.tableName,
-      record_id: params.recordId || null,
-      record_identifier: params.recordIdentifier || null,
-      old_values: params.oldValues || null,
-      new_values: params.newValues || null,
-      changes_summary: changesSummary,
-      ip_address: null,
-      user_agent: navigator?.userAgent || null,
-      status: params.status || 'success',
-      error_message: params.errorMessage || null,
-      organization_id: organizationId,
-      metadata: {
+    // Public visitors cannot write to the audit table directly. This routes the
+    // entry through a rate-limited server-side function that fills in the
+    // organization and request IP itself and forces the entry to be anonymous.
+    const { error } = await supabase.rpc('log_public_audit_event', {
+      p_action_type: params.actionType,
+      p_table_name: params.tableName,
+      p_user_email: params.userEmail,
+      p_record_id: params.recordId || null,
+      p_record_identifier: params.recordIdentifier || null,
+      p_status: params.status || 'success',
+      p_error_message: params.errorMessage || null,
+      p_metadata: {
         ...params.metadata,
         correlation_id: traceContext.correlationId,
         session_correlation_id: traceContext.sessionCorrelationId,
-        page: window.location.pathname,
+        page: typeof window !== 'undefined' ? window.location.pathname : null,
         timestamp: new Date().toISOString(),
-        public_submission: true,
       },
-    };
-
-    const { error } = await supabase
-      .from('admin_audit_logs')
-      .insert(logEntry);
+    });
 
     if (error) {
       console.error('Failed to log public action:', error);

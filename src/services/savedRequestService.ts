@@ -94,24 +94,25 @@ export async function getSavedRequestByCode(
   const normalizedEmail = normalizeEmail(email);
   const normalizedConfirmationCode = normalizeConfirmationCode(confirmationCode);
 
-  const { data, error } = await supabase
-    .from('saved_requests')
-    .select('*')
-    .ilike('client_email', normalizedEmail)
-    .eq('confirmation_code', normalizedConfirmationCode)
-    .eq('is_active', true)
-    .maybeSingle();
+  // The email + confirmation code pair is checked inside the database function.
+  // Anonymous visitors have no direct read access to saved_requests.
+  const { data, error } = await supabase.rpc('get_saved_request_by_code', {
+    p_email: normalizedEmail,
+    p_confirmation_code: normalizedConfirmationCode,
+  });
 
   if (error) {
     console.error('Error fetching saved request:', error);
-    throw new Error(`Failed to fetch saved request: ${error.message}`);
+    throw new Error('We could not look up that request. Please check the details and try again.');
   }
 
-  if (data) {
+  const record = (Array.isArray(data) ? data[0] : data) ?? null;
+
+  if (record) {
     await trackRequestAccess(normalizedEmail, normalizedConfirmationCode);
   }
 
-  return data as SavedRequest | null;
+  return record as SavedRequest | null;
 }
 
 async function trackRequestAccess(
@@ -133,24 +134,6 @@ async function trackRequestAccess(
   } catch (error) {
     console.error('Failed to track request access:', error);
   }
-}
-
-export async function getSavedRequestsByEmail(email: string): Promise<SavedRequest[]> {
-  const normalizedEmail = normalizeEmail(email);
-
-  const { data, error } = await supabase
-    .from('saved_requests')
-    .select('*')
-    .ilike('client_email', normalizedEmail)
-    .eq('is_active', true)
-    .order('submission_date', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching saved requests:', error);
-    throw new Error(`Failed to fetch saved requests: ${error.message}`);
-  }
-
-  return (data || []) as SavedRequest[];
 }
 
 export async function getAllSavedRequests(businessId: string): Promise<SavedRequest[]> {

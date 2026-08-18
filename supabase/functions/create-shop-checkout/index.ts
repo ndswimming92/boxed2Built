@@ -324,8 +324,8 @@ Deno.serve(async (req) => {
     } catch (stripeError) {
       console.error('Stripe session create failed:', stripeError);
       await supabase.from('shop_orders').delete().eq('id', order.id);
-      const message = stripeError instanceof Error ? stripeError.message : 'Stripe error';
-      return json({ error: message }, 500);
+      // Upstream detail stays in the logs; the browser gets a generic message.
+      return json({ error: 'We could not start checkout. Please try again.' }, 500);
     }
 
     await supabase
@@ -335,8 +335,7 @@ Deno.serve(async (req) => {
 
     return json({ url: session.url, order_id: order.id, order_number: order.order_number });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('create-shop-checkout error:', error);
-    return json({ error: message }, 500);
+    return json({ error: 'We could not start checkout. Please try again.' }, 500);
   }
 });

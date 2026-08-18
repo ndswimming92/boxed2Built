@@ -76,25 +76,16 @@ export default function InvoicePaymentPage() {
 
   const fetchInvoice = async () => {
     try {
-      const { data: inv, error: invErr } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('id', invoiceId)
-        .eq('payment_access_token', paymentToken)
-        .eq('is_active', true)
-        .maybeSingle();
+      const { data: inv, error: invErr } = await supabase.rpc('get_invoice_for_payment', {
+        p_invoice_id: invoiceId,
+        p_token: paymentToken,
+      });
 
       if (invErr || !inv) {
         setError('Invoice not found.');
         setLoading(false);
         return;
       }
-
-      const { data: items } = await supabase
-        .from('invoice_line_items')
-        .select('*')
-        .eq('invoice_id', invoiceId)
-        .order('display_order', { ascending: true });
 
       const { data: biz } = await supabase
         .from('business_info')
@@ -108,7 +99,7 @@ export default function InvoicePaymentPage() {
         .eq('business_id', inv.business_id)
         .maybeSingle();
 
-      setInvoice({ ...inv, lineItems: items || [] });
+      setInvoice(inv as InvoiceData);
       setBranding(biz);
       setAddress(addr);
     } catch {

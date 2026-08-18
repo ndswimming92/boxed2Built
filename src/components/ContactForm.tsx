@@ -582,10 +582,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         console.error('[ContactForm] Error stack:', error.stack);
       }
 
-      // Show error message to user
-      const errorMessage = error instanceof Error
-        ? `Submission failed: ${error.message}`
-        : 'An unexpected error occurred. Please try again or contact us directly.';
+      // Never surface raw backend error text to visitors: it leaks table,
+      // column and policy detail. The full error is in the console log above.
+      const errorMessage =
+        'We could not send your request. Please try again in a moment, or contact us directly.';
 
       setSubmissionError(errorMessage);
 
