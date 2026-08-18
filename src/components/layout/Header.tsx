@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Menu, X, ChevronDown, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { useLocation } from 'react-router-dom';
 
 import { trackEvent } from '../../utils/analytics';
@@ -45,6 +46,20 @@ const Header: React.FC = () => {
   // Null on admin/portal routes, which render outside the cart provider.
   const cart = useCartOptional();
   const cartCount = cart?.itemCount ?? 0;
+
+  const [hasStoreProducts, setHasStoreProducts] = useState(false);
+
+  useEffect(() => {
+    let canceled = false;
+    supabase
+      .from('shop_products')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .then(({ count }) => {
+        if (!canceled) setHasStoreProducts((count ?? 0) > 0);
+      });
+    return () => { canceled = true; };
+  }, []);
 
   const openCart = () => {
     cart?.openCart();
@@ -283,6 +298,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
+          {hasStoreProducts && (
           <div className="hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3">
             {cartCount > 0 && (
               <button
@@ -312,10 +328,11 @@ const Header: React.FC = () => {
               <span>Store</span>
             </a>
           </div>
+          )}
 
           {/* Mobile actions — RIGHT SIDE */}
           <div className="xl:hidden ml-auto flex items-center gap-1">
-            {cartCount > 0 && (
+            {hasStoreProducts && cartCount > 0 && (
               <button
                 onClick={openCart}
                 className="relative p-2 rounded-lg text-blue-700 hover:bg-blue-50"
@@ -430,6 +447,7 @@ const Header: React.FC = () => {
                 </a>
               ))}
 
+              {hasStoreProducts && (
               <div className="mt-4 pt-4 border-t space-y-3">
                 {cartCount > 0 && (
                   <button
@@ -453,6 +471,7 @@ const Header: React.FC = () => {
                   <span>Store</span>
                 </a>
               </div>
+              )}
             </nav>
           </div>
         )}
