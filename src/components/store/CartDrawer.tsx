@@ -2,14 +2,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Boxes, Lock, Minus, Plus, ShoppingBag, Store, Trash2, Truck, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useToast } from '../../contexts/ToastContext';
-import { calculateCartTotals, createShopCheckout, formatMoney } from '../../services/shopService';
+import {
+  calculateCartTotals,
+  createShopCheckout,
+  formatMoney,
+  getShopSettings,
+} from '../../services/shopService';
 import type { ShopFulfillmentMethod, ShopSettings } from '../../types/shop';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-interface CartDrawerProps {
-  settings: ShopSettings | null;
-}
 
 type CheckoutForm = {
   customer_name: string;
@@ -35,9 +36,28 @@ const emptyForm: CheckoutForm = {
   customer_note: '',
 };
 
-const CartDrawer: React.FC<CartDrawerProps> = ({ settings }) => {
+const CartDrawer: React.FC = () => {
   const { lines, isOpen, closeCart, setQuantity, removeItem, itemCount } = useCart();
   const { showToast } = useToast();
+
+  // The drawer is mounted app-wide, so it loads the store's shipping and tax
+  // settings itself rather than depending on the store page having them.
+  const [settings, setSettings] = useState<ShopSettings | null>(null);
+  useEffect(() => {
+    let canceled = false;
+    getShopSettings()
+      .then((loaded) => {
+        if (!canceled) setSettings(loaded);
+      })
+      .catch((error) => {
+        // Falling back to the defaults below keeps checkout usable; the edge
+        // function prices the order from these same settings either way.
+        console.error('Could not load store settings:', error);
+      });
+    return () => {
+      canceled = true;
+    };
+  }, []);
 
   const [form, setForm] = useState<CheckoutForm>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>({});
@@ -164,13 +184,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ settings }) => {
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
             <Boxes className="w-12 h-12 text-slate-300" />
             <p className="text-sm text-slate-600">Your cart is empty.</p>
-            <button
-              type="button"
+            <a
+              href="/store"
               onClick={closeCart}
               className="text-sm font-semibold text-blue-700 hover:text-blue-800"
             >
-              Keep browsing
-            </button>
+              Browse the shop
+            </a>
           </div>
         ) : (
           <form onSubmit={handleCheckout} className="flex flex-1 flex-col overflow-hidden">

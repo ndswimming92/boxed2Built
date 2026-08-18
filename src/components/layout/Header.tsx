@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, ChevronDown, ShoppingBag } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import { trackEvent } from '../../utils/analytics';
@@ -46,6 +46,16 @@ const Header: React.FC = () => {
   // Null on admin/portal routes, which render outside the cart provider.
   const cart = useCartOptional();
   const cartCount = cart?.itemCount ?? 0;
+
+  const openCart = () => {
+    cart?.openCart();
+    setIsMenuOpen(false);
+    trackEvent('cart_open', 'header', {
+      event_category: 'ecommerce',
+      action_type: 'open_cart',
+      action_value: String(cartCount),
+    });
+  };
 
   /* ----------------------------------------
      Scroll behavior
@@ -275,10 +285,24 @@ const Header: React.FC = () => {
 
           {/* Right-side desktop actions */}
           <div className="hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3">
+            {cartCount > 0 && (
+              <button
+                onClick={openCart}
+                className="relative inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                aria-label={`View cart — ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+              >
+                <ShoppingCart size={17} />
+                <span>Cart</span>
+                <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-blue-700 px-1 text-xs font-bold text-white">
+                  {cartCount}
+                </span>
+              </button>
+            )}
+
             <a
               href="/store"
               onClick={() => handleNavClick('store', '/store')}
-              className={`relative inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg 2xl:gap-2 2xl:px-4 2xl:text-base ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg 2xl:gap-2 2xl:px-4 2xl:text-base ${
                 isActivePage('/store')
                   ? 'bg-blue-800 text-white'
                   : 'bg-blue-700 text-white hover:bg-blue-800'
@@ -287,28 +311,35 @@ const Header: React.FC = () => {
             >
               <ShoppingBag size={17} />
               <span>Store</span>
-              {cartCount > 0 && (
-                <span
-                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-400 px-1 text-xs font-bold text-slate-900"
-                  aria-label={`${cartCount} item${cartCount === 1 ? '' : 's'} in cart`}
-                >
-                  {cartCount}
-                </span>
-              )}
             </a>
             <CallButton size="md" pageSection="header" />
           </div>
 
-          {/* Mobile Menu Button — RIGHT SIDE */}
-          <button
-            ref={mobileMenuButtonRef}
-            onClick={toggleMenu}
-            className="xl:hidden ml-auto p-2 rounded-lg hover:bg-gray-50"
-            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={isMenuOpen}
-          >
-            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          {/* Mobile actions — RIGHT SIDE */}
+          <div className="xl:hidden ml-auto flex items-center gap-1">
+            {cartCount > 0 && (
+              <button
+                onClick={openCart}
+                className="relative p-2 rounded-lg text-blue-700 hover:bg-blue-50"
+                aria-label={`View cart — ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+              >
+                <ShoppingCart size={22} />
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-blue-700 px-1 text-xs font-bold text-white">
+                  {cartCount}
+                </span>
+              </button>
+            )}
+
+            <button
+              ref={mobileMenuButtonRef}
+              onClick={toggleMenu}
+              className="p-2 rounded-lg hover:bg-gray-50"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+            >
+              {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -402,6 +433,19 @@ const Header: React.FC = () => {
               ))}
 
               <div className="mt-4 pt-4 border-t space-y-3">
+                {cartCount > 0 && (
+                  <button
+                    onClick={openCart}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-blue-700 bg-white px-6 py-3 text-lg font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                  >
+                    <ShoppingCart size={20} />
+                    <span>View cart</span>
+                    <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-blue-700 px-1.5 text-sm font-bold text-white">
+                      {cartCount}
+                    </span>
+                  </button>
+                )}
+
                 <a
                   href="/store"
                   onClick={() => handleNavClick('store', '/store')}
@@ -409,11 +453,6 @@ const Header: React.FC = () => {
                 >
                   <ShoppingBag size={20} />
                   <span>Store</span>
-                  {cartCount > 0 && (
-                    <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-amber-400 px-1.5 text-sm font-bold text-slate-900">
-                      {cartCount}
-                    </span>
-                  )}
                 </a>
                 <CallButton
                   size="lg"

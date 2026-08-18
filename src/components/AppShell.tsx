@@ -6,6 +6,7 @@ import { NotificationBarProvider } from '../contexts/NotificationBarContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { BusinessDataProvider, useBusinessDataContext } from '../contexts/BusinessDataContext';
 import { CartProvider } from '../contexts/CartContext';
+import CartHost from './store/CartHost';
 import ScrollToTop from './ui/ScrollToTop';
 import NotificationBar from './NotificationBar';
 import { useNotificationBar } from '../hooks/useNotificationBar';
@@ -259,7 +260,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
             content
           ) : (
             <BusinessDataProvider initialData={initialBusinessData}>
-              <CartProvider>{content}</CartProvider>
+              <CartProvider>
+                {content}
+                {/* Rendered here so the header's cart button opens the drawer
+                    from any public page, not just the store. */}
+                <ClientOnly>{() => <CartHost />}</ClientOnly>
+              </CartProvider>
             </BusinessDataProvider>
           )}
         </ConditionalAuthProvider>
