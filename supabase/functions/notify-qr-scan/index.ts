@@ -17,10 +17,6 @@ const SITE_URL = Deno.env.get("SITE_URL") ?? "https://boxed2built.com";
 // limit. Set QR_SCAN_NOTIFY_MAX_PER_HOUR=0 to remove the cap entirely.
 const MAX_EMAILS_PER_HOUR = Number(Deno.env.get("QR_SCAN_NOTIFY_MAX_PER_HOUR") ?? "60");
 
-// Optional: set IPINFO_TOKEN to resolve city/region/country from the IP.
-// Without it we fall back to whatever geo headers the edge network provides.
-const IPINFO_TOKEN = Deno.env.get("IPINFO_TOKEN");
-
 interface ScanPayload {
   slug?: string;
   qrCodeId?: string;
@@ -153,27 +149,6 @@ function geoFromHeaders(req: Request): ResolvedGeo {
     region: header("cf-region") || header("x-vercel-ip-country-region"),
     city: header("cf-ipcity") || header("x-vercel-ip-city"),
   };
-}
-
-async function resolveGeo(req: Request, ip: string): Promise<ResolvedGeo> {
-  const fromHeaders = geoFromHeaders(req);
-  if (!IPINFO_TOKEN || !ip) return fromHeaders;
-
-  try {
-    const res = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json?token=${IPINFO_TOKEN}`, {
-      signal: AbortSignal.timeout(2500),
-    });
-    if (!res.ok) return fromHeaders;
-    const data = await res.json();
-    return {
-      country: data.country ?? fromHeaders.country,
-      region: data.region ?? fromHeaders.region,
-      city: data.city ?? fromHeaders.city,
-    };
-  } catch (err) {
-    console.error("IP geolocation lookup failed:", err);
-    return fromHeaders;
-  }
 }
 
 function formatLocation(geo: ResolvedGeo): string {
@@ -444,7 +419,7 @@ Deno.serve(async (req: Request) => {
     const userAgent = req.headers.get("user-agent") ?? payload.userAgent ?? "";
     const parsed = parseUserAgent(userAgent);
     const ip = clientIp(req);
-    const geo = await resolveGeo(req, ip);
+    const geo = geoFromHeaders(req);
     const utm = extractUTMParams(payload.pageUrl ?? "");
     const scannedAt = new Date();
     const destinationUrl = payload.destinationUrl || (qrCode.default_destination_url as string) || "";

@@ -195,7 +195,6 @@ Edge function secrets:
 | `RESEND_API_KEY` | Yes | Sends the email. Without it, scans are still recorded and the skip is logged. |
 | `QR_SCAN_NOTIFY_EMAIL` | No | Default recipient. Defaults to the owner address. |
 | `QR_SCAN_NOTIFY_MAX_PER_HOUR` | No | Cap on emails per code per hour (default `60`, `0` disables the cap). |
-| `IPINFO_TOKEN` | No | Resolves city/region/country from the IP. Without it, location comes from edge geo headers only. |
 | `SITE_URL` | No | Base URL used in the short URL and analytics link (default `https://boxed2built.com`). |
 
 #### Scans that are logged but not emailed
