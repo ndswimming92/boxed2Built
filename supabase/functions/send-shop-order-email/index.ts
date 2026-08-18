@@ -211,6 +211,129 @@ function buildText(order: OrderRow, items: ItemRow[], contactPhone: string | nul
   return lines.join('\n');
 }
 
+function buildAdminHtml(order: OrderRow, items: ItemRow[]): string {
+  const itemRows = items
+    .map(
+      (item) => `<tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:14px;">
+          ${escapeHtml(item.product_name)}
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:14px;text-align:center;">
+          ${item.quantity}
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;font-size:14px;font-weight:600;text-align:right;">
+          ${money(item.line_total_cents)}
+        </td>
+      </tr>`,
+    )
+    .join('');
+
+  const addressBlock =
+    order.fulfillment_method === 'shipping'
+      ? `<tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:120px;">Address</td>
+           <td style="padding:6px 0;color:#0f172a;font-size:13px;">
+             ${escapeHtml(order.shipping_line1 || '')}${order.shipping_line2 ? `, ${escapeHtml(order.shipping_line2)}` : ''}<br>
+             ${escapeHtml(order.shipping_city || '')}, ${escapeHtml(order.shipping_state || '')} ${escapeHtml(order.shipping_postal_code || '')}
+           </td></tr>`
+      : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr><td style="background:#dc2626;padding:24px 32px;border-radius:12px 12px 0 0;">
+        <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">New Store Order!</h1>
+        <p style="margin:6px 0 0;color:#fecaca;font-size:14px;">Order ${escapeHtml(order.order_number)} &bull; ${money(order.total_cents)}</p>
+      </td></tr>
+      <tr><td style="background:#ffffff;padding:28px 32px;">
+        <h2 style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Customer Info</h2>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+          <tr><td style="padding:6px 0;color:#64748b;font-size:13px;width:120px;">Name</td>
+              <td style="padding:6px 0;color:#0f172a;font-size:13px;font-weight:600;">${escapeHtml(order.customer_name)}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;font-size:13px;">Email</td>
+              <td style="padding:6px 0;color:#0f172a;font-size:13px;">${escapeHtml(order.customer_email)}</td></tr>
+          ${(order as any).customer_phone ? `<tr><td style="padding:6px 0;color:#64748b;font-size:13px;">Phone</td>
+              <td style="padding:6px 0;color:#0f172a;font-size:13px;">${escapeHtml((order as any).customer_phone)}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#64748b;font-size:13px;">Fulfillment</td>
+              <td style="padding:6px 0;color:#0f172a;font-size:13px;font-weight:600;">${order.fulfillment_method === 'pickup' ? 'Local Pickup' : 'Shipping'}</td></tr>
+          ${addressBlock}
+        </table>
+
+        <h2 style="margin:0 0 12px;color:#0f172a;font-size:16px;font-weight:700;">Items Ordered</h2>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+          <tr style="background:#f8fafc;">
+            <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;">Product</th>
+            <th style="padding:10px 12px;text-align:center;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;">Qty</th>
+            <th style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;">Total</th>
+          </tr>
+          ${itemRows}
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid #e2e8f0;padding-top:12px;">
+          <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Subtotal</td>
+              <td style="padding:4px 0;color:#334155;font-size:13px;text-align:right;">${money(order.subtotal_cents)}</td></tr>
+          <tr><td style="padding:4px 0;color:#64748b;font-size:13px;">${order.fulfillment_method === 'pickup' ? 'Pickup' : 'Shipping'}</td>
+              <td style="padding:4px 0;color:#334155;font-size:13px;text-align:right;">${order.shipping_cents === 0 ? 'Free' : money(order.shipping_cents)}</td></tr>
+          ${order.tax_cents > 0 ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;">Tax</td>
+              <td style="padding:4px 0;color:#334155;font-size:13px;text-align:right;">${money(order.tax_cents)}</td></tr>` : ''}
+          <tr><td style="padding:10px 0 0;color:#0f172a;font-size:16px;font-weight:700;border-top:2px solid #e2e8f0;">Total</td>
+              <td style="padding:10px 0 0;color:#0f172a;font-size:16px;font-weight:700;text-align:right;border-top:2px solid #e2e8f0;">${money(order.total_cents)}</td></tr>
+        </table>
+
+        ${order.customer_note ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin:20px 0 0;">
+          <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.5px;">Customer Note</p>
+          <p style="margin:0;color:#78350f;font-size:14px;line-height:1.6;white-space:pre-line;">${escapeHtml(order.customer_note)}</p>
+        </div>` : ''}
+      </td></tr>
+      <tr><td style="background:#ffffff;padding:0 32px 28px;border-radius:0 0 12px 12px;">
+        <a href="${APP_URL}/admin/store-orders" style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:8px;">View in Admin Portal</a>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+function buildAdminText(order: OrderRow, items: ItemRow[]): string {
+  const lines = [
+    `NEW STORE ORDER: ${order.order_number}`,
+    '',
+    `Customer: ${order.customer_name}`,
+    `Email: ${order.customer_email}`,
+    ...((order as any).customer_phone ? [`Phone: ${(order as any).customer_phone}`] : []),
+    `Fulfillment: ${order.fulfillment_method === 'pickup' ? 'Local Pickup' : 'Shipping'}`,
+  ];
+
+  if (order.fulfillment_method === 'shipping') {
+    lines.push(
+      `Ship to: ${[order.shipping_line1, order.shipping_line2].filter(Boolean).join(', ')}`,
+      `         ${order.shipping_city}, ${order.shipping_state} ${order.shipping_postal_code}`,
+    );
+  }
+
+  lines.push('', 'Items:');
+  for (const item of items) {
+    lines.push(`  - ${item.product_name} x${item.quantity}: ${money(item.line_total_cents)}`);
+  }
+
+  lines.push(
+    '',
+    `Subtotal: ${money(order.subtotal_cents)}`,
+    `${order.fulfillment_method === 'pickup' ? 'Pickup' : 'Shipping'}: ${order.shipping_cents === 0 ? 'Free' : money(order.shipping_cents)}`,
+  );
+  if (order.tax_cents > 0) lines.push(`Tax: ${money(order.tax_cents)}`);
+  lines.push(`Total: ${money(order.total_cents)}`);
+
+  if (order.customer_note) {
+    lines.push('', `Customer Note: ${order.customer_note}`);
+  }
+
+  lines.push('', `View in admin: ${APP_URL}/admin/store-orders`);
+
+  return lines.join('\n');
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -227,7 +350,7 @@ Deno.serve(async (req) => {
     const { data: order, error } = await supabase
       .from('shop_orders')
       .select(
-        'id, order_number, customer_name, customer_email, fulfillment_method, shipping_line1, shipping_line2, shipping_city, shipping_state, shipping_postal_code, customer_note, subtotal_cents, shipping_cents, tax_cents, total_cents, status',
+        'id, order_number, customer_name, customer_email, customer_phone, fulfillment_method, shipping_line1, shipping_line2, shipping_city, shipping_state, shipping_postal_code, customer_note, subtotal_cents, shipping_cents, tax_cents, total_cents, status',
       )
       .eq('id', order_id)
       .maybeSingle();
@@ -270,13 +393,36 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: `Boxed2Built <${FROM_EMAIL}>`,
         to: [order.customer_email],
-        bcc: [BCC_EMAIL],
         subject,
         html,
         text,
         reply_to: FROM_EMAIL,
       }),
     });
+
+    // Send a separate admin notification email with full order details
+    try {
+      const adminSubject = `New Store Order ${order.order_number} — ${money(order.total_cents)}`;
+      const adminHtml = buildAdminHtml(order as OrderRow, (items ?? []) as ItemRow[]);
+      const adminText = buildAdminText(order as OrderRow, (items ?? []) as ItemRow[]);
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `Boxed2Built <${FROM_EMAIL}>`,
+          to: [BCC_EMAIL],
+          subject: adminSubject,
+          html: adminHtml,
+          text: adminText,
+          reply_to: FROM_EMAIL,
+        }),
+      });
+    } catch (adminEmailErr) {
+      console.warn('Admin notification email failed:', adminEmailErr);
+    }
 
     if (!resendRes.ok) {
       const errorText = await resendRes.text();

@@ -8,7 +8,7 @@ interface MarkPaidParams {
 
 /**
  * Flips a print shop order from `pending` to `paid`, decrements tracked stock,
- * and sends the confirmation email.
+ * sends the confirmation email, and creates an admin notification.
  *
  * Both the Stripe webhook and the confirmation-page fallback call this, so the
  * status update is guarded on `status = 'pending'` and the function reports
@@ -36,12 +36,12 @@ export async function markShopOrderPaid(
     return false;
   }
   if (!updated || updated.length === 0) {
-    // Another caller already processed this order.
     return false;
   }
 
   await decrementStock(admin, orderId);
   await sendConfirmationEmail(orderId);
+  await insertAdminNotification(admin, orderId);
   return true;
 }
 
@@ -86,5 +86,58 @@ async function sendConfirmationEmail(orderId: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error invoking send-shop-order-email:', error);
+  }
+}
+
+function money(cents: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+  }).format((cents || 0) / 100);
+}
+
+async function insertAdminNotification(admin: SupabaseClient, orderId: string): Promise<void> {
+  try {
+    const { data: order } = await admin
+      .from('shop_orders')
+      .select('id, organization_id, order_number, customer_name, customer_email, customer_phone, fulfillment_method, total_cents')
+      .eq('id', orderId)
+      .maybeSingle();
+
+    if (!order) return;
+
+    const { data: items } = await admin
+      .from('shop_order_items')
+      .select('product_name, quantity, line_total_cents')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true });
+
+    const itemSummary = (items ?? [])
+      .map((i) => `${i.product_name} x${i.quantity}`)
+      .join(', ');
+
+    const title = `New order ${order.order_number} — ${money(order.total_cents)}`;
+    const body = `${order.customer_name} ordered: ${itemSummary}. ${order.fulfillment_method === 'pickup' ? 'Pickup' : 'Shipping'}.`;
+
+    await admin.from('admin_notifications').insert({
+      organization_id: order.organization_id,
+      type: 'shop_order',
+      title,
+      body,
+      link: '/admin/store-orders',
+      metadata: {
+        order_id: order.id,
+        order_number: order.order_number,
+        customer_name: order.customer_name,
+        customer_email: order.customer_email,
+        customer_phone: order.customer_phone,
+        fulfillment_method: order.fulfillment_method,
+        total_cents: order.total_cents,
+        items: items ?? [],
+      },
+    });
+  } catch (err) {
+    console.error('Failed to insert admin notification:', err);
   }
 }

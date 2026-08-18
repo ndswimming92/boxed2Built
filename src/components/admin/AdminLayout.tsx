@@ -8,6 +8,7 @@ import { useSocialCommentsBadge } from '../../hooks/useSocialCommentsBadge';
 import { useSocialMessagesBadge } from '../../hooks/useSocialMessagesBadge';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
+import NotificationBell from './NotificationBell';
 import { PrivacyModeProvider, usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface NavigationItem {
@@ -486,11 +487,12 @@ function AdminLayoutContent() {
 
             <div className="flex items-center gap-4 ml-auto">
               <PrivacyModeToggleButton />
+              <NotificationBell />
               <Link
                 to="/admin/inquiries"
                 className="group relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors"
               >
-                <Bell className="w-5 h-5" />
+                <Inbox className="w-5 h-5" />
                 {unviewedCount > 0 && (
                   <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full min-w-[20px]">
                     {unviewedCount > 99 ? '99+' : unviewedCount}
