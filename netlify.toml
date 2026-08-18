@@ -88,6 +88,20 @@ X-Robots-Tag = "index, follow"
 Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+for = "/store"
+
+[headers.values]
+X-Robots-Tag = "index, follow"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/store/success"
+
+[headers.values]
+X-Robots-Tag = "noindex, follow"
+Cache-Control = "no-store"
+
+[[headers]]
 for = "/gift-cards"
 
 [headers.values]
