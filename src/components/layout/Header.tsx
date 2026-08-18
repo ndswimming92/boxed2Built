@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 
 import { trackEvent } from '../../utils/analytics';
 import ScrollProgressBar from '../ui/ScrollProgressBar';
-import CallButton from '../ui/CallButton';
 import { useNotificationBarContext } from '../../contexts/NotificationBarContext';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
 import { useCartOptional } from '../../contexts/CartContext';
@@ -312,7 +311,6 @@ const Header: React.FC = () => {
               <ShoppingBag size={17} />
               <span>Store</span>
             </a>
-            <CallButton size="md" pageSection="header" />
           </div>
 
           {/* Mobile actions — RIGHT SIDE */}
@@ -454,11 +452,6 @@ const Header: React.FC = () => {
                   <ShoppingBag size={20} />
                   <span>Store</span>
                 </a>
-                <CallButton
-                  size="lg"
-                  pageSection="header_mobile"
-                  fullWidth
-                />
               </div>
             </nav>
           </div>
