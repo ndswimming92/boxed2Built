@@ -30,6 +30,8 @@ const InvoiceThankYouPage = React.lazy(() => import('./pages/InvoiceThankYouPage
 const GiftCardsPage = React.lazy(() => import('./pages/GiftCardsPage'));
 const GiftCardSuccessPage = React.lazy(() => import('./pages/GiftCardSuccessPage'));
 const RedeemGiftCardPage = React.lazy(() => import('./pages/RedeemGiftCardPage'));
+const StorePage = React.lazy(() => import('./pages/StorePage'));
+const StoreSuccessPage = React.lazy(() => import('./pages/StoreSuccessPage'));
 
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const LoginPage = React.lazy(() => import('./pages/admin/LoginPage'));
@@ -71,6 +73,8 @@ const PortalAdoptionPage = React.lazy(() => import('./pages/admin/PortalAdoption
 const AdminDocumentsPage = React.lazy(() => import('./pages/admin/AdminDocumentsPage'));
 const BrandingPage = React.lazy(() => import('./pages/admin/BrandingPage'));
 const AdminGiftCardsPage = React.lazy(() => import('./pages/admin/GiftCardsPage'));
+const StoreProductsPage = React.lazy(() => import('./pages/admin/StoreProductsPage'));
+const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage'));
 const ApiKeysPage = React.lazy(() => import('./pages/admin/ApiKeysPage'));
 const ConnectionsPage = React.lazy(() => import('./pages/admin/ConnectionsPage'));
 const ClaudeUsagePage = React.lazy(() => import('./pages/admin/ClaudeUsagePage'));
@@ -128,6 +132,8 @@ export const routes: RouteRecord[] = [
       { path: 'gift-cards', Component: GiftCardsPage },
       { path: 'gift-cards/success', Component: GiftCardSuccessPage },
       { path: 'redeem-gift-card', Component: RedeemGiftCardPage },
+      { path: 'store', Component: StorePage },
+      { path: 'store/success', Component: StoreSuccessPage },
       { path: 'lookup-request', Component: RequestLookupPage },
 
       // Dynamic routes (client-only, not pre-rendered)
@@ -195,6 +201,8 @@ export const routes: RouteRecord[] = [
           { path: 'documents', Component: AdminDocumentsPage },
           { path: 'branding', Component: BrandingPage },
           { path: 'gift-cards', Component: AdminGiftCardsPage },
+          { path: 'store', Component: StoreProductsPage },
+          { path: 'store-orders', Component: StoreOrdersPage },
           { path: 'privacy-requests', Component: PrivacyRequestsPage },
           { path: 'api-keys', Component: ApiKeysPage },
           { path: 'connections', Component: ConnectionsPage },

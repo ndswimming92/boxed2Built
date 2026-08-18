@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { markShopOrderPaid } from '../_shared/shopOrder.ts';
 
 const liveWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const testWebhookSecret = Deno.env.get('STRIPE_TEST_WEBHOOK_SECRET') ?? '';
@@ -80,6 +81,11 @@ async function handleEvent(event: Stripe.Event, stripe: Stripe) {
     return;
   }
 
+  if (metadata.kind === 'shop_order') {
+    await handleShopOrderEvent(event);
+    return;
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }
@@ -139,6 +145,43 @@ async function handleEvent(event: Stripe.Event, stripe: Stripe) {
         console.error('Error processing one-time payment:', error);
       }
     }
+  }
+}
+
+async function handleShopOrderEvent(event: Stripe.Event) {
+  const obj = event.data.object as Record<string, unknown>;
+  const metadata = (obj?.metadata as Record<string, string> | undefined) ?? {};
+  const orderId = metadata.shop_order_id;
+  if (!orderId) return;
+
+  if (event.type === 'checkout.session.completed') {
+    const session = obj as unknown as Stripe.Checkout.Session;
+    if (session.payment_status !== 'paid') {
+      console.info(`Shop order session ${session.id} not paid yet`);
+      return;
+    }
+
+    // markShopOrderPaid guards on status = 'pending', so a replayed webhook (or
+    // the confirmation page's fallback) can't double-send the receipt.
+    await markShopOrderPaid(supabase, {
+      orderId,
+      sessionId: session.id,
+      paymentIntentId:
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id || null,
+    });
+  } else if (
+    event.type === 'checkout.session.expired' ||
+    event.type === 'payment_intent.payment_failed'
+  ) {
+    await supabase
+      .from('shop_orders')
+      .update({ status: 'failed' })
+      .eq('id', orderId)
+      .eq('status', 'pending');
+  } else if (event.type === 'charge.refunded') {
+    await supabase.from('shop_orders').update({ status: 'refunded' }).eq('id', orderId);
   }
 }
 

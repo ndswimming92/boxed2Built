@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingBag } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 import { trackEvent } from '../../utils/analytics';
@@ -7,6 +7,7 @@ import ScrollProgressBar from '../ui/ScrollProgressBar';
 import CallButton from '../ui/CallButton';
 import { useNotificationBarContext } from '../../contexts/NotificationBarContext';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
+import { useCartOptional } from '../../contexts/CartContext';
 
 const SERVICE_MENU_ITEMS = [
   {
@@ -42,6 +43,9 @@ const Header: React.FC = () => {
   const location = useLocation();
   const { isVisible: notificationBarVisible, notificationHeight } =
     useNotificationBarContext();
+  // Null on admin/portal routes, which render outside the cart provider.
+  const cart = useCartOptional();
+  const cartCount = cart?.itemCount ?? 0;
 
   /* ----------------------------------------
      Scroll behavior
@@ -138,7 +142,7 @@ const Header: React.FC = () => {
             className="
               absolute left-1/2 -translate-x-1/2
               xl:static xl:translate-x-0
-              flex-shrink-0 xl:mr-6
+              flex-shrink-0 xl:mr-4 2xl:mr-6
             "
           >
             <a
@@ -167,7 +171,7 @@ const Header: React.FC = () => {
             className="hidden xl:flex flex-1 justify-center min-w-0"
             aria-label="Main navigation"
           >
-            <ul className="flex items-center gap-3 lg:gap-5 xl:gap-7">
+            <ul className="flex items-center gap-2 xl:gap-3 2xl:gap-6">
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About', href: '/about' },
@@ -178,7 +182,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium whitespace-nowrap transition-colors text-sm lg:text-base
+                    className={`relative font-medium whitespace-nowrap transition-colors text-sm 2xl:text-base
                       ${
                         isActivePage(item.href)
                           ? 'text-blue-700 font-semibold'
@@ -201,7 +205,7 @@ const Header: React.FC = () => {
                     window.location.href = '/services';
                     handleNavClick('services', '/services');
                   }}
-                  className={`relative font-medium whitespace-nowrap transition-colors flex items-center gap-1 text-sm lg:text-base
+                  className={`relative font-medium whitespace-nowrap transition-colors flex items-center gap-1 text-sm 2xl:text-base
                     ${
                       isActivePage('/services')
                         ? 'text-blue-700 font-semibold'
@@ -254,7 +258,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium whitespace-nowrap transition-colors text-sm lg:text-base
+                    className={`relative font-medium whitespace-nowrap transition-colors text-sm 2xl:text-base
                       ${
                         isActivePage(item.href)
                           ? 'text-blue-700 font-semibold'
@@ -270,7 +274,28 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
-          <div className="hidden xl:flex flex-shrink-0 items-center gap-3">
+          <div className="hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3">
+            <a
+              href="/store"
+              onClick={() => handleNavClick('store', '/store')}
+              className={`relative inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg 2xl:gap-2 2xl:px-4 2xl:text-base ${
+                isActivePage('/store')
+                  ? 'bg-blue-800 text-white'
+                  : 'bg-blue-700 text-white hover:bg-blue-800'
+              }`}
+              aria-label="Shop 3D printed items"
+            >
+              <ShoppingBag size={17} />
+              <span>Store</span>
+              {cartCount > 0 && (
+                <span
+                  className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-400 px-1 text-xs font-bold text-slate-900"
+                  aria-label={`${cartCount} item${cartCount === 1 ? '' : 's'} in cart`}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </a>
             <CallButton size="md" pageSection="header" />
           </div>
 
@@ -376,7 +401,20 @@ const Header: React.FC = () => {
                 </a>
               ))}
 
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 pt-4 border-t space-y-3">
+                <a
+                  href="/store"
+                  onClick={() => handleNavClick('store', '/store')}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-lg font-semibold text-white shadow-md transition-colors hover:bg-blue-800"
+                >
+                  <ShoppingBag size={20} />
+                  <span>Store</span>
+                  {cartCount > 0 && (
+                    <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-amber-400 px-1.5 text-sm font-bold text-slate-900">
+                      {cartCount}
+                    </span>
+                  )}
+                </a>
                 <CallButton
                   size="lg"
                   pageSection="header_mobile"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug, Activity, MessageCircle, Send } from 'lucide-react';
+import { LayoutDashboard, Building2, Briefcase, MapPin, Star, Clock, CreditCard, Share2, Settings, LogOut, Menu, X, ChevronRight, ChevronDown, ChevronUp, Image, BarChart3, Bell, Inbox, TrendingUp, Megaphone, Receipt, FileText, Target, ScrollText, QrCode, Search, CheckCircle2, Calendar, Navigation, Maximize2, Minimize2, Zap, DollarSign, Building, TrendingUp as TrendingUpIcon, Wrench, Users, FlaskConical, Eye, EyeOff, Link as LinkIcon, Mail, MessageSquare, FolderOpen, Palette, Gift, Flame, HardHat, KeyRound, Plug, Activity, MessageCircle, Send, ShoppingBag, Boxes } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { useSocialCommentsBadge } from '../../hooks/useSocialCommentsBadge';
@@ -67,6 +67,16 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
       { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
       { name: 'Gallery', href: '/admin/gallery', icon: Image },
+    ],
+  },
+  {
+    id: 'store',
+    name: 'Print Shop',
+    icon: ShoppingBag,
+    defaultExpanded: false,
+    items: [
+      { name: 'Store Products', href: '/admin/store', icon: Boxes },
+      { name: 'Store Orders', href: '/admin/store-orders', icon: ShoppingBag },
     ],
   },
   {

@@ -64,6 +64,7 @@ const STATIC_PAGES = [
   { path: '/gallery', priority: '0.7', changefreq: 'weekly' },
   { path: '/faq', priority: '0.7', changefreq: 'monthly' },
   { path: '/partners', priority: '0.6', changefreq: 'monthly' },
+  { path: '/store', priority: '0.7', changefreq: 'weekly' },
   { path: '/gift-cards', priority: '0.6', changefreq: 'monthly' },
   { path: '/redeem-gift-card', priority: '0.4', changefreq: 'yearly' },
   { path: '/lookup-request', priority: '0.4', changefreq: 'yearly' },

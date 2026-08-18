@@ -5,6 +5,7 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { NotificationBarProvider } from '../contexts/NotificationBarContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { BusinessDataProvider, useBusinessDataContext } from '../contexts/BusinessDataContext';
+import { CartProvider } from '../contexts/CartContext';
 import ScrollToTop from './ui/ScrollToTop';
 import NotificationBar from './NotificationBar';
 import { useNotificationBar } from '../hooks/useNotificationBar';
@@ -258,7 +259,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             content
           ) : (
             <BusinessDataProvider initialData={initialBusinessData}>
-              {content}
+              <CartProvider>{content}</CartProvider>
             </BusinessDataProvider>
           )}
         </ConditionalAuthProvider>
