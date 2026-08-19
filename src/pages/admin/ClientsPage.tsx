@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -13,6 +13,7 @@ import {
 import ClientDetailModal from '../../components/admin/ClientDetailModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import MergeClientsModal from '../../components/admin/MergeClientsModal';
+import ClientFormModal from '../../components/admin/ClientFormModal';
 import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
@@ -35,6 +36,8 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createdMessage, setCreatedMessage] = useState<{ type: 'success' | 'warning'; text: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -363,6 +366,16 @@ export default function ClientsPage() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
+            onClick={() => {
+              setCreatedMessage(null);
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add Client
+          </button>
+          <button
             onClick={handleRefreshMetrics}
             disabled={refreshing}
             className="px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
@@ -404,6 +417,12 @@ export default function ClientsPage() {
       {refreshMessage && (
         <p className={`text-sm ${refreshMessage.type === 'success' ? 'text-green-600' : 'text-orange-600'}`}>
           {refreshMessage.text}
+        </p>
+      )}
+
+      {createdMessage && (
+        <p className={`text-sm ${createdMessage.type === 'success' ? 'text-green-600' : 'text-orange-600'}`}>
+          {createdMessage.text}
         </p>
       )}
 
@@ -794,6 +813,30 @@ export default function ClientsPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {showCreateModal && organizationId && (
+        <ClientFormModal
+          organizationId={organizationId}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={(client, warning) => {
+            setShowCreateModal(false);
+            setCreatedMessage({
+              type: warning ? 'warning' : 'success',
+              text: warning
+                ? `${client.name} was added to your clients. ${warning}`
+                : `${client.name} was added to your clients.`,
+            });
+            setSearchTerm('');
+            // A new client starts as a lead, so drop any segment filter that
+            // would hide the row the admin just created.
+            if (selectedSegment === 'all') {
+              loadData();
+            } else {
+              setSelectedSegment('all');
+            }
+          }}
+        />
       )}
 
       {showExportModal && (

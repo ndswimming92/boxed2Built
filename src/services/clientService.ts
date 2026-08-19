@@ -280,6 +280,59 @@ export async function createClient(client: Partial<Client>): Promise<Client> {
   return data;
 }
 
+export interface NewClientInput {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  client_status?: ClientStatus;
+  client_value_tier?: ClientValueTier;
+  source?: string | null;
+  tags?: string[];
+  marketing_email_opt_in?: boolean;
+  is_test?: boolean;
+}
+
+// Create a client from the admin portal. Rows created through an inquiry get a
+// preferences token from the database function; admin-created rows need the same
+// thing so the client can use the self-service preferences link later on. The
+// referral code is assigned by a database trigger, so it is not set here.
+export async function createClientRecord(
+  organizationId: string,
+  input: NewClientInput
+): Promise<Client> {
+  let preferencesToken: string | null = null;
+  try {
+    const { data, error } = await supabase.rpc('generate_preferences_token');
+    if (error) throw error;
+    preferencesToken = data ?? null;
+  } catch (error) {
+    // The token is only used for the client's self-service preferences link, so a
+    // failure here shouldn't cost the admin the whole record. Saving without one
+    // matches the pre-referral rows that are already in the table.
+    console.error('Could not generate a preferences token for the new client:', error);
+  }
+
+  const now = new Date().toISOString();
+
+  return createClient({
+    organization_id: organizationId,
+    name: input.name,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
+    address: input.address ?? null,
+    client_status: input.client_status ?? 'lead',
+    client_value_tier: input.client_value_tier ?? 'standard',
+    source: input.source ?? null,
+    tags: input.tags ?? [],
+    marketing_email_opt_in: input.marketing_email_opt_in ?? true,
+    is_test: input.is_test ?? false,
+    first_contact_date: now,
+    last_contact_date: now,
+    ...(preferencesToken ? { preferences_token: preferencesToken } : {}),
+  });
+}
+
 // Update client
 export async function updateClient(clientId: string, updates: Partial<Client>): Promise<Client> {
   const { data, error } = await supabase
