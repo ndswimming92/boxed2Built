@@ -4,7 +4,12 @@ import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  // x-correlation-id / x-session-correlation-id are added to every request by the
+  // Supabase client's fetch wrapper in src/lib/supabase.ts. Callers that reach this
+  // function through supabase.functions.invoke() send them, and a preflight that
+  // does not allow them is rejected by the browser before the POST is ever sent.
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
