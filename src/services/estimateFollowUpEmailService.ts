@@ -1,4 +1,4 @@
-import { Invoice, Job } from '../lib/supabase';
+import { Invoice, Job, supabase } from '../lib/supabase';
 import { getInquiryById } from './inquiryService';
 import { getInvoice } from './invoiceService';
 
@@ -190,10 +190,19 @@ export async function sendEstimateFollowUpEmail(details: EstimateFollowUpDetails
     ...details,
   };
 
+  // The recipient and the whole message body travel in this request, so it is
+  // sent with the signed-in staff member's own token, never the public key.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) {
+    throw new Error('You need to be signed in to send this email.');
+  }
+
   const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-estimate-follow-up-email`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      Authorization: `Bearer ${accessToken}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),

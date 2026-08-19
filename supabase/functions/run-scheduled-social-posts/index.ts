@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { buildCaption, postToFacebook, postToInstagram, FacebookTokens } from '../_shared/socialPublish.ts';
 import { annotateInstagramError, prepareInstagramImage } from '../_shared/instagramImage.ts';
+import { authorizeAdminOrService } from '../_shared/authorize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,11 @@ Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { status: 200, headers: corsHeaders });
     }
+
+    // F19: publishing to the business social accounts is a scheduled job, so only
+    // the cron caller (service role) or signed-in staff may trigger a run.
+    const auth = await authorizeAdminOrService(req);
+    if (!auth.ok) return json({ error: auth.error ?? 'Unauthorized' }, auth.status ?? 401);
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 

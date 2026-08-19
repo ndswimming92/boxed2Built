@@ -1,8 +1,29 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@14";
+import { authorizeAdminOrService } from "../_shared/authorize.ts";
 
-Deno.serve(async () => {
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+};
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  // F18: reconciliation writes payment records, so it is reachable only by the
+  // scheduled job (service role) or signed-in staff.
+  const auth = await authorizeAdminOrService(req);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error ?? "Unauthorized" }), {
+      status: auth.status ?? 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!

@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
+import { authorizeAdminOrService } from '../_shared/authorize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -224,6 +225,17 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // F5: every field of this message, recipient included, comes from the request
+    // body, so without this check the function was an open relay on the business's
+    // verified sending domain.
+    const auth = await authorizeAdminOrService(req);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ success: false, error: auth.error }), {
+        status: auth.status ?? 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = (await req.json()) as Payload;
 
     if (!body?.email || !body?.invoiceNumber || !body?.invoiceType) {

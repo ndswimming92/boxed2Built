@@ -33,15 +33,8 @@ export default function PortalLinkAccountPage() {
         return;
       }
 
-      if (!result.token || !result.deliveryTarget) {
-        setError('Unable to generate verification link. Please try again.');
-        return;
-      }
-
-      // The recipient address and the link URL are both derived server-side
-      // from this one-time token, so neither can be chosen by the caller.
-      await portalAccountLinkingService.sendVerificationEmail({ token: result.token });
-
+      // The secure link is created and sent entirely on the server, to the
+      // address already on file, so it never passes through the browser.
       setMessage('Verification email sent. Check your inbox and click the secure link to finish linking.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start account linking.');

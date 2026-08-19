@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { authorizeAdminOrService } from '../_shared/authorize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -394,6 +395,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // F4: the published anon key is a valid JWT, so this function was reachable by
+    // anyone. Sending an invoice (and honouring overrideEmail) requires staff.
+    const auth = await authorizeAdminOrService(req);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ success: false, error: auth.error }), {
+        status: auth.status ?? 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = (await req.json()) as Payload;
 
     if (!body?.clientId || !body?.organizationId || !body?.invoiceId) {

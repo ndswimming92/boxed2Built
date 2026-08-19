@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
+import { authorizeAdminOrService } from '../_shared/authorize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -342,6 +343,11 @@ Deno.serve(async (req) => {
   if (!RESEND_API_KEY) return json({ error: 'Email service not configured' }, 500);
 
   try {
+    // F17: order receipts expose customer contact and purchase detail, so only the
+    // checkout/webhook path (service role) and signed-in staff may trigger them.
+    const auth = await authorizeAdminOrService(req);
+    if (!auth.ok) return json({ error: auth.error ?? 'Unauthorized' }, auth.status ?? 401);
+
     const { order_id } = (await req.json()) as { order_id?: string };
     if (!order_id) return json({ error: 'order_id required' }, 400);
 

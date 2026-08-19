@@ -96,12 +96,14 @@ export default function RouteErrorPage() {
               Go to {homeHref === '/' ? 'home' : 'dashboard'}
             </a>
           </div>
-          <details className="mt-6 text-left">
-            <summary className="text-sm text-gray-400 cursor-pointer">Technical details</summary>
-            <pre className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
-              {getErrorMessage(error)}
-            </pre>
-          </details>
+          {import.meta.env.DEV && (
+            <details className="mt-6 text-left">
+              <summary className="text-sm text-gray-400 cursor-pointer">Technical details</summary>
+              <pre className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
+                {getErrorMessage(error)}
+              </pre>
+            </details>
+          )}
         </div>
       </div>
     </div>

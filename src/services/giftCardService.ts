@@ -145,17 +145,31 @@ export interface RedeemGiftCardParams {
 }
 
 export async function redeemGiftCard(params: RedeemGiftCardParams) {
-  const { data, error } = await supabase.rpc('redeem_gift_card', {
-    p_gift_card_id: params.gift_card_id,
-    p_amount_cents: params.amount_cents,
-    p_job_id: params.job_id ?? null,
-    p_invoice_id: params.invoice_id ?? null,
-    p_redeemed_by_name: params.redeemed_by_name ?? null,
-    p_redeemed_by_email: params.redeemed_by_email ?? null,
-    p_notes: params.notes ?? null,
+  // Redemption moves money, so it goes through the admin-checked function on the
+  // server with the signed-in staff member's own token. The database routine is
+  // no longer callable from the browser.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) throw new Error('You need to be signed in to redeem a gift card.');
+
+  const res = await fetch(`${FN_URL}/redeem-gift-card`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      gift_card_id: params.gift_card_id,
+      amount_cents: params.amount_cents,
+      job_id: params.job_id ?? null,
+      invoice_id: params.invoice_id ?? null,
+      notes: params.notes ?? null,
+    }),
   });
-  if (error) throw error;
-  const row = Array.isArray(data) ? data[0] : data;
+
+  const row = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(row?.error || 'Failed to redeem gift card');
   return row as {
     redemption_id: string;
     new_remaining_cents: number;
@@ -172,9 +186,19 @@ export async function voidGiftCard(id: string) {
 }
 
 export async function resendGiftCardEmail(giftCardId: string) {
+  // Resending is a staff action and the mail carries the redemption code, so it
+  // travels with the signed-in staff member's own token, not the public key.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) throw new Error('You need to be signed in to resend this email.');
+
   const res = await fetch(`${FN_URL}/send-gift-card-email`, {
     method: 'POST',
-    headers: FN_HEADERS,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ gift_card_id: giftCardId, resend: true }),
   });
   const body = await res.json().catch(() => ({}));

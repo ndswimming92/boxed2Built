@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
+import { authorizeAdminOrService } from '../_shared/authorize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -194,6 +195,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // F16: this mail carries the redemption code, so only the checkout/webhook
+    // path (service role) and signed-in staff may trigger it.
+    const auth = await authorizeAdminOrService(req);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ error: auth.error }), {
+        status: auth.status ?? 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { gift_card_id } = (await req.json()) as { gift_card_id?: string };
     if (!gift_card_id) {
       return new Response(JSON.stringify({ error: 'gift_card_id required' }), {

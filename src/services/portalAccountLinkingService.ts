@@ -34,33 +34,42 @@ export interface AutoCreateResult {
   customerId: string | null;
 }
 
-interface SendPortalVerificationEmailPayload {
-  /** One-time link token. The server resolves the recipient and builds the URL. */
-  token: string;
-}
-
 const getUserAgent = () => (typeof navigator !== 'undefined' ? navigator.userAgent : null);
 
 export const portalAccountLinkingService = {
-  async startLinkRequest(email: string, verificationMethod: VerificationMethod): Promise<StartLinkResult> {
-    const { data, error } = await supabase.rpc('create_portal_account_link_token', {
-      p_email: email,
-      p_verification_method: verificationMethod,
-      p_request_user_agent: getUserAgent(),
-    });
+  async startLinkRequest(email: string, _verificationMethod: VerificationMethod): Promise<StartLinkResult> {
+    // The one-time link code is created and mailed entirely on the server. It is
+    // never returned here, so the person asking to link a record must be able to
+    // read the mailbox already on file for it.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
 
-    if (error) {
-      throw new Error(error.message || 'Failed to create account-link verification request.');
+    if (!accessToken) {
+      throw new Error('You need to be signed in to link your account.');
     }
 
-    const row = Array.isArray(data) ? data[0] : null;
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-portal-link-email`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, verification_method: 'email', user_agent: getUserAgent() }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data?.success) {
+      throw new Error('Failed to create account-link verification request.');
+    }
 
     return {
-      status: (row?.status ?? 'no_match') as StartLinkStatus,
-      token: row?.token ?? null,
-      deliveryTarget: row?.delivery_target ?? null,
-      expiresAt: row?.expires_at ?? null,
-      customerId: row?.customer_id ?? null,
+      status: (data.status ?? 'no_match') as StartLinkStatus,
+      token: null,
+      deliveryTarget: null,
+      expiresAt: null,
+      customerId: null,
     };
   },
 
@@ -82,36 +91,6 @@ export const portalAccountLinkingService = {
       linkedJobs: row?.linked_jobs ?? 0,
       linkedInvoices: row?.linked_invoices ?? 0,
     };
-  },
-
-  async sendVerificationEmail(payload: SendPortalVerificationEmailPayload): Promise<void> {
-    // The verification email always goes to the signed-in account's own
-    // address, which the server derives from this token. Sending the anon key
-    // here would let anyone mail an arbitrary link from the business address.
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData.session?.access_token;
-
-    if (!accessToken) {
-      throw new Error('You need to be signed in to request a verification email.');
-    }
-
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-portal-link-email`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token: payload.token }),
-    });
-
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.success) {
-      const message = typeof data?.error === 'string'
-        ? data.error
-        : 'Failed to send verification email.';
-      throw new Error(message);
-    }
   },
 
   async autoLinkGmailAccount(email: string): Promise<GmailAutoLinkResult> {

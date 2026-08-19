@@ -82,14 +82,15 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      return json({ error: error.message }, 400);
+      // F23: log the database detail server-side, return a generic message.
+      console.error('redeem-gift-card rpc error:', error);
+      return json({ error: 'This gift card could not be redeemed.' }, 400);
     }
 
     const row = Array.isArray(data) ? data[0] : data;
     return json({ success: true, ...row });
   } catch (error) {
     console.error('redeem-gift-card error:', error);
-    const msg = error instanceof Error ? error.message : 'Unknown error';
-    return json({ error: msg }, 500);
+    return json({ error: 'Something went wrong redeeming this gift card.' }, 500);
   }
 });

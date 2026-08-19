@@ -30,7 +30,9 @@ const RedeemGiftCardPage: React.FC = () => {
     } catch (e) {
       setResult(null);
       setChecked(true);
-      setError(e instanceof Error ? e.message : 'Lookup failed');
+      // F22: never surface the underlying error text to visitors.
+      if (import.meta.env.DEV) console.error('Gift card lookup failed', e);
+      setError("We couldn't check that gift card. Please double-check the code and try again.");
     } finally {
       setChecking(false);
     }

@@ -19,7 +19,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const APP_URL = 'https://www.boxed2built.com';
 
 interface Payload {
-  token?: string;
+  email?: string;
+  verification_method?: string;
 }
 
 function json(body: unknown, status = 200) {
@@ -36,13 +37,6 @@ function escapeHtml(input: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
-}
-
-async function sha256Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 function buildVerificationEmailHtml(linkUrl: string, expiresAt?: string | null): string {
@@ -138,43 +132,49 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as Payload;
-    const linkToken = typeof body?.token === 'string' ? body.token.trim() : '';
-    if (!linkToken || linkToken.length < 16) {
+    const email = typeof body?.email === 'string' ? body.email.trim() : '';
+    if (!email || !email.includes('@')) {
       return json({ success: false, error: 'Missing required fields.' }, 400);
     }
 
-    // --- The recipient comes from the link-token record, never from the
-    // request body, and the record must belong to this caller.
+    // --- The one-time token is minted HERE, with the service role, and never
+    // travels back to the browser: it only ever leaves this function inside the
+    // email addressed to the record on file. That mailbox is the proof of
+    // ownership, so a caller cannot claim a customer record they cannot read
+    // mail for.
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const tokenHash = await sha256Hex(linkToken);
 
-    const { data: record, error: recordErr } = await admin
-      .from('portal_account_link_tokens')
-      .select('email, expires_at, consumed_at, created_by_auth_user_id, verification_method')
-      .eq('token_hash', tokenHash)
-      .maybeSingle();
+    const { data, error } = await admin.rpc('create_portal_account_link_token_v2', {
+      p_auth_user_id: userData.user.id,
+      p_email: email,
+      p_verification_method: 'email',
+      p_request_user_agent: req.headers.get('user-agent'),
+    });
 
-    if (recordErr) {
-      console.error('send-portal-link-email lookup failed:', recordErr);
+    if (error) {
+      console.error('send-portal-link-email token creation failed:', error);
       return json({ success: false, error: 'Failed to send verification email.' }, 500);
     }
 
-    if (
-      !record ||
-      record.created_by_auth_user_id !== userData.user.id ||
-      record.consumed_at !== null ||
-      new Date(record.expires_at as string) <= new Date() ||
-      record.verification_method !== 'email' ||
-      !record.email
-    ) {
-      return json({ success: false, error: 'This verification request is no longer valid.' }, 400);
+    const row = (Array.isArray(data) ? data[0] : data) as
+      | { status: string; token: string | null; delivery_target: string | null; expires_at: string | null }
+      | null;
+
+    if (!row || row.status !== 'token_created') {
+      // no_match / ambiguous are reported to the caller as a status, with no
+      // detail about which customer records exist.
+      return json({ success: true, status: row?.status ?? 'no_match' });
     }
 
-    const linkUrl = `${APP_URL}/portal/link-account?token=${encodeURIComponent(linkToken)}`;
-    const html = buildVerificationEmailHtml(linkUrl, record.expires_at as string);
-    await sendEmail(record.email as string, 'Verify your Boxed2Built portal account', html);
+    if (!row.token || !row.delivery_target) {
+      return json({ success: false, error: 'Failed to send verification email.' }, 500);
+    }
 
-    return json({ success: true });
+    const linkUrl = `${APP_URL}/portal/link-account?token=${encodeURIComponent(row.token)}`;
+    const html = buildVerificationEmailHtml(linkUrl, row.expires_at);
+    await sendEmail(row.delivery_target, 'Verify your Boxed2Built portal account', html);
+
+    return json({ success: true, status: 'token_created' });
   } catch (error) {
     console.error('send-portal-link-email error:', error);
     return json({ success: false, error: 'Failed to send verification email.' }, 500);
