@@ -13,6 +13,8 @@ type CartContextValue = {
   addItem: (product: ShopProduct, quantity?: number) => void;
   setQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
+  /** Swaps in lines refreshed from the catalog (see syncCartLines). */
+  replaceLines: (lines: CartLine[]) => void;
   clearCart: () => void;
 };
 
@@ -105,6 +107,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLines((current) => current.filter((line) => line.productId !== productId));
   }, []);
 
+  const replaceLines = useCallback((next: CartLine[]) => setLines(next), []);
+
   const clearCart = useCallback(() => setLines([]), []);
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
@@ -124,9 +128,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addItem,
       setQuantity,
       removeItem,
+      replaceLines,
       clearCart,
     }),
-    [lines, itemCount, isOpen, openCart, closeCart, addItem, setQuantity, removeItem, clearCart],
+    [
+      lines,
+      itemCount,
+      isOpen,
+      openCart,
+      closeCart,
+      addItem,
+      setQuantity,
+      removeItem,
+      replaceLines,
+      clearCart,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
