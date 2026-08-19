@@ -112,6 +112,93 @@ export async function getShopSettings(): Promise<ShopSettings | null> {
   return data ? normalizeSettings(data) : null;
 }
 
+/** What a cart refresh changed, phrased for the shopper. */
+export interface CartSyncResult {
+  lines: CartLine[];
+  notices: string[];
+}
+
+/**
+ * Rebuilds cart lines from the live catalog.
+ *
+ * A cart line is a snapshot taken when the item was added and it then sits in
+ * localStorage indefinitely, so a price change, a switch to pickup-only, or a
+ * sell-out leaves the browser holding stale terms. Checkout re-reads all of
+ * that server-side and rejects the mismatch, which used to surface as a
+ * last-click error. Refreshing here means the drawer shows the real terms
+ * before the shopper commits, and says what moved.
+ */
+export async function syncCartLines(lines: CartLine[]): Promise<CartSyncResult> {
+  if (lines.length === 0) return { lines, notices: [] };
+
+  const { data, error } = await supabase
+    .from('shop_products')
+    .select('*')
+    .in(
+      'id',
+      lines.map((line) => line.productId),
+    );
+
+  // A failed lookup shouldn't empty someone's cart — leave it as-is and let
+  // checkout do the authoritative check.
+  if (error) throw error;
+
+  const live = new Map((data ?? []).map((row) => [row.id as string, normalizeProduct(row)]));
+  const nextLines: CartLine[] = [];
+  const notices: string[] = [];
+
+  for (const line of lines) {
+    const product = live.get(line.productId);
+
+    if (!product || !product.is_active) {
+      notices.push(`${line.name} is no longer available and was removed.`);
+      continue;
+    }
+
+    const cap = maxQuantityFor(product);
+    if (cap <= 0) {
+      notices.push(`${product.name} just sold out and was removed.`);
+      continue;
+    }
+
+    const quantity = Math.min(line.quantity, cap);
+    if (quantity < line.quantity) {
+      notices.push(
+        product.track_inventory && product.stock_quantity < line.quantity
+          ? `Only ${quantity} left of ${product.name} — quantity updated.`
+          : `${product.name} is limited to ${quantity} per order — quantity updated.`,
+      );
+    }
+
+    if (product.price_cents !== line.priceCents) {
+      notices.push(
+        `${product.name} is now ${formatMoney(product.price_cents)} (was ${formatMoney(line.priceCents)}).`,
+      );
+    }
+
+    if (product.requires_shipping !== line.requiresShipping) {
+      notices.push(
+        product.requires_shipping
+          ? `${product.name} can be shipped now.`
+          : `${product.name} is local pickup only now.`,
+      );
+    }
+
+    nextLines.push({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceCents: product.price_cents,
+      imageUrl: product.image_url,
+      quantity,
+      maxPerOrder: cap,
+      requiresShipping: product.requires_shipping,
+    });
+  }
+
+  return { lines: nextLines, notices };
+}
+
 // ───────────────────────────── Admin: products ─────────────────────────────
 
 export async function listAllProducts(): Promise<ShopProduct[]> {

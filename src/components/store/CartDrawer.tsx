@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Boxes, Lock, Minus, Plus, ShoppingBag, Store, Trash2, Truck, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, Boxes, Lock, Minus, Plus, ShoppingBag, Store, Trash2, Truck, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useToast } from '../../contexts/ToastContext';
 import {
@@ -7,6 +7,7 @@ import {
   createShopCheckout,
   formatMoney,
   getShopSettings,
+  syncCartLines,
 } from '../../services/shopService';
 import type { ShopFulfillmentMethod, ShopSettings } from '../../types/shop';
 
@@ -37,7 +38,7 @@ const emptyForm: CheckoutForm = {
 };
 
 const CartDrawer: React.FC = () => {
-  const { lines, isOpen, closeCart, setQuantity, removeItem, itemCount } = useCart();
+  const { lines, isOpen, closeCart, setQuantity, removeItem, replaceLines, itemCount } = useCart();
   const { showToast } = useToast();
 
   // The drawer is mounted app-wide, so it loads the store's shipping and tax
@@ -58,6 +59,33 @@ const CartDrawer: React.FC = () => {
       canceled = true;
     };
   }, []);
+
+  // Cart lines are snapshots from whenever the item was added, so re-check them
+  // against the catalog each time the drawer opens. Without this a price change
+  // or a switch to pickup-only only surfaces as a rejection at the final click.
+  const [syncNotices, setSyncNotices] = useState<string[]>([]);
+  const linesRef = useRef(lines);
+  linesRef.current = lines;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let canceled = false;
+    syncCartLines(linesRef.current)
+      .then((result) => {
+        if (canceled || result.notices.length === 0) return;
+        replaceLines(result.lines);
+        setSyncNotices(result.notices);
+      })
+      .catch((error) => {
+        // Leave the cart untouched; checkout still validates authoritatively.
+        console.error('Could not refresh the cart:', error);
+      });
+
+    return () => {
+      canceled = true;
+    };
+  }, [isOpen, replaceLines]);
 
   const [form, setForm] = useState<CheckoutForm>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>({});
@@ -195,6 +223,30 @@ const CartDrawer: React.FC = () => {
         ) : (
           <form onSubmit={handleCheckout} className="flex flex-1 flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto px-5 py-4">
+              {syncNotices.length > 0 && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                    <div className="text-xs leading-relaxed text-amber-900">
+                      <p className="font-semibold">The shop updated since you added these:</p>
+                      <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                        {syncNotices.map((notice) => (
+                          <li key={notice}>{notice}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSyncNotices([])}
+                      className="rounded p-0.5 text-amber-600 hover:text-amber-900"
+                      aria-label="Dismiss cart updates"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <ul className="space-y-4">
                 {lines.map((line) => (
                   <li key={line.productId} className="flex gap-3">
