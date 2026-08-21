@@ -1,0 +1,172 @@
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { addDays, buildIcsCalendar, type IcsEvent } from '../_shared/ics.ts';
+
+/**
+ * Subscribable iCalendar feed of scheduled jobs.
+ *
+ * Google and Apple Calendar fetch a feed URL with no Authorization header, so
+ * this endpoint is deliberately unauthenticated and gated on an opaque token in
+ * the query string instead. Deploy it with verify_jwt disabled.
+ *
+ * Unlike the per-job email, the feed is the source of truth for the whole
+ * schedule: a job that is rescheduled moves, and one that is cancelled or
+ * deleted simply stops being emitted, so subscribers self-heal.
+ */
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://boxed2built.com';
+const ADMIN_JOBS_URL = `${SITE_URL}/admin/jobs`;
+
+const ALARM_DAY_BEFORE = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_BEFORE') ?? '-PT15H';
+const ALARM_DAY_OF = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_OF') ?? 'PT7H';
+
+/** Keep the feed small enough to stay fast; a year ahead covers any real booking. */
+const DAYS_BACK = 180;
+const DAYS_AHEAD = 365;
+
+/** Jobs in these states are no longer going to happen and are dropped from the feed. */
+const EXCLUDED_STATUSES = ['lost', 'cancelled'];
+
+/*
+ * job_status is nullable (it carries a DEFAULT, not a NOT NULL), and in SQL
+ * `NOT (NULL IN (...))` is NULL rather than true — a bare .not(...'in'...) would
+ * drop every null-status job from the feed. Spell out the null case instead.
+ */
+const STATUS_FILTER = `job_status.is.null,job_status.not.in.(${EXCLUDED_STATUSES.join(',')})`;
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+interface FeedJobRow {
+  id: string;
+  client_name: string;
+  client_phone: string | null;
+  client_email: string | null;
+  client_address: string | null;
+  service_address: string | null;
+  job_type: string | null;
+  job_description: string | null;
+  date_scheduled: string;
+  location_city: string | null;
+  notes: string | null;
+  job_status: string | null;
+  schedule_ics_sequence: number | null;
+}
+
+function resolveLocation(job: FeedJobRow): string {
+  const address = job.service_address?.trim() || job.client_address?.trim();
+  if (address) return address.replace(/\s*\n\s*/g, ', ');
+  return job.location_city?.trim() || '';
+}
+
+function buildDescription(job: FeedJobRow, location: string): string {
+  const parts: string[] = [`Client: ${job.client_name}`];
+  if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
+  if (job.client_email) parts.push(`Email: ${job.client_email}`);
+  if (location) parts.push(`Where: ${location}`);
+  if (job.job_status) parts.push(`Status: ${job.job_status.replace(/_/g, ' ')}`);
+  if (job.job_description) parts.push('', job.job_description.trim());
+  if (job.notes) parts.push('', `Notes: ${job.notes.trim()}`);
+  parts.push('', `Open in admin: ${ADMIN_JOBS_URL}`);
+  return parts.join('\n');
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+  }
+
+  const token = new URL(req.url).searchParams.get('token')?.trim();
+  if (!token) {
+    return new Response('Not found', { status: 404, headers: corsHeaders });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  const { data: feedToken, error: tokenError } = await supabase
+    .from('calendar_feed_tokens')
+    .select('id, organization_id, label, is_active')
+    .eq('token', token)
+    .maybeSingle<{ id: string; organization_id: string; label: string | null; is_active: boolean }>();
+
+  // A revoked or unknown token gets the same answer, so the endpoint cannot be
+  // used to tell a real-but-disabled token from a guess.
+  if (tokenError || !feedToken || !feedToken.is_active) {
+    return new Response('Not found', { status: 404, headers: corsHeaders });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: jobs, error: jobsError } = await supabase
+    .from('jobs')
+    .select(
+      'id, client_name, client_phone, client_email, client_address, service_address, job_type, ' +
+        'job_description, date_scheduled, location_city, notes, job_status, schedule_ics_sequence',
+    )
+    .eq('organization_id', feedToken.organization_id)
+    .eq('is_active', true)
+    .not('date_scheduled', 'is', null)
+    .gte('date_scheduled', addDays(today, -DAYS_BACK))
+    .lte('date_scheduled', addDays(today, DAYS_AHEAD))
+    .or(STATUS_FILTER)
+    .order('date_scheduled', { ascending: true })
+    .returns<FeedJobRow[]>();
+
+  if (jobsError) {
+    console.error('job-calendar-feed: job query failed', jobsError);
+    return new Response('Unable to build feed', { status: 500, headers: corsHeaders });
+  }
+
+  const events: IcsEvent[] = (jobs ?? []).map((job) => {
+    const location = resolveLocation(job);
+    const jobType = job.job_type?.trim() || 'Job';
+    return {
+      // Same UID scheme as the emailed invite: it is the same logical event, and
+      // a client that files both into one calendar can then collapse them.
+      uid: `job-${job.id}@boxed2built.com`,
+      sequence: job.schedule_ics_sequence ?? 0,
+      startDate: job.date_scheduled,
+      summary: `${jobType} — ${job.client_name}`,
+      description: buildDescription(job, location),
+      location: location || undefined,
+      url: ADMIN_JOBS_URL,
+      alarms: [
+        { trigger: ALARM_DAY_BEFORE, description: `Tomorrow: ${jobType} for ${job.client_name}` },
+        { trigger: ALARM_DAY_OF, description: `Today: ${jobType} for ${job.client_name}` },
+      ],
+    };
+  });
+
+  const ics = buildIcsCalendar(events, {
+    method: 'PUBLISH',
+    name: feedToken.label?.trim() || 'Boxed2Built Jobs',
+  });
+
+  // Best-effort: a failure here must not cost the subscriber their feed.
+  supabase
+    .from('calendar_feed_tokens')
+    .update({ last_accessed_at: new Date().toISOString() })
+    .eq('id', feedToken.id)
+    .then(({ error }) => {
+      if (error) console.error('job-calendar-feed: failed to record access', error);
+    });
+
+  return new Response(req.method === 'HEAD' ? null : ics, {
+    status: 200,
+    headers: {
+      ...corsHeaders,
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'inline; filename="boxed2built-jobs.ics"',
+      'Cache-Control': 'public, max-age=900',
+    },
+  });
+});

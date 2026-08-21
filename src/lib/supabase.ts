@@ -248,6 +248,11 @@ export type Job = {
   status_changed_by: string | null;
   is_free: boolean;
   client_type: 'residential' | 'business' | null;
+  /** date_scheduled value the last calendar email covered; null means never notified. */
+  schedule_notified_for: string | null;
+  schedule_notified_at: string | null;
+  /** ICS SEQUENCE for this job's calendar event. Rises on every reschedule sent. */
+  schedule_ics_sequence: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
