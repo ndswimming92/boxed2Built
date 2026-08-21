@@ -73,7 +73,11 @@ query string is the only credential:
 https://<project>.supabase.co/functions/v1/job-calendar-feed?token=<token>
 ```
 
-Get the URL from `jobScheduleCalendarService`:
+Admin → Jobs → **Calendar** opens the subscription panel: it creates the token on
+first open, offers copy-link and "Add to calendar app" (the `webcal://` form),
+and carries a rotate control.
+
+Programmatically, via `jobScheduleCalendarService`:
 
 ```ts
 const feed = await getOrCreateCalendarFeedToken(organizationId);
@@ -136,3 +140,10 @@ await sendJobScheduleEmail(jobId, true); // force past the already-notified guar
 - `jobs.schedule_notified_at` (timestamptz) — when it went out.
 - `jobs.schedule_ics_sequence` (int) — ICS `SEQUENCE`; must only ever increase.
 - `calendar_feed_tokens` — revocable feed tokens, RLS-scoped to org members.
+
+`supabase/migrations/20260821130000_backfill_job_schedule_notified.sql`
+
+Marks jobs scheduled before this feature existed as already-notified, so editing
+one does not fire an invite for work that already happened. Jobs dated today or
+later are left alone and still get their first invite. The cutoff is evaluated
+at migration time.
