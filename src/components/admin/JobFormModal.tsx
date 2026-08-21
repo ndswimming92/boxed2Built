@@ -3,6 +3,7 @@ import { supabase, Job, ServiceArea, PaymentMethod } from '../../lib/supabase';
 import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon, Gift, MapPin } from 'lucide-react';
 import { REFERRAL_SOURCES, calculateNetProfit, calculateHourlyRate, formatCurrency } from '../../utils/jobCalculations';
 import { getDirectionsUrl, isSameAddress, normalizeAddress } from '../../utils/jobAddress';
+import { sendJobScheduleEmail } from '../../services/jobScheduleCalendarService';
 
 interface LinkedClient {
   id: string;
@@ -260,6 +261,27 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     };
   };
 
+  /**
+   * Emails the calendar invite when a job has a scheduled date.
+   *
+   * Deliberately fire-and-forget: the job row is already saved, and the edge
+   * function is idempotent per scheduled date, so a hiccup here is safe to retry
+   * later and must never turn a successful save into a visible error. Success
+   * shows up as an admin notification in the bell.
+   */
+  const notifyScheduledDate = (savedJob: Job | null | undefined) => {
+    // Also call when the date was just cleared but a previous invite was sent, so
+    // the function can reset its marker and a later reschedule still notifies.
+    const needsCalendarSync =
+      Boolean(savedJob?.date_scheduled) || Boolean(savedJob?.schedule_notified_for);
+    if (!savedJob?.id || !needsCalendarSync) return;
+    void sendJobScheduleEmail(savedJob.id).then((result) => {
+      if (!result.success) {
+        console.error('Failed to send job schedule calendar email:', result.error);
+      }
+    });
+  };
+
   const handleSave = async () => {
     const requiresHoursWorked = formData.job_status === 'completed' || Boolean(formData.date_completed);
     const hasValidHoursWorked = typeof formData.hours_worked === 'number' && formData.hours_worked > 0;
@@ -290,7 +312,9 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           .maybeSingle();
 
         if (updateError) throw updateError;
-        onSave((updatedJob as Job) ?? ({ ...job, ...payload } as Job));
+        const savedJob = (updatedJob as Job) ?? ({ ...job, ...payload } as Job);
+        onSave(savedJob);
+        notifyScheduledDate(savedJob);
       } else {
         const newJobPayload = await buildNewJobPayload();
         if (newJobPayload.organization_id && !organizationId) {
@@ -305,6 +329,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
         if (insertError) throw insertError;
         onSave(newJob as Job);
+        notifyScheduledDate(newJob as Job);
       }
 
       onClose();
