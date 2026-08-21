@@ -20,6 +20,7 @@ import JobContractorsList from '../../components/admin/JobContractorsList';
 import MarkJobLostModal from '../../components/admin/MarkJobLostModal';
 import CancelJobModal from '../../components/admin/CancelJobModal';
 import { exportJobsToCSV, downloadCSV, generateExportFilename } from '../../services/jobExportService';
+import JobCalendarFeedModal from '../../components/admin/JobCalendarFeedModal';
 import { attachInvoiceToJob } from '../../services/invoiceService';
 import { jobStatusService } from '../../services/jobStatusService';
 import { getJobContractorTotals } from '../../services/contractorService';
@@ -54,6 +55,7 @@ export default function JobsPage() {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [businessInfo, setBusinessInfo] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -315,6 +317,14 @@ export default function JobsPage() {
           >
             <Download className="w-4 h-4" />
             Import
+          </button>
+          <button
+            onClick={() => setShowCalendarModal(true)}
+            className="px-3 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 text-sm"
+            title="Subscribe to your job calendar"
+          >
+            <Calendar className="w-4 h-4" />
+            Calendar
           </button>
           <button
             onClick={() => {
@@ -885,6 +895,14 @@ export default function JobsPage() {
             setInvoiceToConvert(null);
             setTimeout(() => setMessage(null), 3000);
           }}
+        />
+      )}
+
+      {showCalendarModal && currentOrganization?.id && (
+        <JobCalendarFeedModal
+          organizationId={currentOrganization.id}
+          isOpen={showCalendarModal}
+          onClose={() => setShowCalendarModal(false)}
         />
       )}
 
