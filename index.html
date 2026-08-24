@@ -133,7 +133,15 @@
     interior page at the homepage.
   -->
   <meta name="author" content="Boxed2Built" />
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <!--
+    Same rule as above applies to robots. This tag is site-wide, so it must
+    not assert "index, follow": the noindex pages (/404, /store/success,
+    /gift-cards/success) set their own robots meta via <Head> and would end
+    up carrying both, leaving Google to reconcile "noindex" against "index"
+    on the same page. Indexing is the default anyway — all that is worth
+    stating globally is how rich a SERP preview may be.
+  -->
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
   <!-- Preload optimization -->
   <link rel="dns-prefetch" href="//images.pexels.com" />

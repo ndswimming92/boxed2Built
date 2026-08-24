@@ -293,6 +293,104 @@ async function checkSitemaps(pages) {
   }
 }
 
+/**
+ * A page that says both "index" and "noindex" is asking Google to pick, and the
+ * pages that get it wrong are the ones that must stay out of the index —
+ * /404 and the two order-confirmation pages. It happens the same way the
+ * duplicate-canonical bug did: index.html states a site-wide value, <Head>
+ * prepends the page-level one, and both survive into the pre-rendered HTML.
+ * Directives that only describe SERP presentation (max-snippet and friends)
+ * are not in conflict with anything and are ignored here.
+ */
+function checkRobotsDirectives(page, html) {
+  const head = html.slice(0, html.indexOf('</head>'));
+  const directives = all(head, /<meta[^>]*name="robots"[^>]*content="([^"]*)"/g)
+    .concat(all(head, /<meta[^>]*content="([^"]*)"[^>]*name="robots"/g))
+    .flatMap((content) => content.split(',').map((d) => d.trim().toLowerCase()));
+
+  const indexing = new Set(directives.filter((d) => d === 'index' || d === 'noindex'));
+  if (indexing.size > 1) {
+    fail(page, 'carries both "index" and "noindex" in its robots meta — Google has to guess which one you meant');
+  }
+}
+
+/**
+ * The canonical URL form on this site is "no trailing slash", and nothing
+ * declares that — it falls out of the build shape. ssgOptions.dirStyle: 'flat'
+ * writes dist/about.html, so Netlify answers /about with a 200 and 301s
+ * /about/ onto it. Switch dirStyle to 'nested' and dist/about/index.html
+ * inverts the pair: /about/ becomes the served URL and /about starts
+ * redirecting — which means every <loc> in sitemap.xml, every rel="canonical"
+ * and every internal link now points at a redirect. Search Console fills up
+ * with "Page with redirect", the pages fall out of the index, and no build
+ * step notices, because the HTML itself is still perfectly valid.
+ */
+function checkFlatOutput(files) {
+  for (const file of files) {
+    const rel = relative(DIST, file).split(sep).join('/');
+    if (rel !== 'index.html' && rel.endsWith('/index.html')) {
+      fail(
+        `/${rel.replace(/\/index\.html$/, '')}`,
+        `pre-rendered as ${rel} (a directory index) — ssgOptions.dirStyle must stay "flat", or the canonical URL of every page becomes a 301`,
+      );
+    }
+  }
+}
+
+/**
+ * /contact and /contact/ are two URLs to Google and only the bare one is
+ * served; the slashed form 301s. Emitting the slashed form anywhere — a
+ * canonical, an og:url, a breadcrumb in JSON-LD, a plain <a href> — hands the
+ * crawler a URL it can only ever redirect, which is exactly how the "Page with
+ * redirect" report fills up and how link equity gets spent on a hop. The
+ * homepage is the one legitimate trailing slash.
+ */
+function checkNoTrailingSlashUrls(file, html) {
+  const page = pathFor(file);
+  const candidates = [
+    // Absolute — catches JSON-LD and meta content as well as attributes.
+    ...all(html, /(https:\/\/boxed2built\.com[^\s"'<>\\&]*)/g),
+    // Root-relative, from link attributes only: "/foo" shows up in prose too.
+    ...all(html, /(?:href|content)="(\/[^"]*)"/g),
+  ];
+
+  for (const url of new Set(candidates)) {
+    const path = url.startsWith(SITE_URL) ? url.slice(SITE_URL.length) : url;
+    const [withoutQuery] = path.split(/[?#]/);
+    if (withoutQuery.length > 1 && withoutQuery.endsWith('/')) {
+      fail(page, `links ${url}, which 301s to the same URL without the trailing slash`);
+    }
+  }
+}
+
+/**
+ * Unmatched URLs have to answer with a real 404. They used to hit a blanket
+ * `/*  /index.html  200` in _redirects, so every typo, every stale inbound link
+ * and every retired path returned the homepage shell at HTTP 200 — a soft 404
+ * that Google indexes as a duplicate of the homepage. Netlify serves
+ * dist/404.html with a 404 status for anything that matches no file and no
+ * rule, so the guard is: that file exists, it is noindex, and no rule reaches
+ * past it.
+ */
+async function checkNotFoundHandling(pages) {
+  const notFound = pages.find((p) => p.page === '/404');
+  if (!notFound) {
+    fail('/404', 'no dist/404.html — Netlify would answer unmatched URLs with its own generic page');
+  } else if (!notFound.noIndex) {
+    fail('/404', 'the 404 page is indexable — it must carry <meta name="robots" content="noindex">');
+  }
+
+  const redirects = await readFile(join(DIST, '_redirects'), 'utf-8');
+  for (const line of redirects.split('\n')) {
+    const rule = line.trim();
+    if (!rule || rule.startsWith('#')) continue;
+    const [from, , status] = rule.split(/\s+/);
+    if (/^\/\*+$/.test(from) && (status ?? '200').startsWith('200')) {
+      fail('_redirects', `\`${rule}\` swallows every unmatched URL into a 200 — scope the SPA fallback to the route families that are not pre-rendered`);
+    }
+  }
+}
+
 function checkNoPrivatePages(pages) {
   for (const { page } of pages) {
     if (/^\/(admin|portal)(\/|$)/.test(page)) {
@@ -337,9 +435,13 @@ async function main() {
     const html = await readFile(file, 'utf-8');
     pages.push(checkPage(file, html));
     checkAssets(file, html);
+    checkNoTrailingSlashUrls(file, html);
+    checkRobotsDirectives(pathFor(file), html);
   }
 
+  checkFlatOutput(files);
   checkNoPrivatePages(pages);
+  await checkNotFoundHandling(pages);
   reportDuplicates(pages);
   reportRatingDrift();
   await checkSitemaps(pages);

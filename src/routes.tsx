@@ -32,6 +32,7 @@ const GiftCardSuccessPage = React.lazy(() => import('./pages/GiftCardSuccessPage
 const RedeemGiftCardPage = React.lazy(() => import('./pages/RedeemGiftCardPage'));
 const StorePage = React.lazy(() => import('./pages/StorePage'));
 const StoreSuccessPage = React.lazy(() => import('./pages/StoreSuccessPage'));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const LoginPage = React.lazy(() => import('./pages/admin/LoginPage'));
@@ -136,6 +137,10 @@ export const routes: RouteRecord[] = [
       { path: 'store/success', Component: StoreSuccessPage },
       { path: 'lookup-request', Component: RequestLookupPage },
 
+      // Pre-rendered to dist/404.html, which Netlify serves with a real HTTP 404
+      // for anything that matches no static file and no rule in public/_redirects.
+      { path: '404', Component: NotFoundPage },
+
       // Dynamic routes (client-only, not pre-rendered)
       { path: 'go/:slug', Component: QRRedirectPage },
       { path: 'pay/:invoiceId/:paymentToken', Component: InvoicePaymentPage },
@@ -212,6 +217,10 @@ export const routes: RouteRecord[] = [
           { path: 'social-messages', Component: SocialMessagesPage },
         ],
       },
+
+      // Client-side dead links land on the 404 page rather than the route error
+      // screen. Excluded from pre-rendering — see ssgOptions.includedRoutes.
+      { path: '*', Component: NotFoundPage },
     ],
   },
 ];
