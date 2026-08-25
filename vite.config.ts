@@ -12,7 +12,10 @@ export default defineConfig({
     target: 'es2022',
   },
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    // openscad-wasm is a 14 MB module with the WASM embedded; pre-bundling it
+    // stalls dev startup and gains nothing, since it is only ever fetched from
+    // the Model Studio worker.
+    exclude: ['lucide-react', 'openscad-wasm'],
     include: ['recharts'],
   },
   ssgOptions: {

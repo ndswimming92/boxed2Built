@@ -76,6 +76,8 @@ const BrandingPage = React.lazy(() => import('./pages/admin/BrandingPage'));
 const AdminGiftCardsPage = React.lazy(() => import('./pages/admin/GiftCardsPage'));
 const StoreProductsPage = React.lazy(() => import('./pages/admin/StoreProductsPage'));
 const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage'));
+const ModelStudioPage = React.lazy(() => import('./pages/admin/ModelStudioPage'));
+const ModelStudioDetailPage = React.lazy(() => import('./pages/admin/ModelStudioDetailPage'));
 const ApiKeysPage = React.lazy(() => import('./pages/admin/ApiKeysPage'));
 const ConnectionsPage = React.lazy(() => import('./pages/admin/ConnectionsPage'));
 const ClaudeUsagePage = React.lazy(() => import('./pages/admin/ClaudeUsagePage'));
@@ -208,6 +210,8 @@ export const routes: RouteRecord[] = [
           { path: 'gift-cards', Component: AdminGiftCardsPage },
           { path: 'store', Component: StoreProductsPage },
           { path: 'store-orders', Component: StoreOrdersPage },
+          { path: 'model-studio', Component: ModelStudioPage },
+          { path: 'model-studio/:id', Component: ModelStudioDetailPage },
           { path: 'privacy-requests', Component: PrivacyRequestsPage },
           { path: 'api-keys', Component: ApiKeysPage },
           { path: 'connections', Component: ConnectionsPage },
