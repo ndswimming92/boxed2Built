@@ -25,6 +25,7 @@ import {
   applyParamValues,
   defaultParamValues,
   parseParameters,
+  partScopedHiddenParams,
   type ModelParameter,
   type ParamValue,
 } from '../../lib/openscad/params';
@@ -75,6 +76,7 @@ const ModelStudioDetailPage: React.FC = () => {
   const [printNotes, setPrintNotes] = useState('');
 
   const [tab, setTab] = useState<Tab>('parameters');
+  const [showAllParams, setShowAllParams] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [compiling, setCompiling] = useState(false);
@@ -491,16 +493,22 @@ const ModelStudioDetailPage: React.FC = () => {
     [params],
   );
 
+  const hiddenParamNames = useMemo(
+    () => partScopedHiddenParams(params, values),
+    [params, values],
+  );
+
   const grouped = useMemo(() => {
     const sections = new Map<string, ModelParameter[]>();
     for (const param of params) {
       if (param.type === 'string' && (param.options?.length ?? 0) > 0) continue;
+      if (!showAllParams && hiddenParamNames.has(param.name)) continue;
       const list = sections.get(param.section) ?? [];
       list.push(param);
       sections.set(param.section, list);
     }
     return Array.from(sections.entries());
-  }, [params]);
+  }, [params, hiddenParamNames, showAllParams]);
 
   if (loading) {
     return (
@@ -837,12 +845,29 @@ const ModelStudioDetailPage: React.FC = () => {
                     <p className="text-sm text-slate-500">
                       No parameters yet. Generate a model to get sliders.
                     </p>
-                  ) : grouped.length === 0 ? (
+                  ) : grouped.length === 0 && hiddenParamNames.size === 0 ? (
                     <p className="text-sm text-slate-500">
                       This model is controlled entirely by the part selector above.
                     </p>
                   ) : (
                     <>
+                      {hiddenParamNames.size > 0 && (
+                        <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
+                          <span className="text-slate-600">
+                            {showAllParams
+                              ? `Showing all ${params.length - selectorParams.length} settings`
+                              : `${hiddenParamNames.size} setting${hiddenParamNames.size === 1 ? '' : 's'} for the other piece hidden`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowAllParams((value) => !value)}
+                            className="font-medium text-blue-800 hover:underline"
+                          >
+                            {showAllParams ? 'Show this piece only' : 'Show all'}
+                          </button>
+                        </div>
+                      )}
+
                       {grouped.map(([section, list]) => (
                         <div key={section}>
                           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">

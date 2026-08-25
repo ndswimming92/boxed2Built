@@ -164,3 +164,48 @@ export function applyParamValues(
 export function defaultParamValues(params: ModelParameter[]): Record<string, ParamValue> {
   return Object.fromEntries(params.map((param) => [param.name, param.default]));
 }
+
+/**
+ * Names of parameters that belong to a piece other than the one selected.
+ *
+ * The selector's own options supply the vocabulary: if a parameter's section,
+ * variable name or label names a piece that is not currently selected - and
+ * does not also name the selected one - it belongs to that other piece. A
+ * parameter mentioning both is shared and stays.
+ *
+ * This reads Claude's naming rather than any declared ownership, so it is a
+ * strong hint and not a guarantee. Callers must offer a way to see everything.
+ */
+export function partScopedHiddenParams(
+  params: ModelParameter[],
+  values: Record<string, ParamValue>,
+): Set<string> {
+  const selectors = params.filter(
+    (param) => param.type === 'string' && (param.options?.length ?? 0) > 0,
+  );
+  if (selectors.length === 0) return new Set();
+
+  const selected: string[] = [];
+  const others: string[] = [];
+  for (const selector of selectors) {
+    const current = String(values[selector.name] ?? selector.default).toLowerCase();
+    for (const option of selector.options ?? []) {
+      const token = option.toLowerCase();
+      // Short option names match too much incidental text to be a useful signal.
+      if (token.length < 3) continue;
+      if (token === current) selected.push(token);
+      else others.push(token);
+    }
+  }
+  if (others.length === 0) return new Set();
+
+  const hidden = new Set<string>();
+  for (const param of params) {
+    if (param.type === 'string' && (param.options?.length ?? 0) > 0) continue;
+    const haystack = `${param.section} ${param.name} ${param.label}`.toLowerCase();
+    const namesOther = others.some((token) => haystack.includes(token));
+    const namesSelected = selected.some((token) => haystack.includes(token));
+    if (namesOther && !namesSelected) hidden.add(param.name);
+  }
+  return hidden;
+}
