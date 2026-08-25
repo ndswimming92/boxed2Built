@@ -54,7 +54,6 @@ export interface GeneratedModel {
   name: string;
   summary: string;
   scadSource: string;
-  parameters: ModelParameter[];
   printNotes: string;
   recommendedOrientation: string;
   supportsRequired: boolean;
