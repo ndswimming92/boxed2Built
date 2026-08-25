@@ -93,6 +93,9 @@ const ModelViewer = React.forwardRef<ModelViewerHandle, ModelViewerProps>(
         preserveDrawingBuffer: true,
       });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.domElement.style.display = 'block';
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
       mount.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
@@ -106,11 +109,6 @@ const ModelViewer = React.forwardRef<ModelViewerHandle, ModelViewerProps>(
       const fill = new THREE.DirectionalLight(0xffffff, 0.35);
       fill.position.set(-1, 1, 0.5);
       scene.add(fill);
-
-      const grid = new THREE.GridHelper(Math.max(bedX, bedY), 16, 0xcbd5e1, 0xe2e8f0);
-      grid.rotation.x = Math.PI / 2;
-      grid.name = 'plate';
-      scene.add(grid);
 
       rendererRef.current = renderer;
       sceneRef.current = scene;
@@ -130,7 +128,7 @@ const ModelViewer = React.forwardRef<ModelViewerHandle, ModelViewerProps>(
         if (clientWidth === 0 || clientHeight === 0) return;
         camera.aspect = clientWidth / clientHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(clientWidth, clientHeight, false);
+        renderer.setSize(clientWidth, clientHeight);
       };
       resize();
       const observer = new ResizeObserver(resize);
@@ -146,6 +144,29 @@ const ModelViewer = React.forwardRef<ModelViewerHandle, ModelViewerProps>(
         }
         rendererRef.current = null;
         sceneRef.current = null;
+      };
+      // Built once. Rebuilding it on a printer change would dispose the scene
+      // while the mesh effect below, which keys off the mesh alone, had no
+      // reason to re-run - leaving an empty canvas.
+    }, []);
+
+    // The build plate is the only thing that depends on the printer, so it
+    // updates independently of the scene it lives in.
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return undefined;
+
+      const grid = new THREE.GridHelper(Math.max(bedX, bedY), 16, 0xcbd5e1, 0xe2e8f0);
+      grid.rotation.x = Math.PI / 2;
+      grid.name = 'plate';
+      scene.add(grid);
+
+      return () => {
+        scene.remove(grid);
+        grid.geometry.dispose();
+        const material = grid.material;
+        if (Array.isArray(material)) material.forEach((entry) => entry.dispose());
+        else material.dispose();
       };
     }, [bedX, bedY]);
 
