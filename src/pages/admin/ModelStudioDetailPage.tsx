@@ -81,6 +81,16 @@ const ModelStudioDetailPage: React.FC = () => {
   const [compileError, setCompileError] = useState<string | null>(null);
   const [refinePrompt, setRefinePrompt] = useState('');
   const [dirty, setDirty] = useState(false);
+  // What the last Claude turn actually cost and how it got here. Saving a
+  // version without this loses the spend for the most expensive Claude surface
+  // in the app, which is exactly what /admin/claude-usage is meant to show.
+  const [lastGeneration, setLastGeneration] = useState<{
+    claudeModel: string;
+    inputTokens: number;
+    outputTokens: number;
+    refinePrompt: string | null;
+    repairAttempts: number;
+  } | null>(null);
 
   // The worker holds a 14 MB WASM module; drop it when leaving the studio.
   useEffect(() => () => disposeCompiler(), []);
@@ -130,7 +140,13 @@ const ModelStudioDetailPage: React.FC = () => {
     async (
       scad: string,
       paramValues: Record<string, ParamValue>,
-    ): Promise<{ ok: boolean; error?: string }> => {
+    ): Promise<{
+      ok: boolean;
+      error?: string;
+      mesh?: Mesh;
+      metrics?: MeshMetrics;
+      stl?: Uint8Array;
+    }> => {
       setCompiling(true);
       setCompileError(null);
       try {
@@ -142,11 +158,12 @@ const ModelStudioDetailPage: React.FC = () => {
           setStlBytes(null);
           return { ok: false, error: result.error };
         }
-        const parsed = parseBinaryStl(result.stl);
-        setMesh(parsed);
-        setMetrics(analyzeMesh(parsed));
+        const parsedMesh = parseBinaryStl(result.stl);
+        const meshMetrics = analyzeMesh(parsedMesh);
+        setMesh(parsedMesh);
+        setMetrics(meshMetrics);
         setStlBytes(result.stl);
-        return { ok: true };
+        return { ok: true, mesh: parsedMesh, metrics: meshMetrics, stl: result.stl };
       } catch (compileFailure) {
         const message =
           compileFailure instanceof Error ? compileFailure.message : 'Compile failed';
@@ -157,6 +174,71 @@ const ModelStudioDetailPage: React.FC = () => {
       }
     },
     [],
+  );
+
+  /**
+   * Writes a version row and uploads its files.
+   *
+   * Everything is passed in explicitly rather than read from state because the
+   * generation path calls this the moment a compile succeeds, before React has
+   * committed those updates. Persisting there rather than waiting for a Save
+   * click is the point: a generation costs about a minute and real money, and
+   * losing it to a page refresh is not an acceptable failure mode.
+   */
+  const persistVersion = useCallback(
+    async (args: {
+      scad: string;
+      parameters: ModelParameter[];
+      paramValues: Record<string, ParamValue>;
+      mesh: Mesh;
+      metrics: MeshMetrics;
+      stl: Uint8Array;
+      notes: string;
+      modelName: string;
+      generation: typeof lastGeneration;
+      capturePreview: boolean;
+    }) => {
+      if (!id) return null;
+
+      const resolvedSource = applyParamValues(args.scad, args.paramValues);
+      const version = await createVersion({
+        modelId: id,
+        parentVersionId: model?.current_version?.id ?? null,
+        // Save what actually compiled, sliders included, so re-opening a version
+        // reproduces the exact geometry rather than the defaults.
+        scadSource: resolvedSource,
+        parameters: args.parameters,
+        paramValues: args.paramValues,
+        refinePrompt: args.generation?.refinePrompt ?? null,
+        claudeModel: args.generation?.claudeModel ?? null,
+        inputTokens: args.generation?.inputTokens ?? 0,
+        outputTokens: args.generation?.outputTokens ?? 0,
+        compileStatus: 'ok',
+        compileError: null,
+        repairAttempts: args.generation?.repairAttempts ?? 0,
+        metrics: { ...args.metrics, printNotes: args.notes },
+        profile,
+      });
+
+      // The thumbnail is best-effort: the canvas may not have painted the new
+      // mesh yet on an auto-save, and a missing preview must never cost the
+      // version itself.
+      const preview = args.capturePreview
+        ? await viewerRef.current?.capture().catch(() => null)
+        : null;
+
+      await uploadVersionFiles({
+        modelId: id,
+        version,
+        stl: args.stl,
+        threeMf: buildThreeMf(args.mesh, { name: args.modelName, profile }),
+        scadSource: resolvedSource,
+        preview: preview ?? null,
+      });
+
+      return version;
+    },
+    [id, model, profile],
   );
 
   /**
@@ -222,13 +304,22 @@ const ModelStudioDetailPage: React.FC = () => {
           result = await compile(scad, paramValues);
         }
 
+        const generation = {
+          claudeModel: generated.usage.claudeModel,
+          inputTokens: generated.usage.inputTokens,
+          outputTokens: generated.usage.outputTokens,
+          refinePrompt: mode === 'refine' ? instruction : null,
+          repairAttempts: repairs,
+        };
+
         setSource(scad);
         setParams(parsed);
         setValues(paramValues);
         setPrintNotes(generated.model.printNotes);
-        setDirty(true);
+        setLastGeneration(generation);
 
         if (!result.ok) {
+          setDirty(true);
           setError(
             `The model still would not compile after ${MAX_REPAIRS} repair attempts. Try rewording the request or simplifying it.`,
           );
@@ -236,12 +327,53 @@ const ModelStudioDetailPage: React.FC = () => {
           return;
         }
 
+        const modelName =
+          mode === 'create' && model.name === 'Untitled model'
+            ? generated.model.name
+            : model.name;
+
         if (mode === 'create' && model.name === 'Untitled model') {
           await updateModel(id, {
             name: generated.model.name,
             summary: generated.model.summary,
           });
         }
+
+        // Persist immediately. A generation is roughly a minute of waiting and
+        // a real API charge; making it survive only until the tab reloads was
+        // the wrong trade, and there is nothing here the admin needs to approve
+        // before it is worth keeping.
+        setStatus('Saving…');
+        try {
+          if (result.mesh && result.metrics && result.stl) {
+            await persistVersion({
+              scad,
+              parameters: parsed,
+              paramValues,
+              mesh: result.mesh,
+              metrics: result.metrics,
+              stl: result.stl,
+              notes: generated.model.printNotes,
+              modelName,
+              generation,
+              // The canvas has not painted this mesh yet; the thumbnail is
+              // filled in by an explicit Save later.
+              capturePreview: false,
+            });
+          }
+          setDirty(false);
+        } catch (saveError) {
+          // A failed upload must not discard a model the admin can still see,
+          // export and save by hand.
+          console.error('Could not auto-save the generated version:', saveError);
+          setDirty(true);
+          showToast({
+            message: 'Model built, but saving it failed — use Save version to retry',
+            type: 'warning',
+          });
+        }
+
+        await load();
 
         showToast({
           message: repairs > 0 ? `Model built (self-repaired ${repairs}x)` : 'Model built',
@@ -264,7 +396,7 @@ const ModelStudioDetailPage: React.FC = () => {
         setGenerating(false);
       }
     },
-    [id, model, source, profile, compile, showToast],
+    [id, model, source, profile, compile, showToast, persistVersion, load],
   );
 
   // Kick off the first generation when arriving straight from the library.
@@ -292,35 +424,19 @@ const ModelStudioDetailPage: React.FC = () => {
     if (!id || !model || !stlBytes || !mesh || !metrics) return;
     setSaving(true);
     try {
-      const version = await createVersion({
-        modelId: id,
-        parentVersionId: model.current_version?.id ?? null,
-        // Save what actually compiled, sliders included, so re-opening a version
-        // reproduces the exact geometry rather than the defaults.
-        scadSource: applyParamValues(source, values),
+      const version = await persistVersion({
+        scad: source,
         parameters: params,
         paramValues: values,
-        refinePrompt: null,
-        claudeModel: null,
-        inputTokens: 0,
-        outputTokens: 0,
-        compileStatus: 'ok',
-        compileError: null,
-        repairAttempts: 0,
-        metrics: { ...metrics, printNotes },
-        profile,
-      });
-
-      const preview = await viewerRef.current?.capture().catch(() => null);
-      const threeMf = buildThreeMf(mesh, { name: model.name, profile });
-      await uploadVersionFiles({
-        modelId: id,
-        version,
+        mesh,
+        metrics,
         stl: stlBytes,
-        threeMf,
-        scadSource: applyParamValues(source, values),
-        preview: preview ?? null,
+        notes: printNotes,
+        modelName: model.name,
+        generation: lastGeneration,
+        capturePreview: true,
       });
+      if (!version) return;
 
       showToast({ message: `Saved as v${version.version}`, type: 'success' });
       setDirty(false);
@@ -442,15 +558,33 @@ const ModelStudioDetailPage: React.FC = () => {
       <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
         {/* Viewer + refine */}
         <div className="space-y-4">
-          <div className="h-[420px] lg:h-[540px]">
-            <ModelViewer
-              ref={viewerRef}
-              mesh={mesh}
-              bedX={profile.bedX}
-              bedY={profile.bedY}
-              busy={busy}
-            />
-          </div>
+          {!source && !busy ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+              <Wand2 className="h-9 w-9 text-slate-300" />
+              <div>
+                <p className="font-semibold text-slate-800">This model has not been built yet</p>
+                <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">{model.prompt}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => runGeneration('create', model.prompt)}
+                className="mt-1 inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+              >
+                <Wand2 className="h-4 w-4" /> Generate model
+              </button>
+              <p className="text-xs text-slate-400">Takes about a minute.</p>
+            </div>
+          ) : (
+            <div className="h-[55vh] min-h-[320px] max-h-[560px]">
+              <ModelViewer
+                ref={viewerRef}
+                mesh={mesh}
+                bedX={profile.bedX}
+                bedY={profile.bedY}
+                busy={busy}
+              />
+            </div>
+          )}
 
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <label htmlFor="refine" className="text-sm font-semibold text-slate-900">
@@ -797,15 +931,6 @@ const ModelStudioDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {!source && !busy && (
-            <button
-              type="button"
-              onClick={() => runGeneration('create', model.prompt)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
-            >
-              <Wand2 className="h-4 w-4" /> Generate model
-            </button>
-          )}
         </div>
       </div>
     </div>
