@@ -87,6 +87,18 @@ breaks the geometry is a failed model.
   nozzle width.
 - Keep the footprint inside the stated build volume, with 5 mm of margin.
 
+## Keep it economical
+
+Generation is bounded by a hard timeout, so length is a correctness concern, not
+a style preference. Build the simplest geometry that satisfies the request:
+
+- Do not add features the user did not ask for. A request for a four-bay tray is
+  a four-bay tray, not a tray with a rib lattice, a label slot and a lid.
+- Prefer a short parametric module called in a loop over long unrolled geometry.
+- Aim for under 120 lines of source. If a design genuinely cannot fit, build the
+  core of it well and say what you left out in \`print_notes\`.
+- Ten well-chosen parameters beat thirty exhaustive ones.
+
 ## Boolean hygiene
 
 Every cutting tool passed to \`difference()\` must overshoot the surface it cuts by
@@ -143,6 +155,7 @@ const DEADLINE_MS = 130_000;
 
 interface ClaudeResult {
   text: string;
+  stopReason: string | null;
   model: string;
   inputTokens: number;
   outputTokens: number;
@@ -163,6 +176,7 @@ async function readClaudeStream(response: Response): Promise<ClaudeResult> {
   let buffer = "";
   const result: ClaudeResult = {
     text: "",
+    stopReason: null,
     model: "claude-opus-5",
     inputTokens: 0,
     outputTokens: 0,
@@ -186,7 +200,7 @@ async function readClaudeStream(response: Response): Promise<ClaudeResult> {
       let event: Record<string, unknown> & {
         type?: string;
         message?: { model?: string; usage?: Record<string, number> };
-        delta?: { type?: string; text?: string };
+        delta?: { type?: string; text?: string; stop_reason?: string };
         usage?: Record<string, number>;
         error?: { message?: string };
       };
@@ -207,6 +221,7 @@ async function readClaudeStream(response: Response): Promise<ClaudeResult> {
         result.text += event.delta.text;
       } else if (event.type === "message_delta") {
         result.outputTokens = event.usage?.output_tokens ?? result.outputTokens;
+        result.stopReason = event.delta?.stop_reason ?? result.stopReason;
       } else if (event.type === "error") {
         throw new Error(event.error?.message ?? "Claude stream error");
       }
@@ -327,9 +342,11 @@ Deno.serve(async (req: Request) => {
 
   const requestBody = (useSchema: boolean) => ({
     model: "claude-opus-5",
-    // A CAD program is a few hundred lines; 16k invited generations that ran
-    // past the worker's wall clock for no extra quality.
-    max_tokens: 8000,
+    // Do not use this as a latency control. It is a guillotine, not a budget:
+    // an 8k ceiling cut a response off mid-string after paying for every token,
+    // and the JSON was then unparseable. Runtime is bounded by DEADLINE_MS; the
+    // prompt keeps output small.
+    max_tokens: 16000,
     stream: true,
     system: [
       {
@@ -396,7 +413,7 @@ Deno.serve(async (req: Request) => {
     // Timing is logged on every call because the failure mode this endpoint
     // actually hits is the worker's wall clock, not a bad response.
     console.log(
-      `generate-print-model: mode=${mode} ${Date.now() - startedAt}ms in=${claude.inputTokens} out=${claude.outputTokens} cached=${claude.cacheReadTokens}`,
+      `generate-print-model: mode=${mode} ${Date.now() - startedAt}ms in=${claude.inputTokens} out=${claude.outputTokens} cached=${claude.cacheReadTokens} stop=${claude.stopReason}`,
     );
 
     let parsed: Record<string, unknown> | null = null;
@@ -412,6 +429,20 @@ Deno.serve(async (req: Request) => {
       } catch {
         parsed = null;
       }
+    }
+
+    // A truncated response is a length problem, not a bad model - saying so
+    // points at the fix instead of implying the generation was nonsense.
+    if (claude.stopReason === "max_tokens") {
+      console.error(`generate-print-model truncated at ${claude.outputTokens} output tokens`);
+      return json(
+        {
+          success: false,
+          error:
+            "The design grew too large to finish in one pass. Ask for something more focused - fewer features, or one part rather than an assembly.",
+        },
+        502,
+      );
     }
 
     if (!parsed || typeof parsed.scad_source !== "string" || !parsed.scad_source.trim()) {
