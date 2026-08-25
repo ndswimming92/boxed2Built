@@ -34,15 +34,19 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx vite --port 5173 --strictPort',
+    // --host pins the dev server to IPv4. Vite's default binds `localhost`,
+    // which resolves to ::1 first on modern Node, leaving nothing listening on
+    // the 127.0.0.1 that Playwright polls.
+    command: 'npx vite --host 127.0.0.1 --port 5173 --strictPort',
     url: 'http://127.0.0.1:5173/tests/harness/index.html',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: {
-      // The harness never talks to Supabase, but the shared client is imported
-      // transitively and throws on construction without these.
-      VITE_SUPABASE_URL: 'http://127.0.0.1:54321',
-      VITE_SUPABASE_ANON_KEY: 'harness-anon-key',
-    },
+    // Surface the dev server's output. Without this a startup failure looks
+    // identical to a slow start: a bare webServer timeout and no explanation.
+    stdout: 'pipe',
+    stderr: 'pipe',
+    // No `env` override here. Passing one previously replaced the inherited
+    // environment, so `npx` lost PATH and died silently before printing
+    // anything. The harness imports no Supabase code, so it needs nothing.
   },
 });
