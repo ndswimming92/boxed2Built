@@ -8,6 +8,7 @@ import {
   Download,
   FileCode2,
   History,
+  Layers,
   Loader2,
   RefreshCw,
   Save,
@@ -415,6 +416,18 @@ const ModelStudioDetailPage: React.FC = () => {
     setDirty(true);
   };
 
+  /**
+   * Choosing a different piece recompiles straight away. A dimension slider
+   * waits for Recompile because dragging one fires a burst of changes, but a
+   * selector is a single deliberate switch and the compile is local and free.
+   */
+  const handleSelectorChange = (name: string, value: ParamValue) => {
+    const next = { ...values, [name]: value };
+    setValues(next);
+    setDirty(true);
+    if (source) compile(source, next);
+  };
+
   const handleRecompile = () => {
     if (!source) return;
     compile(source, values);
@@ -469,9 +482,19 @@ const ModelStudioDetailPage: React.FC = () => {
   );
   const estimates = useMemo(() => (metrics ? estimate(metrics, profile) : null), [metrics, profile]);
 
+  // A dropdown selects which piece to build; a slider changes its size. The
+  // first is a mode switch that decides what the whole page is showing, so it
+  // is pinned above the tabs rather than left to scroll away among the
+  // dimensions.
+  const selectorParams = useMemo(
+    () => params.filter((param) => param.type === 'string' && (param.options?.length ?? 0) > 0),
+    [params],
+  );
+
   const grouped = useMemo(() => {
     const sections = new Map<string, ModelParameter[]>();
     for (const param of params) {
+      if (param.type === 'string' && (param.options?.length ?? 0) > 0) continue;
       const list = sections.get(param.section) ?? [];
       list.push(param);
       sections.set(param.section, list);
@@ -668,6 +691,46 @@ const ModelStudioDetailPage: React.FC = () => {
 
         {/* Side panel */}
         <div className="space-y-4">
+          {/* Which piece to build. Sticky because it decides what the viewer,
+              the report and every export refer to - scrolling to a slider
+              should never cost sight of it. */}
+          {selectorParams.length > 0 && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 lg:sticky lg:top-4 lg:z-10">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-blue-700" />
+                <h2 className="text-sm font-semibold text-slate-900">
+                  {selectorParams.length === 1 ? selectorParams[0].section || 'Part' : 'Parts'}
+                </h2>
+              </div>
+              <div className="mt-3 space-y-3">
+                {selectorParams.map((param) => (
+                  <div key={param.name}>
+                    <span className="mb-1 block text-xs font-medium text-slate-600">
+                      {param.label}
+                    </span>
+                    <select
+                      value={String(values[param.name] ?? param.default)}
+                      onChange={(event) => handleSelectorChange(param.name, event.target.value)}
+                      disabled={busy}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+                    >
+                      {(param.options ?? []).map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                {compiling
+                  ? 'Rebuilding…'
+                  : 'Switching rebuilds the preview instantly. Export each piece separately.'}
+              </p>
+            </div>
+          )}
+
           {/* Printer profile */}
           <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-center gap-2">
@@ -773,6 +836,10 @@ const ModelStudioDetailPage: React.FC = () => {
                   {params.length === 0 ? (
                     <p className="text-sm text-slate-500">
                       No parameters yet. Generate a model to get sliders.
+                    </p>
+                  ) : grouped.length === 0 ? (
+                    <p className="text-sm text-slate-500">
+                      This model is controlled entirely by the part selector above.
                     </p>
                   ) : (
                     <>
