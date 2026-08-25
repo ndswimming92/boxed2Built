@@ -99,7 +99,9 @@ particular is extremely slow. Prefer explicit chamfer/fillet geometry.
 
 ## Output
 
-Return the fields defined by the schema. \`summary\` is one sentence describing what
+Return the fields defined by the schema. Do NOT restate the parameters as a
+separate list - they are read directly from the annotations in your source, so
+repeating them only makes the response slower. \`summary\` is one sentence describing what
 the object is. \`print_notes\` covers orientation, supports, and anything the user
 should know before slicing. \`estimated_bbox_mm\` is your own calculation of the
 bounding box at default parameter values.`;
@@ -111,7 +113,6 @@ const MODEL_SCHEMA = {
     "name",
     "summary",
     "scad_source",
-    "parameters",
     "print_notes",
     "recommended_orientation",
     "supports_required",
@@ -121,27 +122,6 @@ const MODEL_SCHEMA = {
     name: { type: "string", description: "Short product-style name, 2-5 words." },
     summary: { type: "string", description: "One sentence describing the object." },
     scad_source: { type: "string", description: "Complete OpenSCAD source. No markdown fences." },
-    parameters: {
-      type: "array",
-      description: "Every top-level tunable declared in the source, in declaration order.",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["name", "label", "type", "default", "section"],
-        properties: {
-          name: { type: "string", description: "Exact variable name in the source." },
-          label: { type: "string" },
-          type: { type: "string", enum: ["number", "boolean", "string"] },
-          default: { type: ["number", "boolean", "string"] },
-          min: { type: ["number", "null"] },
-          max: { type: ["number", "null"] },
-          step: { type: ["number", "null"] },
-          options: { type: ["array", "null"], items: { type: "string" } },
-          section: { type: "string" },
-          description: { type: ["string", "null"] },
-        },
-      },
-    },
     print_notes: { type: "string" },
     recommended_orientation: { type: "string" },
     supports_required: { type: "boolean" },
@@ -153,6 +133,88 @@ const MODEL_SCHEMA = {
     },
   },
 } as const;
+
+/**
+ * Supabase terminates the worker at 150s of wall clock with a bare 546 and no
+ * response body. Stopping short of that lets the admin see a real explanation
+ * instead of a dead connection.
+ */
+const DEADLINE_MS = 130_000;
+
+interface ClaudeResult {
+  text: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+}
+
+/**
+ * Assembles a streamed Claude response. Streaming is not decoration here: a
+ * non-streaming call for a whole CAD program routinely ran past the worker's
+ * wall clock, and streaming also lets the deadline above abort cleanly.
+ */
+async function readClaudeStream(response: Response): Promise<ClaudeResult> {
+  const body = response.body;
+  if (!body) throw new Error("Claude returned an empty stream");
+
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  const result: ClaudeResult = {
+    text: "",
+    model: "claude-opus-5",
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE frames are newline delimited; keep the trailing partial line.
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data:")) continue;
+      const raw = line.slice(5).trim();
+      if (!raw || raw === "[DONE]") continue;
+
+      let event: Record<string, unknown> & {
+        type?: string;
+        message?: { model?: string; usage?: Record<string, number> };
+        delta?: { type?: string; text?: string };
+        usage?: Record<string, number>;
+        error?: { message?: string };
+      };
+      try {
+        event = JSON.parse(raw);
+      } catch {
+        continue;
+      }
+
+      if (event.type === "message_start") {
+        result.model = event.message?.model ?? result.model;
+        result.inputTokens = event.message?.usage?.input_tokens ?? 0;
+        result.cacheReadTokens = event.message?.usage?.cache_read_input_tokens ?? 0;
+      } else if (
+        event.type === "content_block_delta" &&
+        event.delta?.type === "text_delta"
+      ) {
+        result.text += event.delta.text;
+      } else if (event.type === "message_delta") {
+        result.outputTokens = event.usage?.output_tokens ?? result.outputTokens;
+      } else if (event.type === "error") {
+        throw new Error(event.error?.message ?? "Claude stream error");
+      }
+    }
+  }
+
+  return result;
+}
 
 interface Payload {
   mode?: "create" | "refine" | "repair";
@@ -265,7 +327,10 @@ Deno.serve(async (req: Request) => {
 
   const requestBody = (useSchema: boolean) => ({
     model: "claude-opus-5",
-    max_tokens: 16000,
+    // A CAD program is a few hundred lines; 16k invited generations that ran
+    // past the worker's wall clock for no extra quality.
+    max_tokens: 8000,
+    stream: true,
     system: [
       {
         type: "text",
@@ -276,13 +341,18 @@ Deno.serve(async (req: Request) => {
       },
     ],
     thinking: { type: "adaptive" },
+    // "high" pushed a single generation past 150s and the worker was killed
+    // mid-flight. "medium" comfortably fits the budget, and the compile-repair
+    // loop below is the real guard on geometry correctness.
     output_config: useSchema
-      // Geometry that has to compile on the first try is intelligence-sensitive;
-      // this is not the place to economise on effort.
-      ? { effort: "high", format: { type: "json_schema", schema: MODEL_SCHEMA } }
-      : { effort: "high" },
+      ? { effort: "medium", format: { type: "json_schema", schema: MODEL_SCHEMA } }
+      : { effort: "medium" },
     messages: [{ role: "user", content: buildUserMessage(body) }],
   });
+
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const deadline = setTimeout(() => controller.abort(), DEADLINE_MS);
 
   const callClaude = (useSchema: boolean) =>
     fetch("https://api.anthropic.com/v1/messages", {
@@ -293,6 +363,7 @@ Deno.serve(async (req: Request) => {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify(requestBody(useSchema)),
+      signal: controller.signal,
     });
 
   try {
@@ -320,11 +391,13 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const payload = await response.json();
-    const textBlock = (payload.content ?? []).find(
-      (block: { type?: string }) => block?.type === "text",
+    const claude = await readClaudeStream(response);
+    const raw = claude.text;
+    // Timing is logged on every call because the failure mode this endpoint
+    // actually hits is the worker's wall clock, not a bad response.
+    console.log(
+      `generate-print-model: mode=${mode} ${Date.now() - startedAt}ms in=${claude.inputTokens} out=${claude.outputTokens} cached=${claude.cacheReadTokens}`,
     );
-    const raw: string = textBlock?.text ?? "";
 
     let parsed: Record<string, unknown> | null = null;
     try {
@@ -359,21 +432,35 @@ Deno.serve(async (req: Request) => {
         name: parsed.name ?? "Untitled model",
         summary: parsed.summary ?? "",
         scadSource: source,
-        parameters: Array.isArray(parsed.parameters) ? parsed.parameters : [],
         printNotes: parsed.print_notes ?? "",
         recommendedOrientation: parsed.recommended_orientation ?? "",
         supportsRequired: parsed.supports_required === true,
         estimatedBboxMm: parsed.estimated_bbox_mm ?? null,
       },
       usage: {
-        claudeModel: payload.model ?? "claude-opus-5",
-        inputTokens: payload.usage?.input_tokens ?? 0,
-        outputTokens: payload.usage?.output_tokens ?? 0,
-        cacheReadTokens: payload.usage?.cache_read_input_tokens ?? 0,
+        claudeModel: claude.model,
+        inputTokens: claude.inputTokens,
+        outputTokens: claude.outputTokens,
+        cacheReadTokens: claude.cacheReadTokens,
       },
     });
   } catch (error) {
+    if ((error as Error)?.name === "AbortError") {
+      console.error(
+        `generate-print-model exceeded its deadline after ${Date.now() - startedAt}ms`,
+      );
+      return json(
+        {
+          success: false,
+          error:
+            "The model took too long to generate and was stopped. Try a simpler or more specific description - very open-ended prompts take the longest.",
+        },
+        504,
+      );
+    }
     console.error("generate-print-model failed:", error);
     return json({ success: false, error: "Model generation failed" }, 500);
+  } finally {
+    clearTimeout(deadline);
   }
 });

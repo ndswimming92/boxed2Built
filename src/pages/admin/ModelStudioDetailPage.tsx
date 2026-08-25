@@ -187,9 +187,10 @@ const ModelStudioDetailPage: React.FC = () => {
         });
         scad = generated.model.scadSource;
 
-        let parsed = generated.model.parameters.length > 0
-          ? generated.model.parameters
-          : parseParameters(scad);
+        // Parameters are read from the Customizer annotations in the source
+        // rather than restated by the model - one source of truth, and it keeps
+        // the generation short enough to finish inside the worker's budget.
+        let parsed = parseParameters(scad);
         let paramValues = defaultParamValues(parsed);
 
         setStatus('Compiling the model…');
@@ -206,9 +207,7 @@ const ModelStudioDetailPage: React.FC = () => {
             profile,
           });
           scad = repaired.model.scadSource;
-          parsed = repaired.model.parameters.length > 0
-            ? repaired.model.parameters
-            : parseParameters(scad);
+          parsed = parseParameters(scad);
           paramValues = defaultParamValues(parsed);
           generated = {
             model: { ...repaired.model, name: generated.model.name, summary: generated.model.summary },

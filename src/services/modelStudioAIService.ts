@@ -41,8 +41,18 @@ export async function generateModel(args: GenerateArgs): Promise<GenerationResul
     // is on error.context; surface that instead of the generic
     // "Edge Function returned a non-2xx status code".
     let message = error.message || 'Model generation failed';
+    const context = (error as { context?: Response }).context;
+
+    // Supabase kills a worker that overruns its wall clock with a bare 546 and
+    // no body, so there is nothing to parse - say what actually happened.
+    if (context?.status === 546) {
+      throw new Error(
+        'The generator ran out of time on the server. This usually means the request was very open-ended — try describing the part more specifically, with dimensions.',
+      );
+    }
+
     try {
-      const body = await (error as { context?: Response }).context?.json?.();
+      const body = await context?.json?.();
       if (body?.error) message = body.error;
     } catch {
       // fall back to the generic message
