@@ -14,8 +14,18 @@ interface JobTravelCardProps {
   job: Job;
 }
 
-/** Matches the h-40 map so switching between states never shifts the card. */
-const MAP_CLASSES = 'w-full h-40 object-cover rounded-lg border border-slate-200 bg-slate-100';
+/**
+ * Shared by the map, the skeleton and the placeholder so switching between states
+ * never shifts the card.
+ *
+ * `aspect-[3/2]` matches the image the edge function requests, and `object-contain`
+ * guarantees the whole route stays visible. The previous `h-40 object-cover` cropped
+ * badly: the job card is ~1450px wide, so a full-width 160px-tall box is roughly 9:1,
+ * and cover scaled the 3:2 image up to fill it and sliced off everything but a middle
+ * band. The max-width keeps the map from dominating the card on a wide screen.
+ */
+const MAP_CLASSES =
+  'w-full max-w-lg aspect-[3/2] object-contain rounded-lg border border-slate-200 bg-slate-100';
 
 /**
  * Drive time from the private trip origin to a job, with a rendered route map.
