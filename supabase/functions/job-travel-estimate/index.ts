@@ -69,6 +69,40 @@ function resolveWorkAddress(job: { client_address: string | null; service_addres
   return client ? client : null;
 }
 
+/**
+ * Mapbox explains its own refusals in the response body, so a bare status code
+ * throws away the answer. A 403 in particular is never a bad address — it is the
+ * token: either URL restrictions on it (a server sends no Referer, so a
+ * restricted token is rejected every time) or a missing scope or account issue.
+ */
+async function mapboxFailure(response: Response, label: string): Promise<Error> {
+  let detail = "";
+
+  try {
+    const text = (await response.text()).trim();
+    if (text) {
+      let message: unknown;
+      try {
+        message = (JSON.parse(text) as { message?: unknown }).message;
+      } catch {
+        // Not JSON — Mapbox sometimes answers with a bare string.
+      }
+      detail = typeof message === "string" && message ? message : text.slice(0, 200);
+    }
+  } catch {
+    // Unreadable body; the status alone still says something useful.
+  }
+
+  const hint = response.status === 403
+    ? ". This is a token problem, not an address problem — check the Mapbox token " +
+      "has no URL restrictions (server requests send no Referer, so a restricted " +
+      "token always fails), that its scopes are enabled, and that the account has " +
+      "a payment method on file"
+    : "";
+
+  return new Error(`Mapbox ${label} failed (${response.status})${detail ? `: ${detail}` : ""}${hint}`);
+}
+
 async function geocode(address: string, near: Coordinates | null): Promise<Coordinates | null> {
   const url = new URL("https://api.mapbox.com/search/geocode/v6/forward");
   url.searchParams.set("q", address);
@@ -81,7 +115,7 @@ async function geocode(address: string, near: Coordinates | null): Promise<Coord
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Mapbox geocoding failed (${response.status})`);
+    throw await mapboxFailure(response, "geocoding");
   }
 
   const body = await response.json();
@@ -108,7 +142,7 @@ async function fetchRoute(origin: Coordinates, destination: Coordinates): Promis
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Mapbox directions failed (${response.status})`);
+    throw await mapboxFailure(response, "directions");
   }
 
   const body = await response.json();
@@ -153,7 +187,10 @@ async function renderStaticMap(
   }
 
   const response = await fetch(url);
-  if (!response.ok) return null;
+  if (!response.ok) {
+    console.error((await mapboxFailure(response, "static map")).message);
+    return null;
+  }
 
   const bytes = new Uint8Array(await response.arrayBuffer());
   let binary = "";
