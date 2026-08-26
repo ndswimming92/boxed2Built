@@ -33,8 +33,11 @@ const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /** Mapbox rejects static image requests over ~8192 characters. */
 const STATIC_URL_LIMIT = 8000;
 
+// 3:2, matching the card's aspect-[3/2] container so nothing is cropped or
+// letterboxed. Rendered at @2x (1200x800) for retina; Mapbox caps static images
+// at 1280x1280, so this is near the usable ceiling.
 const MAP_WIDTH = 600;
-const MAP_HEIGHT = 300;
+const MAP_HEIGHT = 400;
 
 type TravelStatus = "ok" | "not_found" | "no_route" | "no_address" | "origin_not_found";
 
@@ -176,7 +179,7 @@ async function renderStaticMap(
 
   const buildUrl = (overlays: string[]) =>
     `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${overlays.join(",")}` +
-    `/auto/${MAP_WIDTH}x${MAP_HEIGHT}@2x?padding=40&access_token=${encodeURIComponent(MAPBOX_TOKEN!)}`;
+    `/auto/${MAP_WIDTH}x${MAP_HEIGHT}@2x?padding=50&access_token=${encodeURIComponent(MAPBOX_TOKEN!)}`;
 
   let url = buildUrl([originPin, destinationPin]);
   if (geometry) {
