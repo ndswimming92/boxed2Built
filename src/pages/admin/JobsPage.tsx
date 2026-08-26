@@ -16,6 +16,7 @@ import JobCompletionWizard from '../../components/admin/JobCompletionWizard';
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import AttachInvoiceModal from '../../components/admin/AttachInvoiceModal';
 import JobInvoicesList from '../../components/admin/JobInvoicesList';
+import JobTravelCard from '../../components/admin/JobTravelCard';
 import JobContractorsList from '../../components/admin/JobContractorsList';
 import MarkJobLostModal from '../../components/admin/MarkJobLostModal';
 import CancelJobModal from '../../components/admin/CancelJobModal';
@@ -773,6 +774,8 @@ export default function JobsPage() {
                         </div>
                       </div>
                     )}
+
+                    {workAddress && <JobTravelCard job={job} />}
 
                     {missingHours && (
                       <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">

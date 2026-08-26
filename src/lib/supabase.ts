@@ -699,6 +699,22 @@ export type MileageSettings = {
   updated_at: string;
 };
 
+/**
+ * The address job drive times are measured from. Kept apart from `BusinessAddress`
+ * on purpose: that one is published (site footer, LocalBusiness schema, customer
+ * invoices) and this one is typically a home address that must stay private.
+ */
+export type TravelSettings = {
+  id: string;
+  organization_id: string;
+  origin_address: string;
+  origin_latitude: number | null;
+  origin_longitude: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type TrackingState = {
   isTracking: boolean;
   startTime: Date | null;
