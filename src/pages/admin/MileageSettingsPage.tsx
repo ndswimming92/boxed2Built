@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import type { MileageSettings } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info } from 'lucide-react';
+import type { MileageSettings, TravelSettings } from '../../lib/supabase';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info, MapPin, Lock } from 'lucide-react';
 
 export default function MileageSettingsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -17,6 +17,11 @@ export default function MileageSettingsPage() {
     notes: '',
   });
 
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [travelSettings, setTravelSettings] = useState<TravelSettings | null>(null);
+  const [originDraft, setOriginDraft] = useState('');
+  const [savingOrigin, setSavingOrigin] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -26,12 +31,13 @@ export default function MileageSettingsPage() {
 
     const { data: bizData } = await supabase
       .from('business_info')
-      .select('id')
+      .select('id, organization_id')
       .eq('is_active', true)
       .maybeSingle();
 
     if (bizData) {
       setBusinessId(bizData.id);
+      setOrganizationId(bizData.organization_id ?? null);
 
       const { data: settingsData } = await supabase
         .from('mileage_settings')
@@ -43,9 +49,85 @@ export default function MileageSettingsPage() {
       if (settingsData) {
         setSettings(settingsData);
       }
+
+      if (bizData.organization_id) {
+        const { data: travelData } = await supabase
+          .from('travel_settings')
+          .select('*')
+          .eq('organization_id', bizData.organization_id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        setTravelSettings(travelData ?? null);
+        setOriginDraft(travelData?.origin_address ?? '');
+      }
     }
 
     setLoading(false);
+  };
+
+  /** Must match normalizeAddress() in the job-travel-estimate function, which owns the cache key. */
+  const normalizeOrigin = (address: string) => address.trim().replace(/\s+/g, ' ').toLowerCase();
+
+  const handleSaveOrigin = async () => {
+    if (!organizationId) return;
+
+    const nextOrigin = originDraft.trim();
+    if (!nextOrigin) {
+      setMessage({ type: 'error', text: 'Enter a starting address' });
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+
+    setSavingOrigin(true);
+
+    try {
+      const previousOrigin = travelSettings?.origin_address ?? null;
+
+      if (travelSettings) {
+        const { error } = await supabase
+          .from('travel_settings')
+          .update({
+            origin_address: nextOrigin,
+            // Cleared so the next drive-time lookup re-geocodes rather than
+            // routing from wherever the old address was.
+            origin_latitude: null,
+            origin_longitude: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', travelSettings.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('travel_settings').insert({
+          organization_id: organizationId,
+          origin_address: nextOrigin,
+          is_active: true,
+        });
+
+        if (error) throw error;
+      }
+
+      // Every cached estimate was measured from the old address, so it is now
+      // wrong. Clearing beats waiting for the TTL to age it out.
+      if (previousOrigin && normalizeOrigin(previousOrigin) !== normalizeOrigin(nextOrigin)) {
+        await supabase
+          .from('job_travel_estimates')
+          .delete()
+          .eq('organization_id', organizationId)
+          .eq('origin_address', normalizeOrigin(previousOrigin));
+      }
+
+      setMessage({ type: 'success', text: 'Starting address saved. Drive times will recalculate.' });
+      fetchData();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error saving trip origin:', error);
+      setMessage({ type: 'error', text: 'Failed to save the starting address' });
+      setTimeout(() => setMessage(null), 3000);
+    } finally {
+      setSavingOrigin(false);
+    }
   };
 
   const handleOpenModal = (setting?: MileageSettings) => {
@@ -187,6 +269,48 @@ export default function MileageSettingsPage() {
           {message.text}
         </div>
       )}
+
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
+            <MapPin className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Trip Starting Address</h3>
+            <p className="text-sm text-gray-600 mt-0.5">
+              Where drive times to your jobs are measured from.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            value={originDraft}
+            onChange={(e) => setOriginDraft(e.target.value)}
+            placeholder="163 Bess Blvd, Spring Hill, TN 37174"
+            autoComplete="off"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+          <button
+            onClick={handleSaveOrigin}
+            disabled={savingOrigin || originDraft.trim() === (travelSettings?.origin_address ?? '')}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            <span>{savingOrigin ? 'Saving...' : 'Save'}</span>
+          </button>
+        </div>
+
+        <div className="flex items-start gap-2 mt-3 text-sm text-gray-600">
+          <Lock className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+          <p>
+            Private to your admin portal. This address is never shown to customers, never appears on
+            invoices, and is never published on your website &mdash; it is kept separate from the
+            business address on the Business Info page for exactly that reason.
+          </p>
+        </div>
+      </div>
 
       {currentRate && (
         <div className="bg-blue-50 border-2 border-blue-500 rounded-lg p-6">
