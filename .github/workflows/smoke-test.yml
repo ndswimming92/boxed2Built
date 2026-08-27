@@ -1,8 +1,9 @@
-name: Model Studio smoke tests
+name: Browser smoke tests
 
-# These cover the browser-side pipeline - the OpenSCAD worker, the mesh
-# analysis, the 3MF writer and the three.js canvas. Every bug they assert
-# against passed typecheck, lint and build before reaching production.
+# These cover behaviour that only shows up in a real browser: the Model Studio
+# pipeline - the OpenSCAD worker, the mesh analysis, the 3MF writer and the
+# three.js canvas - and admin popover geometry at phone widths. Every bug they
+# assert against passed typecheck, lint and build before reaching production.
 on:
   pull_request:
     branches: [main]
@@ -11,6 +12,12 @@ on:
       - 'src/lib/mesh/**'
       - 'src/lib/threemf/**'
       - 'src/components/admin/ModelViewer.tsx'
+      # Popover positioning and the admin chrome the mobile specs measure.
+      - 'src/components/ui/AnchoredPanel.tsx'
+      - 'src/components/admin/AdminLayout.tsx'
+      - 'src/components/admin/NotificationBell.tsx'
+      - 'src/components/admin/OrganizationSwitcher.tsx'
+      - 'src/components/admin/InvoiceRowActions.tsx'
       - 'tests/**'
       - 'playwright.config.ts'
       - 'package-lock.json'
