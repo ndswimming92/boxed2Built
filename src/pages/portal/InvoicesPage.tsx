@@ -122,59 +122,61 @@ export default function PortalInvoicesPage() {
 
       {!loading && !error && invoices.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Invoice</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Dates</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Balance</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {invoices.map((invoice) => {
-                const canPay = ['sent', 'overdue', 'partially_paid'].includes(invoice.status) && invoice.amount_due > 0;
-                return (
-                  <tr key={invoice.id}>
-                    <td className="px-4 py-3 text-sm text-slate-800">
-                      <p className="font-medium">{invoice.invoice_number}</p>
-                      <p className="text-xs text-slate-500 capitalize">{invoice.invoice_type} invoice</p>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-700 capitalize">{invoice.status.replace('_', ' ')}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">
-                      <p>Issued: {formatDate(invoice.invoice_date)}</p>
-                      <p>Due: {formatDate(invoice.due_date)}</p>
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm text-slate-800">
-                      <p className="font-semibold">{formatCurrency(invoice.amount_due)}</p>
-                      <p className="text-xs text-slate-500">of {formatCurrency(invoice.total_amount)}</p>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <a
-                        href={`/portal/support?invoiceId=${invoice.id}&subject=${encodeURIComponent(`Question about invoice ${invoice.invoice_number}`)}`}
-                        className="mr-2 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                      >
-                        Support
-                      </a>
-                      {canPay ? (
-                        <button
-                          type="button"
-                          onClick={() => void handlePayNow(invoice.id)}
-                          disabled={activeInvoiceId === invoice.id}
-                          className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Invoice</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Dates</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Balance</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {invoices.map((invoice) => {
+                  const canPay = ['sent', 'overdue', 'partially_paid'].includes(invoice.status) && invoice.amount_due > 0;
+                  return (
+                    <tr key={invoice.id}>
+                      <td className="px-4 py-3 text-sm text-slate-800">
+                        <p className="font-medium">{invoice.invoice_number}</p>
+                        <p className="text-xs text-slate-500 capitalize">{invoice.invoice_type} invoice</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700 capitalize">{invoice.status.replace('_', ' ')}</td>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        <p>Issued: {formatDate(invoice.invoice_date)}</p>
+                        <p>Due: {formatDate(invoice.due_date)}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm text-slate-800">
+                        <p className="font-semibold">{formatCurrency(invoice.amount_due)}</p>
+                        <p className="text-xs text-slate-500">of {formatCurrency(invoice.total_amount)}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <a
+                          href={`/portal/support?invoiceId=${invoice.id}&subject=${encodeURIComponent(`Question about invoice ${invoice.invoice_number}`)}`}
+                          className="mr-2 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
                         >
-                          {activeInvoiceId === invoice.id ? 'Opening…' : 'Pay Now'}
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-500">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          Support
+                        </a>
+                        {canPay ? (
+                          <button
+                            type="button"
+                            onClick={() => void handlePayNow(invoice.id)}
+                            disabled={activeInvoiceId === invoice.id}
+                            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                          >
+                            {activeInvoiceId === invoice.id ? 'Opening…' : 'Pay Now'}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-500">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
           <div ref={sentinelRef} className="p-3 text-center text-xs text-slate-500">{loadingMore ? 'Loading more…' : hasMore ? 'Scroll to load more' : 'End of invoice history'}</div>
         </div>
       ) : null}

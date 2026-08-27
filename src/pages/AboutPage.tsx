@@ -104,7 +104,9 @@ const AboutPage: React.FC = () => {
                       loading="lazy"
                     />
                   </ClickableImage>
-                  <div className="absolute -bottom-6 -right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
+                  {/* Single column below lg, where the image is already full
+                      width — the overhang would push this card off the screen. */}
+                  <div className="absolute bottom-4 right-4 lg:-bottom-6 lg:-right-6 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
                     <p className="font-semibold">Nicholas Davidson</p>
                     <p className="text-sm text-blue-100">Owner & Founder</p>
                   </div>

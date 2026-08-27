@@ -83,31 +83,33 @@ export default function PortalJobsPage() {
       ) : null}
       {!loading && !error && jobs.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Job</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduled</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Location</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td className="px-4 py-3 text-sm text-slate-800">
-                    <Link to={`/portal/jobs/${job.id}`} className="font-medium text-blue-700 hover:underline">
-                      {job.job_type || 'Project'}
-                    </Link>
-                    <p className="text-xs text-slate-500">{job.job_description || 'No description'}</p>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-700 capitalize">{job.job_status.replace('_', ' ')}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{formatDate(job.date_scheduled)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{job.location_city || 'N/A'}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Job</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Scheduled</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Location</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {jobs.map((job) => (
+                  <tr key={job.id}>
+                    <td className="px-4 py-3 text-sm text-slate-800">
+                      <Link to={`/portal/jobs/${job.id}`} className="font-medium text-blue-700 hover:underline">
+                        {job.job_type || 'Project'}
+                      </Link>
+                      <p className="text-xs text-slate-500">{job.job_description || 'No description'}</p>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-700 capitalize">{job.job_status.replace('_', ' ')}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{formatDate(job.date_scheduled)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{job.location_city || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div ref={sentinelRef} className="p-3 text-center text-xs text-slate-500">
             {loadingMore ? 'Loading more…' : hasMore ? 'Scroll to load more' : 'End of job history'}
           </div>

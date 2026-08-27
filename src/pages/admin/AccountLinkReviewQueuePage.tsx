@@ -68,57 +68,59 @@ export default function AccountLinkReviewQueuePage() {
 
       {!loading && !error ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-700">Possible matching customer IDs</th>
-                <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {items.length === 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-50">
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                    No account-link requests need manual review right now.
-                  </td>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Created</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
+                  <th className="px-4 py-3 text-left font-semibold text-slate-700">Possible matching customer IDs</th>
+                  <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
                 </tr>
-              ) : (
-                items.map((item) => {
-                  const candidateIds = Array.isArray(item.payload?.candidate_customer_ids)
-                    ? (item.payload.candidate_customer_ids as unknown[]).join(', ')
-                    : 'N/A';
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                      No account-link requests need manual review right now.
+                    </td>
+                  </tr>
+                ) : (
+                  items.map((item) => {
+                    const candidateIds = Array.isArray(item.payload?.candidate_customer_ids)
+                      ? (item.payload.candidate_customer_ids as unknown[]).join(', ')
+                      : 'N/A';
 
-                  return (
-                    <tr key={item.id}>
-                      <td className="px-4 py-3 text-slate-700">{new Date(item.created_at).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-slate-700">{item.candidate_email || '—'}</td>
-                      <td className="px-4 py-3 text-xs text-slate-600">{candidateIds}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => void updateStatus(item.id, 'resolved')}
-                            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-                          >
-                            Mark resolved
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void updateStatus(item.id, 'ignored')}
-                            className="rounded-md bg-slate-200 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-300"
-                          >
-                            Ignore
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                    return (
+                      <tr key={item.id}>
+                        <td className="px-4 py-3 text-slate-700">{new Date(item.created_at).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-slate-700">{item.candidate_email || '—'}</td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{candidateIds}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => void updateStatus(item.id, 'resolved')}
+                              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                            >
+                              Mark resolved
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void updateStatus(item.id, 'ignored')}
+                              className="rounded-md bg-slate-200 px-3 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-300"
+                            >
+                              Ignore
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : null}
     </div>
