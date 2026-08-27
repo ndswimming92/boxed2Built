@@ -22,6 +22,16 @@ interface ClientFormModalProps {
   organizationId: string;
   onClose: () => void;
   onCreated: (client: Client, warning?: string) => void;
+  /**
+   * Prefills the contact fields when the form is opened from somewhere that
+   * already knows part of the answer — the client search on a job, say.
+   */
+  initialValues?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+  };
 }
 
 const STATUS_OPTIONS: { value: ClientStatus; label: string }[] = [
@@ -58,15 +68,15 @@ interface ScanResult {
   warnings: string[];
 }
 
-export default function ClientFormModal({ organizationId, onClose, onCreated }: ClientFormModalProps) {
+export default function ClientFormModal({ organizationId, onClose, onCreated, initialValues }: ClientFormModalProps) {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
+    name: initialValues?.name ?? '',
+    email: initialValues?.email ?? '',
+    phone: initialValues?.phone ?? '',
+    address: initialValues?.address ?? '',
     client_status: 'lead' as ClientStatus,
     client_value_tier: 'standard' as ClientValueTier,
     source: '',
