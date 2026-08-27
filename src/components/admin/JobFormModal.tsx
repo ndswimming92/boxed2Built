@@ -4,12 +4,11 @@ import { X, Save, DollarSign, TrendingUp, Bold, Italic, List, Link as LinkIcon, 
 import { REFERRAL_SOURCES, calculateNetProfit, calculateHourlyRate, formatCurrency } from '../../utils/jobCalculations';
 import { getDirectionsUrl, isSameAddress, normalizeAddress } from '../../utils/jobAddress';
 import { sendJobScheduleEmail } from '../../services/jobScheduleCalendarService';
+import type { Client } from '../../services/clientService';
+import ClientPicker, { type PickedClient } from './ClientPicker';
 
-interface LinkedClient {
-  id: string;
-  name: string;
-  address: string | null;
-}
+/** Columns the job form needs from a client profile. */
+const CLIENT_PROFILE_COLUMNS = 'id, name, email, phone, address';
 
 type WorkLocationMode = 'same' | 'different';
 
@@ -30,7 +29,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [linkedClient, setLinkedClient] = useState<LinkedClient | null>(null);
+  const [linkedClient, setLinkedClient] = useState<PickedClient | null>(null);
   const [workLocationMode, setWorkLocationMode] = useState<WorkLocationMode>('same');
   const [serviceAddressDraft, setServiceAddressDraft] = useState('');
 
@@ -80,15 +79,18 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
   }, [job, initialData, businessId]);
 
   // The client profile attached to the job is the source of truth for the customer address.
+  // Runs for every way the form arrives at a linked client — an existing job, a copy, an
+  // inquiry or invoice being converted — but not after a pick, which already has the profile.
   useEffect(() => {
-    if (!job?.client_id) return;
+    const clientId = formData.client_id;
+    if (!clientId || linkedClient?.id === clientId) return;
 
     let cancelled = false;
 
     supabase
       .from('clients')
-      .select('id, name, address')
-      .eq('id', job.client_id)
+      .select(CLIENT_PROFILE_COLUMNS)
+      .eq('id', clientId)
       .maybeSingle()
       .then(({ data, error: clientError }) => {
         if (cancelled) return;
@@ -96,18 +98,20 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           console.error('Error fetching client profile for job:', clientError);
           return;
         }
-        if (data) setLinkedClient(data as LinkedClient);
+        if (data) setLinkedClient(data as PickedClient);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [job?.client_id]);
+  }, [formData.client_id, linkedClient?.id]);
 
-  // New jobs aren't linked to a client yet, so match on what has been typed so far and
-  // carry that profile's address over. Saving re-runs the same matching in the database.
+  // A job with no client picked isn't linked to a profile yet, so match on what has been
+  // typed so far and carry that profile's address over. Saving re-runs the same matching in
+  // the database. A client chosen from the picker is an explicit answer and is never
+  // second-guessed from what the contact fields happen to say.
   useEffect(() => {
-    if (job?.client_id || !organizationId) return;
+    if (formData.client_id || !organizationId) return;
 
     const email = formData.client_email?.trim() || '';
     const phone = formData.client_phone?.trim() || '';
@@ -134,7 +138,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [formData.client_email, formData.client_phone, organizationId, job?.client_id]);
+  }, [formData.client_email, formData.client_phone, formData.client_id, organizationId]);
 
   const applyWorkLocationFrom = (source: Partial<Job>) => {
     const serviceAddress = normalizeAddress(source.service_address);
@@ -146,38 +150,90 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     orgId: string,
     email: string,
     phone: string
-  ): Promise<LinkedClient | null> => {
+  ): Promise<PickedClient | null> => {
     try {
       if (email) {
         // Escape LIKE wildcards so a literal _ or % can't match the wrong profile.
         const emailPattern = email.replace(/[%_\\]/g, (char) => `\\${char}`);
         const { data } = await supabase
           .from('clients')
-          .select('id, name, address')
+          .select(CLIENT_PROFILE_COLUMNS)
           .eq('organization_id', orgId)
           .ilike('email', emailPattern)
           .limit(1)
           .maybeSingle();
 
-        if (data) return data as LinkedClient;
+        if (data) return data as PickedClient;
       }
 
       if (phone) {
         const { data } = await supabase
           .from('clients')
-          .select('id, name, address')
+          .select(CLIENT_PROFILE_COLUMNS)
           .eq('organization_id', orgId)
           .eq('phone', phone)
           .limit(1)
           .maybeSingle();
 
-        if (data) return data as LinkedClient;
+        if (data) return data as PickedClient;
       }
     } catch (err) {
       console.error('Error looking up client profile:', err);
     }
 
     return null;
+  };
+
+  // Picking a saved client is the explicit answer to "who is this job for": it links the job
+  // to that profile so the database stops guessing from the contact fields, and fills the
+  // details in below where they stay editable.
+  const handleClientSelected = (client: Client) => {
+    setLinkedClient({
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+    });
+
+    setFormData((prev) => {
+      // Swapping one linked client for another replaces their details outright. Picking a
+      // client for the first time keeps anything already typed that the profile has no
+      // answer for, so nothing entered by hand is thrown away.
+      const swappingClients = Boolean(prev.client_id);
+      const fromProfile = (profileValue: string | null, typedValue: string | null | undefined) =>
+        profileValue?.trim() || (swappingClients ? '' : typedValue?.trim() || '');
+
+      const next: Partial<Job> = {
+        ...prev,
+        client_id: client.id,
+        client_name: client.name,
+        client_email: fromProfile(client.email, prev.client_email),
+        client_phone: fromProfile(client.phone, prev.client_phone),
+        client_address: fromProfile(client.address, prev.client_address),
+      };
+
+      // Jobs already on file for this client make this one a repeat.
+      if (client.job_count > 0) {
+        next.repeat_client = true;
+      }
+
+      // The referral dropdown only offers the standard sources, so only seed it from the
+      // profile when the value is one of them.
+      const source = client.source?.trim();
+      if (!prev.referral_source && source && (REFERRAL_SOURCES as readonly string[]).includes(source)) {
+        next.referral_source = source;
+      }
+
+      return next;
+    });
+  };
+
+  // Unlinking leaves the contact fields alone — the job becomes an ordinary one that the
+  // database matches to a profile by email or phone when it is saved.
+  const handleClientCleared = () => {
+    setLinkedClient(null);
+    setFormData((prev) => ({ ...prev, client_id: null }));
   };
 
   const fetchDropdownData = async () => {
@@ -518,6 +574,30 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
 
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Client Information</h3>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
+              <ClientPicker
+                organizationId={organizationId}
+                selectedClientId={formData.client_id ?? null}
+                selectedClientDetails={linkedClient}
+                onSelect={handleClientSelected}
+                onClear={handleClientCleared}
+                newClientSeed={{
+                  name: formData.client_name || undefined,
+                  email: formData.client_email || undefined,
+                  phone: formData.client_phone || undefined,
+                  address: formData.client_address || undefined,
+                }}
+                disabled={saving}
+              />
+              <p className="mt-1.5 text-xs text-slate-500">
+                {formData.client_id
+                  ? 'This job is linked to their client profile. Their details are filled in below and stay editable.'
+                  : 'Pick one of your saved clients to fill in their details, or just type them in below.'}
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">

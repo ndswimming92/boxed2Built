@@ -219,6 +219,7 @@ export default function InquiriesPage() {
 
   const handleConvertToJob = (inquiry: FormInquiry) => {
     const initialData: Partial<Job> = {
+      client_id: inquiry.client_id,
       client_name: inquiry.client_name,
       client_email: inquiry.client_email,
       client_phone: inquiry.client_phone,

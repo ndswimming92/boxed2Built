@@ -255,6 +255,7 @@ export default function JobsPage() {
 
   const handleCopyJob = (job: Job) => {
     const jobCopy: Partial<Job> = {
+      client_id: job.client_id,
       client_name: job.client_name,
       client_phone: job.client_phone,
       client_email: job.client_email,

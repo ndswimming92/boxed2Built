@@ -132,6 +132,7 @@ export default function InvoicesPage() {
           invoiceId: invoice.id,
           sourceInvoiceNumber: invoice.invoice_number,
           initialData: {
+            client_id: invoice.client_id,
             client_name: invoice.client_name,
             client_email: invoice.client_email || '',
             client_phone: invoice.client_phone || '',
