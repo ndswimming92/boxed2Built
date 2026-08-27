@@ -19,6 +19,7 @@ import {
   DollarSign,
   Eye,
   EyeOff,
+  ExternalLink,
   FileText,
   Flame,
   FlaskConical,
@@ -544,7 +545,7 @@ function AdminLayoutContent() {
               </kbd>
             </button>
 
-            <div className="flex items-center gap-4 ml-auto">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 ml-auto">
               <PrivacyModeToggleButton />
               <NotificationBell />
               <Link
@@ -557,7 +558,7 @@ function AdminLayoutContent() {
                     {unviewedCount > 99 ? '99+' : unviewedCount}
                   </span>
                 )}
-                <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                <span className="pointer-events-none hidden lg:block absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
                   View Inquiries
                 </span>
               </Link>
@@ -565,9 +566,11 @@ function AdminLayoutContent() {
                 href="/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-slate-600 hover:text-emerald-600 transition-colors"
+                className="flex items-center gap-1 whitespace-nowrap p-2 sm:p-0 text-sm text-slate-600 hover:text-emerald-600 transition-colors"
+                aria-label="View website"
               >
-                View Website →
+                <span className="hidden sm:inline">View Website →</span>
+                <ExternalLink className="w-5 h-5 sm:hidden" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -596,7 +599,7 @@ function PrivacyModeToggleButton() {
       aria-label={privacyModeEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
     >
       {privacyModeEnabled ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-      <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
+      <span className="pointer-events-none hidden lg:block absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50">
         {privacyModeEnabled ? 'Privacy Mode On' : 'Privacy Mode Off'}
       </span>
     </button>

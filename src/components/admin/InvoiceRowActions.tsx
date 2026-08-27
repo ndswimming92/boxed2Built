@@ -12,6 +12,7 @@ import {
   SquarePen,
 } from 'lucide-react';
 import { Invoice } from '../../lib/supabase';
+import AnchoredPanel from '../ui/AnchoredPanel';
 
 type InvoiceRowActionsProps = {
   invoice: Invoice;
@@ -82,7 +83,6 @@ export default function InvoiceRowActions({
   isMarkingSent,
   hasCopiedPaymentLink,
 }: InvoiceRowActionsProps) {
-  const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuId = `invoice-actions-${invoice.id}`;
   const isDraft = invoice.status === 'draft';
@@ -91,37 +91,25 @@ export default function InvoiceRowActions({
   const primaryActionHandler = isDraft && onMarkAsSent ? onMarkAsSent : onViewInvoice;
   const primaryActionDisabled = isDraft ? isMarkingSent : false;
 
+  // AnchoredPanel closes the menu on Escape and on outside clicks; this only
+  // returns focus to the trigger so keyboard users are not stranded.
   useEffect(() => {
     if (!isMenuOpen) {
       return;
     }
 
-    const handlePointerDown = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(event.target as Node)
-      ) {
-        onMenuClose();
-      }
-    };
-
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onMenuClose();
         menuButtonRef.current?.focus();
       }
     };
 
-    document.addEventListener('mousedown', handlePointerDown);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isMenuOpen, onMenuClose]);
+  }, [isMenuOpen]);
 
   const handleMenuAction = (handler: () => void) => {
     onMenuClose();
@@ -156,14 +144,18 @@ export default function InvoiceRowActions({
           <MoreHorizontal className="h-5 w-5" />
         </button>
 
-        {isMenuOpen && (
-          <div
-            id={menuId}
-            ref={menuRef}
-            role="menu"
-            aria-label={`Invoice actions for ${invoice.invoice_number}`}
-            className="absolute right-0 top-12 z-20 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
-          >
+        <AnchoredPanel
+          anchorRef={menuButtonRef}
+          open={isMenuOpen}
+          onClose={onMenuClose}
+          width={256}
+          align="right"
+          id={menuId}
+          role="menu"
+          aria-label={`Invoice actions for ${invoice.invoice_number}`}
+          className="rounded-xl border border-slate-200 bg-white shadow-xl"
+        >
+          <div className="overflow-y-auto p-2">
             <div className="border-b border-slate-100 px-3 py-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Invoice actions</p>
               <p className="mt-1 text-sm font-medium text-slate-900">{invoice.invoice_number}</p>
@@ -235,7 +227,7 @@ export default function InvoiceRowActions({
               />
             </div>
           </div>
-        )}
+        </AnchoredPanel>
       </div>
     </div>
   );

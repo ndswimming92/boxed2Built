@@ -63,59 +63,61 @@ export default function PortalDocumentsPage() {
 
       {!loading && !error && documents.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Document</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Related</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Retention Ends</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {documents.map((doc) => (
-                <tr key={doc.id}>
-                  <td className="px-4 py-3 text-sm font-medium text-slate-800">{doc.display_name}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700 capitalize">{doc.document_type.replace('_', ' ')}</td>
-                  <td className="px-4 py-3 text-sm text-slate-700">
-                    {doc.related_invoice?.invoice_number
-                      ? `Invoice #${doc.related_invoice.invoice_number}`
-                      : null}
-                    {doc.related_job?.job_type
-                      ? (doc.related_invoice?.invoice_number ? ' · ' : '') +
-                        doc.related_job.job_type +
-                        (doc.related_job.date_scheduled
-                          ? ` (${new Date(doc.related_job.date_scheduled).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`
-                          : '')
-                      : null}
-                    {!doc.related_invoice_id && !doc.related_job_id ? '—' : null}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-700">{formatDate(doc.delete_after_at)}</td>
-                  <td className="px-4 py-3 text-right text-sm">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void openDocument(doc.id, 'view')}
-                        disabled={activeDocumentId === doc.id}
-                        className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void openDocument(doc.id, 'download')}
-                        disabled={activeDocumentId === doc.id}
-                        className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
-                      >
-                        Download
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Document</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Related</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Retention Ends</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {documents.map((doc) => (
+                  <tr key={doc.id}>
+                    <td className="px-4 py-3 text-sm font-medium text-slate-800">{doc.display_name}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700 capitalize">{doc.document_type.replace('_', ' ')}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      {doc.related_invoice?.invoice_number
+                        ? `Invoice #${doc.related_invoice.invoice_number}`
+                        : null}
+                      {doc.related_job?.job_type
+                        ? (doc.related_invoice?.invoice_number ? ' · ' : '') +
+                          doc.related_job.job_type +
+                          (doc.related_job.date_scheduled
+                            ? ` (${new Date(doc.related_job.date_scheduled).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`
+                            : '')
+                        : null}
+                      {!doc.related_invoice_id && !doc.related_job_id ? '—' : null}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{formatDate(doc.delete_after_at)}</td>
+                    <td className="px-4 py-3 text-right text-sm">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void openDocument(doc.id, 'view')}
+                          disabled={activeDocumentId === doc.id}
+                          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void openDocument(doc.id, 'download')}
+                          disabled={activeDocumentId === doc.id}
+                          className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
+                        >
+                          Download
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : null}
     </PortalLayout>

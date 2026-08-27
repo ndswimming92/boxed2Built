@@ -45,8 +45,15 @@ export default defineConfig({
     // identical to a slow start: a bare webServer timeout and no explanation.
     stdout: 'pipe',
     stderr: 'pipe',
-    // No `env` override here. Passing one previously replaced the inherited
-    // environment, so `npx` lost PATH and died silently before printing
-    // anything. The harness imports no Supabase code, so it needs nothing.
+    // Spread, never replace: passing a bare `env` previously wiped the
+    // inherited environment, so `npx` lost PATH and died silently before
+    // printing anything. The mobile harness mounts NotificationBell, and
+    // createClient() throws at import time on an empty URL, so it needs
+    // placeholders here. Tests stub the requests these would otherwise make.
+    env: {
+      ...process.env,
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || 'http://127.0.0.1:5173',
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 'test-anon-key',
+    },
   },
 });
