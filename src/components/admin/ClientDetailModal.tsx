@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown } from 'lucide-react';
 import Modal from '../Modal';
 import {
@@ -28,6 +28,8 @@ import {
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import InvoiceFormModal from './InvoiceFormModal';
+import JobFormModal from './JobFormModal';
+import type { Job } from '../../lib/supabase';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -113,6 +115,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [invoiceCooldownRemaining, setInvoiceCooldownRemaining] = useState<number>(0);
   const invoiceCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [businessId, setBusinessId] = useState<string | null>(null);
+
+  // New job state
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [openingJobForm, setOpeningJobForm] = useState(false);
+  const [jobMessage, setJobMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const jobSectionRef = useRef<HTMLDivElement>(null);
 
   // Quote email state
   const [selectedQuoteJobId, setSelectedQuoteJobId] = useState<string>('');
@@ -408,6 +416,72 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     return bid;
   }
 
+  // The job form is prefilled from this profile and linked to it, so a job booked from here
+  // needs nothing typed twice. Memoised because JobFormModal re-seeds its fields whenever
+  // initialData changes identity, and this modal re-renders on every cooldown tick.
+  const newJobInitialData = useMemo<Partial<Job>>(
+    () => ({
+      client_id: currentClient.id,
+      client_name: currentClient.name,
+      client_email: currentClient.email ?? '',
+      client_phone: currentClient.phone ?? '',
+      client_address: currentClient.address ?? '',
+    }),
+    [
+      currentClient.id,
+      currentClient.name,
+      currentClient.email,
+      currentClient.phone,
+      currentClient.address,
+    ]
+  );
+
+  // The job form needs a business, which this modal only resolves lazily.
+  async function openNewJobForm() {
+    setJobMessage(null);
+    setOpeningJobForm(true);
+    try {
+      const bid = await resolveBusinessId();
+      if (!bid) {
+        reportJobProblem('Could not find an active business for this client, so a job cannot be created here.');
+        return;
+      }
+      setShowJobForm(true);
+    } catch (error) {
+      console.error('Error preparing the new job form:', error);
+      reportJobProblem('Could not open the job form. Please try again.');
+    } finally {
+      setOpeningJobForm(false);
+    }
+  }
+
+  // The message lives beside the job selector, which may be well below the button that was
+  // pressed, so bring it into view rather than leaving the click looking like it did nothing.
+  function reportJobProblem(text: string) {
+    setJobMessage({ type: 'error', text });
+    setTimeout(() => {
+      jobSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+
+  // Picking up where the admin was: the job they just created is the one they were looking
+  // for in the selector, so it lands there selected and scrolled to.
+  async function handleJobCreated(savedJob?: Job) {
+    setShowJobForm(false);
+    await loadClientDetails();
+
+    if (!savedJob?.id) return;
+
+    await handleJobSelected(savedJob.id);
+    setJobMessage({
+      type: 'success',
+      text: `${savedJob.job_type?.trim() || 'Job'} created for ${currentClient.name} and selected below.`,
+    });
+    setTimeout(() => {
+      jobSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  }
+
   async function handleJobSelected(jobId: string) {
     setSelectedJobId(jobId);
     setSelectedInvoiceId(null);
@@ -605,6 +679,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     }
   }
 
+  // Escape and backdrop clicks belong to whichever dialog is stacked on top of this one.
+  const nestedDialogOpen = showJobForm || showInvoiceForm || showUploadModal;
+
   const allActivities = [
     ...(history?.inquiries.map(i => ({ type: 'inquiry', date: i.created_at, data: i })) || []),
     ...(history?.jobs.map(j => ({ type: 'job', date: j.created_at, data: j })) || []),
@@ -632,7 +709,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   };
 
   return (
-    <Modal isOpen onClose={onClose} title="Client Details" size="large">
+    <Modal
+      isOpen
+      onClose={nestedDialogOpen ? () => {} : onClose}
+      title="Client Details"
+      size="large"
+    >
       {/* Tab nav */}
       <div className="flex items-center gap-1 border-b border-gray-200 mb-6 -mt-2">
         <button
@@ -856,6 +938,14 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 </div>
                 {!editingInfo && (
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={openNewJobForm}
+                      disabled={openingJobForm}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-white border border-emerald-100 rounded-lg hover:bg-emerald-50 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-3 h-3" />
+                      {openingJobForm ? 'Opening...' : 'New Job'}
+                    </button>
                     <button
                       onClick={() => setEditingInfo(true)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-white border border-indigo-100 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
@@ -1141,7 +1231,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
         )}
 
         {/* Send Invoice by Email */}
-        <div className="p-6 bg-white border border-gray-200 rounded-lg">
+        <div ref={jobSectionRef} className="p-6 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-2 mb-4">
             <Receipt className="w-5 h-5 text-blue-600" />
             <div>
@@ -1150,11 +1240,34 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             </div>
           </div>
 
+          {jobMessage && (
+            <div className={`flex items-start gap-2 mb-3 px-3 py-2 rounded-lg text-sm ${
+              jobMessage.type === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {jobMessage.type === 'success'
+                ? <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+              <span>{jobMessage.text}</span>
+            </div>
+          )}
+
           {history && history.jobs.length > 0 ? (
             <div className="space-y-3">
               {/* Job selector */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Select Job</label>
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <label className="block text-xs font-medium text-gray-600">Select Job</label>
+                  <button
+                    onClick={openNewJobForm}
+                    disabled={openingJobForm}
+                    className="flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-3 h-3" />
+                    {openingJobForm ? 'Opening...' : 'New Job'}
+                  </button>
+                </div>
                 <div className="relative">
                   <select
                     value={selectedJobId}
@@ -1253,9 +1366,19 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              No jobs found for this client. Jobs are required to send an invoice email.
+            <div className="flex flex-col items-start gap-3 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-start gap-2 text-sm text-gray-500">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                No jobs found for this client. Jobs are required to send an invoice email.
+              </p>
+              <button
+                onClick={openNewJobForm}
+                disabled={openingJobForm}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {openingJobForm ? 'Opening...' : 'Create First Job'}
+              </button>
             </div>
           )}
         </div>
@@ -1673,6 +1796,17 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             setShowUploadModal(false);
             loadDocuments(customerId);
           }}
+        />
+      )}
+
+      {showJobForm && businessId && (
+        <JobFormModal
+          job={null}
+          businessId={businessId}
+          initialData={newJobInitialData}
+          title={`New Job for ${currentClient.name}`}
+          onClose={() => setShowJobForm(false)}
+          onSave={handleJobCreated}
         />
       )}
 

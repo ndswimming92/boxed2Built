@@ -1,7 +1,8 @@
-# Picking a Client on a Job
+# Jobs and Clients
 
-How a job gets attached to one of your saved clients from the job form, and how
-to add a client without leaving it.
+How a job gets attached to one of your saved clients — from the job form, or the
+other way round by booking the job from the client's own profile — and how to add
+a client without leaving either.
 
 Every job form — **Add New Job**, **Edit Job**, **Copy Job**, and the forms
 opened by converting an inquiry or an invoice — opens with a **Client** search
@@ -81,6 +82,29 @@ who this client is.
 
 Creating the client saves it, links the new job to it, and fills the job's
 client fields — the same as picking an existing one.
+
+## Booking a job from the client's profile
+
+The reverse direction works too, so a job for someone already on file never means going to
+the Jobs page and searching for them again. **Admin → Clients → (a client)** offers three
+ways in, all opening the same job form:
+
+- **New Job** in the profile header, next to Edit and Delete.
+- **New Job** beside *Select Job* in **Send Invoice by Email** — right where a job is being
+  looked for.
+- **Create First Job** in that section's empty state, when the client has no jobs yet.
+
+The form opens as **New Job for ‹client›**, already linked to that profile with their
+name, phone, email, and address filled in — the same state as picking them from the Client
+box. Everything else on the form works as normal.
+
+Saving reloads the profile, so the new job appears in the *Select Job* dropdowns and the
+Activity Timeline straight away, and the job is left **selected** in the invoice section with
+a note confirming it. From there the next step — *Create Invoice* — is one click, without
+leaving the client.
+
+While the job form is open it owns Escape and clicks outside it; the client profile
+underneath stays put rather than closing and discarding a half-filled form.
 
 ## Notes
 

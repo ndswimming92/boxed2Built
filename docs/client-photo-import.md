@@ -11,7 +11,7 @@ for reviewing what gets stored.
 
 1. Open **Admin → Clients** and click **Add Client**. The same form opens from
    **Add a new client** in the client search on any job — see
-   [Picking a Client on a Job](./job-client-picker.md).
+   [Jobs and Clients](./job-client-picker.md).
 2. Optionally drop a photo into **Fill from a photo** — a business card, a
    handwritten note, a work order, a printed invoice, or a screenshot of a text
    or email — and click **Scan Photo**.
@@ -103,4 +103,4 @@ form field, so the manual path is always available.
 The client search at the top of every job form offers **Add a new client**, which
 opens this same form — photo scan included — over the job. What is already known
 is carried in so it isn't typed twice, and creating the client links the job to
-it. [Picking a Client on a Job](./job-client-picker.md) covers that side.
+it. [Jobs and Clients](./job-client-picker.md) covers that side.
