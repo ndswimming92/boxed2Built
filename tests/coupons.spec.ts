@@ -308,3 +308,40 @@ test('promoting a code without a post date is refused, and ticking it fills one 
   await page.getByRole('button', { name: 'Create coupon' }).click();
   await expect(page.getByText(/Pick a date to post this promotion/)).toBeVisible();
 });
+
+/**
+ * Where the form opens. On a long list, an edit form pinned to the top of the
+ * page means scrolling away from the card you clicked and then scrolling back
+ * to find your place again, so the form takes the card's own slot instead.
+ * Heading order is the assertion because it is what "in place" actually means.
+ */
+test('editing opens the form in the card\'s own place, not at the top', async ({ page }) => {
+  await openAdmin(page, [
+    promoCoupon({ id: 'a', code: 'ALPHA', created_at: new Date(Date.now() - 1 * day).toISOString() }),
+    promoCoupon({ id: 'b', code: 'BRAVO', created_at: new Date(Date.now() - 2 * day).toISOString() }),
+    promoCoupon({ id: 'c', code: 'CHARLIE', created_at: new Date(Date.now() - 3 * day).toISOString() }),
+  ]);
+
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'BRAVO', 'CHARLIE']);
+
+  await page.getByRole('button', { name: 'Edit BRAVO' }).click();
+
+  // The form sits between ALPHA and CHARLIE — where BRAVO's card was — and
+  // BRAVO's card is gone rather than duplicated above the list.
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'Edit BRAVO', 'CHARLIE']);
+  await expect(page.locator('#coupon-code')).toHaveValue('BRAVO');
+
+  // Switching to another card moves the form with it.
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('button', { name: 'Edit CHARLIE' }).click();
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'BRAVO', 'Edit CHARLIE']);
+});
+
+test('a new coupon still opens at the top, above the list', async ({ page }) => {
+  await openAdmin(page, [
+    promoCoupon({ id: 'a', code: 'ALPHA', created_at: new Date().toISOString() }),
+  ]);
+
+  await page.getByRole('button', { name: 'New Coupon' }).click();
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'New coupon', 'ALPHA']);
+});

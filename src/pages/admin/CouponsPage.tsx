@@ -343,6 +343,218 @@ export default function CouponsPage() {
     .sort()[0];
   const queuedCount = coupons.filter((c) => couponPromoState(c) === 'queued').length;
 
+  /**
+   * The form renders in one of two places, never both: at the top of the page
+   * when creating, and in the edited coupon's own slot in the list when
+   * editing. Editing used to jump the page to a form at the top, which on a
+   * long list meant scrolling back to find the card you started from.
+   */
+  const renderForm = (className = '') => (
+    <div className={`bg-white rounded-xl border border-slate-200 p-6 ${className}`}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-900">
+            {form.id ? `Edit ${form.code}` : 'New coupon'}
+          </h2>
+          <button
+            onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
+            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+            aria-label="Close coupon form"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="coupon-code" className="block text-sm font-medium text-slate-700 mb-2">Code</label>
+            <input
+              id="coupon-code"
+              name="code"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: normalizeCouponCode(e.target.value) })}
+              placeholder="WELCOME25"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg font-mono tracking-wider focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <p className="text-xs text-slate-500 mt-1">This is what the customer types on the form.</p>
+          </div>
+
+          <div>
+            <label htmlFor="coupon-description" className="block text-sm font-medium text-slate-700 mb-2">
+              Description <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <input
+              id="coupon-description"
+              name="description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="New customer welcome offer"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="coupon-type" className="block text-sm font-medium text-slate-700 mb-2">Discount</label>
+            <div className="flex gap-2">
+              <select
+                id="coupon-type"
+                name="discount_type"
+                value={form.discount_type}
+                onChange={(e) => setForm({ ...form, discount_type: e.target.value as CouponDiscountType })}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="fixed">$ off</option>
+                <option value="percentage">% off</option>
+              </select>
+              <input
+                id="coupon-value"
+                name="discount_value"
+                type="number"
+                min="0"
+                step={form.discount_type === 'percentage' ? '1' : '0.01'}
+                max={form.discount_type === 'percentage' ? '100' : undefined}
+                value={form.discount_value}
+                onChange={(e) => setForm({ ...form, discount_value: e.target.value })}
+                placeholder={form.discount_type === 'percentage' ? '10' : '25'}
+                className="flex-1 min-w-0 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-end">
+            <label className="flex items-center gap-2 text-sm text-slate-700 pb-2">
+              <input
+                type="checkbox"
+                name="is_active"
+                checked={form.is_active}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              Accept this code on the form
+            </label>
+          </div>
+
+          <div>
+            <label htmlFor="coupon-starts" className="block text-sm font-medium text-slate-700 mb-2">
+              First day <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <input
+              id="coupon-starts"
+              name="starts_on"
+              type="date"
+              value={form.starts_on}
+              onChange={(e) => setForm({ ...form, starts_on: e.target.value })}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <p className="text-xs text-slate-500 mt-1">Leave empty to start right away.</p>
+          </div>
+
+          <div>
+            <label htmlFor="coupon-ends" className="block text-sm font-medium text-slate-700 mb-2">
+              Last day <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <input
+              id="coupon-ends"
+              name="ends_on"
+              type="date"
+              value={form.ends_on}
+              onChange={(e) => setForm({ ...form, ends_on: e.target.value })}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <p className="text-xs text-slate-500 mt-1">Works through the end of this day. Empty never expires.</p>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <label className="flex items-start gap-2.5 text-sm text-slate-700 mb-1">
+            <input
+              type="checkbox"
+              name="promote"
+              checked={form.promote}
+              onChange={(e) => handlePromoteChange(e.target.checked)}
+              className="w-4 h-4 mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            />
+            <span>
+              <span className="font-medium">Promote this code</span>
+              <span className="block text-xs text-slate-500 mt-0.5">
+                Puts it in the queue on this page, emails you a day before it is due, and gives it a one-click post
+                to your Facebook Page. Leave this off for a code you are handing to one customer.
+              </span>
+            </span>
+          </label>
+
+          {form.promote && (
+            <div className="mt-4 grid grid-cols-1 gap-4">
+              <div className="md:max-w-xs">
+                <label htmlFor="coupon-post-at" className="block text-sm font-medium text-slate-700 mb-2">
+                  Post on
+                </label>
+                <input
+                  id="coupon-post-at"
+                  name="promo_post_on"
+                  type="datetime-local"
+                  value={form.promo_post_on}
+                  min={postAtMin}
+                  onChange={(e) => setForm({ ...form, promo_post_on: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  The queue is ordered by this, soonest first. Your reminder arrives 24 hours before.
+                </p>
+              </div>
+
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <label htmlFor="coupon-post-message" className="block text-sm font-medium text-slate-700">
+                    The post <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={() => handleDraft(editing)}
+                      disabled={draftingId === editing.id}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {draftingId === editing.id ? 'Writing…' : 'Draft with Claude'}
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  id="coupon-post-message"
+                  name="promo_message"
+                  rows={6}
+                  value={form.promo_message}
+                  onChange={(e) => setForm({ ...form, promo_message: e.target.value })}
+                  placeholder="Leave this empty and Claude writes it — when you press Draft, or automatically when your reminder goes out."
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  This is what goes on Facebook and what your reminder email quotes. Edit it however you like.
+                  {!form.id && ' Save the coupon first and the Draft button appears here.'}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
+          <button
+            onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
+            className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : form.id ? 'Save changes' : 'Create coupon'}
+          </button>
+        </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -460,211 +672,7 @@ export default function CouponsPage() {
         </div>
       )}
 
-      {showForm && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">
-              {form.id ? `Edit ${form.code}` : 'New coupon'}
-            </h2>
-            <button
-              onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
-              className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
-              aria-label="Close coupon form"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="coupon-code" className="block text-sm font-medium text-slate-700 mb-2">Code</label>
-              <input
-                id="coupon-code"
-                name="code"
-                value={form.code}
-                onChange={(e) => setForm({ ...form, code: normalizeCouponCode(e.target.value) })}
-                placeholder="WELCOME25"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg font-mono tracking-wider focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              <p className="text-xs text-slate-500 mt-1">This is what the customer types on the form.</p>
-            </div>
-
-            <div>
-              <label htmlFor="coupon-description" className="block text-sm font-medium text-slate-700 mb-2">
-                Description <span className="text-slate-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="coupon-description"
-                name="description"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="New customer welcome offer"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="coupon-type" className="block text-sm font-medium text-slate-700 mb-2">Discount</label>
-              <div className="flex gap-2">
-                <select
-                  id="coupon-type"
-                  name="discount_type"
-                  value={form.discount_type}
-                  onChange={(e) => setForm({ ...form, discount_type: e.target.value as CouponDiscountType })}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="fixed">$ off</option>
-                  <option value="percentage">% off</option>
-                </select>
-                <input
-                  id="coupon-value"
-                  name="discount_value"
-                  type="number"
-                  min="0"
-                  step={form.discount_type === 'percentage' ? '1' : '0.01'}
-                  max={form.discount_type === 'percentage' ? '100' : undefined}
-                  value={form.discount_value}
-                  onChange={(e) => setForm({ ...form, discount_value: e.target.value })}
-                  placeholder={form.discount_type === 'percentage' ? '10' : '25'}
-                  className="flex-1 min-w-0 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-end">
-              <label className="flex items-center gap-2 text-sm text-slate-700 pb-2">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={form.is_active}
-                  onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                />
-                Accept this code on the form
-              </label>
-            </div>
-
-            <div>
-              <label htmlFor="coupon-starts" className="block text-sm font-medium text-slate-700 mb-2">
-                First day <span className="text-slate-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="coupon-starts"
-                name="starts_on"
-                type="date"
-                value={form.starts_on}
-                onChange={(e) => setForm({ ...form, starts_on: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              <p className="text-xs text-slate-500 mt-1">Leave empty to start right away.</p>
-            </div>
-
-            <div>
-              <label htmlFor="coupon-ends" className="block text-sm font-medium text-slate-700 mb-2">
-                Last day <span className="text-slate-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="coupon-ends"
-                name="ends_on"
-                type="date"
-                value={form.ends_on}
-                onChange={(e) => setForm({ ...form, ends_on: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              <p className="text-xs text-slate-500 mt-1">Works through the end of this day. Empty never expires.</p>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <label className="flex items-start gap-2.5 text-sm text-slate-700 mb-1">
-              <input
-                type="checkbox"
-                name="promote"
-                checked={form.promote}
-                onChange={(e) => handlePromoteChange(e.target.checked)}
-                className="w-4 h-4 mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <span>
-                <span className="font-medium">Promote this code</span>
-                <span className="block text-xs text-slate-500 mt-0.5">
-                  Puts it in the queue on this page, emails you a day before it is due, and gives it a one-click post
-                  to your Facebook Page. Leave this off for a code you are handing to one customer.
-                </span>
-              </span>
-            </label>
-
-            {form.promote && (
-              <div className="mt-4 grid grid-cols-1 gap-4">
-                <div className="md:max-w-xs">
-                  <label htmlFor="coupon-post-at" className="block text-sm font-medium text-slate-700 mb-2">
-                    Post on
-                  </label>
-                  <input
-                    id="coupon-post-at"
-                    name="promo_post_on"
-                    type="datetime-local"
-                    value={form.promo_post_on}
-                    min={postAtMin}
-                    onChange={(e) => setForm({ ...form, promo_post_on: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">
-                    The queue is ordered by this, soonest first. Your reminder arrives 24 hours before.
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <label htmlFor="coupon-post-message" className="block text-sm font-medium text-slate-700">
-                      The post <span className="text-slate-400 font-normal">(optional)</span>
-                    </label>
-                    {editing && (
-                      <button
-                        type="button"
-                        onClick={() => handleDraft(editing)}
-                        disabled={draftingId === editing.id}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        {draftingId === editing.id ? 'Writing…' : 'Draft with Claude'}
-                      </button>
-                    )}
-                  </div>
-                  <textarea
-                    id="coupon-post-message"
-                    name="promo_message"
-                    rows={6}
-                    value={form.promo_message}
-                    onChange={(e) => setForm({ ...form, promo_message: e.target.value })}
-                    placeholder="Leave this empty and Claude writes it — when you press Draft, or automatically when your reminder goes out."
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">
-                    This is what goes on Facebook and what your reminder email quotes. Edit it however you like.
-                    {!form.id && ' Save the coupon first and the Draft button appears here.'}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
-            <button
-              onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
-              className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : form.id ? 'Save changes' : 'Create coupon'}
-            </button>
-          </div>
-        </div>
-      )}
+      {showForm && !form.id && renderForm('mb-6')}
 
       {coupons.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
@@ -677,6 +685,12 @@ export default function CouponsPage() {
       ) : (
         <div className="space-y-4">
           {coupons.map((coupon) => {
+            // Editing swaps this card for the form, so it opens under the
+            // pencil you just clicked rather than at the top of the page.
+            if (showForm && form.id === coupon.id) {
+              return <div key={coupon.id}>{renderForm()}</div>;
+            }
+
             const state = couponState(coupon);
             const style = STATE_STYLES[state];
             const promo = couponPromoState(coupon);
