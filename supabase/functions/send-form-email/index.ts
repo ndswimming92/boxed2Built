@@ -41,6 +41,10 @@ interface ContactFormPayload {
   referralCodeUsed?: string;
   referrerName?: string;
   clientType?: string;
+  // Present when a coupon was applied. estimatedPrice already has the discount
+  // taken off; these describe where the difference went.
+  couponCode?: string;
+  couponDiscountLabel?: string;
 }
 
 interface QuickContactPayload {
@@ -108,6 +112,8 @@ function ownerNotificationContact(p: ContactFormPayload): string {
   const safeEstimatedTime = p.estimatedTime ? escapeHtml(p.estimatedTime) : null;
   const safeNotes = p.notes ? escapeHtml(p.notes) : null;
   const safeReferralCode = p.referralCodeUsed ? escapeHtml(p.referralCodeUsed) : null;
+  const safeCouponCode = p.couponCode ? escapeHtml(p.couponCode) : null;
+  const safeCouponLabel = p.couponDiscountLabel ? escapeHtml(p.couponDiscountLabel) : null;
   const safeReferrerName = p.referrerName ? escapeHtml(p.referrerName) : null;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -156,6 +162,10 @@ function ownerNotificationContact(p: ContactFormPayload): string {
           ${safeEstimatedPrice ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Est. Price</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#15803d;font-size:14px;font-weight:600;">${safeEstimatedPrice}</span></td>
+          </tr>` : ""}
+          ${safeCouponCode ? `<tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Coupon</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#b45309;font-size:14px;font-weight:600;font-family:monospace;">${safeCouponCode}</span>${safeCouponLabel ? `<span style="color:#6b7280;font-size:12px;"> &middot; ${safeCouponLabel}</span>` : ""}</td>
           </tr>` : ""}
           ${safeEstimatedTime ? `<tr>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Est. Time</span></td>
@@ -221,6 +231,8 @@ function customerConfirmationContact(p: ContactFormPayload): string {
   const safeEstimatedPrice = p.estimatedPrice ? escapeHtml(p.estimatedPrice) : null;
   const safeEstimatedTime = p.estimatedTime ? escapeHtml(p.estimatedTime) : null;
   const safeNotes = p.notes ? escapeHtml(p.notes) : null;
+  const safeCouponCode = p.couponCode ? escapeHtml(p.couponCode) : null;
+  const safeCouponLabel = p.couponDiscountLabel ? escapeHtml(p.couponDiscountLabel) : null;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -257,6 +269,10 @@ function customerConfirmationContact(p: ContactFormPayload): string {
           ${safeEstimatedPrice ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Cost</td>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#15803d;font-size:13px;font-weight:600;">${safeEstimatedPrice}</td>
+          </tr>` : ""}
+          ${safeCouponCode ? `<tr>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Coupon Applied</td>
+            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#b45309;font-size:13px;font-weight:600;">${safeCouponCode}${safeCouponLabel ? ` &middot; ${safeCouponLabel}` : ""}</td>
           </tr>` : ""}
           ${safeEstimatedTime ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Time</td>

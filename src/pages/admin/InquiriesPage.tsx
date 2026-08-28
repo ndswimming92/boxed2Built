@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
-import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock } from 'lucide-react';
+import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock, Tag } from 'lucide-react';
 import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob, markAsConverted, markAsReachedOut } from '../../services/inquiryService';
 import {
   hasReachedOut,
@@ -13,6 +13,7 @@ import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
 import { logAction } from '../../services/auditLogService';
+import { describeDiscount, formatMoney } from '../../utils/coupon';
 
 interface InquiryStats {
   total: number;
@@ -257,7 +258,17 @@ export default function InquiriesPage() {
       client_email: inquiry.client_email,
       client_phone: inquiry.client_phone,
       job_type: inquiry.furniture_type,
-      job_description: inquiry.notes || `${inquiry.furniture_type} assembly - ${inquiry.pieces} ${inquiry.pieces === 1 ? 'piece' : 'pieces'}`,
+      job_description: [
+        inquiry.notes || `${inquiry.furniture_type} assembly - ${inquiry.pieces} ${inquiry.pieces === 1 ? 'piece' : 'pieces'}`,
+        // The quoted price below already has the coupon off it; without this
+        // the job gives no hint of where the difference went.
+        inquiry.coupon_code && inquiry.coupon_discount_type
+          ? `Coupon ${inquiry.coupon_code} applied (${describeDiscount({
+              discount_type: inquiry.coupon_discount_type,
+              discount_value: Number(inquiry.coupon_discount_value ?? 0),
+            })}).`
+          : '',
+      ].filter(Boolean).join('\n\n'),
       location_city: inquiry.user_city,
       date_quoted: new Date().toISOString().split('T')[0],
       quoted_price: inquiry.estimated_price ? parseFloat(inquiry.estimated_price.replace(/[^0-9.]/g, '')) : undefined,
@@ -665,6 +676,16 @@ export default function InquiriesPage() {
                     {inquiry.source === 'footer_quick_contact' && (
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
                         Quick Contact
+                      </span>
+                    )}
+                    {inquiry.coupon_code && (
+                      <span
+                        className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1"
+                        title="The estimate below already has this coupon taken off"
+                      >
+                        <Tag className="w-3 h-3" />
+                        {inquiry.coupon_code}
+                        {inquiry.coupon_discount_amount ? ` · ${formatMoney(Number(inquiry.coupon_discount_amount))} off` : ''}
                       </span>
                     )}
                     {(inquiry.furniture_photo_url || inquiry.furniture_image_path) && (
