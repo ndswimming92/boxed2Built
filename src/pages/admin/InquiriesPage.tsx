@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
 import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock } from 'lucide-react';
-import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob, markAsConverted } from '../../services/inquiryService';
+import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob, markAsConverted, markAsReachedOut } from '../../services/inquiryService';
+import {
+  hasReachedOut,
+  isAwaitingOutreach,
+  isWrappedUp,
+  matchesStatusFilter,
+  type InquiryStatusFilter,
+} from '../../utils/inquiryWorkflow';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
@@ -20,12 +27,11 @@ export default function InquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'active' | 'all' | 'pending' | 'converted_to_job' | 'archived'>('active');
+  const [statusFilter, setStatusFilter] = useState<InquiryStatusFilter>('needs_attention');
   const [furnitureTypeFilter, setFurnitureTypeFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<InquiryStats>({ total: 0, pending: 0, converted: 0, archived: 0, conversionRate: 0 });
-  const [filteredInquiries, setFilteredInquiries] = useState<FormInquiry[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState<FormInquiry | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
@@ -45,10 +51,6 @@ export default function InquiriesPage() {
       fetchStats();
     }
   }, [businessId, inquiries, showTestData]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [inquiries, searchTerm, statusFilter, furnitureTypeFilter, sourceFilter]);
 
   const fetchBusinessId = async () => {
     try {
@@ -127,7 +129,11 @@ export default function InquiriesPage() {
     }
   };
 
-  const applyFilters = () => {
+  // Derived while rendering rather than pushed into state by an effect. The
+  // effect left one committed frame where the inquiries had arrived but the
+  // list had not been filtered yet, which flashed the empty state at every
+  // load and after every refresh.
+  const { filteredInquiries, wrappedUpCount } = useMemo(() => {
     let filtered = [...inquiries];
 
     if (searchTerm) {
@@ -142,13 +148,6 @@ export default function InquiriesPage() {
       );
     }
 
-    if (statusFilter === 'active') {
-      // Default view: hide inquiries that are done (converted) or dismissed (archived)
-      filtered = filtered.filter((inquiry) => inquiry.status === 'pending');
-    } else if (statusFilter !== 'all') {
-      filtered = filtered.filter((inquiry) => inquiry.status === statusFilter);
-    }
-
     if (furnitureTypeFilter !== 'all') {
       filtered = filtered.filter((inquiry) => inquiry.furniture_type === furnitureTypeFilter);
     }
@@ -157,8 +156,13 @@ export default function InquiriesPage() {
       filtered = filtered.filter((inquiry) => inquiry.source === sourceFilter);
     }
 
-    setFilteredInquiries(filtered);
-  };
+    return {
+      filteredInquiries: filtered.filter((inquiry) => matchesStatusFilter(inquiry, statusFilter)),
+      // Counted before the status filter, so the note below the list reports
+      // exactly what switching to Wrapped Up would reveal.
+      wrappedUpCount: filtered.filter(isWrappedUp).length,
+    };
+  }, [inquiries, searchTerm, statusFilter, furnitureTypeFilter, sourceFilter]);
 
   const handleViewInquiry = async (inquiry: FormInquiry) => {
     setSelectedInquiry(inquiry);
@@ -193,6 +197,35 @@ export default function InquiriesPage() {
     } catch (error) {
       console.error('Error archiving inquiry:', error);
       setMessage({ type: 'error', text: 'Failed to archive inquiry' });
+    }
+  };
+
+  const handleMarkReachedOut = async (inquiry: FormInquiry) => {
+    // On a converted inquiry this is the second half of "wrapped up", so the
+    // card is about to leave the list. Say so, or it reads as a disappearance.
+    const wrapsUp = isAwaitingOutreach(inquiry);
+
+    try {
+      await markAsReachedOut(inquiry.id);
+      await logAction({
+        actionType: 'UPDATE',
+        tableName: 'form_inquiries',
+        recordId: inquiry.id,
+        recordIdentifier: inquiry.client_name,
+        metadata: { marked_reached_out: true },
+      });
+      setMessage({
+        type: 'success',
+        text: wrapsUp
+          ? `${inquiry.client_name}'s inquiry is wrapped up and cleared from your list.`
+          : `Marked as reached out — response time recorded for ${inquiry.client_name}.`,
+      });
+      await refresh();
+      await fetchStats();
+      setTimeout(() => setMessage(null), 4000);
+    } catch (error) {
+      console.error('Error marking inquiry as reached out:', error);
+      setMessage({ type: 'error', text: 'Failed to mark inquiry as reached out' });
     }
   };
 
@@ -254,7 +287,12 @@ export default function InquiriesPage() {
         });
       }
 
-      setMessage({ type: 'success', text: 'Inquiry converted to job successfully!' });
+      setMessage({
+        type: 'success',
+        text: hasReachedOut(selectedInquiry)
+          ? 'Converted to job — this inquiry is wrapped up and cleared from your list.'
+          : 'Converted to job. Mark it as reached out and it clears from your list.',
+      });
       await refresh();
       await fetchStats();
       setTimeout(() => setMessage(null), 3000);
@@ -276,7 +314,12 @@ export default function InquiriesPage() {
         recordIdentifier: inquiry.client_name,
         metadata: { status: 'converted_to_job', manual: true },
       });
-      setMessage({ type: 'success', text: 'Inquiry marked as converted!' });
+      setMessage({
+        type: 'success',
+        text: hasReachedOut(inquiry)
+          ? 'Marked as converted — this inquiry is wrapped up and cleared from your list.'
+          : 'Marked as converted. Mark it as reached out and it clears from your list.',
+      });
       setShowDetailModal(false);
       setSelectedInquiry(null);
       await refresh();
@@ -335,6 +378,11 @@ export default function InquiriesPage() {
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     });
   };
+
+  // Nothing left on the working list, but inquiries do exist - that is a
+  // finished inbox, not an empty one, and it should not read like a dead end.
+  const allCaughtUp =
+    statusFilter === 'needs_attention' && filteredInquiries.length === 0 && inquiries.length > 0;
 
   const uniqueFurnitureTypes = Array.from(new Set(inquiries.map((i) => i.furniture_type).filter(Boolean)));
   const uniqueSources = Array.from(new Set(inquiries.map((i) => i.source).filter(Boolean)));
@@ -422,11 +470,11 @@ export default function InquiriesPage() {
         <button
           type="button"
           onClick={() => {
-            setStatusFilter('active');
+            setStatusFilter('pending');
             setShowFilters(true);
           }}
           className={`text-left bg-white rounded-xl p-4 sm:p-6 border transition-all hover:shadow-md hover:-translate-y-0.5 ${
-            statusFilter === 'active' ? 'border-yellow-400 ring-1 ring-yellow-300' : 'border-slate-200'
+            statusFilter === 'pending' ? 'border-yellow-400 ring-1 ring-yellow-300' : 'border-slate-200'
           }`}
           title="Show pending inquiries"
         >
@@ -502,9 +550,11 @@ export default function InquiriesPage() {
                 onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="active">Active (Pending)</option>
+                <option value="needs_attention">Needs Attention</option>
                 <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
                 <option value="converted_to_job">Converted</option>
+                <option value="wrapped_up">Wrapped Up (Converted &amp; Contacted)</option>
                 <option value="archived">Archived</option>
               </select>
             </div>
@@ -547,7 +597,11 @@ export default function InquiriesPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
             <Inbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-600 mb-2 text-lg font-medium">
-              {inquiries.length === 0 ? 'No inquiries yet' : 'No inquiries match your filters'}
+              {inquiries.length === 0
+                ? 'No inquiries yet'
+                : allCaughtUp
+                  ? "You're all caught up"
+                  : 'No inquiries match your filters'}
             </p>
             {inquiries.length === 0 ? (
               <div className="text-sm text-slate-500 space-y-2">
@@ -558,6 +612,10 @@ export default function InquiriesPage() {
                 </p>
                 <p className="mt-2">Or click the "Check for New" button to manually refresh</p>
               </div>
+            ) : allCaughtUp ? (
+              <p className="text-sm text-slate-500">
+                Every inquiry has been converted and answered, or archived. New ones land here on their own.
+              </p>
             ) : (
               <p className="text-sm text-slate-500">Try adjusting your filters to see more results</p>
             )}
@@ -637,7 +695,25 @@ export default function InquiriesPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
+                <div className="flex shrink-0 flex-wrap items-center gap-2 self-end sm:self-auto">
+                  {inquiry.status !== 'archived' && !hasReachedOut(inquiry) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkReachedOut(inquiry);
+                      }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                      aria-label={`Mark ${inquiry.client_name} as reached out`}
+                      title={
+                        isAwaitingOutreach(inquiry)
+                          ? 'Mark as reached out — wraps this inquiry up and clears it from the list'
+                          : 'Mark as reached out — records your response time'
+                      }
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Reached out
+                    </button>
+                  )}
                   {inquiry.status !== 'archived' && (
                     <button
                       onClick={(e) => {
@@ -645,6 +721,7 @@ export default function InquiriesPage() {
                         handleArchive(inquiry.id);
                       }}
                       className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      aria-label={`Archive ${inquiry.client_name}`}
                       title="Archive"
                     >
                       <Archive className="w-5 h-5" />
@@ -656,6 +733,7 @@ export default function InquiriesPage() {
                       handleDelete(inquiry.id, inquiry.client_name);
                     }}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label={`Delete ${inquiry.client_name}`}
                     title="Delete"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -732,6 +810,11 @@ export default function InquiriesPage() {
                       return 'Just submitted';
                     })()}
                   </span>
+                ) : isAwaitingOutreach(inquiry) ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border bg-amber-50 text-amber-700 border-amber-200">
+                    <Clock className="w-3 h-3" />
+                    Booked — reach out to wrap this up
+                  </span>
                 ) : null}
               </div>
 
@@ -745,6 +828,25 @@ export default function InquiriesPage() {
               )}
             </div>
           ))
+        )}
+
+        {statusFilter === 'needs_attention' && wrappedUpCount > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+            <span className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              {wrappedUpCount} wrapped-up {wrappedUpCount === 1 ? 'inquiry is' : 'inquiries are'} hidden — converted
+              to a job and the customer has heard back.
+            </span>
+            <button
+              onClick={() => {
+                setStatusFilter('wrapped_up');
+                setShowFilters(true);
+              }}
+              className="self-start rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:self-auto"
+            >
+              Show them
+            </button>
+          </div>
         )}
       </div>
 

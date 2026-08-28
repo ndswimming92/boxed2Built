@@ -2,8 +2,9 @@ name: Browser smoke tests
 
 # These cover behaviour that only shows up in a real browser: the Model Studio
 # pipeline - the OpenSCAD worker, the mesh analysis, the 3MF writer and the
-# three.js canvas - and admin popover geometry at phone widths. Every bug they
-# assert against passed typecheck, lint and build before reaching production.
+# three.js canvas - admin popover geometry at phone widths, and which
+# submissions the inquiry working list keeps. Every bug they assert against
+# passed typecheck, lint and build before reaching production.
 on:
   pull_request:
     branches: [main]
@@ -18,6 +19,10 @@ on:
       - 'src/components/admin/NotificationBell.tsx'
       - 'src/components/admin/OrganizationSwitcher.tsx'
       - 'src/components/admin/InvoiceRowActions.tsx'
+      # The inquiry working list: which submissions it holds on to.
+      - 'src/pages/admin/InquiriesPage.tsx'
+      - 'src/components/admin/InquiryDetailModal.tsx'
+      - 'src/utils/inquiryWorkflow.ts'
       - 'tests/**'
       - 'playwright.config.ts'
       - 'package-lock.json'
