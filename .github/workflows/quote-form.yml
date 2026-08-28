@@ -1,0 +1,50 @@
+name: Quote form
+
+# The form a customer fills in to ask for service is the only way work comes in,
+# and it is the one thing here that breaks silently: a submission that no longer
+# reaches the database still renders, still validates, still clicks. Nothing
+# goes red — the leads just stop, and the ones that were lost leave no trace.
+#
+# So this runs on every pull request rather than behind a path filter. The
+# broader smoke suite is filtered because it is slow and its subjects are
+# self-contained; this one is neither. A form submission touches validation,
+# two services, the Supabase client, the confirmation screen and an edge
+# function, so the change that breaks it usually lands somewhere else entirely.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  quote-form:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Submit the form end to end
+        run: npm run test:form
+        env:
+          CI: 'true'
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quote-form-report
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7

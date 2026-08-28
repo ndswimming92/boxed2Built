@@ -24,6 +24,7 @@ on:
       - 'src/pages/admin/InquiriesPage.tsx'
       - 'src/components/admin/InquiryDetailModal.tsx'
       - 'src/utils/inquiryWorkflow.ts'
+      - 'src/services/inquiryService.ts'
       # Coupon codes: what a customer is quoted after entering one.
       - 'src/components/ContactForm.tsx'
       - 'src/pages/admin/CouponsPage.tsx'
