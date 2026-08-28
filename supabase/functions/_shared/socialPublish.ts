@@ -147,3 +147,36 @@ export async function postToInstagram(
     return { success: false, error: error instanceof Error ? error.message : 'Unknown Instagram error' };
   }
 }
+
+/**
+ * A plain text post on the Page's own feed, for things with no photo — a
+ * coupon announcement, say. Instagram has no equivalent: its Content
+ * Publishing API requires media on every post, so text-only announcements are
+ * a Facebook-only path by construction.
+ */
+export async function postTextToFacebook(
+  tokens: FacebookTokens,
+  message: string,
+  link?: string | null,
+): Promise<PlatformResult> {
+  try {
+    const trimmed = message.trim();
+    if (!trimmed) return { success: false, error: 'Nothing to post — the message is empty.' };
+
+    const params: Record<string, string> = {
+      message: trimmed.slice(0, MAX_CAPTION_LENGTH),
+      access_token: tokens.page_access_token,
+    };
+    if (link) params.link = link;
+
+    const res = await fetch(`${GRAPH_URL}/${tokens.page_id}/feed`, {
+      method: 'POST',
+      body: new URLSearchParams(params),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body?.error?.message || 'Facebook rejected the post');
+    return { success: true, post_id: body.id };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown Facebook error' };
+  }
+}

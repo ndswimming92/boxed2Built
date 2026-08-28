@@ -1,8 +1,16 @@
 import { supabase } from '../lib/supabase';
 import { logAction } from './auditLogService';
-import { normalizeCouponCode } from '../utils/coupon';
+import { normalizeCouponCode, sortCouponsForQueue } from '../utils/coupon';
 import type { Coupon, CouponInput, CouponLookupResult } from '../types/coupon';
 
+const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+
+/**
+ * Ordered the way the admin page reads it: whatever is due to be posted next
+ * first, then the rest newest-first. The sort is a two-key affair that Postgres
+ * cannot express in one `order()` chain, so it happens here — one place, so the
+ * page and its tests never disagree about what "next up" means.
+ */
 export async function getCoupons(businessId: string): Promise<Coupon[]> {
   const { data, error } = await supabase
     .from('coupons')
@@ -15,7 +23,7 @@ export async function getCoupons(businessId: string): Promise<Coupon[]> {
     throw new Error(`Failed to load coupons: ${error.message}`);
   }
 
-  return (data || []) as Coupon[];
+  return sortCouponsForQueue((data || []) as Coupon[]);
 }
 
 export async function createCoupon(
@@ -37,6 +45,9 @@ export async function createCoupon(
       starts_at: input.starts_at || null,
       ends_at: input.ends_at || null,
       is_active: input.is_active ?? true,
+      promote: input.promote ?? false,
+      promo_post_at: input.promo_post_at || null,
+      promo_message: input.promo_message?.trim() || null,
     })
     .select()
     .single();
@@ -75,6 +86,9 @@ export async function updateCoupon(id: string, input: CouponInput): Promise<Coup
       starts_at: input.starts_at || null,
       ends_at: input.ends_at || null,
       is_active: input.is_active ?? true,
+      promote: input.promote ?? false,
+      promo_post_at: input.promo_post_at || null,
+      promo_message: input.promo_message?.trim() || null,
     })
     .eq('id', id)
     .select()
@@ -152,4 +166,74 @@ export async function lookupCouponByCode(code: string): Promise<CouponLookupResu
 
   const rows = (data as CouponLookupResult[] | null) ?? [];
   return rows[0] ?? null;
+}
+
+/*
+ * ── Promotion ───────────────────────────────────────────────────────────────
+ *
+ * Three admin-only edge functions, all reached the same way the gallery's
+ * publish button reaches its own: a signed-in session bearer, because each one
+ * either spends money at Anthropic or posts to the business's Facebook Page.
+ */
+
+async function callPromoFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/${name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(payload?.error || `Request to ${name} failed`);
+  return payload as T;
+}
+
+export interface DraftCouponPromoResult {
+  message: string;
+  /** False when Claude was unreachable and the built-in wording was used. */
+  drafted_by_claude: boolean;
+  error: string | null;
+}
+
+/** Asks Claude for the Facebook post and stores it on the coupon. */
+export async function draftCouponPromo(couponId: string): Promise<DraftCouponPromoResult> {
+  return callPromoFunction<DraftCouponPromoResult>('draft-coupon-promo', { coupon_id: couponId });
+}
+
+export interface PublishCouponPromoResult {
+  facebook: { success: boolean; post_id?: string; error?: string };
+  /** What was actually posted, which is also what gets stored. */
+  message: string;
+}
+
+/**
+ * Posts the coupon to the Facebook Page. `message` carries an unsaved edit
+ * straight from the textarea, so what the admin is looking at is what goes out.
+ */
+export async function publishCouponPromo(
+  couponId: string,
+  message?: string,
+): Promise<PublishCouponPromoResult> {
+  return callPromoFunction<PublishCouponPromoResult>('publish-coupon-promo', {
+    coupon_id: couponId,
+    ...(message ? { message } : {}),
+  });
+}
+
+export interface SendCouponPromoReminderResult {
+  sent: number;
+  sentTo?: string;
+}
+
+/** Sends this coupon's reminder now, for checking the email lands. */
+export async function sendCouponPromoReminder(couponId: string): Promise<SendCouponPromoReminderResult> {
+  return callPromoFunction<SendCouponPromoReminderResult>('send-coupon-promo-reminders', {
+    coupon_id: couponId,
+  });
 }
