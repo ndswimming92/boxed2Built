@@ -141,3 +141,132 @@ export function describeWindow(starts_at: string | null, ends_at: string | null)
   if (ends_at) return `Through ${format(ends_at, true)}`;
   return 'Any time';
 }
+
+/*
+ * ── The promotion queue ─────────────────────────────────────────────────────
+ *
+ * A code marked `promote` carries a date you mean to announce it on. The admin
+ * list is sorted by that date so the next one up is the top card and nothing
+ * has to be worked out by hand.
+ */
+
+export interface CouponPromo {
+  promote: boolean;
+  promo_post_at: string | null;
+  facebook_posted_at: string | null;
+  created_at: string;
+}
+
+/**
+ * `queued` is the only state that puts a code in the queue. `undated` is a
+ * promotion with no date yet — it needs one before it can be reminded about,
+ * so it sorts above the archive rather than disappearing into it.
+ */
+export type CouponPromoState = 'queued' | 'undated' | 'posted' | 'none';
+
+export function couponPromoState(coupon: CouponPromo): CouponPromoState {
+  if (coupon.facebook_posted_at) return 'posted';
+  if (!coupon.promote) return 'none';
+  return coupon.promo_post_at ? 'queued' : 'undated';
+}
+
+const PROMO_GROUP: Record<CouponPromoState, number> = {
+  queued: 0,
+  undated: 1,
+  posted: 2,
+  none: 2,
+};
+
+/**
+ * Queue first, soonest post date at the top; then everything else, newest
+ * first. Posted promotions rejoin the archive because their job is done —
+ * what the page is for is the one that has not gone out yet.
+ */
+export function sortCouponsForQueue<T extends CouponPromo>(coupons: T[]): T[] {
+  return [...coupons].sort((a, b) => {
+    const group = PROMO_GROUP[couponPromoState(a)] - PROMO_GROUP[couponPromoState(b)];
+    if (group !== 0) return group;
+
+    if (a.promo_post_at && b.promo_post_at && couponPromoState(a) === 'queued') {
+      const byDate = new Date(a.promo_post_at).getTime() - new Date(b.promo_post_at).getTime();
+      if (byDate !== 0) return byDate;
+    }
+
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+}
+
+/** The code that is up next, or null when the queue is empty. */
+export function nextCouponToPost<T extends CouponPromo>(coupons: T[]): T | null {
+  return sortCouponsForQueue(coupons).find((c) => couponPromoState(c) === 'queued') ?? null;
+}
+
+/** "Due in 3 days" / "Due tomorrow" / "Overdue by 2 days" — how urgent it is. */
+export function describePostDue(postAt: string, now: Date = new Date()): string {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const target = new Date(postAt);
+  const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+  const days = Math.round((targetDay - start) / 86_400_000);
+
+  if (days === 0) return 'Due today';
+  if (days === 1) return 'Due tomorrow';
+  if (days > 1) return `Due in ${days} days`;
+  if (days === -1) return 'Overdue by a day';
+  return `Overdue by ${Math.abs(days)} days`;
+}
+
+/** "Sep 1, 9:00 AM" — the post time on a card, where space is tight. */
+export function formatPostAt(iso: string): string {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+/** "30 days" — the answer to "how long will it be active for". */
+export function describeActiveDuration(starts_at: string | null, ends_at: string | null): string {
+  if (!ends_at) return 'No end date';
+  const from = starts_at ? new Date(starts_at) : new Date();
+  const days = Math.max(1, Math.round((new Date(ends_at).getTime() - from.getTime()) / 86_400_000));
+  return `${days} day${days === 1 ? '' : 's'}`;
+}
+
+/*
+ * `datetime-local` round-tripping. Same shape as the date helpers above: the
+ * input speaks the admin's own timezone and the column stores an instant.
+ */
+export function toDatetimeLocal(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function timestampToDatetimeLocal(iso: string | null): string {
+  return iso ? toDatetimeLocal(new Date(iso)) : '';
+}
+
+export function datetimeLocalToTimestamp(value: string): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/** 9am is early enough to catch the morning scroll and late enough to be awake. */
+const DEFAULT_POST_HOUR = 9;
+
+/**
+ * The post date a newly promoted code gets: the morning of its first day, or
+ * tomorrow morning when it starts right away. Never in the past — a default
+ * that is already overdue would fire a reminder the moment it is saved.
+ */
+export function defaultPromoPostAt(startsOn: string, now: Date = new Date()): string {
+  const base = startsOn
+    ? (() => {
+        const [year, month, day] = startsOn.split('-').map(Number);
+        return new Date(year, month - 1, day, DEFAULT_POST_HOUR);
+      })()
+    : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, DEFAULT_POST_HOUR);
+
+  if (base.getTime() > now.getTime()) return toDatetimeLocal(base);
+  return toDatetimeLocal(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, DEFAULT_POST_HOUR));
+}

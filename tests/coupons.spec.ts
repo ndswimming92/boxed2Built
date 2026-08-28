@@ -190,3 +190,121 @@ test('a bad discount is refused before it reaches the database', async ({ page }
   await page.getByRole('button', { name: 'Create coupon' }).click();
   await expect(page.getByText('A percentage cannot be over 100%.')).toBeVisible();
 });
+
+/**
+ * The promotion queue. What the admin page is for once codes are scheduled is
+ * answering one question — which do I post next — so that is what these pin:
+ * the order, the card that gets singled out, and the two ways a promotion can
+ * fail to be queued at all.
+ */
+const day = 86_400_000;
+
+function promoCoupon(over: Row): Row {
+  return {
+    id: 'x', code: 'CODE', description: null, discount_type: 'fixed', discount_value: 10,
+    starts_at: null, ends_at: null, is_active: true, times_used: 0, last_used_at: null,
+    business_id: 'biz-1', organization_id: 'org-1', created_by: null,
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    promote: false, promo_post_at: null, promo_message: null,
+    promo_reminder_sent_at: null, promo_reminder_for: null,
+    facebook_post_id: null, facebook_posted_at: null, facebook_post_error: null,
+    ...over,
+  };
+}
+
+async function openAdmin(page: Page, coupons: Row[]) {
+  await stubCoupons(page, coupons);
+  await stubBusiness(page);
+  await page.goto('/tests/harness/coupons.html?view=admin');
+  await expect(page.getByRole('heading', { name: 'Coupon Codes' })).toBeVisible();
+}
+
+test('the queue runs soonest-to-post first, whatever order they were made in', async ({ page }) => {
+  await openAdmin(page, [
+    // Created most recently, due last: creation order must not decide this.
+    promoCoupon({
+      id: 'c-late', code: 'LATE30', promote: true,
+      promo_post_at: new Date(Date.now() + 21 * day).toISOString(),
+      created_at: new Date().toISOString(),
+    }),
+    promoCoupon({
+      id: 'c-soon', code: 'SOONEST', promote: true,
+      promo_post_at: new Date(Date.now() + 2 * day).toISOString(),
+      created_at: new Date(Date.now() - 30 * day).toISOString(),
+    }),
+    promoCoupon({
+      id: 'c-mid', code: 'MIDDLE', promote: true,
+      promo_post_at: new Date(Date.now() + 9 * day).toISOString(),
+      created_at: new Date(Date.now() - 10 * day).toISOString(),
+    }),
+    // Not promoted at all, so it sits below the whole queue however new it is.
+    promoCoupon({ id: 'c-quiet', code: 'QUIET5', created_at: new Date().toISOString() }),
+  ]);
+
+  const codes = page.getByRole('heading', { level: 3 });
+  await expect(codes).toHaveText(['SOONEST', 'MIDDLE', 'LATE30', 'QUIET5']);
+});
+
+test('the next code up is called out on its own, with the post ready to go', async ({ page }) => {
+  await openAdmin(page, [
+    promoCoupon({
+      id: 'c-next', code: 'NEXTUP', description: 'Labor Day weekend', promote: true,
+      discount_type: 'percentage', discount_value: 15,
+      promo_post_at: new Date(Date.now() + day).toISOString(),
+      ends_at: new Date(Date.now() + 15 * day).toISOString(),
+      promo_message: 'Take 15% off your assembly this Labor Day weekend.',
+    }),
+    promoCoupon({
+      id: 'c-after', code: 'AFTER', promote: true,
+      promo_post_at: new Date(Date.now() + 12 * day).toISOString(),
+    }),
+  ]);
+
+  const banner = page.locator('div').filter({ hasText: /^Next up to post/ }).first();
+  await expect(banner).toContainText('NEXTUP');
+  await expect(banner).toContainText('15% off');
+  await expect(banner).toContainText('Due tomorrow');
+  // The whole point of the banner: the message is right there to read.
+  await expect(banner).toContainText('Take 15% off your assembly this Labor Day weekend.');
+  await expect(page.getByText('2 promotions queued')).toBeVisible();
+
+  await expect(banner.getByRole('button', { name: 'Post to Facebook' })).toBeVisible();
+  await expect(banner.getByRole('button', { name: 'Rewrite' })).toBeVisible();
+});
+
+test('a promotion already posted drops out of the queue, and one with no date says so', async ({ page }) => {
+  await openAdmin(page, [
+    promoCoupon({
+      id: 'c-done', code: 'ALREADY', promote: true,
+      promo_post_at: new Date(Date.now() - 3 * day).toISOString(),
+      facebook_posted_at: new Date(Date.now() - 3 * day).toISOString(),
+      facebook_post_id: '1234',
+    }),
+    promoCoupon({ id: 'c-undated', code: 'NODATE', promote: true }),
+  ]);
+
+  // Nothing is queued, so nothing is singled out.
+  await expect(page.getByText('Next up to post')).toBeHidden();
+
+  const card = (code: string) =>
+    page.locator('div.bg-white.rounded-xl').filter({ has: page.getByRole('heading', { level: 3, name: code }) });
+
+  await expect(card('ALREADY')).toContainText('Posted to Facebook');
+  await expect(card('NODATE')).toContainText('no post date');
+});
+
+test('promoting a code without a post date is refused, and ticking it fills one in', async ({ page }) => {
+  await openAdmin(page, []);
+
+  await page.getByRole('button', { name: 'New Coupon' }).click();
+  await page.locator('#coupon-code').fill('LABORDAY');
+  await page.locator('#coupon-value').fill('20');
+
+  // Ticking Promote proposes a date rather than leaving an empty box.
+  await page.getByRole('checkbox', { name: /Promote this code/ }).check();
+  await expect(page.locator('#coupon-post-at')).not.toHaveValue('');
+
+  await page.locator('#coupon-post-at').fill('');
+  await page.getByRole('button', { name: 'Create coupon' }).click();
+  await expect(page.getByText(/Pick a date to post this promotion/)).toBeVisible();
+});

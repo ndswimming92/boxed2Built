@@ -2,15 +2,19 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
   Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon,
-  Power, Pencil, X, Calendar, TrendingUp,
+  Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Facebook, Clock, Mail,
 } from 'lucide-react';
 import {
   getCoupons, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
+  draftCouponPromo, publishCouponPromo, sendCouponPromoReminder,
 } from '../../services/couponService';
 import {
-  couponState, describeDiscount, describeWindow, endDateToTimestamp,
-  isValidCouponCode, normalizeCouponCode, startDateToTimestamp, timestampToEndDate,
-  timestampToStartDate, type CouponDiscountType, type CouponState,
+  couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
+  describeActiveDuration, describeDiscount, describePostDue, describeWindow,
+  endDateToTimestamp, formatPostAt, isValidCouponCode, nextCouponToPost,
+  normalizeCouponCode, startDateToTimestamp, timestampToDatetimeLocal,
+  timestampToEndDate, timestampToStartDate, toDatetimeLocal,
+  type CouponDiscountType, type CouponState,
 } from '../../utils/coupon';
 import type { Coupon, CouponInput } from '../../types/coupon';
 
@@ -23,6 +27,9 @@ interface FormState {
   starts_on: string;
   ends_on: string;
   is_active: boolean;
+  promote: boolean;
+  promo_post_on: string;
+  promo_message: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -34,6 +41,9 @@ const EMPTY_FORM: FormState = {
   starts_on: '',
   ends_on: '',
   is_active: true,
+  promote: false,
+  promo_post_on: '',
+  promo_message: '',
 };
 
 const STATE_STYLES: Record<CouponState, { label: string; className: string }> = {
@@ -53,6 +63,9 @@ export default function CouponsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [draftingId, setDraftingId] = useState<string | null>(null);
+  const [postingId, setPostingId] = useState<string | null>(null);
+  const [remindingId, setRemindingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -102,6 +115,9 @@ export default function CouponsPage() {
       starts_on: timestampToStartDate(coupon.starts_at),
       ends_on: timestampToEndDate(coupon.ends_at),
       is_active: coupon.is_active,
+      promote: coupon.promote,
+      promo_post_on: timestampToDatetimeLocal(coupon.promo_post_at),
+      promo_message: coupon.promo_message ?? '',
     });
     setShowForm(true);
   };
@@ -121,7 +137,28 @@ export default function CouponsPage() {
       return 'The end date is before the start date.';
     }
 
+    // A promotion with no date never reaches the queue and never gets a
+    // reminder, which is a quiet way to miss a campaign.
+    if (form.promote && !form.promo_post_on) {
+      return 'Pick a date to post this promotion, or untick "Promote this code".';
+    }
+
     return null;
+  };
+
+  /**
+   * Ticking Promote fills the post date in rather than leaving an empty box:
+   * the morning of the code's first day, which is what it would be set to by
+   * hand nine times out of ten.
+   */
+  const handlePromoteChange = (promote: boolean) => {
+    setForm((current) => ({
+      ...current,
+      promote,
+      promo_post_on: promote && !current.promo_post_on
+        ? defaultPromoPostAt(current.starts_on)
+        : current.promo_post_on,
+    }));
   };
 
   const handleSave = async () => {
@@ -141,6 +178,9 @@ export default function CouponsPage() {
       starts_at: startDateToTimestamp(form.starts_on),
       ends_at: endDateToTimestamp(form.ends_on),
       is_active: form.is_active,
+      promote: form.promote,
+      promo_post_at: form.promote ? datetimeLocalToTimestamp(form.promo_post_on) : null,
+      promo_message: form.promo_message,
     };
 
     setSaving(true);
@@ -191,6 +231,75 @@ export default function CouponsPage() {
     }
   };
 
+  /**
+   * Draft the post with Claude. The form is open on this coupon when the
+   * button is pressed there, so the result lands in the textarea too rather
+   * than only in the database, where the admin would have to reopen to see it.
+   */
+  const handleDraft = async (coupon: Coupon) => {
+    if (!businessId) return;
+    setDraftingId(coupon.id);
+    try {
+      const result = await draftCouponPromo(coupon.id);
+      setForm((current) => (current.id === coupon.id ? { ...current, promo_message: result.message } : current));
+      setCoupons(await getCoupons(businessId));
+      notify(
+        result.drafted_by_claude ? 'success' : 'error',
+        result.drafted_by_claude
+          ? `Claude wrote a post for ${coupon.code}.`
+          : `Claude was unavailable (${result.error ?? 'unknown error'}) — a plain version was written instead.`,
+      );
+    } catch (error) {
+      notify('error', error instanceof Error ? error.message : 'Failed to draft the post');
+    } finally {
+      setDraftingId(null);
+    }
+  };
+
+  const handlePost = async (coupon: Coupon) => {
+    if (!businessId) return;
+
+    const message = form.id === coupon.id ? form.promo_message.trim() : '';
+    const preview = message || coupon.promo_message?.trim();
+    if (!confirm(`Post ${coupon.code} to your Facebook Page?${preview ? `\n\n${preview}` : ''}`)) return;
+
+    setPostingId(coupon.id);
+    try {
+      const result = await publishCouponPromo(coupon.id, message || undefined);
+      setCoupons(await getCoupons(businessId));
+      notify(
+        result.facebook.success ? 'success' : 'error',
+        result.facebook.success
+          ? `${coupon.code} posted to Facebook.`
+          : `Facebook refused the post: ${result.facebook.error ?? 'unknown error'}`,
+      );
+    } catch (error) {
+      notify('error', error instanceof Error ? error.message : 'Failed to post to Facebook');
+    } finally {
+      setPostingId(null);
+    }
+  };
+
+  /** Sends this coupon's reminder now, so the email can be checked before it matters. */
+  const handleSendReminder = async (coupon: Coupon) => {
+    if (!businessId) return;
+    setRemindingId(coupon.id);
+    try {
+      const result = await sendCouponPromoReminder(coupon.id);
+      setCoupons(await getCoupons(businessId));
+      notify(
+        result.sent > 0 ? 'success' : 'error',
+        result.sent > 0
+          ? `Reminder for ${coupon.code} sent to ${result.sentTo ?? 'your inbox'}.`
+          : 'Nothing was sent — check the coupon still has a post date.',
+      );
+    } catch (error) {
+      notify('error', error instanceof Error ? error.message : 'Failed to send the reminder');
+    } finally {
+      setRemindingId(null);
+    }
+  };
+
   const shareLink = (code: string) =>
     `${typeof window === 'undefined' ? 'https://www.boxed2built.com' : window.location.origin}/contact?coupon=${encodeURIComponent(code)}`;
 
@@ -225,6 +334,14 @@ export default function CouponsPage() {
 
   const activeCount = coupons.filter((c) => couponState(c) === 'active').length;
   const totalUses = coupons.reduce((sum, c) => sum + c.times_used, 0);
+  const nextUp = nextCouponToPost(coupons);
+  const editing = form.id ? coupons.find((c) => c.id === form.id) ?? null : null;
+  // An overdue promotion's own post date is in the past; flooring the picker at
+  // "now" would mark the value it already holds invalid on open.
+  const postAtMin = [toDatetimeLocal(new Date()), form.promo_post_on]
+    .filter(Boolean)
+    .sort()[0];
+  const queuedCount = coupons.filter((c) => couponPromoState(c) === 'queued').length;
 
   if (loading) {
     return (
@@ -264,6 +381,82 @@ export default function CouponsPage() {
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           )}
           <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{message.text}</p>
+        </div>
+      )}
+
+
+      {nextUp && (
+        <div className="mb-6 bg-white rounded-xl border-2 border-emerald-500 overflow-hidden">
+          <div className="bg-emerald-600 px-5 py-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-white text-sm font-semibold">
+              <Megaphone className="w-4 h-4" />
+              Next up to post
+            </span>
+            <span className="text-emerald-50 text-xs font-medium">
+              {queuedCount === 1 ? '1 promotion queued' : `${queuedCount} promotions queued`}
+            </span>
+          </div>
+
+          <div className="p-5 sm:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold font-mono tracking-wider text-slate-900 break-all">
+                    {nextUp.code}
+                  </h2>
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {describeDiscount(nextUp)}
+                  </span>
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    {describePostDue(nextUp.promo_post_at!)}
+                  </span>
+                </div>
+
+                {nextUp.description && <p className="text-sm text-slate-600 mb-2">{nextUp.description}</p>}
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    Post {formatPostAt(nextUp.promo_post_at!)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    Runs {describeActiveDuration(nextUp.starts_at, nextUp.ends_at)} · {describeWindow(nextUp.starts_at, nextUp.ends_at)}
+                  </span>
+                </div>
+
+                {nextUp.promo_message ? (
+                  <p className="mt-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 whitespace-pre-wrap">
+                    {nextUp.promo_message}
+                  </p>
+                ) : (
+                  <p className="mt-3 text-sm text-slate-500 bg-slate-50 border border-dashed border-slate-300 rounded-lg px-4 py-3">
+                    No post written yet — <strong>Draft with Claude</strong> writes one, and the reminder email will do it
+                    for you if you have not by then.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <button
+                  onClick={() => handleDraft(nextUp)}
+                  disabled={draftingId === nextUp.id}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {draftingId === nextUp.id ? 'Writing…' : nextUp.promo_message ? 'Rewrite' : 'Draft with Claude'}
+                </button>
+                <button
+                  onClick={() => handlePost(nextUp)}
+                  disabled={postingId === nextUp.id}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-[#1877F2] rounded-lg hover:bg-[#166fe0] transition-colors disabled:opacity-50"
+                >
+                  <Facebook className="w-4 h-4" />
+                  {postingId === nextUp.id ? 'Posting…' : 'Post to Facebook'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -382,6 +575,79 @@ export default function CouponsPage() {
             </div>
           </div>
 
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <label className="flex items-start gap-2.5 text-sm text-slate-700 mb-1">
+              <input
+                type="checkbox"
+                name="promote"
+                checked={form.promote}
+                onChange={(e) => handlePromoteChange(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>
+                <span className="font-medium">Promote this code</span>
+                <span className="block text-xs text-slate-500 mt-0.5">
+                  Puts it in the queue on this page, emails you a day before it is due, and gives it a one-click post
+                  to your Facebook Page. Leave this off for a code you are handing to one customer.
+                </span>
+              </span>
+            </label>
+
+            {form.promote && (
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                <div className="md:max-w-xs">
+                  <label htmlFor="coupon-post-at" className="block text-sm font-medium text-slate-700 mb-2">
+                    Post on
+                  </label>
+                  <input
+                    id="coupon-post-at"
+                    name="promo_post_on"
+                    type="datetime-local"
+                    value={form.promo_post_on}
+                    min={postAtMin}
+                    onChange={(e) => setForm({ ...form, promo_post_on: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    The queue is ordered by this, soonest first. Your reminder arrives 24 hours before.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <label htmlFor="coupon-post-message" className="block text-sm font-medium text-slate-700">
+                      The post <span className="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    {editing && (
+                      <button
+                        type="button"
+                        onClick={() => handleDraft(editing)}
+                        disabled={draftingId === editing.id}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        {draftingId === editing.id ? 'Writing…' : 'Draft with Claude'}
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    id="coupon-post-message"
+                    name="promo_message"
+                    rows={6}
+                    value={form.promo_message}
+                    onChange={(e) => setForm({ ...form, promo_message: e.target.value })}
+                    placeholder="Leave this empty and Claude writes it — when you press Draft, or automatically when your reminder goes out."
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    This is what goes on Facebook and what your reminder email quotes. Edit it however you like.
+                    {!form.id && ' Save the coupon first and the Draft button appears here.'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
             <button
               onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
@@ -413,6 +679,7 @@ export default function CouponsPage() {
           {coupons.map((coupon) => {
             const state = couponState(coupon);
             const style = STATE_STYLES[state];
+            const promo = couponPromoState(coupon);
 
             return (
               <div key={coupon.id} className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
@@ -428,6 +695,18 @@ export default function CouponsPage() {
                       <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
                         {describeDiscount(coupon)}
                       </span>
+                      {promo === 'queued' && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5">
+                          <Megaphone className="w-3 h-3" />
+                          {describePostDue(coupon.promo_post_at!)}
+                        </span>
+                      )}
+                      {promo === 'posted' && (
+                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5">
+                          <Facebook className="w-3 h-3" />
+                          Posted
+                        </span>
+                      )}
                     </div>
 
                     {coupon.description && (
@@ -505,6 +784,73 @@ export default function CouponsPage() {
                     </button>
                   </div>
                 </div>
+
+                {promo !== 'none' && (
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 text-sm text-slate-600">
+                        {promo === 'queued' && (
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-4 h-4 shrink-0" />
+                            Post {formatPostAt(coupon.promo_post_at!)} · active {describeActiveDuration(coupon.starts_at, coupon.ends_at)}
+                            {coupon.promo_reminder_sent_at && ' · reminder sent'}
+                          </span>
+                        )}
+                        {promo === 'undated' && (
+                          <span className="flex items-center gap-1.5 text-amber-700">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            Promoted, but with no post date — it will not be queued or reminded about.
+                          </span>
+                        )}
+                        {promo === 'posted' && (
+                          <span className="flex items-center gap-1.5">
+                            <Facebook className="w-4 h-4 shrink-0" />
+                            Posted to Facebook {formatPostAt(coupon.facebook_posted_at!)}
+                          </span>
+                        )}
+                      </div>
+
+                      {promo !== 'posted' && (
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => handleDraft(coupon)}
+                            disabled={draftingId === coupon.id}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                            title="Write the Facebook post with Claude"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            {draftingId === coupon.id ? 'Writing…' : coupon.promo_message ? 'Rewrite' : 'Draft'}
+                          </button>
+                          {promo === 'queued' && (
+                            <button
+                              onClick={() => handleSendReminder(coupon)}
+                              disabled={remindingId === coupon.id}
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                              title="Send this reminder email now, to check it lands"
+                            >
+                              <Mail className="w-4 h-4" />
+                              {remindingId === coupon.id ? 'Sending…' : 'Email me'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handlePost(coupon)}
+                            disabled={postingId === coupon.id}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-white bg-[#1877F2] rounded-lg hover:bg-[#166fe0] transition-colors disabled:opacity-50"
+                          >
+                            <Facebook className="w-4 h-4" />
+                            {postingId === coupon.id ? 'Posting…' : 'Post to Facebook'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {coupon.facebook_post_error && (
+                      <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        Facebook refused the last post: {coupon.facebook_post_error}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {state === 'off' && (
                   <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">

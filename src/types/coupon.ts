@@ -18,6 +18,19 @@ export interface Coupon {
   last_used_at: string | null;
   created_at: string;
   updated_at: string;
+
+  /** In the promotion queue: gets a post date, a reminder and a Post button. */
+  promote: boolean;
+  /** When this code is due to be announced. The queue is sorted by it. */
+  promo_post_at: string | null;
+  /** The message that gets posted — drafted by Claude, editable by hand. */
+  promo_message: string | null;
+  promo_reminder_sent_at: string | null;
+  /** The promo_post_at the last reminder covered. Moving the date re-arms it. */
+  promo_reminder_for: string | null;
+  facebook_post_id: string | null;
+  facebook_posted_at: string | null;
+  facebook_post_error: string | null;
 }
 
 export interface CouponInput {
@@ -28,6 +41,9 @@ export interface CouponInput {
   starts_at?: string | null;
   ends_at?: string | null;
   is_active?: boolean;
+  promote?: boolean;
+  promo_post_at?: string | null;
+  promo_message?: string | null;
 }
 
 /**
