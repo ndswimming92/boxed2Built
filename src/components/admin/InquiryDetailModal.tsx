@@ -214,7 +214,11 @@ export default function InquiryDetailModal({
                 ) : (
                   <>
                     <p className="text-sm font-semibold text-amber-800">{formatElapsedTime(elapsed)} since submitted</p>
-                    <p className="text-xs text-amber-600">Waiting for first response</p>
+                    <p className="text-xs text-amber-600">
+                      {inquiry.status === 'converted_to_job'
+                        ? 'Waiting for first response — logging it wraps this inquiry up and clears it from the list'
+                        : 'Waiting for first response'}
+                    </p>
                   </>
                 )}
               </div>
