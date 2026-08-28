@@ -88,6 +88,8 @@ invoice raised months later still carries the discount they were promised.
   lookups per IP per 15 minutes. `anon` has no rights on the table itself.
 - The usage counter is maintained by a definer-rights trigger on inquiry
   insert, because the customer submitting the form cannot write to `coupons`.
+  That trigger function is not callable over the API — `EXECUTE` is revoked
+  from `anon` and `authenticated`, which does not affect the trigger itself.
 - Discount arithmetic lives in `src/utils/coupon.ts` so the form, the admin
   page and the invoice line all round the same way. A coupon never exceeds the
   amount it is discounting.
