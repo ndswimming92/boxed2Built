@@ -283,6 +283,10 @@ export type FormInquiry = {
   contact_notes: string | null;
   response_count: number;
   first_responded_at: string | null;
+  coupon_code: string | null;
+  coupon_discount_type: 'fixed' | 'percentage' | null;
+  coupon_discount_value: number | null;
+  coupon_discount_amount: number | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;

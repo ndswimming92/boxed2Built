@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift, Home, Building2 } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift, Home, Building2, Tag } from 'lucide-react';
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
+import { lookupCouponByCode } from '../services/couponService';
+import { describeDiscount, discountAmount, formatMoney, normalizeCouponCode } from '../utils/coupon';
+import type { CouponLookupResult } from '../types/coupon';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
@@ -142,11 +145,14 @@ const validationRules: Record<string, ValidationRule> = {
   },
   referralCode: {
     required: false,
+    // The box takes referral codes (B2B-NAME-XXXX) and coupon codes
+    // (WELCOME25), so it can only check the shape both share. Whether a code
+    // is a live coupon is answered by the lookup, not by a regex here.
     custom: (value) => {
       if (!value) return null;
       const cleaned = value.trim().toUpperCase();
-      if (cleaned.length > 0 && !/^B2B-[A-Z0-9]+-[A-Z0-9]+$/.test(cleaned)) {
-        return 'Referral codes look like B2B-NAME-XXXX';
+      if (cleaned.length > 0 && !/^[A-Z0-9][A-Z0-9-]{2,29}$/.test(cleaned)) {
+        return 'Codes are 3–30 letters, numbers and dashes';
       }
       return null;
     }
@@ -183,6 +189,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [showFurnitureReference, setShowFurnitureReference] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState('');
   const [estimatedPrice, setEstimatedPrice] = useState('');
+  // The code box takes either a friend's referral code or one of our coupon
+  // codes. Only a coupon changes the price, so it is looked up on blur and the
+  // result parked here; anything else falls through as a referral code.
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponLookupResult | null>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponRejected, setCouponRejected] = useState(false);
+  const checkedCodeRef = useRef<string | null>(null);
   const [, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
@@ -229,6 +242,51 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     if (codeParam) {
       const formatted = formatGiftCardCodeInput(codeParam);
       handleFieldChange('giftCardCode', formatted);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Confirms a code against the coupon table. The lookup answers only for codes
+   * that are live right now, so a miss is not an error the customer needs to
+   * act on — it just means the code is a referral code, or is not ours.
+   */
+  const checkCouponCode = async (raw: string) => {
+    const code = normalizeCouponCode(raw);
+
+    if (checkedCodeRef.current === code) return;
+    checkedCodeRef.current = code;
+
+    setAppliedCoupon(null);
+    setCouponRejected(false);
+
+    if (code.length < 3) return;
+
+    setCouponChecking(true);
+    try {
+      const coupon = await lookupCouponByCode(code);
+      if (coupon) {
+        setAppliedCoupon(coupon);
+      } else {
+        setCouponRejected(true);
+      }
+    } catch (error) {
+      // Rate limited or offline. Submitting still records the code, so the
+      // quote can be adjusted by hand rather than blocking the lead.
+      console.warn('[ContactForm] Coupon lookup failed:', error);
+      checkedCodeRef.current = null;
+    } finally {
+      setCouponChecking(false);
+    }
+  };
+
+  // Prefill and apply a coupon from a shared link (?coupon=WELCOME25)
+  useEffect(() => {
+    const codeParam = searchParams.get('coupon');
+    if (codeParam) {
+      const code = normalizeCouponCode(codeParam);
+      handleFieldChange('referralCode', code);
+      checkCouponCode(code);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -384,6 +442,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     });
   };
 
+  // The number the customer is actually quoted. The coupon comes off here, so
+  // every downstream copy — the confirmation screen, both emails, the saved
+  // request and the admin's inquiry card — already has the discount in it.
+  const baseEstimateAmount = parseFloat(estimatedPrice.replace(/[^0-9.]/g, '')) || 0;
+  const couponSavings =
+    appliedCoupon && baseEstimateAmount > 0 ? discountAmount(appliedCoupon, baseEstimateAmount) : 0;
+  const quotedPrice = couponSavings > 0 ? formatMoney(baseEstimateAmount - couponSavings) : estimatedPrice;
+
   const onSubmit = handleValidatedSubmit(async (values) => {
     try {
       // Track form completion with detailed parameters
@@ -391,7 +457,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         page_section: 'contact_form',
         furniture_type: values.furnitureType,
         number_of_pieces: parseInt(values.pieces) || 0,
-        estimated_value: estimatedPrice,
+        estimated_value: quotedPrice,
         form_step: 'submit'
       });
 
@@ -451,11 +517,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
-        estimated_price: estimatedPrice || undefined,
+        estimated_price: quotedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
         referral_code_used: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
         gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
+        coupon_code: appliedCoupon ? appliedCoupon.code : undefined,
+        coupon_discount_type: appliedCoupon ? appliedCoupon.discount_type : undefined,
+        coupon_discount_value: appliedCoupon ? appliedCoupon.discount_value : undefined,
+        coupon_discount_amount: couponSavings > 0 ? couponSavings : undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
         client_type: clientType,
@@ -475,7 +545,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
-        estimated_price: estimatedPrice || undefined,
+        estimated_price: quotedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
         furniture_image_path: uploadedImagePath,
@@ -494,7 +564,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         preferredDate: values.preferredDate || undefined,
         preferredTimeSlot: values.preferredTimeSlot || undefined,
         notes: values.notes || undefined,
-        estimatedPrice: estimatedPrice || undefined,
+        estimatedPrice: quotedPrice || undefined,
         estimatedTime: estimatedTime || undefined,
         submissionDate: savedRequest.submission_date,
       };
@@ -523,13 +593,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           preferredDate: values.preferredDate || undefined,
           preferredTimeSlot: values.preferredTimeSlot || undefined,
           notes: values.notes || undefined,
-          estimatedPrice: estimatedPrice || undefined,
+          estimatedPrice: quotedPrice || undefined,
           estimatedTime: estimatedTime || undefined,
           confirmationCode: savedRequest.confirmation_code,
           isTest,
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
           referralCodeUsed: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
+          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+          couponDiscountLabel: appliedCoupon ? describeDiscount(appliedCoupon) : undefined,
           clientType,
         }),
       }).then(async (res) => {
@@ -560,7 +632,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           form_type: 'contact_form',
           furniture_type: values.furnitureType,
           pieces: parseInt(values.pieces) || 1,
-          estimated_price: estimatedPrice,
+          estimated_price: quotedPrice,
           confirmation_code: savedRequest.confirmation_code,
         },
       });
@@ -962,9 +1034,23 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     <span>Estimated time: <strong>{estimatedTime}</strong></span>
                   </div>
                   <div className="text-green-700">
-                    <span>Estimated cost: <strong>{estimatedPrice}</strong></span>
+                    {couponSavings > 0 ? (
+                      <span>
+                        Estimated cost:{' '}
+                        <span className="line-through text-green-600/70 mr-1">{estimatedPrice}</span>
+                        <strong>{quotedPrice}</strong>
+                      </span>
+                    ) : (
+                      <span>Estimated cost: <strong>{estimatedPrice}</strong></span>
+                    )}
                   </div>
                 </div>
+                {couponSavings > 0 && appliedCoupon && (
+                  <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mb-2 inline-flex items-center gap-1">
+                    <Tag size={12} />
+                    {appliedCoupon.code} · {formatMoney(couponSavings)} saved
+                  </p>
+                )}
                 <p className="text-xs text-green-600">
                   {parseInt(fields.pieces?.value || '0') > 3 && "Multi-item discount applied! "}
                   Final quote provided after consultation.
@@ -1165,7 +1251,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           <div className="border-t border-gray-200 pt-4">
             <div className="flex items-center gap-2 mb-2">
               <label htmlFor="referralCode" className="text-sm font-medium text-gray-700">
-                Have a Referral Code?
+                Have a Referral or Coupon Code?
               </label>
               <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
             </div>
@@ -1173,7 +1259,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
               id="referralCode"
               name="referralCode"
               type="text"
-              placeholder="e.g. B2B-JONES-4X2"
+              placeholder="e.g. WELCOME25 or B2B-JONES-4X2"
               className={getInputClasses('referralCode')}
               autoCapitalize="characters"
               autoCorrect="off"
@@ -1183,13 +1269,39 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
               onChange={(e) => {
                 const upper = e.target.value.toUpperCase();
                 getFieldProps('referralCode').onChange({ ...e, target: { ...e.target, value: upper } });
+                // A code being edited is no longer the code that was checked.
+                if (appliedCoupon || couponRejected) {
+                  setAppliedCoupon(null);
+                  setCouponRejected(false);
+                  checkedCodeRef.current = null;
+                }
+              }}
+              onBlur={(e) => {
+                getFieldProps('referralCode').onBlur();
+                checkCouponCode(e.target.value);
               }}
             />
             {fields.referralCode?.error && (
               <p className="text-xs text-red-600 mt-1">{fields.referralCode.error}</p>
             )}
+            {couponChecking && (
+              <p className="text-xs text-gray-500 mt-1">Checking code…</p>
+            )}
+            {appliedCoupon && !couponChecking && (
+              <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
+                <CheckCircle size={12} />
+                {appliedCoupon.code} applied — {describeDiscount(appliedCoupon)}
+                {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
+              </p>
+            )}
+            {couponRejected && !couponChecking && (
+              <p className="text-xs text-gray-500 mt-1">
+                Not a coupon code — we'll treat it as a referral code.
+              </p>
+            )}
             <p className="text-xs text-gray-500 mt-1">
-              Enter a code from a friend and they'll receive $25 credit on their next service.
+              A coupon code takes money off your quote. A friend's referral code earns them $25
+              credit on their next service.
             </p>
           </div>
 

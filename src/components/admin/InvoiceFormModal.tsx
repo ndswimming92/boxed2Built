@@ -13,6 +13,8 @@ import {
   getInvoiceSettings,
 } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
+import { getAppliedCoupon } from '../../services/inquiryService';
+import { couponLineDescription, discountAmount } from '../../utils/coupon';
 import { BusinessService } from '../../services/businessService';
 
 interface InvoiceFormModalProps {
@@ -37,6 +39,8 @@ interface LineItemForm {
   quantity: number;
   unit_price: number;
   is_taxable: boolean;
+  /** Marks the line this modal added for a coupon. Never persisted. */
+  source?: 'coupon';
 }
 
 const PAYMENT_TERMS_OPTIONS = [
@@ -142,6 +146,34 @@ export default function InvoiceFormModal({
   const [lineItems, setLineItems] = useState<LineItemForm[]>([
     { item_type: 'labor', description: '', quantity: 1, unit_price: 0, is_taxable: false },
   ]);
+  // The coupon the customer was quoted with, if this invoice is being raised
+  // against an inquiry (or the job that inquiry became).
+  const [coupon, setCoupon] = useState<{
+    code: string;
+    discount_type: 'fixed' | 'percentage';
+    discount_value: number;
+  } | null>(null);
+
+  // A percentage coupon has no fixed dollar value until there is something to
+  // take it off, so its line tracks whatever the other lines currently total.
+  useEffect(() => {
+    if (!coupon || coupon.discount_type !== 'percentage') return;
+
+    const base = lineItems
+      .filter((item) => item.item_type !== 'discount')
+      .reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+    const next = -discountAmount(coupon, base);
+
+    setLineItems((previous) => {
+      const index = previous.findIndex((item) => item.source === 'coupon');
+      if (index === -1) return previous;
+      if (Math.abs(previous[index].unit_price - next) < 0.005) return previous;
+
+      const updated = [...previous];
+      updated[index] = { ...updated[index], unit_price: next };
+      return updated;
+    });
+  }, [lineItems, coupon]);
 
   useEffect(() => {
     loadData();
@@ -209,6 +241,33 @@ export default function InvoiceFormModal({
         setClientEmail(initialData.client_email || '');
         setClientPhone(initialData.client_phone || '');
         setClientAddress(initialData.client_address || '');
+      }
+
+      // Only on a new invoice: an existing one already has whatever discount
+      // line it was saved with, and re-adding it would double the discount.
+      if (!invoice) {
+        const applied = await getAppliedCoupon({ inquiryId, jobId });
+        if (applied) {
+          const details = {
+            code: applied.coupon_code,
+            discount_type: applied.coupon_discount_type,
+            discount_value: applied.coupon_discount_value,
+          };
+          setCoupon(details);
+          setLineItems((previous) => [
+            ...previous,
+            {
+              item_type: 'discount',
+              description: couponLineDescription(details.code, details),
+              quantity: 1,
+              // A percentage waits for the effect above to price it off the
+              // other lines; a flat amount is already known.
+              unit_price: details.discount_type === 'percentage' ? 0 : -applied.coupon_discount_value,
+              is_taxable: false,
+              source: 'coupon',
+            },
+          ]);
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error);

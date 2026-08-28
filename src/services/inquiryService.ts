@@ -1,4 +1,5 @@
 import { supabase, FormInquiry } from '../lib/supabase';
+import type { AppliedCoupon } from '../types/coupon';
 
 export interface CreateInquiryData {
   business_id: string;
@@ -20,6 +21,12 @@ export interface CreateInquiryData {
   referral_source?: string;
   referral_code_used?: string;
   gift_card_code?: string;
+  // Snapshot of the coupon as it stood at submission. Kept on the inquiry so
+  // editing or deleting the coupon later cannot rewrite a quote already given.
+  coupon_code?: string;
+  coupon_discount_type?: 'fixed' | 'percentage';
+  coupon_discount_value?: number;
+  coupon_discount_amount?: number;
   source?: string;
   furniture_photo_url?: string;
   furniture_image_path?: string;
@@ -71,6 +78,10 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     referral_source: data.referral_source || null,
     referral_code_used: data.referral_code_used || null,
     gift_card_code: data.gift_card_code || null,
+    coupon_code: data.coupon_code || null,
+    coupon_discount_type: data.coupon_discount_type || null,
+    coupon_discount_value: data.coupon_discount_value ?? null,
+    coupon_discount_amount: data.coupon_discount_amount ?? null,
     source: data.source || 'contact_form',
     status: 'pending' as const,
     viewed: false,
@@ -193,6 +204,38 @@ export async function getInquiryById(id: string): Promise<FormInquiry | null> {
   };
 
   return inquiry as FormInquiry;
+}
+
+/**
+ * The coupon an inquiry was quoted with, looked up by the inquiry itself or by
+ * the job it turned into. Reading the snapshot on the inquiry rather than the
+ * live coupon row is deliberate: the customer was promised this discount, and
+ * editing or deleting the coupon afterwards must not change that.
+ */
+export async function getAppliedCoupon(
+  target: { inquiryId?: string | null; jobId?: string | null }
+): Promise<AppliedCoupon | null> {
+  const { inquiryId, jobId } = target;
+  if (!inquiryId && !jobId) return null;
+
+  let query = supabase
+    .from('form_inquiries')
+    .select('coupon_code, coupon_discount_type, coupon_discount_value, coupon_discount_amount')
+    .not('coupon_code', 'is', null)
+    .limit(1);
+
+  query = inquiryId ? query.eq('id', inquiryId) : query.eq('converted_job_id', jobId!);
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error || !data?.coupon_code || !data.coupon_discount_type) return null;
+
+  return {
+    coupon_code: data.coupon_code,
+    coupon_discount_type: data.coupon_discount_type,
+    coupon_discount_value: Number(data.coupon_discount_value ?? 0),
+    coupon_discount_amount: Number(data.coupon_discount_amount ?? 0),
+  };
 }
 
 export async function updateInquiry(

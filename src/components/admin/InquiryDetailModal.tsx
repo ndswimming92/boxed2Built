@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Building2, Clock } from 'lucide-react';
+import { X, Phone, ExternalLink, Archive, CheckCircle, Trash2, FileText, Plus, Copy, Lock, User, Image, Link, Building2, Clock, Tag } from 'lucide-react';
 import { FormInquiry, Invoice } from '../../lib/supabase';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 import { archiveInquiry, deleteInquiry, markAsReachedOut } from '../../services/inquiryService';
 import { getInvoicesByInquiry } from '../../services/invoiceService';
+import { describeDiscount, formatMoney } from '../../utils/coupon';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
 import ClientDetailModal from './ClientDetailModal';
@@ -327,6 +328,30 @@ export default function InquiryDetailModal({
                   <div>
                     <p className="text-xs text-slate-500">Estimated Price</p>
                     <p className="text-sm font-medium text-emerald-600">{inquiry.estimated_price}</p>
+                    {inquiry.coupon_code && (
+                      <p className="text-xs text-amber-700 mt-0.5">after coupon</p>
+                    )}
+                  </div>
+                )}
+                {inquiry.coupon_code && inquiry.coupon_discount_type && (
+                  <div>
+                    <p className="text-xs text-slate-500">Coupon</p>
+                    <p className="text-sm font-medium text-amber-700 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span className="font-mono">{inquiry.coupon_code}</span>
+                      <span className="font-normal text-slate-600">
+                        {describeDiscount({
+                          discount_type: inquiry.coupon_discount_type,
+                          discount_value: Number(inquiry.coupon_discount_value ?? 0),
+                        })}
+                        {inquiry.coupon_discount_amount
+                          ? ` · ${formatMoney(Number(inquiry.coupon_discount_amount))} off`
+                          : ''}
+                      </span>
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Added to any invoice you raise from this inquiry.
+                    </p>
                   </div>
                 )}
                 {inquiry.estimated_time && (
