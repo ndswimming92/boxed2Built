@@ -42,11 +42,20 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(item?.src || '');
-  const [productUrl, setProductUrl] = useState('');
+  const [productUrl, setProductUrl] = useState(item?.amazon_link || '');
   const [aiPrompt, setAiPrompt] = useState('');
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Stored and sent to the AI in a canonical form: trimmed, and with a scheme
+  // added when the pasted link is missing one (e.g. "amzn.to/abc123"). Empty
+  // becomes null so clearing the field clears the saved link.
+  const normalizeProductUrl = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,7 +91,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
       let result;
       const aiOptions = {
-        productUrl: productUrl || undefined,
+        productUrl: normalizeProductUrl(productUrl) || undefined,
         location: formData.location,
         category: formData.category,
         customPrompt: aiPrompt || undefined,
@@ -183,6 +192,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
 
       const purposeFlags = purposeToFlags(purpose);
       const hashtags = parseHashtagsInput(formData.hashtags);
+      const normalizedProductUrl = normalizeProductUrl(productUrl);
 
       if (isEdit) {
         const updateData: UpdateGalleryItemInput = {
@@ -197,6 +207,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           height,
           focus_x: formData.focusX,
           focus_y: formData.focusY,
+          amazon_link: normalizedProductUrl,
           ...purposeFlags,
         };
 
@@ -226,6 +237,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           is_active: true,
           focus_x: formData.focusX,
           focus_y: formData.focusY,
+          amazon_link: normalizedProductUrl,
           ...purposeFlags,
         };
 
@@ -329,7 +341,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                     placeholder="https://www.ikea.com/... or Amazon/Wayfair link"
                   />
                   <p className="mt-1 text-xs text-slate-500">
-                    Paste a product link for richer AI-generated descriptions
+                    Saved with this item and reused for richer AI-generated descriptions
                   </p>
                 </div>
               )}

@@ -16,7 +16,7 @@ export interface GalleryItem {
   location?: string;
   width?: number;
   height?: number;
-  amazon_link?: string;
+  amazon_link?: string | null;
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order: number;
   is_active: boolean;
@@ -53,7 +53,7 @@ export interface CreateGalleryItemInput {
   location?: string;
   width?: number;
   height?: number;
-  amazon_link?: string;
+  amazon_link?: string | null;
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
@@ -74,7 +74,7 @@ export interface UpdateGalleryItemInput {
   location?: string;
   width?: number;
   height?: number;
-  amazon_link?: string;
+  amazon_link?: string | null;
   platform?: 'youtube' | 'vimeo' | 'direct';
   display_order?: number;
   is_active?: boolean;
