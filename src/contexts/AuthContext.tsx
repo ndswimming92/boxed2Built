@@ -26,6 +26,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithGoogleForPortal: () => Promise<{ error: Error | null }>;
+  signInWithGoogleForBooking: () => Promise<{ error: Error | null }>;
   getHomeRouteForUser: (authUser: User | null) => string;
   signOut: () => Promise<void>;
   signOutAllSessions: () => Promise<void>;
@@ -36,7 +37,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_FLOW_KEY = 'authLoginFlow';
 
-type AuthFlow = 'admin' | 'portal';
+type AuthFlow = 'admin' | 'portal' | 'booking';
 
 const setAuthFlow = (flow: AuthFlow) => {
   localStorage.setItem(AUTH_FLOW_KEY, flow);
@@ -44,7 +45,7 @@ const setAuthFlow = (flow: AuthFlow) => {
 
 const getAuthFlow = (): AuthFlow | null => {
   const flow = localStorage.getItem(AUTH_FLOW_KEY);
-  if (flow === 'admin' || flow === 'portal') return flow;
+  if (flow === 'admin' || flow === 'portal' || flow === 'booking') return flow;
   return null;
 };
 
@@ -56,6 +57,10 @@ const clearAuthFlow = () => {
 const getOAuthRedirectUri = (type: AuthFlow): string => {
   if (type === 'admin') {
     return getSecureAuthRedirectUrl('/admin/login', import.meta.env.VITE_ADMIN_OAUTH_REDIRECT_URI);
+  }
+
+  if (type === 'booking') {
+    return getSecureAuthRedirectUrl('/book', import.meta.env.VITE_BOOKING_OAUTH_REDIRECT_URI);
   }
 
   return getSecureAuthRedirectUrl('/portal/callback', import.meta.env.VITE_PORTAL_OAUTH_REDIRECT_URI);
@@ -309,6 +314,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogleForBooking = async () => {
+    try {
+      setAuthFlow('booking');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getOAuthRedirectUri('booking'),
+        },
+      });
+
+      if (error) {
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'google-oauth-booking',
+          status: 'error',
+          errorMessage: error.message,
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: 'google-oauth-booking',
+        status: 'error',
+        errorMessage: (error as Error).message,
+      });
+      return { error: error as Error };
+    }
+  };
+
   const signInWithGoogleForPortal = async () => {
     try {
       setAuthFlow('portal');
@@ -398,6 +436,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signInWithGoogle,
     signInWithGoogleForPortal,
+    signInWithGoogleForBooking,
     getHomeRouteForUser,
     signOut,
     signOutAllSessions,

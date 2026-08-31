@@ -30,6 +30,9 @@ export default defineConfig({
         const path = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
         if (path === '/admin' || path.startsWith('/admin/')) return false;
         if (path === '/portal' || path.startsWith('/portal/')) return false;
+        // /book reads live availability behind a Google sign-in; a pre-rendered
+        // shell would only ever show the signed-out state.
+        if (path === '/book') return false;
         if (path.startsWith('/go/')) return false;
         if (path.startsWith('/pay/')) return false;
         if (path.includes(':')) return false;

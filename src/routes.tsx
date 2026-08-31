@@ -85,6 +85,10 @@ const ClaudeUsagePage = React.lazy(() => import('./pages/admin/ClaudeUsagePage')
 const SocialMetricsPage = React.lazy(() => import('./pages/admin/SocialMetricsPage'));
 const SocialCommentsPage = React.lazy(() => import('./pages/admin/SocialCommentsPage'));
 const SocialMessagesPage = React.lazy(() => import('./pages/admin/SocialMessagesPage'));
+const BookingsAdminPage = React.lazy(() => import('./pages/admin/BookingsPage'));
+const BookingAvailabilityPage = React.lazy(() => import('./pages/admin/BookingAvailabilityPage'));
+
+const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 
 const PortalLoginPage = React.lazy(() => import('./pages/portal/LoginPage'));
 const PortalDashboardPage = React.lazy(() => import('./pages/portal/DashboardPage'));
@@ -149,6 +153,9 @@ export const routes: RouteRecord[] = [
       { path: 'pay/:invoiceId/:paymentToken', Component: InvoicePaymentPage },
       { path: 'pay/:invoiceId/:paymentToken/thank-you', Component: InvoiceThankYouPage },
 
+      // Public booking page (client-only, gated on a Google sign-in)
+      { path: 'book', Component: BookingPage },
+
       // Auth pages (client-only)
       { path: 'admin/login', Component: LoginPage },
       { path: 'portal/login', Component: PortalLoginPage },
@@ -198,6 +205,8 @@ export const routes: RouteRecord[] = [
           { path: 'completions', Component: CompletionsPage },
           { path: 'reminders', Component: RemindersPage },
           { path: 'business-hours', Component: BusinessHoursPage },
+          { path: 'bookings', Component: BookingsAdminPage },
+          { path: 'booking-availability', Component: BookingAvailabilityPage },
           { path: 'payment-methods', Component: PaymentMethodsPage },
           { path: 'social-media', Component: SocialMediaPage },
           { path: 'utm-link-builder', Component: UTMLinkBuilderPage },

@@ -43,6 +43,8 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     job_description: '',
     date_quoted: null,
     date_scheduled: null,
+    scheduled_start_time: null,
+    scheduled_end_time: null,
     date_completed: null,
     hours_worked: null,
     quoted_price: null,
@@ -855,6 +857,27 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   type="date"
                   value={formData.date_scheduled || ''}
                   onChange={(e) => setFormData({ ...formData, date_scheduled: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Start Time</label>
+                <input name="scheduled_start_time"
+                  type="time"
+                  value={(formData.scheduled_start_time || '').slice(0, 5)}
+                  onChange={(e) => setFormData({ ...formData, scheduled_start_time: e.target.value || null })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Leave blank and the booking page treats the whole day as busy.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">End Time</label>
+                <input name="scheduled_end_time"
+                  type="time"
+                  value={(formData.scheduled_end_time || '').slice(0, 5)}
+                  onChange={(e) => setFormData({ ...formData, scheduled_end_time: e.target.value || null })}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
