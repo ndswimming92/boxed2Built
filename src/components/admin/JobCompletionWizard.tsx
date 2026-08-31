@@ -28,6 +28,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const [showSignatureCapture, setShowSignatureCapture] = useState(false);
 
   const [finalPrice, setFinalPrice] = useState(job.final_price?.toString() || '');
+  const [hoursWorked, setHoursWorked] = useState(job.hours_worked?.toString() || '');
   const [checklist, setChecklist] = useState<ChecklistItem[]>([
     { id: '1', label: 'All furniture assembled correctly', checked: false, required: true },
     { id: '2', label: 'Work area cleaned up', checked: false, required: true },
@@ -80,7 +81,10 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const canProceed = () => {
     switch (currentStep) {
       case 'review':
-        return finalPrice !== '' && parseFloat(finalPrice) >= 0;
+        return (
+          finalPrice !== '' && parseFloat(finalPrice) >= 0 &&
+          hoursWorked !== '' && parseFloat(hoursWorked) > 0
+        );
       case 'checklist':
         return checklist.filter(item => item.required).every(item => item.checked);
       case 'satisfaction':
@@ -170,10 +174,27 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         .eq('id', job.business_id)
         .maybeSingle();
 
+      const completedAt = new Date().toISOString();
+      const parsedFinalPrice = parseFloat(finalPrice);
+      const finalPriceValue = Number.isNaN(parsedFinalPrice) ? null : parsedFinalPrice;
+      const hoursWorkedValue = parseFloat(hoursWorked);
+
+      // jobs requires positive hours_worked once a completion date is set, and
+      // inserting the completion stamps that date, so save the numbers first.
+      const { error: jobDetailsError } = await supabase
+        .from('jobs')
+        .update({
+          hours_worked: hoursWorkedValue,
+          final_price: finalPriceValue,
+        })
+        .eq('id', job.id);
+
+      if (jobDetailsError) throw jobDetailsError;
+
       const completionData = {
         organization_id: bizData?.organization_id ?? null,
         job_id: job.id,
-        completed_at: new Date().toISOString(),
+        completed_at: completedAt,
         completed_by: user?.id || null,
         signature_data: signatureData,
         completion_checklist: checklist,
@@ -185,7 +206,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
           timestamp: new Date().toISOString(),
         },
         customer_name: job.client_name,
-        final_price: parseFloat(finalPrice) || null,
+        final_price: finalPriceValue,
         is_customer_satisfied: satisfactionRating >= 4,
       };
 
@@ -196,6 +217,22 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
         .single();
 
       if (completionError) throw completionError;
+
+      // The signed completion is what makes the job done, so close it out here
+      // instead of leaving the status to be corrected by hand afterwards.
+      const { error: jobStatusError } = await supabase
+        .from('jobs')
+        .update({
+          job_status: 'completed',
+          date_completed: completedAt.split('T')[0],
+          completion_id: completion.id,
+          has_signature: true,
+          signed_off_at: completedAt,
+          status_changed_by: user?.id || null,
+        })
+        .eq('id', job.id);
+
+      if (jobStatusError) throw jobStatusError;
 
       if (photos.length > 0) {
         const completionPhotos = photos.map(photo => photo.dataUrl);
@@ -297,21 +334,45 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
               )}
             </div>
 
-            <div>
-              <label htmlFor="final-price" className="block text-sm font-semibold text-slate-900 mb-2">
-                Final Price <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">$</span>
-                <input
-                  id="final-price"
-                  type="number"
-                  step="0.01"
-                  value={finalPrice}
-                  onChange={(e) => setFinalPrice(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
-                />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="final-price" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Final Price <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">$</span>
+                  <input
+                    id="final-price"
+                    type="number"
+                    step="0.01"
+                    value={finalPrice}
+                    onChange={(e) => setFinalPrice(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="hours-worked" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Hours Worked <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="hours-worked"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    value={hoursWorked}
+                    onChange={(e) => setHoursWorked(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full pl-4 pr-14 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">hrs</span>
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  Required before a job can be marked completed.
+                </p>
               </div>
             </div>
           </div>
@@ -607,6 +668,10 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                   <span className="font-medium text-emerald-900">${finalPrice}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-emerald-700">Hours Worked:</span>
+                  <span className="font-medium text-emerald-900">{hoursWorked} hrs</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-emerald-700">Satisfaction Rating:</span>
                   <span className="font-medium text-emerald-900">{satisfactionRating}/5 stars</span>
                 </div>
@@ -626,6 +691,10 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                     {signatureData ? 'Captured' : 'Missing'}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-emerald-700">Job Status:</span>
+                  <span className="font-medium text-emerald-900">Completed</span>
+                </div>
                 {createReminder && (
                   <div className="flex justify-between">
                     <span className="text-emerald-700">Reminder:</span>
@@ -636,7 +705,8 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
             </div>
 
             <p className="text-sm text-slate-600 text-center">
-              Review the information above and click Complete Job to finalize
+              Review the information above and click Complete Job to finalize. The job
+              is marked completed for you — no need to edit the status afterwards.
             </p>
           </div>
         );
