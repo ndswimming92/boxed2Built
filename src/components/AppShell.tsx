@@ -181,7 +181,13 @@ function ManifestManager() {
 
 function ConditionalAuthProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal')) {
+  // /book is public but signed-in: it gates on a Google session, so it needs the
+  // provider just as much as /admin and /portal do.
+  if (
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/portal') ||
+    location.pathname.startsWith('/book')
+  ) {
     return <AuthProvider>{children}</AuthProvider>;
   }
   return <>{children}</>;
@@ -219,12 +225,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const initialBusinessData = useLoaderBusinessData();
 
-  // Admin/portal/pay routes don't consume the public business data wave, so
+  // Admin/portal/pay/book routes don't consume the public business data wave, so
   // we skip the provider there to avoid an unnecessary fetch.
   const isAppRoute =
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/portal') ||
-    location.pathname.startsWith('/pay');
+    location.pathname.startsWith('/pay') ||
+    location.pathname.startsWith('/book');
 
   // On the home page and QR redirect slugs the visible page already shows the
   // branded 3D box loader. Those pages are React.lazy, so on a fresh full page
