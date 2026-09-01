@@ -117,6 +117,7 @@ function formatTime(time: string): string {
 interface BookingRow {
   id: string;
   business_id: string;
+  organization_id: string | null;
   reference: string;
   auth_user_id: string | null;
   customer_email: string;
@@ -253,14 +254,25 @@ Deno.serve(async (req: Request) => {
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // The anon key is itself a valid JWT, so the bearer has to resolve to a real
-  // user before it means anything.
-  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
-  const { data: userData, error: userError } = await userClient.auth.getUser();
+  // The database calls this from a trigger with the service role key, which is
+  // the normal path. A signed-in user calling it directly still has to prove who
+  // they are, because the published anon key is itself a valid JWT.
+  const isService = token === SUPABASE_SERVICE_ROLE_KEY;
+  let callerId: string | null = null;
+  let isAdmin = isService;
 
-  if (userError || !userData?.user) return json({ error: 'Unauthorized' }, 401);
+  if (!isService) {
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !userData?.user) return json({ error: 'Unauthorized' }, 401);
+
+    callerId = userData.user.id;
+    const appMeta = (userData.user.app_metadata || {}) as Record<string, unknown>;
+    isAdmin = appMeta.is_platform_admin === true || appMeta.is_platform_admin === 'true';
+  }
 
   const { data: booking, error: bookingError } = await admin
     .from('bookings')
@@ -270,11 +282,22 @@ Deno.serve(async (req: Request) => {
 
   if (bookingError || !booking) return json({ error: 'Booking not found' }, 404);
 
-  // Either the person who made the booking, or an admin acting on it.
-  const appMeta = (userData.user.app_metadata || {}) as Record<string, unknown>;
-  const isAdmin = appMeta.is_platform_admin === true || appMeta.is_platform_admin === 'true';
+  // An organization admin is an admin here too — the database functions accept
+  // one, so gating this on the platform flag alone would refuse the owner.
+  if (!isAdmin && callerId && booking.organization_id) {
+    const { data: membership } = await admin
+      .from('organization_members')
+      .select('role')
+      .eq('user_id', callerId)
+      .eq('organization_id', booking.organization_id)
+      .eq('is_active', true)
+      .maybeSingle<{ role: string }>();
 
-  if (!isAdmin && booking.auth_user_id !== userData.user.id) {
+    isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
+  }
+
+  // Either the person who made the booking, or an admin acting on it.
+  if (!isAdmin && booking.auth_user_id !== callerId) {
     return json({ error: 'Forbidden' }, 403);
   }
 
