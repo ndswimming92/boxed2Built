@@ -73,6 +73,23 @@ still hold the old slot while the new one looked free — which is exactly how a
 double booking happens. Cancelling or completing such a job does the same to its
 booking.
 
+## Drive time in the Bookings queue
+
+A booking's address in **Admin → Bookings** is a link to Google Maps directions,
+and **Drive time from home base** below it opens the same map, distance and
+duration the Jobs page shows.
+
+`job-travel-estimate` now takes a `bookingId` as well as a `jobId`. Only the
+lookup differs — a booking has one address, the one the customer typed, with no
+client-profile fallback to fall back to. Everything after that is shared,
+including the cache: `job_travel_estimates` is keyed on the origin/destination
+address pair rather than on the row that asked, so a booking and the job it
+becomes reuse one cached result instead of spending Mapbox quota twice.
+
+The panel is collapsed by default and the card only mounts once it is opened. A
+queue of ten bookings would otherwise fire ten lookups on load, and a first
+lookup for an address is a live Mapbox call.
+
 ## Security
 
 Signing in with Google is the whole gate — any Google account can book, which is
