@@ -403,7 +403,6 @@ export type BookingPageService = {
   id: string;
   name: string;
   description: string | null;
-  category: string | null;
   base_price: number;
   duration_minutes: number | null;
 };

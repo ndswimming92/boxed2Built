@@ -285,11 +285,11 @@ Deno.serve(async (req: Request) => {
   }
 
   const [{ data: business }, { data: settings }] = await Promise.all([
-    admin.from('business_info').select('business_name, email').eq('id', booking.business_id).maybeSingle(),
+    admin.from('business_info').select('name, email').eq('id', booking.business_id).maybeSingle(),
     admin.from('booking_settings').select('notify_email').eq('business_id', booking.business_id).maybeSingle(),
   ]);
 
-  const businessName = business?.business_name?.trim() || 'Boxed2Built';
+  const businessName = business?.name?.trim() || 'Boxed2Built';
   const from = `${businessName} <${FROM_EMAIL}>`;
   const when = `${formatLongDate(booking.booking_date)} at ${formatTime(booking.start_time)}`;
 

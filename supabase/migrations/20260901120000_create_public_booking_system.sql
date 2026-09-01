@@ -573,7 +573,7 @@ BEGIN
     RETURN jsonb_build_object('is_enabled', false);
   END IF;
 
-  SELECT b.business_name INTO v_business_name
+  SELECT b.name INTO v_business_name
   FROM business_info b
   WHERE b.id = v_settings.business_id;
 
@@ -582,7 +582,6 @@ BEGIN
       'id', sv.id,
       'name', sv.name,
       'description', sv.description,
-      'category', sv.category,
       'base_price', sv.base_price,
       'duration_minutes', sv.duration_minutes
     ) ORDER BY sv.display_order, sv.name
@@ -1223,3 +1222,8 @@ CREATE TRIGGER trigger_sync_booking_from_job
   EXECUTE FUNCTION public.sync_booking_from_job();
 
 COMMENT ON FUNCTION public.sync_booking_from_job() IS 'Mirrors reschedules and cancellations from a job back onto the booking that created it, so availability never sees two versions of the same slot.';
+
+-- A trigger function has no business being reachable over /rest/v1/rpc. Calling
+-- it directly would error rather than do damage, but leaving it granted is
+-- needless surface, so it is internal like create_job_from_booking().
+REVOKE ALL ON FUNCTION public.sync_booking_from_job() FROM PUBLIC, anon, authenticated;
