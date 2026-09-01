@@ -20,5 +20,6 @@
 /admin/*     /index.html   200
 /portal      /index.html   200
 /portal/*    /index.html   200
+/book        /index.html   200
 /go/*        /index.html   200
 /pay/*       /index.html   200
