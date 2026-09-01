@@ -61,6 +61,8 @@ import {
   Wrench,
   X,
   Zap,
+  CalendarCheck,
+  CalendarClock,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -96,6 +98,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Goals', href: '/admin/goals', icon: Target },
       { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
       { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
+      { name: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
       { name: 'Contractors', href: '/admin/contractors', icon: HardHat },
       { name: 'Completions', href: '/admin/completions', icon: CheckCircle2 },
       { name: 'Reminders', href: '/admin/reminders', icon: Calendar },
@@ -127,6 +130,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Services', href: '/admin/services', icon: Briefcase },
       { name: 'Service Areas', href: '/admin/service-areas', icon: MapPin },
       { name: 'Business Hours', href: '/admin/business-hours', icon: Clock },
+      { name: 'Booking Availability', href: '/admin/booking-availability', icon: CalendarClock },
       { name: 'Payment Methods', href: '/admin/payment-methods', icon: CreditCard },
       { name: 'Gallery', href: '/admin/gallery', icon: Image },
     ],

@@ -253,9 +253,158 @@ export type Job = {
   schedule_notified_at: string | null;
   /** ICS SEQUENCE for this job's calendar event. Rises on every reschedule sent. */
   schedule_ics_sequence: number;
+  /** Local start time on date_scheduled. null leaves the whole day blocked for bookings. */
+  scheduled_start_time: string | null;
+  scheduled_end_time: string | null;
+  /** The public booking this job came from, if any. */
+  booking_id: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type BookingStatus = 'pending' | 'confirmed' | 'declined' | 'cancelled' | 'completed';
+
+/** How a job already on the calendar eats into booking availability. */
+export type JobBlockMode = 'time_window' | 'whole_day';
+
+/** Fields the booking form can be told to skip, ask for, or insist on. */
+export type BookingFieldMode = 'off' | 'optional' | 'required';
+
+export type BookingSettings = {
+  id: string;
+  business_id: string;
+  organization_id: string | null;
+  is_enabled: boolean;
+  timezone: string;
+  page_heading: string;
+  page_intro: string;
+  confirmation_message: string;
+  default_duration_minutes: number;
+  slot_interval_minutes: number;
+  use_service_duration: boolean;
+  buffer_minutes: number;
+  min_lead_time_hours: number;
+  max_advance_days: number;
+  max_bookings_per_day: number;
+  max_active_bookings_per_customer: number;
+  cancellation_cutoff_hours: number;
+  block_on_scheduled_jobs: boolean;
+  job_block_mode: JobBlockMode;
+  require_approval: boolean;
+  collect_service_type: boolean;
+  collect_pieces: boolean;
+  collect_photos: boolean;
+  collect_phone: BookingFieldMode;
+  collect_address: BookingFieldMode;
+  collect_notes: boolean;
+  notify_email: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** One bookable window on a weekday. 0 = Sunday, matching EXTRACT(DOW). */
+export type BookingAvailabilityRule = {
+  id: string;
+  business_id: string;
+  organization_id: string | null;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * An exception to the weekly schedule for a single date: `is_blocked` takes the
+ * day off, otherwise start/end replace that day's normal windows.
+ */
+export type BookingDateOverride = {
+  id: string;
+  business_id: string;
+  organization_id: string | null;
+  override_date: string;
+  is_blocked: boolean;
+  start_time: string | null;
+  end_time: string | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Booking = {
+  id: string;
+  business_id: string;
+  organization_id: string | null;
+  reference: string;
+  auth_user_id: string | null;
+  customer_id: string | null;
+  customer_email: string;
+  customer_name: string;
+  customer_phone: string | null;
+  service_address: string | null;
+  service_id: string | null;
+  service_name: string | null;
+  pieces: number | null;
+  notes: string | null;
+  /** Paths in the furniture-photos bucket, not full URLs. */
+  photo_paths: string[];
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  timezone: string;
+  status: BookingStatus;
+  job_id: string | null;
+  confirmed_at: string | null;
+  declined_at: string | null;
+  cancelled_at: string | null;
+  cancelled_by: 'customer' | 'admin' | null;
+  cancellation_reason: string | null;
+  decision_note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** One start time the customer may still take, as returned by the slot RPC. */
+export type BookingSlot = {
+  slot_date: string;
+  start_time: string;
+  end_time: string;
+};
+
+/** The public page's view of the booking configuration. Never includes job data. */
+export type BookingPageConfig = {
+  is_enabled: boolean;
+  business_name?: string;
+  timezone?: string;
+  page_heading?: string;
+  page_intro?: string;
+  confirmation_message?: string;
+  default_duration_minutes?: number;
+  slot_interval_minutes?: number;
+  use_service_duration?: boolean;
+  min_lead_time_hours?: number;
+  max_advance_days?: number;
+  cancellation_cutoff_hours?: number;
+  require_approval?: boolean;
+  collect_service_type?: boolean;
+  collect_pieces?: boolean;
+  collect_photos?: boolean;
+  collect_phone?: BookingFieldMode;
+  collect_address?: BookingFieldMode;
+  collect_notes?: boolean;
+  today?: string;
+  services?: BookingPageService[];
+};
+
+export type BookingPageService = {
+  id: string;
+  name: string;
+  description: string | null;
+  base_price: number;
+  duration_minutes: number | null;
 };
 
 export type FormInquiry = {
