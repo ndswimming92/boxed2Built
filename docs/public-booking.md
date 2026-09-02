@@ -90,6 +90,46 @@ The panel is collapsed by default and the card only mounts once it is opened. A
 queue of ten bookings would otherwise fire ten lookups on load, and a first
 lookup for an address is a live Mapbox call.
 
+## Where the link lives on the site
+
+Booking is the second way in, not a replacement for the quote form. The quote
+form asks for nothing and suits someone still working out what they need;
+booking asks for a Google sign-in and suits someone who already knows. Making
+both look equally primary would only split the ask, so:
+
+| Placement | Treatment |
+| --- | --- |
+| Navbar | **Book Now** — the nav's only CTA button, which was an empty slot before |
+| Homepage hero | A line under the buttons: "Already know what you need?" |
+| Contact page | A card above the form, as the alternative to filling it in |
+| Service pages | One line on the closing CTA band |
+| Footer | Company column and the sitemap |
+| FAQ | "What dates and times are you available?" answers with the URL |
+
+Every one of these is hidden when `is_enabled` is off, so turning booking off
+takes the links with it instead of leaving dead ends across the site.
+
+### Telling a signed-out visitor anything at all
+
+`/book` used to be a bare "Sign in to see open times" card. It asked for a Google
+account before saying how far ahead you could book, that each request is
+confirmed by hand, or — worst of all — whether booking was open at all: the
+`is_enabled` check ran *after* the sign-in gate, so the reward for signing in
+could be "we're closed".
+
+`get_booking_public_info()` fixes both. It is the one booking function `anon` may
+call, and it returns the policy only: the heading and intro, lead time, how far
+ahead the calendar runs, the cancellation window, whether approval is required,
+and which fields the form collects. No availability, no slots, no jobs, no
+bookings, no `notify_email`, no ids — the same information you would print on a
+flyer. The signed-out page is built from it, so the copy tracks the settings
+instead of drifting from them, and the closed state now lands *before* the
+sign-in.
+
+`useBookingPublicInfo` holds the result at module scope the way
+`businessDataStore` does. The header, footer and hero all ask on every page, and
+between them that costs one request.
+
 ## Security
 
 Signing in with Google is the whole gate — any Google account can book, which is
