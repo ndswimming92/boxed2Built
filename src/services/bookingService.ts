@@ -4,6 +4,7 @@ import {
   BookingAvailabilityRule,
   BookingDateOverride,
   BookingPageConfig,
+  BookingPublicInfo,
   BookingSettings,
   BookingSlot,
   BookingStatus,
