@@ -68,6 +68,24 @@ export interface MyBooking {
 
 // ── Public booking page ──────────────────────────────────────────────────────
 
+/**
+ * The booking policy, readable without signing in. Everything else on this page
+ * is authenticated-only, which left the page unable to describe itself: a
+ * visitor had to hand over a Google account before finding out how far ahead
+ * they could book, whether a request is confirmed straight away, or even
+ * whether booking was open at all.
+ *
+ * Availability, jobs and other people's bookings stay behind the sign-in.
+ */
+export async function getBookingPublicInfo(): Promise<BookingPublicInfo> {
+  const { data, error } = await supabase.rpc('get_booking_public_info');
+
+  if (error) throw new Error(error.message);
+
+  return (data as BookingPublicInfo) ?? { is_enabled: false };
+}
+
+
 export async function getBookingPageConfig(): Promise<BookingPageConfig> {
   const { data, error } = await supabase.rpc('get_booking_page_config');
 

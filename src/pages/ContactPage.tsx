@@ -4,6 +4,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import ContactForm from '../components/ContactForm';
+import BookingCallout from '../components/sections/BookingCallout';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { trackEvent } from '../utils/analytics';
@@ -207,6 +208,11 @@ const ContactPage: React.FC = () => {
 
                 {/* Contact Form */}
                 <div>
+                  <BookingCallout
+                    pageSection="contact_page"
+                    body="Skip the back-and-forth — see the days and start times we actually have open and take one. You'll get an email as soon as it's confirmed."
+                    className="mb-6"
+                  />
                   <ContactForm />
                 </div>
               </div>
