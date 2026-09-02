@@ -73,45 +73,22 @@ still hold the old slot while the new one looked free — which is exactly how a
 double booking happens. Cancelling or completing such a job does the same to its
 booking.
 
-## Where the link lives on the site
+## Drive time in the Bookings queue
 
-Booking is the second way in, not a replacement for the quote form. The quote
-form asks for nothing and suits someone still working out what they need;
-booking asks for a Google sign-in and suits someone who already knows. Making
-both look equally primary would only split the ask, so:
+A booking's address in **Admin → Bookings** is a link to Google Maps directions,
+and **Drive time from home base** below it opens the same map, distance and
+duration the Jobs page shows.
 
-| Placement | Treatment |
-| --- | --- |
-| Navbar | **Book Now** — the nav's only CTA button, which was an empty slot before |
-| Homepage hero | A line under the buttons: "Already know what you need?" |
-| Contact page | A card above the form, as the alternative to filling it in |
-| Service pages | One line on the closing CTA band |
-| Footer | Company column and the sitemap |
-| FAQ | "What dates and times are you available?" answers with the URL |
+`job-travel-estimate` now takes a `bookingId` as well as a `jobId`. Only the
+lookup differs — a booking has one address, the one the customer typed, with no
+client-profile fallback to fall back to. Everything after that is shared,
+including the cache: `job_travel_estimates` is keyed on the origin/destination
+address pair rather than on the row that asked, so a booking and the job it
+becomes reuse one cached result instead of spending Mapbox quota twice.
 
-Every one of these is hidden when `is_enabled` is off, so turning booking off
-takes the links with it instead of leaving dead ends across the site.
-
-### Telling a signed-out visitor anything at all
-
-`/book` used to be a bare "Sign in to see open times" card. It asked for a Google
-account before saying how far ahead you could book, that each request is
-confirmed by hand, or — worst of all — whether booking was open at all: the
-`is_enabled` check ran *after* the sign-in gate, so the reward for signing in
-could be "we're closed".
-
-`get_booking_public_info()` fixes both. It is the one booking function `anon` may
-call, and it returns the policy only: the heading and intro, lead time, how far
-ahead the calendar runs, the cancellation window, whether approval is required,
-and which fields the form collects. No availability, no slots, no jobs, no
-bookings, no `notify_email`, no ids — the same information you would print on a
-flyer. The signed-out page is built from it, so the copy tracks the settings
-instead of drifting from them, and the closed state now lands *before* the
-sign-in.
-
-`useBookingPublicInfo` holds the result at module scope the way
-`businessDataStore` does. The header, footer and hero all ask on every page, and
-between them that costs one request.
+The panel is collapsed by default and the card only mounts once it is opened. A
+queue of ten bookings would otherwise fire ten lookups on load, and a first
+lookup for an address is a live Mapbox call.
 
 ## Security
 
@@ -144,11 +121,30 @@ re-runs the availability check and is told the time has gone. A partial unique
 index on `(business_id, booking_date, start_time)` for active bookings backs
 that up at the storage layer.
 
+## Looking a booking up afterwards
+
+The `BK-` reference works at `/lookup-request`, the same box that takes an `SR-`
+quote code. `lookup_booking_by_code()` mirrors `get_saved_request_by_code()`: the
+email and the code must both match, it is SECURITY DEFINER so an anonymous
+visitor never reads `bookings` directly, and it returns only what that customer
+submitted — no ids, no linked job, no admin decision note.
+
+The page tries whichever lookup matches the shape of the code first and falls
+back to the other, so a customer never has to know which kind of code they hold.
+
 ## Emails
 
-`send-booking-email` handles three events. Sends are best-effort: a booking that
-saved but failed to mail is still a booking, so the customer is never told
-otherwise.
+`send-booking-email` handles three events. **The database sends them**, from
+`trigger_booking_email` on the `bookings` table, over `net.http_post` with the
+service role key read from Vault — the same pg_net + Vault pattern the coupon
+reminder cron uses.
+
+This used to be the customer's browser calling the function directly, and it
+failed silently: a real booking produced no mail through either its `created` or
+its `confirmed` step, with nothing recorded to say why. Sending from the database
+means a closed tab, a flaky connection, or a bad invoke cannot cost the customer
+their confirmation. Only a genuine status *transition* sends, so re-saving a
+confirmed booking never mails twice.
 
 | Event | Who gets it |
 | --- | --- |
@@ -165,6 +161,16 @@ the local booking time to UTC using the configured IANA zone and writes the
 
 The owner's copy goes to `booking_settings.notify_email`, falling back to the
 business contact address.
+
+Both the customer confirmation and the acknowledgement carry the booking
+reference and point at `/lookup-request`, so the customer can pull the details
+back up without needing the original email.
+
+If mail stops arriving, check that the `service_role_key` Vault secret still
+exists — a missing secret makes the trigger send nothing at all rather than post
+an unauthenticated request:
+
+    SELECT vault.create_secret('<service role key>', 'service_role_key');
 
 ## Configuration
 
