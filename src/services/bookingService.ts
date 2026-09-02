@@ -112,28 +112,51 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
   if (error) throw new Error(error.message);
 
-  const booking = data as CreateBookingResult;
-  await notifyBookingEvent(booking.id, 'created');
-
-  return booking;
+  return data as CreateBookingResult;
 }
 
 /**
- * Fires the booking emails. Deliberately never throws: the booking itself is
- * already committed by the time this runs, so a mail failure must not surface
- * as "your booking failed".
+ * A booking as the customer sees it on the request lookup page. The RPC checks
+ * the email and the reference together, so nothing here is reachable by guessing
+ * a code alone.
  */
-export async function notifyBookingEvent(
-  bookingId: string,
-  event: 'created' | 'confirmed' | 'declined',
-): Promise<void> {
-  try {
-    await supabase.functions.invoke('send-booking-email', {
-      body: { bookingId, event },
-    });
-  } catch (error) {
-    console.error('Booking email could not be sent:', error);
-  }
+export interface BookingLookupResult {
+  reference: string;
+  status: BookingStatus;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string | null;
+  service_address: string | null;
+  service_name: string | null;
+  pieces: number | null;
+  notes: string | null;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  timezone: string;
+  cancellation_reason: string | null;
+  created_at: string;
+}
+
+/** Booking references are `BK-` followed by six characters. */
+export function looksLikeBookingReference(code: string): boolean {
+  return /^BK-?[A-Z0-9]{6}$/i.test(code.trim());
+}
+
+export async function lookupBookingByCode(
+  email: string,
+  reference: string,
+): Promise<BookingLookupResult | null> {
+  const { data, error } = await supabase.rpc('lookup_booking_by_code', {
+    p_email: email.trim().toLowerCase(),
+    p_confirmation_code: reference.replace(/\s/g, '').toUpperCase(),
+  });
+
+  if (error) throw new Error(error.message);
+
+  const record = (Array.isArray(data) ? data[0] : data) ?? null;
+  return (record as BookingLookupResult) ?? null;
 }
 
 export async function getMyBookings(): Promise<MyBooking[]> {
@@ -398,8 +421,6 @@ export async function confirmBooking(bookingId: string, note?: string): Promise<
 
   if (error) throw new Error(error.message);
 
-  await notifyBookingEvent(bookingId, 'confirmed');
-
   return (data as { job_id: string | null })?.job_id ?? null;
 }
 
@@ -410,8 +431,6 @@ export async function declineBooking(bookingId: string, reason?: string): Promis
   });
 
   if (error) throw new Error(error.message);
-
-  await notifyBookingEvent(bookingId, 'declined');
 }
 
 // ── Formatting ───────────────────────────────────────────────────────────────

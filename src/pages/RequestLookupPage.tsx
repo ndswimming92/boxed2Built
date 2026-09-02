@@ -6,8 +6,16 @@ import Footer from '../components/layout/Footer';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import FormField from '../components/ui/FormField';
 import ValidationMessage from '../components/ui/ValidationMessage';
-import { Search, Download, CheckCircle, Loader2, FileText, Clock, Image, Link, ExternalLink } from 'lucide-react';
+import { Search, Download, CheckCircle, CalendarCheck, Loader2, FileText, Clock, Image, Link, ExternalLink } from 'lucide-react';
 import { getSavedRequestByCode } from '../services/savedRequestService';
+import {
+  BookingLookupResult,
+  formatDateLabel,
+  formatDurationLabel,
+  formatTimeLabel,
+  looksLikeBookingReference,
+  lookupBookingByCode,
+} from '../services/bookingService';
 import { generateRequestSummaryPDF } from '../services/pdfGenerationService';
 import { SavedRequest } from '../lib/supabase';
 import { trackEvent } from '../utils/analytics';
@@ -26,6 +34,7 @@ const RequestLookupPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [request, setRequest] = useState<SavedRequest | null>(null);
+  const [booking, setBooking] = useState<BookingLookupResult | null>(null);
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const codeParam = searchParams.get('code');
@@ -44,6 +53,7 @@ const RequestLookupPage: React.FC = () => {
     e.preventDefault();
     setError('');
     setRequest(null);
+    setBooking(null);
 
     if (!email || !confirmationCode) {
       setError('Please enter both your email and confirmation code.');
@@ -64,7 +74,25 @@ const RequestLookupPage: React.FC = () => {
 
     try {
       const cleanedCode = confirmationCode.replace(/\s/g, '').toUpperCase();
-      const savedRequest = await getSavedRequestByCode(email.toLowerCase(), cleanedCode);
+
+      // A booking reference and a saved-request code are different things with
+      // one box to type them into, so try the shape that matches first and fall
+      // back to the other rather than making the customer know the difference.
+      const isBookingCode = looksLikeBookingReference(cleanedCode);
+      const normalizedEmail = email.toLowerCase();
+
+      const foundBooking = isBookingCode
+        ? await lookupBookingByCode(normalizedEmail, cleanedCode)
+        : null;
+      const savedRequest = foundBooking
+        ? null
+        : await getSavedRequestByCode(normalizedEmail, cleanedCode);
+      const lateBooking =
+        !foundBooking && !savedRequest && !isBookingCode
+          ? await lookupBookingByCode(normalizedEmail, cleanedCode)
+          : null;
+
+      const resolvedBooking = foundBooking ?? lateBooking;
 
       if (savedRequest) {
         setRequest(savedRequest);
@@ -72,6 +100,14 @@ const RequestLookupPage: React.FC = () => {
         trackEvent('request_lookup_success', 'lookup_page', {
           event_category: 'engagement',
           confirmation_code: cleanedCode,
+        });
+      } else if (resolvedBooking) {
+        setBooking(resolvedBooking);
+
+        trackEvent('request_lookup_success', 'lookup_page', {
+          event_category: 'engagement',
+          confirmation_code: cleanedCode,
+          lookup_type: 'booking',
         });
       } else {
         setError('No request found with the provided email and confirmation code. Please check your information and try again.');
@@ -162,7 +198,9 @@ const RequestLookupPage: React.FC = () => {
                   Find Your Service Request
                 </h2>
 
-                {!request ? (
+                {booking ? (
+                  <BookingFound booking={booking} />
+                ) : !request ? (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <FormField
                       label="Email Address"
@@ -220,7 +258,7 @@ const RequestLookupPage: React.FC = () => {
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
                       <p className="text-sm text-blue-900">
-                        <strong>Need help?</strong> If you can't find your confirmation code, please contact us at{' '}
+                        <strong>Need help?</strong> A booking reference (BK-…) works here too. If you can't find your code, please contact us at{' '}
                         <a href={`tel:${phoneRaw}`} className="text-blue-700 hover:text-blue-800 underline">
                           {phoneDisplay}
                         </a>{' '}
@@ -443,6 +481,158 @@ const RequestLookupPage: React.FC = () => {
       </main>
       <Footer />
     </>
+  );
+};
+
+
+/** What a customer sees when the code they typed was a booking reference. */
+const BOOKING_STATUS_COPY: Record<
+  string,
+  { label: string; tone: string; blurb: string }
+> = {
+  pending: {
+    label: 'Awaiting confirmation',
+    tone: 'bg-amber-50 border-amber-200 text-amber-900',
+    blurb: 'We are holding this time for you and will confirm it by email shortly.',
+  },
+  confirmed: {
+    label: 'Confirmed',
+    tone: 'bg-green-50 border-green-200 text-green-900',
+    blurb: 'You are booked in. We will see you then.',
+  },
+  completed: {
+    label: 'Completed',
+    tone: 'bg-gray-50 border-gray-200 text-gray-900',
+    blurb: 'This job is finished. Thanks for having us.',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    tone: 'bg-gray-50 border-gray-200 text-gray-700',
+    blurb: 'This booking was cancelled. Book another time whenever you are ready.',
+  },
+  declined: {
+    label: 'Not available',
+    tone: 'bg-red-50 border-red-200 text-red-900',
+    blurb: 'That time did not work out. Please pick another and we will get you booked in.',
+  },
+};
+
+const BookingFound: React.FC<{ booking: BookingLookupResult }> = ({ booking }) => {
+  const status = BOOKING_STATUS_COPY[booking.status] ?? BOOKING_STATUS_COPY.pending;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-center mb-4">
+        <CalendarCheck size={48} className="text-green-600" />
+      </div>
+
+      <h3 className="text-xl font-bold text-center text-gray-900 mb-6">Booking Found!</h3>
+
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+        <p className="text-sm font-semibold text-blue-900 mb-1 text-center">Booking Reference</p>
+        <p className="text-2xl font-bold text-blue-700 text-center">{booking.reference}</p>
+      </div>
+
+      <div className={`border-2 rounded-lg p-4 text-center ${status.tone}`}>
+        <p className="font-bold">{status.label}</p>
+        <p className="text-sm mt-1">{status.blurb}</p>
+        {booking.cancellation_reason && (
+          <p className="text-sm mt-2 italic">{booking.cancellation_reason}</p>
+        )}
+      </div>
+
+      <div className="bg-gray-50 rounded-lg p-6">
+        <h4 className="font-bold text-gray-900 mb-4 flex items-center">
+          <FileText size={20} className="mr-2" />
+          Booking Details
+        </h4>
+
+        <div className="space-y-3 text-sm">
+          <div className="border-b border-gray-200 pb-3 mb-3">
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-600">Date:</span>
+              <span className="font-semibold text-gray-900">
+                {formatDateLabel(booking.booking_date)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Time:</span>
+              <span className="font-semibold text-gray-900">
+                {formatTimeLabel(booking.start_time)} – {formatTimeLabel(booking.end_time)}{' '}
+                <span className="font-normal text-gray-500">
+                  ({formatDurationLabel(booking.duration_minutes)})
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-600">Name:</span>
+            <span className="font-semibold text-gray-900">{booking.customer_name}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-600">Email:</span>
+            <span className="font-semibold text-gray-900">{booking.customer_email}</span>
+          </div>
+
+          {booking.customer_phone && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Phone:</span>
+              <span className="font-semibold text-gray-900">{booking.customer_phone}</span>
+            </div>
+          )}
+
+          {booking.service_name && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Service:</span>
+              <span className="font-semibold text-gray-900">{booking.service_name}</span>
+            </div>
+          )}
+
+          {booking.pieces !== null && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Number of Pieces:</span>
+              <span className="font-semibold text-gray-900">{booking.pieces}</span>
+            </div>
+          )}
+
+          {booking.service_address && (
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-600 flex-shrink-0">Address:</span>
+              <span className="font-semibold text-gray-900 text-right">
+                {booking.service_address}
+              </span>
+            </div>
+          )}
+
+          {booking.notes && (
+            <div className="border-t border-gray-200 pt-3 mt-3">
+              <p className="text-gray-600 mb-1">What you told us:</p>
+              <p className="text-sm text-gray-900 bg-white p-2 rounded border border-gray-200 whitespace-pre-wrap">
+                {booking.notes}
+              </p>
+            </div>
+          )}
+
+          <div className="border-t border-gray-200 pt-3 mt-3">
+            <div className="flex justify-between items-center text-xs text-gray-500">
+              <span className="flex items-center">
+                <Clock size={14} className="mr-1" />
+                Booked
+              </span>
+              <span>{new Date(booking.created_at).toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p className="text-sm text-blue-900">
+          Need to change or cancel this? Give us a call and we will sort it out.
+        </p>
+      </div>
+    </div>
   );
 };
 

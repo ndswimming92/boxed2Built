@@ -43,13 +43,15 @@ export function formatTravelDistance(meters: number | null): string {
 }
 
 /**
- * Drive time, distance and a rendered route map for a job, from the private trip
- * origin in `travel_settings`. The job's address is resolved server-side, so only
- * the id is sent.
+ * Drive time, distance and a rendered route map from the private trip origin in
+ * `travel_settings`. The destination address is resolved server-side from the id,
+ * so only the id is sent and the cache key cannot be poisoned.
  */
-export async function getJobTravelEstimate(jobId: string): Promise<JobTravelEstimate> {
+async function requestTravelEstimate(
+  body: { jobId: string } | { bookingId: string },
+): Promise<JobTravelEstimate> {
   const { data, error } = await supabase.functions.invoke('job-travel-estimate', {
-    body: { jobId },
+    body,
   });
 
   if (error) {
@@ -82,4 +84,16 @@ export async function getJobTravelEstimate(jobId: string): Promise<JobTravelEsti
     cached: data.cached === true,
     refreshedAt: data.refreshedAt ?? null,
   };
+}
+
+export function getJobTravelEstimate(jobId: string): Promise<JobTravelEstimate> {
+  return requestTravelEstimate({ jobId });
+}
+
+/**
+ * The same lookup for a booking. Bookings and jobs share the cache, since it is
+ * keyed on the origin/destination pair rather than on the row that asked.
+ */
+export function getBookingTravelEstimate(bookingId: string): Promise<JobTravelEstimate> {
+  return requestTravelEstimate({ bookingId });
 }
