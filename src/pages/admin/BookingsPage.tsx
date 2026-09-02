@@ -4,10 +4,7 @@ import {
   AlertCircle,
   CalendarCheck,
   CalendarClock,
-  Car,
   Check,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Mail,
   MapPin,
@@ -17,9 +14,6 @@ import {
   X,
 } from 'lucide-react';
 import { Booking, BookingStatus } from '../../lib/supabase';
-import { getDirectionsUrl } from '../../utils/jobAddress';
-import { getBookingTravelEstimate } from '../../services/jobTravelService';
-import TravelEstimateCard from '../../components/admin/TravelEstimateCard';
 import {
   confirmBooking,
   declineBooking,
@@ -237,7 +231,6 @@ function BookingRow({
 }) {
   const isPast = booking.booking_date < today;
   const decidable = booking.status === 'pending';
-  const [showTravel, setShowTravel] = useState(false);
 
   return (
     <div className="p-4 sm:p-5">
@@ -295,49 +288,12 @@ function BookingRow({
               </a>
             )}
             {booking.service_address && (
-              <a
-                href={getDirectionsUrl(booking.service_address)}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Open directions to this address"
-                className="flex items-center gap-1.5 hover:text-emerald-700 underline decoration-slate-300 hover:decoration-emerald-500"
-              >
+              <span className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
                 {booking.service_address}
-              </a>
+              </span>
             )}
           </div>
-
-          {booking.service_address && (
-            <div className="mt-2">
-              <button
-                type="button"
-                onClick={() => setShowTravel((open) => !open)}
-                aria-expanded={showTravel}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-              >
-                <Car className="w-3.5 h-3.5" />
-                {showTravel ? 'Hide drive time' : 'Drive time from home base'}
-                {showTravel ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
-              </button>
-
-              {/* Mounted only once opened: each mount can cost a Mapbox call, and
-                  a queue of bookings would otherwise fire one per row on load. */}
-              {showTravel && (
-                <div className="mt-2 max-w-lg">
-                  <TravelEstimateCard
-                    address={booking.service_address}
-                    reloadKey={booking.id}
-                    loadEstimate={() => getBookingTravelEstimate(booking.id)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
 
           {booking.notes && (
             <p className="mt-2 text-sm text-slate-600 bg-slate-50 rounded-lg p-3 whitespace-pre-wrap">

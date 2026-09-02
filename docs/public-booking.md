@@ -73,23 +73,6 @@ still hold the old slot while the new one looked free — which is exactly how a
 double booking happens. Cancelling or completing such a job does the same to its
 booking.
 
-## Drive time in the Bookings queue
-
-A booking's address in **Admin → Bookings** is a link to Google Maps directions,
-and **Drive time from home base** below it opens the same map, distance and
-duration the Jobs page shows.
-
-`job-travel-estimate` now takes a `bookingId` as well as a `jobId`. Only the
-lookup differs — a booking has one address, the one the customer typed, with no
-client-profile fallback to fall back to. Everything after that is shared,
-including the cache: `job_travel_estimates` is keyed on the origin/destination
-address pair rather than on the row that asked, so a booking and the job it
-becomes reuse one cached result instead of spending Mapbox quota twice.
-
-The panel is collapsed by default and the card only mounts once it is opened. A
-queue of ten bookings would otherwise fire ten lookups on load, and a first
-lookup for an address is a live Mapbox call.
-
 ## Security
 
 Signing in with Google is the whole gate — any Google account can book, which is
@@ -119,30 +102,11 @@ re-runs the availability check and is told the time has gone. A partial unique
 index on `(business_id, booking_date, start_time)` for active bookings backs
 that up at the storage layer.
 
-## Looking a booking up afterwards
-
-The `BK-` reference works at `/lookup-request`, the same box that takes an `SR-`
-quote code. `lookup_booking_by_code()` mirrors `get_saved_request_by_code()`: the
-email and the code must both match, it is SECURITY DEFINER so an anonymous
-visitor never reads `bookings` directly, and it returns only what that customer
-submitted — no ids, no linked job, no admin decision note.
-
-The page tries whichever lookup matches the shape of the code first and falls
-back to the other, so a customer never has to know which kind of code they hold.
-
 ## Emails
 
-`send-booking-email` handles three events. **The database sends them**, from
-`trigger_booking_email` on the `bookings` table, over `net.http_post` with the
-service role key read from Vault — the same pg_net + Vault pattern the coupon
-reminder cron uses.
-
-This used to be the customer's browser calling the function directly, and it
-failed silently: a real booking produced no mail through either its `created` or
-its `confirmed` step, with nothing recorded to say why. Sending from the database
-means a closed tab, a flaky connection, or a bad invoke cannot cost the customer
-their confirmation. Only a genuine status *transition* sends, so re-saving a
-confirmed booking never mails twice.
+`send-booking-email` handles three events. Sends are best-effort: a booking that
+saved but failed to mail is still a booking, so the customer is never told
+otherwise.
 
 | Event | Who gets it |
 | --- | --- |
@@ -159,16 +123,6 @@ the local booking time to UTC using the configured IANA zone and writes the
 
 The owner's copy goes to `booking_settings.notify_email`, falling back to the
 business contact address.
-
-Both the customer confirmation and the acknowledgement carry the booking
-reference and point at `/lookup-request`, so the customer can pull the details
-back up without needing the original email.
-
-If mail stops arriving, check that the `service_role_key` Vault secret still
-exists — a missing secret makes the trigger send nothing at all rather than post
-an unauthenticated request:
-
-    SELECT vault.create_secret('<service role key>', 'service_role_key');
 
 ## Configuration
 

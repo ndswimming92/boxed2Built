@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -40,26 +40,6 @@ const monthStart = (base: Date, offset = 0): Date =>
 const monthEnd = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-/**
- * Carries the customer to the step their last choice just opened up. Each
- * section only exists once the one above it is answered, so without this the
- * new step lands below the fold and the page looks finished when it is not.
- *
- * Waits a frame because the section mounts in the same commit that triggers
- * this, and scrolling before layout settles lands short of the target. Honours
- * prefers-reduced-motion, for whom an unrequested smooth scroll is the problem
- * rather than the fix.
- */
-const revealStep = (element: HTMLElement | null): void => {
-  if (!element || typeof window === 'undefined') return;
-
-  const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-  window.requestAnimationFrame(() => {
-    element.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-  });
-};
-
 export default function BookingPage() {
   const { user, loading: authLoading, signInWithGoogleForBooking } = useAuth();
   const hydrated = useHydrated();
@@ -88,9 +68,6 @@ export default function BookingPage() {
   const [submitError, setSubmitError] = useState('');
   const [slotError, setSlotError] = useState('');
   const [result, setResult] = useState<CreateBookingResult | null>(null);
-
-  const timesRef = useRef<HTMLElement | null>(null);
-  const detailsRef = useRef<HTMLFormElement | null>(null);
 
   // Object URLs have to be released explicitly, so they are built once per
   // photo set and revoked when that set is replaced or the page goes away.
@@ -193,14 +170,6 @@ export default function BookingPage() {
       setSelectedSlot(null);
     }
   }, [slotsByDate, selectedDate]);
-
-  useEffect(() => {
-    if (selectedDate) revealStep(timesRef.current);
-  }, [selectedDate]);
-
-  useEffect(() => {
-    if (selectedSlot) revealStep(detailsRef.current);
-  }, [selectedSlot]);
 
   const handleSignIn = async () => {
     setSigningIn(true);
@@ -413,10 +382,7 @@ export default function BookingPage() {
         </section>
 
         {selectedDate && (
-          <section
-            ref={timesRef}
-            className="bg-white rounded-xl border border-slate-200 p-5 mb-6 scroll-mt-4"
-          >
+          <section className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
             <h2 className="text-sm font-semibold text-slate-900 mb-3">
               Start times on {formatDateLabel(selectedDate)}
             </h2>
@@ -443,11 +409,7 @@ export default function BookingPage() {
         )}
 
         {selectedSlot && (
-          <form
-            ref={detailsRef}
-            onSubmit={handleSubmit}
-            className="bg-white rounded-xl border border-slate-200 p-5 scroll-mt-4"
-          >
+          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-5">
             <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 border border-emerald-200 mb-5">
               <CalendarCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>

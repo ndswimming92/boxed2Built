@@ -229,69 +229,31 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // A booking is the same question asked of a different row: where is the work,
-    // and how far is it from home base. Only the lookup differs — the cache is
-    // keyed on the address pair, so both kinds share one cached result for the
-    // same destination.
-    const { jobId, bookingId } = await req.json().catch(() => ({
-      jobId: null,
-      bookingId: null,
-    }));
-
-    const hasJobId = typeof jobId === "string" && jobId.length > 0;
-    const hasBookingId = typeof bookingId === "string" && bookingId.length > 0;
-
-    if (!hasJobId && !hasBookingId) {
-      return json({ error: "Missing jobId or bookingId" }, 400);
+    const { jobId } = await req.json().catch(() => ({ jobId: null }));
+    if (!jobId || typeof jobId !== "string") {
+      return json({ error: "Missing jobId" }, 400);
     }
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // The address is resolved here rather than trusted from the caller, so the
-    // cache key can never be poisoned with an address the row does not have.
-    let organizationId: string | null = null;
-    let destinationDisplay: string | null = null;
+    // cache key can never be poisoned with an address the job does not have.
+    const { data: job, error: jobError } = await admin
+      .from("jobs")
+      .select("id, organization_id, client_address, service_address")
+      .eq("id", jobId)
+      .maybeSingle();
 
-    if (hasJobId) {
-      const { data: job, error: jobError } = await admin
-        .from("jobs")
-        .select("id, organization_id, client_address, service_address")
-        .eq("id", jobId)
-        .maybeSingle();
+    if (jobError) throw jobError;
+    if (!job) return json({ error: "Job not found" }, 404);
 
-      if (jobError) throw jobError;
-      if (!job) return json({ error: "Job not found" }, 404);
-
-      organizationId = job.organization_id;
-      destinationDisplay = resolveWorkAddress(job);
-    } else {
-      const { data: booking, error: bookingError } = await admin
-        .from("bookings")
-        .select("id, organization_id, service_address")
-        .eq("id", bookingId)
-        .maybeSingle();
-
-      if (bookingError) throw bookingError;
-      if (!booking) return json({ error: "Booking not found" }, 404);
-
-      organizationId = booking.organization_id;
-      // A booking has one address, the one the customer typed, so there is no
-      // client-profile fallback to consider.
-      destinationDisplay = resolveWorkAddress({
-        service_address: booking.service_address,
-        client_address: null,
-      });
-    }
-
-    if (!organizationId) {
-      return json({ error: "That record has no organization" }, 404);
-    }
+    const destinationDisplay = resolveWorkAddress(job);
     const destinationKey = normalizeAddress(destinationDisplay);
 
     const { data: settings } = await admin
       .from("travel_settings")
       .select("id, origin_address, origin_latitude, origin_longitude")
-      .eq("organization_id", organizationId)
+      .eq("organization_id", job.organization_id)
       .eq("is_active", true)
       .maybeSingle();
 
@@ -314,7 +276,7 @@ Deno.serve(async (req: Request) => {
     const { data: cached } = await admin
       .from("job_travel_estimates")
       .select("*")
-      .eq("organization_id", organizationId)
+      .eq("organization_id", job.organization_id)
       .eq("origin_address", originKey)
       .eq("destination_address", destinationKey)
       .maybeSingle();
@@ -381,7 +343,7 @@ Deno.serve(async (req: Request) => {
 
     const persist = async (row: Record<string, unknown>) => {
       const payload = {
-        organization_id: organizationId,
+        organization_id: job.organization_id,
         origin_address: originKey,
         destination_address: destinationKey,
         refreshed_at: new Date().toISOString(),
