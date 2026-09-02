@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, ChevronDown, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { CalendarCheck, Menu, X, ChevronDown, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useLocation } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import ScrollProgressBar from '../ui/ScrollProgressBar';
 import { useNotificationBarContext } from '../../contexts/NotificationBarContext';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
 import { useCartOptional } from '../../contexts/CartContext';
+import { useBookingEnabled } from '../../hooks/useBookingPublicInfo';
 
 const SERVICE_MENU_ITEMS = [
   {
@@ -35,6 +36,10 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
+
+  // Hidden until the policy says booking is open, so the button never points
+  // at a page that will turn the visitor away.
+  const bookingEnabled = useBookingEnabled();
 
   const headerRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -298,9 +303,28 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
-          {hasStoreProducts && (
+          {(hasStoreProducts || bookingEnabled) && (
           <div className="hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3">
-            {cartCount > 0 && (
+            {/* The nav had no call to action at all, so booking takes the slot
+                rather than competing with one. Quoting stays the default path
+                for anyone who does not yet know what they need. */}
+            {bookingEnabled && (
+              <a
+                href="/book"
+                onClick={() => handleNavClick('book', '/book')}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg 2xl:gap-2 2xl:px-4 2xl:text-base ${
+                  isActivePage('/book')
+                    ? 'bg-emerald-800 text-white'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+                aria-label="Book a time"
+              >
+                <CalendarCheck size={17} />
+                <span>Book Now</span>
+              </a>
+            )}
+
+            {hasStoreProducts && cartCount > 0 && (
               <button
                 onClick={openCart}
                 className="relative inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
@@ -314,6 +338,7 @@ const Header: React.FC = () => {
               </button>
             )}
 
+            {hasStoreProducts && (
             <a
               href="/store"
               onClick={() => handleNavClick('store', '/store')}
@@ -327,6 +352,7 @@ const Header: React.FC = () => {
               <ShoppingBag size={17} />
               <span>Store</span>
             </a>
+            )}
           </div>
           )}
 
@@ -446,6 +472,19 @@ const Header: React.FC = () => {
                   {item.label}
                 </a>
               ))}
+
+              {bookingEnabled && (
+                <div className="mt-4 pt-4 border-t">
+                  <a
+                    href="/book"
+                    onClick={() => handleNavClick('book', '/book')}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-lg font-semibold text-white shadow-md transition-colors hover:bg-emerald-700"
+                  >
+                    <CalendarCheck size={20} />
+                    <span>Book Now</span>
+                  </a>
+                </div>
+              )}
 
               {hasStoreProducts && (
               <div className="mt-4 pt-4 border-t space-y-3">

@@ -399,6 +399,29 @@ export type BookingPageConfig = {
   services?: BookingPageService[];
 };
 
+/**
+ * What `get_booking_public_info()` returns: the booking policy, minus anything
+ * that needs a signed-in caller. Derived from BookingPageConfig rather than
+ * restated so the two cannot drift apart — the signed-out page and the booking
+ * form describe the same settings row.
+ */
+export type BookingPublicInfo = Pick<
+  BookingPageConfig,
+  | 'is_enabled'
+  | 'timezone'
+  | 'page_heading'
+  | 'page_intro'
+  | 'min_lead_time_hours'
+  | 'max_advance_days'
+  | 'cancellation_cutoff_hours'
+  | 'require_approval'
+  | 'collect_service_type'
+  | 'collect_pieces'
+  | 'collect_photos'
+  | 'collect_phone'
+  | 'collect_address'
+>;
+
 export type BookingPageService = {
   id: string;
   name: string;

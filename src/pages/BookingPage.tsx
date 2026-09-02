@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useHydrated } from '../hooks/useHydrated';
+import { useBookingPublicInfo } from '../hooks/useBookingPublicInfo';
+import { SERVICE_AREAS } from '../constants/localSEO';
 import { BookingPageConfig, BookingSlot } from '../lib/supabase';
 import {
   CreateBookingResult,
@@ -625,6 +627,67 @@ export default function BookingPage() {
 
 // ── Pieces ───────────────────────────────────────────────────────────────────
 
+/**
+ * Short timezone name as a reader would say it — "CDT", not "America/Chicago".
+ * Resolved through Intl so it follows daylight saving without a lookup table.
+ */
+function timezoneLabel(timezone?: string): string | null {
+  if (!timezone) return null;
+  try {
+    return (
+      new Intl.DateTimeFormat('en-US', { timeZone: timezone, timeZoneName: 'short' })
+        .formatToParts(new Date())
+        .find((part) => part.type === 'timeZoneName')?.value ?? null
+    );
+  } catch {
+    // An unrecognised zone should cost a phrase, not the page.
+    return null;
+  }
+}
+
+function hoursLabel(hours?: number): string {
+  if (!hours || hours <= 0) return 'no notice';
+  if (hours === 24) return 'a day';
+  if (hours === 48) return 'two days';
+  if (hours % 24 === 0) return `${hours / 24} days`;
+  return `${hours} hour${hours === 1 ? '' : 's'}`;
+}
+
+function Step({
+  number,
+  title,
+  children,
+}: {
+  number: number;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <li className="flex gap-3">
+      <span
+        aria-hidden="true"
+        className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center"
+      >
+        {number}
+      </span>
+      <div className="min-w-0">
+        <p className="font-semibold text-slate-900">{title}</p>
+        <p className="text-sm text-slate-600 mt-0.5">{children}</p>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * What a visitor sees at /book before signing in.
+ *
+ * This used to be a bare "Sign in to see open times" card, which asked someone
+ * to hand over a Google account before telling them anything: not how far ahead
+ * they could book, not that each request is confirmed by hand, not even whether
+ * booking was open. Everything here comes from `get_booking_public_info()`, the
+ * one booking function `anon` may call, so the copy tracks the real settings
+ * instead of drifting from them.
+ */
 function SignInGate({
   onSignIn,
   busy,
@@ -634,41 +697,172 @@ function SignInGate({
   busy: boolean;
   error: string;
 }) {
+  const info = useBookingPublicInfo();
+
+  // Not known yet. Better a brief spinner than a page that promises booking and
+  // then takes it away, or an empty frame where the explanation should be.
+  if (!info) {
+    return <CenteredMessage icon={<Loader2 className="w-6 h-6 animate-spin" />} title="Loading…" />;
+  }
+
+  // The closed state now lands *before* the sign-in, not after it. Asking for a
+  // Google account and then saying "we're closed" was the worst version of this.
+  if (!info.is_enabled) {
+    return (
+      <CenteredMessage
+        icon={<CalendarDays className="w-6 h-6 text-slate-400" />}
+        title="Online booking is closed right now"
+        body="We're not taking self-serve bookings at the moment, but we'd still like to hear about your project — send a message and we'll come back with dates."
+        action={
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-colors"
+          >
+            Get in touch
+          </Link>
+        }
+      />
+    );
+  }
+
+  const zone = timezoneLabel(info.timezone);
+
+  // Only promise to ask for what the form is actually configured to collect.
+  const bringAlong = [
+    info.collect_service_type && 'What kind of work it is — assembly, TV mounting, or something else',
+    info.collect_pieces && 'Roughly how many pieces there are',
+    info.collect_photos && 'Photos of the boxes or the space, if you have them handy',
+    info.collect_address === 'required' && 'The address where the work happens',
+    info.collect_phone === 'required' && 'A phone number for build-day questions',
+  ].filter((item): item is string => typeof item === 'string');
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-          <ShieldCheck className="w-6 h-6 text-emerald-600" />
-        </div>
-        <h1 className="text-xl font-bold text-slate-900 mb-2">Sign in to see open times</h1>
-        <p className="text-sm text-slate-600 mb-6">
-          Booking is by Google sign-in so we know how to reach you and can keep your slot held for
-          you.
-        </p>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 text-left">
-            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={onSignIn}
-          disabled={busy}
-          className="w-full px-6 py-3 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
-          {busy ? 'Redirecting…' : 'Continue with Google'}
-        </button>
-
+    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:py-14">
+      <div className="max-w-2xl mx-auto">
         <Link
-          to="/contact"
-          className="block mt-4 text-sm text-slate-600 hover:text-emerald-700 underline"
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-emerald-700 mb-6"
         >
-          Rather just send a message?
+          <ArrowLeft className="w-4 h-4" />
+          Back to Boxed2Built
         </Link>
+
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="p-6 sm:p-8 border-b border-slate-100">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              {info.page_heading || 'Book your assembly'}
+            </h1>
+            {info.page_intro && <p className="text-slate-600 mt-2">{info.page_intro}</p>}
+          </div>
+
+          <div className="p-6 sm:p-8 border-b border-slate-100">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 mb-4">
+              How it works
+            </h2>
+            <ol className="space-y-4">
+              <Step number={1} title="Pick a day and a start time">
+                The calendar only shows times we're actually free, so anything you can click is a
+                real opening{zone ? ` — all times ${zone}` : ''}.
+              </Step>
+              <Step number={2} title="Tell us about the job">
+                A few quick details so we show up with the right tools and enough time.
+              </Step>
+              <Step number={3} title={info.require_approval ? 'We confirm it' : "You're booked"}>
+                {info.require_approval
+                  ? 'We look over every request and confirm by email, usually the same day. Your slot is held for you in the meantime.'
+                  : "Your time is locked in straight away and the confirmation email lands in your inbox."}
+              </Step>
+            </ol>
+          </div>
+
+          {bringAlong.length > 0 && (
+            <div className="p-6 sm:p-8 border-b border-slate-100">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 mb-3">
+                Worth having ready
+              </h2>
+              <ul className="space-y-2">
+                {bringAlong.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-slate-500 mt-3">
+                Nothing here is a commitment — it just makes the estimate accurate.
+              </p>
+            </div>
+          )}
+
+          <div className="p-6 sm:p-8 border-b border-slate-100 grid gap-4 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+                Notice needed
+              </p>
+              <p className="text-sm text-slate-700">
+                Book at least {hoursLabel(info.min_lead_time_hours)} ahead.
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+                How far ahead
+              </p>
+              <p className="text-sm text-slate-700">
+                The calendar runs {info.max_advance_days ?? 60} days out.
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+                Changed your mind
+              </p>
+              <p className="text-sm text-slate-700">
+                Cancel up to {hoursLabel(info.cancellation_cutoff_hours)} before.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8 border-b border-slate-100">
+            <p className="text-sm text-slate-600">
+              We work across {SERVICE_AREAS.slice(0, 4).join(', ')} and nearby.{' '}
+              <Link to="/service-areas" className="text-emerald-700 underline hover:text-emerald-800">
+                See the full service area
+              </Link>
+              .
+            </p>
+          </div>
+
+          <div className="p-6 sm:p-8">
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={onSignIn}
+              disabled={busy}
+              className="w-full px-6 py-3 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
+              {busy ? 'Redirecting…' : 'Continue with Google to see open times'}
+            </button>
+
+            <p className="text-xs text-slate-500 mt-3 flex items-start gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-slate-400" />
+              Signing in is how we know the booking is really yours — it holds your slot and lets you
+              cancel or check it later. Nothing is posted anywhere.
+            </p>
+
+            <Link
+              to="/contact"
+              className="block mt-5 text-sm text-center text-slate-600 hover:text-emerald-700 underline"
+            >
+              Rather just send a message?
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

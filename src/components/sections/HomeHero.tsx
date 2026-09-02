@@ -5,6 +5,7 @@ import StarRating from '../ui/StarRating';
 import { trackEvent, trackConversion } from '../../utils/analytics';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { useHeroImage } from '../../hooks/useHeroImage';
+import { useBookingEnabled } from '../../hooks/useBookingPublicInfo';
 import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 
@@ -65,6 +66,21 @@ const HomeHero: React.FC = () => {
     }
   };
 
+  const bookingEnabled = useBookingEnabled();
+
+  const handleBookingClick = () => {
+    trackEvent('cta_click', 'hero', {
+      event_category: 'conversion',
+      event_label: 'book_time_hero',
+      value: 1,
+      element_type: 'link',
+      element_location: 'hero',
+      page_section: 'hero',
+      action_type: 'click',
+      action_value: '/book',
+      conversion_type: 'booking_intent',
+    });
+  };
 
   const handlePhoneClick = () => {
     trackEvent('phone_click', 'hero', {
@@ -165,6 +181,24 @@ const HomeHero: React.FC = () => {
                 </a>
               </div>
 
+
+              {/* Deliberately a link, not a third button. The quote form asks for
+                  nothing and suits someone still deciding; booking asks for a
+                  Google sign-in and suits someone who already knows the job.
+                  Making both look equally primary would just split the ask. */}
+              {bookingEnabled && (
+                <p className="mb-4 md:mb-5 text-sm md:text-base text-gray-600">
+                  Already know what you need?{' '}
+                  <a
+                    href="/book"
+                    onClick={handleBookingClick}
+                    className="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-800 hover:decoration-blue-500"
+                  >
+                    Pick a time that works for you
+                  </a>
+                  .
+                </p>
+              )}
 
               <span className="sr-only">
                 {businessName} — Serving {locality}, {region}

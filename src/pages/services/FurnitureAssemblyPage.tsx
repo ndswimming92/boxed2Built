@@ -9,6 +9,7 @@ import ImageLightbox, { ClickableImage, LightboxImage } from '../../components/u
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import { BookingTextLink } from '../../components/sections/BookingCallout';
 import CallButton from '../../components/ui/CallButton';
 import Testimonials from '../../components/sections/Testimonials';
 import { trackEvent } from '../../utils/analytics';
@@ -504,6 +505,8 @@ const FurnitureAssemblyPage: React.FC = () => {
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </div>
+
+              <BookingTextLink pageSection="furniture_assembly_cta" tone="light" className="mt-6" />
             </div>
           </div>
         </section>
