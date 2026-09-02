@@ -95,8 +95,10 @@ lookup for an address is a live Mapbox call.
 Signing in with Google is the whole gate — any Google account can book, which is
 the point of a link you send to a customer.
 
-- Every entry point is `authenticated`-only. `anon` is revoked on all four
-  tables and on every function.
+- Every entry point is `authenticated`-only, with one deliberate exception.
+  `anon` is revoked on all four tables and on every function except
+  `get_booking_public_info()`, which returns the booking policy and nothing
+  else so the signed-out page can describe itself (see above).
 - `get_available_booking_slots()` and `get_booking_page_config()` are
   `SECURITY DEFINER`. They read `jobs` on the caller's behalf but return times
   and configuration only — never a job row, never another customer's booking.

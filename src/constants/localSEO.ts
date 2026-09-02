@@ -340,8 +340,12 @@ export const FAQ_CONTENT = [
     category: "Scheduling & Availability",
     questions: [
       {
+        question: "What dates and times are you available?",
+        answer: "You can see for yourself at boxed2built.com/book. The booking calendar shows the real days and start times we have open — it already accounts for jobs on the schedule, so anything you can pick is genuinely free. Choose a slot, tell us a little about the work, and we'll confirm by email. Times run roughly two months ahead, and we ask for at least a day's notice. If nothing on the calendar suits you, call or text {{phoneDisplay}} and we'll work something out."
+      },
+      {
         question: "How do I schedule furniture assembly service?",
-        answer: "Scheduling is easy! You can call us at {{phoneDisplay}}, book online through our website, or send us an email at nicholas.davidson@boxed2built.com. We'll discuss your furniture assembly needs, provide a quote, and schedule a convenient time for service."
+        answer: "Three ways, whichever suits you. Book online at boxed2built.com/book to pick a start time straight from our calendar and get a confirmation by email. Call or text us at {{phoneDisplay}}. Or send an email to nicholas.davidson@boxed2built.com. If you're not sure yet what the job involves, request a free quote first and we'll figure out the timing together."
       },
       {
         question: "What are your business hours?",
@@ -357,7 +361,7 @@ export const FAQ_CONTENT = [
       },
       {
         question: "How far in advance should I book?",
-        answer: "We recommend booking at least 2-3 days in advance to ensure your preferred time slot, especially during busy weekends. However, we understand that furniture delivery schedules can be unpredictable, so we'll do our best to accommodate last-minute requests whenever possible."
+        answer: "We recommend 2-3 days ahead to get your preferred time slot, especially for busy weekends. Our online booking calendar at boxed2built.com/book opens about two months out and takes bookings up to a day in advance, so you can see exactly what's still free. Furniture delivery dates can be unpredictable, so if you need something sooner, call or text {{phoneDisplay}} and we'll do our best to fit you in."
       },
       {
         question: "What if my furniture delivery is delayed?",

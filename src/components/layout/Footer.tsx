@@ -6,6 +6,7 @@ import QuickContactForm from '../QuickContactForm';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
+import { useBookingEnabled } from '../../hooks/useBookingPublicInfo';
 import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 import { SERVICE_LOCATIONS, locationPath } from '../../constants/serviceLocations';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
@@ -62,6 +63,7 @@ const footerLinkSections = [
   {
     title: 'Company',
     links: [
+      { href: '/book', label: 'Book a Time' },
       { href: '/', label: 'Home' },
       { href: '/about', label: 'About' },
       { href: '/partners', label: 'Partners' },
@@ -105,6 +107,7 @@ const sitemapLinks = [
   { href: '/partners', label: 'Partners' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/contact', label: 'Contact' },
+  { href: '/book', label: 'Book a Time' },
   { href: '/faq', label: 'FAQ' },
   { href: '/gift-cards', label: 'Gift Cards' },
   { href: '/redeem-gift-card', label: 'Redeem Gift Card' },
@@ -142,7 +145,18 @@ const toTelHref = (rawPhone: string) => {
   return rawPhone.startsWith('+') ? rawPhone : `+1${digits}`;
 };
 
+/**
+ * Booking links are dropped rather than shown broken when booking is switched
+ * off, so the footer never sends someone to a page that turns them away.
+ */
+const withoutBookingWhenClosed = <T extends { href: string }>(
+  links: T[],
+  bookingEnabled: boolean,
+): T[] => links.filter((link) => link.href !== '/book' || bookingEnabled);
+
 const Footer: React.FC = () => {
+  const bookingEnabled = useBookingEnabled();
+  const visibleSitemapLinks = withoutBookingWhenClosed(sitemapLinks, bookingEnabled);
   const { data: businessData, loading } = useBusinessDataWithFallback();
 
   const businessName = businessData?.info?.name || 'Boxed2Built';
@@ -515,6 +529,10 @@ const Footer: React.FC = () => {
             {/* Company + Gift Cards */}
             {footerLinkSections
               .filter((s) => s.title !== 'Support')
+              .map((section) => ({
+                ...section,
+                links: withoutBookingWhenClosed(section.links, bookingEnabled),
+              }))
               .map((section) => (
                 <div key={section.title}>
                   <h3 className="font-semibold text-white mb-3 text-sm uppercase tracking-wide">
@@ -611,7 +629,7 @@ const Footer: React.FC = () => {
           <div className="pt-4 border-t border-gray-800">
             <p className="text-xs text-gray-600 mb-2 text-center">Sitemap</p>
             <div className="flex flex-wrap justify-center gap-y-1">
-              {sitemapLinks.map((link, index) => (
+              {visibleSitemapLinks.map((link, index) => (
                 <React.Fragment key={link.href}>
                   <a
                     href={link.href}
@@ -630,7 +648,7 @@ const Footer: React.FC = () => {
                   >
                     {link.label}
                   </a>
-                  {index < sitemapLinks.length - 1 && (
+                  {index < visibleSitemapLinks.length - 1 && (
                     <span className="mx-1 text-gray-700">|</span>
                   )}
                 </React.Fragment>
