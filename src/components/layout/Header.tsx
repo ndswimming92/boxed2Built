@@ -31,6 +31,32 @@ const SERVICE_MENU_ITEMS = [
   })),
 ];
 
+/* Desktop nav items share one treatment. The padding is what separates the
+   labels now (they used to sit almost shoulder to shoulder) and it doubles as
+   a bigger hit target, while an underline sweeps out from the centre on hover
+   so the link reads as interactive. Weight never changes on hover, so nothing
+   nudges its neighbours sideways. */
+const DESKTOP_NAV_ITEM_BASE = [
+  'relative inline-flex items-center whitespace-nowrap rounded-lg px-3 py-2',
+  'text-sm font-medium transition-colors duration-200 2xl:px-4 2xl:text-base',
+  "after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:bg-blue-700 after:content-['']",
+  'after:origin-center after:transition-transform after:duration-300 after:ease-out 2xl:after:inset-x-4',
+  'motion-reduce:after:transition-none',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+].join(' ');
+
+/* `open` keeps the Services trigger lit while its dropdown is showing, since
+   the pointer moves off the button and onto the panel. */
+const desktopNavItemClass = (active: boolean, open = false) =>
+  [
+    DESKTOP_NAV_ITEM_BASE,
+    active || open ? 'text-blue-700' : 'text-gray-800 hover:text-blue-700',
+    active ? 'font-semibold' : '',
+    active || open
+      ? 'after:scale-x-100'
+      : 'after:scale-x-0 hover:after:scale-x-100',
+  ].join(' ');
+
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -200,7 +226,7 @@ const Header: React.FC = () => {
             className="hidden xl:flex flex-1 justify-center min-w-0"
             aria-label="Main navigation"
           >
-            <ul className="flex items-center gap-2 xl:gap-3 2xl:gap-6">
+            <ul className="flex items-center gap-1 2xl:gap-2">
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About', href: '/about' },
@@ -211,13 +237,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium whitespace-nowrap transition-colors text-sm 2xl:text-base
-                      ${
-                        isActivePage(item.href)
-                          ? 'text-blue-700 font-semibold'
-                          : 'text-gray-800 hover:text-blue-700'
-                      }
-                    `}
+                    className={desktopNavItemClass(isActivePage(item.href))}
                   >
                     {item.label}
                   </a>
@@ -234,13 +254,7 @@ const Header: React.FC = () => {
                     window.location.href = '/services';
                     handleNavClick('services', '/services');
                   }}
-                  className={`relative font-medium whitespace-nowrap transition-colors flex items-center gap-1 text-sm 2xl:text-base
-                    ${
-                      isActivePage('/services')
-                        ? 'text-blue-700 font-semibold'
-                        : 'text-gray-800 hover:text-blue-700'
-                    }
-                  `}
+                  className={`${desktopNavItemClass(isActivePage('/services'), isServicesOpen)} gap-1.5`}
                 >
                   Services
                   <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
@@ -287,13 +301,7 @@ const Header: React.FC = () => {
                     onClick={() =>
                       handleNavClick(item.label.toLowerCase(), item.href)
                     }
-                    className={`relative font-medium whitespace-nowrap transition-colors text-sm 2xl:text-base
-                      ${
-                        isActivePage(item.href)
-                          ? 'text-blue-700 font-semibold'
-                          : 'text-gray-800 hover:text-blue-700'
-                      }
-                    `}
+                    className={desktopNavItemClass(isActivePage(item.href))}
                   >
                     {item.label}
                   </a>
