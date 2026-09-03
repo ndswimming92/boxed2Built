@@ -10,6 +10,7 @@
     "verify:seo": "node scripts/verify-seo.mjs",
     "build": "node scripts/generate-sitemap.mjs && vite-react-ssg build",
     "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "preview": "vite preview",
     "check:lock-sync": "node scripts/check-lock-sync.mjs",
     "monitor:synthetic": "node scripts/synthetic-monitor.mjs",
