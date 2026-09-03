@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   Activity,
   BarChart3,
-  Bell,
   Boxes,
   Briefcase,
   Building,

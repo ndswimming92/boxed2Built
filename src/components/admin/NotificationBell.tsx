@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, CheckCheck, ShoppingBag, X } from 'lucide-react';
+import { Bell, CheckCheck, ShoppingBag, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import AnchoredPanel from '../ui/AnchoredPanel';
 import {

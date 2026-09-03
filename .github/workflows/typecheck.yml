@@ -1,0 +1,42 @@
+name: Typecheck
+
+# Types were going unchecked entirely, in CI and locally both.
+#
+# `npm run build` compiles through esbuild, which strips types without looking
+# at them, so a build passes over errors. And the root tsconfig.json is a
+# solution file — `files` is empty and it carries nothing but `references` — so
+# the obvious `tsc --noEmit` typechecks *nothing* and exits 0 on any tree at
+# all. Between them, five type errors once sat on main with every check green.
+#
+# So this runs `tsconfig.app.json` directly, which is the one that includes
+# `src`. It needs no browser and no secrets, so it is the cheapest check here
+# and worth running on every pull request rather than behind a path filter: a
+# type error is rarely in the file that caused it.
+#
+# tsconfig.node.json (vite.config.ts and plugins) is deliberately not covered.
+# It fails today for its own reasons — the vite config imports browser-side
+# files from src/ while that project has neither the DOM lib nor vite/client
+# types — and fixing that is a config change, not a typecheck change.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev
+
+      - name: Check types
+        run: npm run typecheck
