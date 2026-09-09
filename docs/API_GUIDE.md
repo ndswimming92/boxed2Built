@@ -203,8 +203,13 @@ Both providers follow the same shape:
 Google Business Profile best-effort fetches the account name to label the
 connection; if Basic API Access hasn't been approved yet, this fails
 harmlessly and the connection shows `connected` with a `sync_error` noting
-that account details are pending — nothing needs to be redone once approval
-clears.
+that account details are pending. `sync-google-business-profile` retries that
+lookup whenever `account_identifier` is still null, so the connection heals
+itself once approval clears — either on the next Business Info/Hours save, or
+on demand via **Check again** on the Connections page. That button posts
+`{ "probe": true }`, which walks the same token -> account -> location chain
+and updates the row but returns before the `PATCH`, so nothing on Google
+changes and `last_synced_at` is left alone.
 
 One Google login authorizes **both** the `google_business` and `youtube`
 `integration_connections` rows together (same OAuth grant, broadened scope),
@@ -229,10 +234,11 @@ auto-sync, unlike creative content.
    the same success banner (e.g. "Google Business Profile updated." or a
    `sync_error`-derived message).
 2. The function refreshes the Google access token if stale (same pattern as
-   YouTube), then resolves the account's Business Profile **location**
-   resource name once via a locations-list call and caches it in
-   `integration_connections.external_resource_id` — every subsequent sync
-   reuses the cached id instead of re-resolving it.
+   YouTube), then resolves the account (re-running the connect-time
+   `/accounts` lookup if `account_identifier` is still null) and the account's
+   Business Profile **location** resource name via a locations-list call, and
+   caches the location in `integration_connections.external_resource_id` —
+   every subsequent sync reuses the cached id instead of re-resolving it.
 3. It `PATCH`es the location with a fixed `updateMask` covering exactly the
    fields below, so nothing on Google is touched outside this list.
 4. `integration_connections` (`google_business` row)'s `sync_error` /

@@ -34,6 +34,11 @@ interface GoogleTokens {
   obtained_at: string;
 }
 
+interface GoogleAccount {
+  name: string;
+  accountName?: string;
+}
+
 interface BusinessInfo {
   name: string;
   phone: string;
@@ -86,12 +91,27 @@ async function refreshAccessToken(refreshToken: string): Promise<{ access_token:
   return body;
 }
 
+async function fetchPrimaryAccount(accessToken: string): Promise<GoogleAccount | null> {
+  const res = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) return null;
+  const body = await res.json().catch(() => ({}));
+  const accounts = (body?.accounts ?? []) as GoogleAccount[];
+  return accounts[0] ?? null;
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method === 'OPTIONS') {
       return new Response(null, { status: 200, headers: corsHeaders });
     }
     if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+
+    // A probe verifies the connection end to end (token -> account ->
+    // location) without pushing any profile changes to Google.
+    const payload = (await req.json().catch(() => ({}))) as { probe?: boolean };
+    const probeOnly = payload?.probe === true;
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
       return json({ error: 'Google Business Profile is not configured yet on the server.' }, 501);
@@ -116,7 +136,7 @@ Deno.serve(async (req) => {
 
     const { data: connection, error: connErr } = await admin
       .from('integration_connections')
-      .select('id, account_identifier, external_resource_id, vault_secret_name')
+      .select('id, account_label, account_identifier, external_resource_id, vault_secret_name')
       .eq('provider', 'google_business')
       .eq('status', 'connected')
       .order('created_at', { ascending: false })
@@ -126,14 +146,13 @@ Deno.serve(async (req) => {
       return json({ error: 'Google Business Profile is not connected. Connect it under Admin → Connections first.' }, 400);
     }
 
-    const markSyncResult = async (syncError: string | null) => {
-      await admin
-        .from('integration_connections')
-        .update({
-          sync_error: syncError,
-          last_synced_at: syncError ? null : new Date().toISOString(),
-        })
-        .eq('id', connection.id);
+    // `touchSyncedAt` is false for probes: they push nothing, so stamping
+    // "Last Synced" would claim a sync that never happened.
+    const markSyncResult = async (syncError: string | null, touchSyncedAt = true) => {
+      const patch: Record<string, unknown> = { sync_error: syncError };
+      if (syncError) patch.last_synced_at = null;
+      else if (touchSyncedAt) patch.last_synced_at = new Date().toISOString();
+      await admin.from('integration_connections').update(patch).eq('id', connection.id);
     };
 
     const { data: secretJson, error: secretErr } = await admin.rpc('read_vault_secret', {
@@ -167,14 +186,29 @@ Deno.serve(async (req) => {
 
     // Resolve (and cache) the Business Profile location resource name.
     let locationName = connection.external_resource_id;
+    let accountLabel = connection.account_label as string | null;
     if (!locationName) {
-      if (!connection.account_identifier) {
-        const msg = 'No Google Business Profile account is available yet. This usually means Google Business Profile API access is still pending approval.';
-        await markSyncResult(msg);
-        return json({ error: msg }, 409);
+      let accountName = connection.account_identifier;
+      if (!accountName) {
+        // The connect-time account lookup fails while Google's Basic API
+        // Access approval is still pending, leaving account_identifier null.
+        // Retry it here so the connection heals itself once approval lands,
+        // instead of needing a disconnect/reconnect round trip.
+        const account = await fetchPrimaryAccount(accessToken);
+        if (!account) {
+          const msg = 'No Google Business Profile account is available yet. This usually means Google Business Profile API access is still pending approval.';
+          await markSyncResult(msg);
+          return json({ error: msg }, 409);
+        }
+        accountName = account.name;
+        accountLabel = account.accountName ?? null;
+        await admin
+          .from('integration_connections')
+          .update({ account_identifier: accountName, account_label: accountLabel })
+          .eq('id', connection.id);
       }
       const listRes = await fetch(
-        `${BUSINESS_INFO_URL}/${connection.account_identifier}/locations?readMask=name`,
+        `${BUSINESS_INFO_URL}/${accountName}/locations?readMask=name`,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (!listRes.ok) {
@@ -191,6 +225,24 @@ Deno.serve(async (req) => {
       }
       locationName = firstLocation;
       await admin.from('integration_connections').update({ external_resource_id: locationName }).eq('id', connection.id);
+    }
+
+    if (probeOnly) {
+      // Read the location back before reporting the connection healthy: a
+      // cached external_resource_id only proves some earlier call worked, so
+      // without this a probe could clear a real sync_error without ever
+      // talking to Google.
+      const checkRes = await fetch(`${BUSINESS_INFO_URL}/${locationName}?readMask=name`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!checkRes.ok) {
+        const errBody = await checkRes.json().catch(() => ({}));
+        const msg = errBody?.error?.message || 'Connected, but your Business Profile location could not be read.';
+        await markSyncResult(msg);
+        return json({ error: msg }, checkRes.status);
+      }
+      await markSyncResult(null, false);
+      return json({ success: true, account_label: accountLabel });
     }
 
     const { data: businessInfo, error: infoErr } = await admin

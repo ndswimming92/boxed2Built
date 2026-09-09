@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Unplug,
   Info,
+  RefreshCw,
 } from 'lucide-react';
 import {
   IntegrationConnection,
@@ -19,6 +20,7 @@ import {
   startGoogleBusinessConnect,
   startFacebookConnect,
 } from '../../services/apiPlatformService';
+import { checkGoogleBusinessConnection } from '../../services/googleBusinessSyncService';
 import { logAction } from '../../services/auditLogService';
 
 // Providers with a working Connect flow. Others stay disabled until their
@@ -82,6 +84,7 @@ export default function ConnectionsPage() {
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -130,6 +133,32 @@ export default function ConnectionsPage() {
       setMessage({ type: 'error', text: 'Failed to load connections.' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Google's Basic API Access approval can land long after the OAuth grant,
+  // leaving the connection with no account details. This re-runs the lookup so
+  // the row heals without a disconnect/reconnect round trip.
+  const handleCheckGoogleBusiness = async () => {
+    setChecking(true);
+    try {
+      const result = await checkGoogleBusinessConnection().catch((err) => ({
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to check the connection.',
+        accountLabel: null,
+      }));
+      setMessage(
+        result.success
+          ? {
+              type: 'success',
+              text: `Google Business Profile is ready${result.accountLabel ? ` — linked to ${result.accountLabel}` : ''}.`,
+            }
+          : { type: 'error', text: result.error ?? 'Failed to check the connection.' },
+      );
+      await fetchData();
+    } finally {
+      setChecking(false);
+      setTimeout(() => setMessage(null), 8000);
     }
   };
 
@@ -192,8 +221,8 @@ export default function ConnectionsPage() {
             YouTube authorizes both together (same Google account, broadened scope). See the "Outbound Connections"
             section of <code className="bg-blue-100 px-1 rounded">docs/API_GUIDE.md</code> for per-provider setup
             steps. If Google's Business Profile API access is still pending approval, that connection will show as
-            connected with a note that account details aren't available yet — that resolves automatically once
-            Google approves access.
+            connected with a note that account details aren't available yet — once Google approves access, press
+            "Check again" on its Linked Accounts row to fill in the details. No reconnect needed.
           </p>
         </div>
       </div>
@@ -283,16 +312,29 @@ export default function ConnectionsPage() {
                       <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                         {connection.last_synced_at ? new Date(connection.last_synced_at).toLocaleString() : '—'}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        {connection.status !== 'disconnected' && (
-                          <button
-                            onClick={() => handleDisconnect(connection)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
-                          >
-                            <Unplug className="w-3.5 h-3.5" />
-                            Disconnect
-                          </button>
-                        )}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          {connection.provider === 'google_business' && connection.status !== 'disconnected' && (
+                            <button
+                              onClick={handleCheckGoogleBusiness}
+                              disabled={checking}
+                              title="Re-check the connection with Google without changing your profile"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <RefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} />
+                              {checking ? 'Checking…' : 'Check again'}
+                            </button>
+                          )}
+                          {connection.status !== 'disconnected' && (
+                            <button
+                              onClick={() => handleDisconnect(connection)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+                            >
+                              <Unplug className="w-3.5 h-3.5" />
+                              Disconnect
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
