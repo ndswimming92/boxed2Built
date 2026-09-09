@@ -1,0 +1,41 @@
+name: Unit Tests
+
+# The analytics math had no test coverage at all, which is how a headline
+# hourly rate and a per-job-type rate came to divide by different denominators
+# without anyone noticing, and how a date-only column parsed as UTC could shift
+# a whole range by a day for anyone west of Greenwich.
+#
+# These run on node's built-in test runner against TypeScript sources directly
+# (node 22 strips types on import), so there is no test framework to install and
+# no build step to keep in sync. Like the typecheck job, they need no browser
+# and no secrets, so they run on every pull request rather than behind a path
+# filter.
+#
+# TZ is pinned to a negative-offset zone on purpose. The date bugs these cover
+# are invisible in UTC — a runner defaulting to UTC would pass a suite that
+# fails on the machines the app actually runs on.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev
+
+      - name: Run unit tests
+        env:
+          TZ: America/New_York
+        run: npm run test:unit
