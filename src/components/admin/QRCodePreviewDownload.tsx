@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Download, Copy, ExternalLink, FileImage, FileCode, FileText } from 'lucide-react';
-import QRCode from 'qrcode';
+import {
+  qrPngDataUrl,
+  qrSvgString,
+  qrPdfBlob,
+  downloadBlob,
+  downloadHref,
+  type QRPngSize
+} from '../../lib/qrExport';
 import { QRCodeWithSchedules } from '../../lib/supabase';
 import { getShortURL } from '../../services/qrCodeService';
 import { useToast } from '../../contexts/ToastContext';
@@ -10,7 +17,7 @@ type Props = {
 };
 
 type DownloadFormat = 'png' | 'svg' | 'pdf';
-type PNGSize = 300 | 600 | 1200;
+type PNGSize = QRPngSize;
 
 export default function QRCodePreviewDownload({ qrCode }: Props) {
   const [selectedSize] = useState<PNGSize>(600);
@@ -28,27 +35,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
 
   const generateQRCode = async () => {
     try {
-      const dataURL = await QRCode.toDataURL(shortURL, {
-        width: selectedSize,
-        margin: 2,
-        errorCorrectionLevel: 'H',
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
-      setQrDataURL(dataURL);
-
-      const svg = await QRCode.toString(shortURL, {
-        type: 'svg',
-        margin: 2,
-        errorCorrectionLevel: 'H',
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
-      setQrSVG(svg);
+      setQrDataURL(await qrPngDataUrl(shortURL, selectedSize));
+      setQrSVG(await qrSvgString(shortURL));
     } catch (error) {
       console.error('Error generating QR code:', error);
     }
@@ -57,18 +45,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
   const handleDownloadPNG = async (size: PNGSize) => {
     setDownloadingFormat('png');
     try {
-      const dataURL = await QRCode.toDataURL(shortURL, {
-        width: size,
-        margin: 2,
-        errorCorrectionLevel: 'H'
-      });
-
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = `qr-code-${qrCode.slug}-${size}px.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const dataURL = await qrPngDataUrl(shortURL, size);
+      downloadHref(dataURL, `qr-code-${qrCode.slug}-${size}px.png`);
     } catch (error) {
       console.error('Error downloading PNG:', error);
       showToast({ type: 'error', message: 'Failed to download PNG.' });
@@ -80,15 +58,7 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
   const handleDownloadSVG = () => {
     setDownloadingFormat('svg');
     try {
-      const blob = new Blob([qrSVG], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `qr-code-${qrCode.slug}.svg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      downloadBlob(new Blob([qrSVG], { type: 'image/svg+xml' }), `qr-code-${qrCode.slug}.svg`);
     } catch (error) {
       console.error('Error downloading SVG:', error);
       showToast({ type: 'error', message: 'Failed to download SVG.' });
@@ -100,34 +70,8 @@ export default function QRCodePreviewDownload({ qrCode }: Props) {
   const handleDownloadPDF = async () => {
     setDownloadingFormat('pdf');
     try {
-      const { default: jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'letter'
-      });
-
-      const dataURL = await QRCode.toDataURL(shortURL, {
-        width: 600,
-        margin: 2,
-        errorCorrectionLevel: 'H'
-      });
-
-      const imgWidth = 100;
-      const imgHeight = 100;
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const x = (pageWidth - imgWidth) / 2;
-      const y = 80;
-
-      pdf.addImage(dataURL, 'PNG', x, y, imgWidth, imgHeight);
-
-      pdf.setFontSize(12);
-      pdf.text(shortURL, pageWidth / 2, y + imgHeight + 15, { align: 'center' });
-
-      pdf.setFontSize(10);
-      pdf.text(qrCode.title, pageWidth / 2, y + imgHeight + 25, { align: 'center' });
-
-      pdf.save(`qr-code-${qrCode.slug}.pdf`);
+      const blob = await qrPdfBlob({ text: shortURL, title: qrCode.title });
+      downloadBlob(blob, `qr-code-${qrCode.slug}.pdf`);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       showToast({ type: 'error', message: 'Failed to download PDF.' });

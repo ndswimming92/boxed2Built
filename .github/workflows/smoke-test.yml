@@ -27,6 +27,10 @@ on:
       - 'src/services/inquiryService.ts'
       # Coupon codes: what a customer is quoted after entering one.
       - 'src/components/ContactForm.tsx'
+      # Referral QR codes: what a scanned thank-you token puts in that same box.
+      - 'src/pages/ReferralRedirectPage.tsx'
+      - 'src/services/referralQRService.ts'
+      - 'src/lib/qrExport.ts'
       - 'src/pages/admin/CouponsPage.tsx'
       - 'src/services/couponService.ts'
       - 'src/utils/coupon.ts'

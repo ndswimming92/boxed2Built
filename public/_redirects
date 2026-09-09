@@ -22,4 +22,9 @@
 /portal/*    /index.html   200
 /book        /index.html   200
 /go/*        /index.html   200
+# Referral QR tokens. The uppercase rule is not redundant: the QR payload is
+# uppercased to stay in QR alphanumeric mode, and Netlify matches paths
+# case-sensitively, so /R/* would 404 at the CDN without it.
+/r/*         /index.html   200
+/R/*         /index.html   200
 /pay/*       /index.html   200

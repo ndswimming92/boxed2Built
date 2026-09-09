@@ -34,6 +34,7 @@ export default defineConfig({
         // shell would only ever show the signed-out state.
         if (path === '/book') return false;
         if (path.startsWith('/go/')) return false;
+        if (path.startsWith('/r/')) return false;
         if (path.startsWith('/pay/')) return false;
         if (path.includes(':')) return false;
         // The `*` catch-all only exists for client-side navigation; pre-rendering

@@ -5,6 +5,12 @@ import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2,
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
 import { lookupCouponByCode } from '../services/couponService';
 import { describeDiscount, discountAmount, formatMoney, normalizeCouponCode } from '../utils/coupon';
+import {
+  normalizeReferralCode,
+  recallReferralCode,
+  rememberReferralCode,
+  forgetReferralCode
+} from '../services/referralQRService';
 import type { CouponLookupResult } from '../types/coupon';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
 import FormField from './ui/FormField';
@@ -195,6 +201,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [appliedCoupon, setAppliedCoupon] = useState<CouponLookupResult | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
   const [couponRejected, setCouponRejected] = useState(false);
+  // Set when the code was prefilled from a referral link, so the box can show
+  // a welcome instead of the coupon miss a referral code always produces.
+  const [prefilledReferral, setPrefilledReferral] = useState<string | null>(null);
   const checkedCodeRef = useRef<string | null>(null);
   const [, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -280,13 +289,37 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     }
   };
 
-  // Prefill and apply a coupon from a shared link (?coupon=WELCOME25)
+  /**
+   * Prefills the shared code box from a link. Two sources feed it:
+   *
+   *  - `?coupon=WELCOME25` from a shared promo link, which is looked up and
+   *    applied to the estimate.
+   *  - `?ref=B2B-ADRIA-4F7D` from a client's referral QR, or the same code
+   *    remembered from earlier in the session if the visitor browsed away and
+   *    came back.
+   *
+   * A coupon wins when both are present: an explicit promo beats a referral.
+   * A referral code is deliberately NOT run through the coupon lookup - it
+   * always misses, and "Not a coupon code" is the wrong first thing to show
+   * someone who just scanned a friend's token.
+   */
   useEffect(() => {
-    const codeParam = searchParams.get('coupon');
-    if (codeParam) {
-      const code = normalizeCouponCode(codeParam);
+    const couponParam = searchParams.get('coupon');
+    if (couponParam) {
+      const code = normalizeCouponCode(couponParam);
       handleFieldChange('referralCode', code);
       checkCouponCode(code);
+      return;
+    }
+
+    const refParam = searchParams.get('ref');
+    const code = refParam ? normalizeReferralCode(refParam) : recallReferralCode();
+    if (code) {
+      handleFieldChange('referralCode', code);
+      setPrefilledReferral(code);
+      // Hold it for the session so wandering off this page and back does not
+      // silently drop the referral.
+      rememberReferralCode(code);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -571,6 +604,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       setConfirmationData(confirmData);
       setShowConfetti(true);
+      // The referral has been spent. Releasing it stops a second, unrelated
+      // request later in the same session from picking it up again.
+      forgetReferralCode();
       setTimeout(() => {
         setShowConfirmationModal(true);
       }, 700);
@@ -1275,9 +1311,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   setCouponRejected(false);
                   checkedCodeRef.current = null;
                 }
+                if (prefilledReferral && upper !== prefilledReferral) {
+                  setPrefilledReferral(null);
+                }
               }}
               onBlur={(e) => {
                 getFieldProps('referralCode').onBlur();
+                // A prefilled referral code is already known to be a referral.
+                // Checking it would only render the coupon miss.
+                if (prefilledReferral && e.target.value.toUpperCase() === prefilledReferral) return;
                 checkCouponCode(e.target.value);
               }}
             />
@@ -1294,7 +1336,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
               </p>
             )}
-            {couponRejected && !couponChecking && (
+            {prefilledReferral && !appliedCoupon && !couponChecking && (
+              <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
+                <CheckCircle size={12} />
+                Referral code applied — your friend gets $25 credit when you book.
+              </p>
+            )}
+            {couponRejected && !couponChecking && !prefilledReferral && (
               <p className="text-xs text-gray-500 mt-1">
                 Not a coupon code — we'll treat it as a referral code.
               </p>
