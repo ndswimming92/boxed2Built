@@ -5,6 +5,7 @@ import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2,
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
 import { lookupCouponByCode } from '../services/couponService';
 import { describeDiscount, discountAmount, formatMoney, normalizeCouponCode } from '../utils/coupon';
+import { readUTMParams, forgetUTMParams, type UTMParams } from '../utils/utmAttribution';
 import {
   normalizeReferralCode,
   recallReferralCode,
@@ -204,6 +205,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   // Set when the code was prefilled from a referral link, so the box can show
   // a welcome instead of the coupon miss a referral code always produces.
   const [prefilledReferral, setPrefilledReferral] = useState<string | null>(null);
+  const [utmParams, setUtmParams] = useState<UTMParams>({});
   const checkedCodeRef = useRef<string | null>(null);
   const [, setIsIOS] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -288,6 +290,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
       setCouponChecking(false);
     }
   };
+
+  // Campaign attribution off the URL. Kept separate from the code prefill
+  // below, which returns early on a coupon link - attribution is captured
+  // either way.
+  useEffect(() => {
+    setUtmParams(readUTMParams(searchParams));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Prefills the shared code box from a link. Two sources feed it:
@@ -553,6 +563,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         estimated_price: quotedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
+        ...utmParams,
         referral_code_used: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
         gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
         coupon_code: appliedCoupon ? appliedCoupon.code : undefined,
@@ -604,9 +615,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       setConfirmationData(confirmData);
       setShowConfetti(true);
-      // The referral has been spent. Releasing it stops a second, unrelated
-      // request later in the same session from picking it up again.
+      // Both have been spent. Releasing them stops a second, unrelated request
+      // later in the same session from inheriting this one's attribution.
       forgetReferralCode();
+      forgetUTMParams();
       setTimeout(() => {
         setShowConfirmationModal(true);
       }, 700);

@@ -96,8 +96,8 @@ async function stubBackend(
   return backend;
 }
 
-async function openForm(page: Page) {
-  await page.goto('/tests/harness/contact-form.html');
+async function openForm(page: Page, query = '') {
+  await page.goto(`/tests/harness/contact-form.html${query}`);
   await expect(page.getByLabel('Your Name')).toBeVisible();
 }
 
@@ -279,4 +279,94 @@ test('a write that fails says so instead of showing the success screen', async (
   // The policy failure stays in the console. Visitors get told what to do, not
   // which table refused the write.
   await expect(page.getByText(/row-level security/i)).toHaveCount(0);
+});
+
+/**
+ * Campaign attribution. Several internal CTAs link here with UTM parameters
+ * attached and the columns have always existed, but the form never read them,
+ * so every campaign-driven lead was filed as untagged.
+ */
+test('a lead arriving from a campaign link carries its UTMs', async ({ page }) => {
+  const backend = await stubBackend(page);
+  // The shape a real CTA sends, extra parameters and all.
+  await openForm(
+    page,
+    '?utm_id=B2B&utm_source=website&utm_medium=cta_button&utm_campaign=hours_given_back&utm_term=assembly',
+  );
+  await fillRequired(page);
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  expect(backend.inquiries[0]).toMatchObject({
+    utm_source: 'website',
+    utm_medium: 'cta_button',
+    utm_campaign: 'hours_given_back',
+  });
+});
+
+test('a lead with no campaign link records no attribution', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page);
+  await fillRequired(page);
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  // Null, not an empty string: an untagged lead must not read as a campaign.
+  expect(backend.inquiries[0]).toMatchObject({
+    utm_source: null,
+    utm_medium: null,
+    utm_campaign: null,
+  });
+});
+
+test('the campaign is held for the rest of the session', async ({ page }) => {
+  await stubBackend(page);
+  await openForm(page, '?utm_source=newsletter&utm_medium=email&utm_campaign=spring');
+
+  // Stored on arrival, so wandering off the form and coming back later does
+  // not lose the attribution. Polled because the capture runs in a mount
+  // effect, which lands just after the form is on screen.
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem('boxed2built.utm') || 'null')))
+    .toEqual({ utm_source: 'newsletter', utm_medium: 'email', utm_campaign: 'spring' });
+});
+
+test('a lead submitted without the campaign link still carries the campaign', async ({ page }) => {
+  const backend = await stubBackend(page);
+
+  // As if the campaign link had been followed earlier in the same session and
+  // the customer arrived at the form by some other route.
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      'boxed2built.utm',
+      JSON.stringify({ utm_source: 'newsletter', utm_medium: 'email', utm_campaign: 'spring' }),
+    );
+  });
+
+  await openForm(page);
+  await fillRequired(page);
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  expect(backend.inquiries[0]).toMatchObject({
+    utm_source: 'newsletter',
+    utm_medium: 'email',
+    utm_campaign: 'spring',
+  });
+});
+
+test('the referral code a scanned token supplies reaches the lead', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page, '?ref=B2B-ADRIA-4F7D');
+  await fillRequired(page);
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  // The column the credit trigger reads to pay the referrer and record who
+  // introduced this client.
+  expect(backend.inquiries[0]).toMatchObject({ referral_code_used: 'B2B-ADRIA-4F7D' });
 });

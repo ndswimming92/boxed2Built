@@ -463,6 +463,9 @@ export type FormInquiry = {
   utm_medium: string | null;
   utm_campaign: string | null;
   referral_source: string | null;
+  // A friend's referral code, or a coupon code that turned out not to be one.
+  // `createInquiry` has always written this column; the type just never said so.
+  referral_code_used: string | null;
   confirmation_code?: string | null;
   furniture_photo_url: string | null;
   furniture_image_path: string | null;

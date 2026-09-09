@@ -75,6 +75,27 @@ on the client row and in the client detail panel.
   `clients.referral_last_scanned_at` by trigger, so the client list needs no
   extra query. `referral_scans` holds the raw log.
 
+## Who referred whom
+
+`add_referral_credit_on_inquiry_insert` fires on every inquiry. When
+`referral_code_used` matches a client it does two things:
+
+- Adds $25 to that referrer's `referral_credit_balance`. This happens on
+  **every** use of their code.
+- Sets `referred_by_client_id` on the client who submitted the inquiry, but
+  only if it is still null. **First referral wins** — a repeat customer's later
+  inquiry cannot rewrite who originally introduced them, even though the code's
+  owner is still paid for that use.
+
+A **self-referral is not a referral**. Entering your own code used to pay out,
+which made a client's own code worth $25 an inquiry; it now does nothing and
+records nothing. Test submissions and codes matching no client are skipped, as
+before.
+
+`20260909130000_record_referral_graph_on_inquiry.sql` also backfills the graph
+from inquiries already on file. It writes attribution only — historical credit
+is deliberately not replayed, since those payouts already happened.
+
 ## Where the code lives
 
 | Path | What it does |
