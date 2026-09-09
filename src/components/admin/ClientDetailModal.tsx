@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown } from 'lucide-react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown, QrCode } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -34,6 +34,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getDirectionsUrl as getAddressDirectionsUrl, hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
+import ClientQRCodeModal from './ClientQRCodeModal';
 
 interface ClientDetailModalProps {
   client: Client;
@@ -77,6 +78,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [currentClient, setCurrentClient] = useState<Client>(client);
   const [referredClients, setReferredClients] = useState<Client[]>([]);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [creditAmount, setCreditAmount] = useState('25');
   const [creditAction, setCreditAction] = useState<'add' | 'redeem' | null>(null);
   const [creditLoading, setCreditLoading] = useState(false);
@@ -1404,6 +1406,16 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               ) : (
                 <span className="text-xs text-gray-400">Not assigned</span>
               )}
+              {currentClient.referral_code && (
+                <button
+                  onClick={() => setShowQRModal(true)}
+                  className="flex items-center gap-1.5 mx-auto mt-2 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-white rounded-lg transition-colors"
+                  title="Referral QR code"
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                  QR code
+                </button>
+              )}
             </div>
             <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-center">
               <p className="text-xs font-medium text-green-700 mb-1">Available Credit</p>
@@ -1842,6 +1854,17 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               }
             }
           }}
+        />
+      )}
+
+      {showQRModal && currentClient.referral_code && (
+        <ClientQRCodeModal
+          isOpen
+          onClose={() => setShowQRModal(false)}
+          clientName={currentClient.name}
+          referralCode={currentClient.referral_code}
+          scanCount={currentClient.referral_scan_count}
+          lastScannedAt={currentClient.referral_last_scanned_at}
         />
       )}
     </Modal>

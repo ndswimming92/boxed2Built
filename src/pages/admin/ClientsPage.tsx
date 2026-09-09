@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -11,6 +11,7 @@ import {
   calculateClientMetrics
 } from '../../services/clientService';
 import ClientDetailModal from '../../components/admin/ClientDetailModal';
+import ClientQRCodeModal from '../../components/admin/ClientQRCodeModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import MergeClientsModal from '../../components/admin/MergeClientsModal';
 import ClientFormModal from '../../components/admin/ClientFormModal';
@@ -42,6 +43,7 @@ export default function ClientsPage() {
   const [refreshProgress, setRefreshProgress] = useState({ processed: 0, total: 0 });
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [qrClient, setQrClient] = useState<Client | null>(null);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -706,6 +708,14 @@ export default function ClientsPage() {
                             )}
                             {client.referral_code}
                           </button>
+                          <button
+                            onClick={() => setQrClient(client)}
+                            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors max-w-max"
+                            title="Referral QR code"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            QR
+                          </button>
                           {(client.referral_credit_balance > 0 || client.referral_credit_used > 0) && (
                             <span className="text-xs text-gray-500">
                               ${client.referral_credit_balance.toFixed(2)} credit
@@ -739,6 +749,17 @@ export default function ClientsPage() {
       </div>
 
       {/* Modals */}
+      {qrClient?.referral_code && (
+        <ClientQRCodeModal
+          isOpen
+          onClose={() => setQrClient(null)}
+          clientName={qrClient.name}
+          referralCode={qrClient.referral_code}
+          scanCount={qrClient.referral_scan_count}
+          lastScannedAt={qrClient.referral_last_scanned_at}
+        />
+      )}
+
       {selectedClient && (
         <ClientDetailModal
           client={selectedClient}

@@ -25,6 +25,7 @@ const PartnersPage = React.lazy(() => import('./pages/PartnersPage'));
 const RequestLookupPage = React.lazy(() => import('./pages/RequestLookupPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const QRRedirectPage = React.lazy(() => import('./pages/QRRedirectPage'));
+const ReferralRedirectPage = React.lazy(() => import('./pages/ReferralRedirectPage'));
 const InvoicePaymentPage = React.lazy(() => import('./pages/InvoicePaymentPage'));
 const InvoiceThankYouPage = React.lazy(() => import('./pages/InvoiceThankYouPage'));
 const GiftCardsPage = React.lazy(() => import('./pages/GiftCardsPage'));
@@ -150,6 +151,8 @@ export const routes: RouteRecord[] = [
 
       // Dynamic routes (client-only, not pre-rendered)
       { path: 'go/:slug', Component: QRRedirectPage },
+      // Per-client referral QR codes printed on thank-you tokens.
+      { path: 'r/:code', Component: ReferralRedirectPage },
       { path: 'pay/:invoiceId/:paymentToken', Component: InvoicePaymentPage },
       { path: 'pay/:invoiceId/:paymentToken/thank-you', Component: InvoiceThankYouPage },
 

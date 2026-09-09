@@ -30,6 +30,8 @@ export interface Client {
   referred_by_client_id: string | null;
   referral_credit_balance: number;
   referral_credit_used: number;
+  referral_scan_count: number;
+  referral_last_scanned_at: string | null;
   last_followup_email_sent_at: string | null;
   last_invoice_email_sent_at: string | null;
   last_quote_email_sent_at: string | null;
