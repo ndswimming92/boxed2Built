@@ -107,7 +107,7 @@ export default function PricingInsightsCard({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-semibold text-slate-900">{rec.jobType}</h4>
-                      <span className="text-xs text-slate-500">({rec.sampleSize} jobs)</span>
+                      <span className="text-xs text-slate-500">({rec.sampleSize} paid jobs)</span>
                     </div>
                     <p className="text-sm text-slate-600">{getRecommendationText(rec.priceAdjustmentNeeded)}</p>
                   </div>
@@ -142,7 +142,9 @@ export default function PricingInsightsCard({
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 mb-1">Current Hourly Rate</p>
+                      <p className="text-xs text-slate-500 mb-1">
+                        Current Hourly Rate <span className="text-slate-400">(after materials)</span>
+                      </p>
                       <div className="flex items-baseline gap-2">
                         <span className="text-lg font-bold text-slate-900">
                           {formatCurrency(rec.currentAvgHourlyRate)}/hr
@@ -163,7 +165,7 @@ export default function PricingInsightsCard({
                       <div className="flex items-baseline gap-2">
                         <span className="text-sm font-medium text-slate-700">Target:</span>
                         <span className="text-sm text-teal-900 font-semibold">
-                          {formatCurrency((rec.recommendedMin + rec.recommendedMax) / 2)}
+                          {formatCurrency(rec.recommendedTarget)}
                         </span>
                       </div>
                     </div>
@@ -185,8 +187,9 @@ export default function PricingInsightsCard({
                       <p className="text-xs text-slate-600">
                         {rec.priceAdjustmentNeeded > 0 ? (
                           <>
-                            To reach your target hourly rate of {formatCurrency(rec.targetHourlyRate)}/hr, consider
-                            increasing prices by approximately {formatCurrency((rec.recommendedMin + rec.recommendedMax) / 2 - rec.avgPrice)}.
+                            To reach your target hourly rate of {formatCurrency(rec.targetHourlyRate)}/hr on an average
+                            {' '}{rec.avgHours.toFixed(1)}-hour job, consider increasing prices by approximately
+                            {' '}{formatCurrency(rec.recommendedTarget - rec.avgPrice)}.
                           </>
                         ) : (
                           <>
