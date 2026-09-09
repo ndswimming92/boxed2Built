@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
@@ -24,13 +25,28 @@ import { supabase } from '../../lib/supabase';
 
 type SegmentType = 'all' | 'repeat' | 'high_value' | 'dormant' | 'leads' | 'referrals';
 
+const SEGMENTS: SegmentType[] = ['all', 'repeat', 'high_value', 'dormant', 'leads', 'referrals'];
+
+/**
+ * Reads the segment out of the URL, so a link like
+ * `/admin/clients?segment=referrals` (the dashboard's referral card) opens on
+ * that segment instead of silently landing on "all". Anything unrecognised
+ * falls back rather than leaving the page on an empty segment.
+ */
+function segmentFromParam(value: string | null): SegmentType {
+  return SEGMENTS.includes(value as SegmentType) ? (value as SegmentType) : 'all';
+}
+
 export default function ClientsPage() {
   const { maskFinancialValue } = usePrivacyMode();
   const [clients, setClients] = useState<Client[]>([]);
   const [stats, setStats] = useState<ClientSegmentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSegment, setSelectedSegment] = useState<SegmentType>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedSegment, setSelectedSegment] = useState<SegmentType>(() =>
+    segmentFromParam(searchParams.get('segment'))
+  );
   const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<keyof Client>('last_contact_date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -96,6 +112,25 @@ export default function ClientsPage() {
           : 0,
       };
     });
+  }
+
+  /**
+   * Keeps the URL in step with the segment tabs. Without this, arriving on
+   * `?segment=referrals`, switching tabs and then refreshing would snap back
+   * to referrals, because the stale param still decides the initial state.
+   * Replaces rather than pushes, so tab clicks do not fill up the back button.
+   */
+  function changeSegment(next: SegmentType) {
+    setSelectedSegment(next);
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        if (next === 'all') params.delete('segment');
+        else params.set('segment', next);
+        return params;
+      },
+      { replace: true }
+    );
   }
 
   async function loadData(silent = false) {
@@ -511,7 +546,7 @@ export default function ClientsPage() {
               <button
                 key={value}
                 onClick={() => {
-                  setSelectedSegment(value as SegmentType);
+                  changeSegment(value as SegmentType);
                   setSearchTerm('');
                 }}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -854,7 +889,7 @@ export default function ClientsPage() {
             if (selectedSegment === 'all') {
               loadData();
             } else {
-              setSelectedSegment('all');
+              changeSegment('all');
             }
           }}
         />
