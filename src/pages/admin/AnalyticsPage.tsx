@@ -579,7 +579,7 @@ export default function AnalyticsPage() {
                   <p className="text-xs text-slate-500">
                     Revenue per paid hour. Excellent: $60+/hr, Good: $40-60/hr, Fair: &lt;$40/hr
                     {metrics.freeHours > 0 && (
-                      <> &middot; Blended with {metrics.freeHours.toFixed(1)} free hrs: {formatCurrency(metrics.blendedHourlyRate)}/hr</>
+                      <> &middot; {metrics.freeHours.toFixed(1)} hrs of free work excluded</>
                     )}
                   </p>
                 </div>
