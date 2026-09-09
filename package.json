@@ -15,6 +15,7 @@
     "check:lock-sync": "node scripts/check-lock-sync.mjs",
     "monitor:synthetic": "node scripts/synthetic-monitor.mjs",
     "monitor:slo": "node scripts/check-slo-thresholds.mjs synthetic-results.json",
+    "test:unit": "node --test \"tests/unit/*.test.ts\"",
     "test:smoke": "playwright test",
     "test:form": "playwright test contact-form",
     "test:smoke:ui": "playwright test --ui"

@@ -19,6 +19,8 @@ import {
   getJobTypeConversionRates,
   getQuoteVarianceJobs,
   getQuoteAccuracyTimeSeries,
+  filterJobsByDateRange,
+  filterPipelineJobsByDateRange,
   TimePeriod,
 } from '../../services/analyticsService';
 import {
@@ -134,16 +136,18 @@ export default function AnalyticsPage() {
     setTrackedExpenses(expenses);
   };
 
-  const filteredJobs = useMemo(() => {
-    if (!dateRange.startDate || !dateRange.endDate) return jobs;
-    const startMs = dateRange.startDate.getTime();
-    const endMs = dateRange.endDate.getTime();
-    return jobs.filter(job => {
-      if (!job.date_completed) return false;
-      const completedMs = new Date(job.date_completed).getTime();
-      return completedMs >= startMs && completedMs <= endMs;
-    });
-  }, [jobs, dateRange.startDate, dateRange.endDate]);
+  // Revenue/profitability views: completed jobs inside the range.
+  const filteredJobs = useMemo(
+    () => filterJobsByDateRange(jobs, dateRange.startDate, dateRange.endDate),
+    [jobs, dateRange.startDate, dateRange.endDate]
+  );
+
+  // Funnel views need the jobs that never completed too — quoted, lost,
+  // cancelled, in progress — dated by when they entered the pipeline.
+  const pipelineJobs = useMemo(
+    () => filterPipelineJobsByDateRange(jobs, dateRange.startDate, dateRange.endDate),
+    [jobs, dateRange.startDate, dateRange.endDate]
+  );
 
   const metrics = useMemo(() => calculateMetrics(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const jobsByType = useMemo(() => getJobsByType(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
@@ -162,9 +166,9 @@ export default function AnalyticsPage() {
   const profitMarginDistribution = useMemo(() => getProfitMarginDistribution(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const materialsCostAnalysis = useMemo(() => getMaterialsCostAnalysis(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
 
-  const conversionMetrics = useMemo(() => calculateConversionMetrics(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
-  const lostDealBreakdown = useMemo(() => getLostDealBreakdown(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
-  const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
+  const conversionMetrics = useMemo(() => calculateConversionMetrics(pipelineJobs, timePeriod), [pipelineJobs, timePeriod]);
+  const lostDealBreakdown = useMemo(() => getLostDealBreakdown(pipelineJobs, timePeriod), [pipelineJobs, timePeriod]);
+  const jobTypeConversionRates = useMemo(() => getJobTypeConversionRates(pipelineJobs, timePeriod), [pipelineJobs, timePeriod]);
 
   const quoteVarianceJobs = useMemo(() => getQuoteVarianceJobs(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const quoteAccuracyTimeSeries = useMemo(() => getQuoteAccuracyTimeSeries(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
@@ -202,7 +206,9 @@ export default function AnalyticsPage() {
   };
 
   const handleExportJobs = () => {
-    const jobsToExport = filteredJobs;
+    // Export every job in the range, not just the completed ones the revenue
+    // cards are built from, so quotes and lost deals survive the download.
+    const jobsToExport = pipelineJobs;
 
     const csv = exportJobsToCSV(jobsToExport);
     const filename = generateExportFilename();
@@ -324,7 +330,7 @@ export default function AnalyticsPage() {
             <MetricCard
               title="Profit per Hour"
               value={formatCurrency(metrics.profitPerHour)}
-              subtitle="Average efficiency"
+              subtitle="After materials, per paid hour"
               icon={Clock}
               iconColor="text-teal-600"
               iconBgColor="bg-teal-100"
@@ -332,7 +338,11 @@ export default function AnalyticsPage() {
             <MetricCard
               title="Avg Hourly Rate"
               value={formatCurrency(metrics.avgHourlyRate)}
-              subtitle="Per hour worked"
+              subtitle={
+                metrics.freeHours > 0
+                  ? `Across ${metrics.paidHours.toFixed(1)} paid hrs (${metrics.freeHours.toFixed(1)} free hrs excluded)`
+                  : 'Per hour worked'
+              }
               icon={Target}
               iconColor="text-amber-600"
               iconBgColor="bg-amber-100"
@@ -348,7 +358,7 @@ export default function AnalyticsPage() {
             <MetricCard
               title="Total Jobs"
               value={metrics.totalJobs}
-              subtitle={dateRange.label}
+              subtitle={metrics.freeJobs > 0 ? `${dateRange.label} · ${metrics.freeJobs} free` : dateRange.label}
               icon={Briefcase}
               iconColor="text-slate-600"
               iconBgColor="bg-slate-100"
@@ -567,7 +577,10 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Hourly earnings from jobs. Excellent: $60+/hr, Good: $40-60/hr, Fair: &lt;$40/hr
+                    Revenue per paid hour. Excellent: $60+/hr, Good: $40-60/hr, Fair: &lt;$40/hr
+                    {metrics.freeHours > 0 && (
+                      <> &middot; {metrics.freeHours.toFixed(1)} hrs of free work excluded</>
+                    )}
                   </p>
                 </div>
                 <div className="flex flex-col p-4 bg-slate-50 rounded-lg">
