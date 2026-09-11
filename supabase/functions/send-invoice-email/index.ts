@@ -146,6 +146,23 @@ function buildHtml(
   const dueDateStr = invoice.due_date ? formatDate(invoice.due_date) : null;
   const invoiceDateStr = formatDate(invoice.invoice_date);
   const amountDueStr = formatCurrency(invoice.amount_due);
+  const termsCell = (span: string) => `<td ${span} style="padding:16px 20px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Payment Terms</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoice.payment_terms ? escapeHtml(invoice.payment_terms) : 'N/A'}</div>
+                  </td>`;
+  // An estimate is a quote, not a bill: with no due date, payment terms take
+  // the whole row instead of leaving an empty cell beside them.
+  const metaBottomRow = dueDateStr
+    ? `<tr>
+                  <td width="50%" style="padding:16px 20px;border-right:1px solid #E5E7EB;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Due Date</div>
+                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#B91C1C;">${dueDateStr}</div>
+                  </td>
+                  ${termsCell('width="50%"')}
+                </tr>`
+    : `<tr>
+                  ${termsCell('colspan="2"')}
+                </tr>`;
   const notesBlock = invoice.notes
     ? `<tr><td style="padding:18px 40px 0 40px;">
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;">
@@ -231,16 +248,7 @@ function buildHtml(
                     <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoiceDateStr}</div>
                   </td>
                 </tr>
-                <tr>
-                  <td width="50%" style="padding:16px 20px;border-right:1px solid #E5E7EB;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Due Date</div>
-                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:${dueDateStr ? '#B91C1C' : '#111827'};">${dueDateStr ?? 'Due on receipt'}</div>
-                  </td>
-                  <td width="50%" style="padding:16px 20px;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Payment Terms</div>
-                    <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoice.payment_terms ? escapeHtml(invoice.payment_terms) : 'N/A'}</div>
-                  </td>
-                </tr>
+                ${metaBottomRow}
               </table>
             </td>
           </tr>

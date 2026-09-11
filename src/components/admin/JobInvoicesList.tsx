@@ -165,7 +165,7 @@ export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-600">
                     <span>Date: {formatDate(invoice.invoice_date)}</span>
-                    <span>Due: {formatDate(invoice.due_date)}</span>
+                    {invoice.due_date && <span>Due: {formatDate(invoice.due_date)}</span>}
                   </div>
                 </div>
                 <div className="text-right">

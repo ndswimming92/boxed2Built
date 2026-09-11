@@ -191,13 +191,16 @@ export async function generateInvoicePDF(
   doc.setFont('helvetica', 'normal');
   doc.text(formatDate(invoice.invoice_date), margin + 26, leftY);
 
-  leftY += 6;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Due Date:', margin + 4, leftY);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...RED_TEXT);
-  doc.text(invoice.due_date ? formatDate(invoice.due_date) : 'On receipt', margin + 26, leftY);
-  doc.setTextColor(...INK);
+  // Estimates have no due date — nothing is owed until the quote is accepted.
+  if (invoice.due_date) {
+    leftY += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Due Date:', margin + 4, leftY);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...RED_TEXT);
+    doc.text(formatDate(invoice.due_date), margin + 26, leftY);
+    doc.setTextColor(...INK);
+  }
 
   leftY += 6;
   doc.setFont('helvetica', 'bold');

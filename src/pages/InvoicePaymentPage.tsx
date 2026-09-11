@@ -40,7 +40,7 @@ interface InvoiceData {
   client_email: string;
   client_phone: string | null;
   invoice_date: string;
-  due_date: string;
+  due_date: string | null;
   subtotal: number;
   tax_rate: number;
   tax_amount: number;
@@ -325,10 +325,12 @@ export default function InvoicePaymentPage() {
                 <span className="text-slate-500">Invoice Date</span>
                 <span className="text-slate-900 font-medium">{formatDate(invoice.invoice_date)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Due Date</span>
-                <span className="text-slate-900 font-medium">{formatDate(invoice.due_date)}</span>
-              </div>
+              {invoice.due_date && (
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Due Date</span>
+                  <span className="text-slate-900 font-medium">{formatDate(invoice.due_date)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-slate-500">Terms</span>
                 <span className="text-slate-900 font-medium">{invoice.payment_terms}</span>

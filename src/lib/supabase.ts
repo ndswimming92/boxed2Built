@@ -569,7 +569,8 @@ export type Invoice = {
   client_phone: string | null;
   client_address: string | null;
   invoice_date: string;
-  due_date: string;
+  // Estimates carry no due date: nothing is owed until the quote is accepted.
+  due_date: string | null;
   payment_terms: string;
   status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
   subtotal: number;
