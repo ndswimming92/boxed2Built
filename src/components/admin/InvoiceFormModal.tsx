@@ -10,6 +10,7 @@ import {
   getInvoice,
   sendInvoiceEmail,
   calculatePaymentTermsDueDate,
+  invoiceTypeHasDueDate,
   getInvoiceSettings,
 } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
@@ -180,11 +181,16 @@ export default function InvoiceFormModal({
   }, []);
 
   useEffect(() => {
+    if (!invoiceTypeHasDueDate(invoiceType)) {
+      setDueDate('');
+      return;
+    }
+
     if (invoiceDate && paymentTerms !== 'custom') {
       const calculatedDueDate = calculatePaymentTermsDueDate(invoiceDate, paymentTerms);
       setDueDate(calculatedDueDate);
     }
-  }, [invoiceDate, paymentTerms]);
+  }, [invoiceType, invoiceDate, paymentTerms]);
 
   const loadData = async () => {
     setLoading(true);
@@ -212,7 +218,7 @@ export default function InvoiceFormModal({
           setClientAddress(fullInvoice.client_address || '');
           setInvoiceDate(fullInvoice.invoice_date);
           setPaymentTerms(fullInvoice.payment_terms);
-          setDueDate(fullInvoice.due_date);
+          setDueDate(fullInvoice.due_date || '');
           setTaxRate(fullInvoice.tax_rate);
           setTaxOverride(fullInvoice.tax_override);
           setManualTaxAmount(fullInvoice.tax_amount);
@@ -323,9 +329,11 @@ export default function InvoiceFormModal({
   };
 
   const totals = calculateTotals();
+  // An estimate is a quote, not a bill — no due date is collected or stored.
+  const hasDueDate = invoiceTypeHasDueDate(invoiceType);
 
   const handleSave = async (sendEmail: boolean = false) => {
-    if (!clientName || !dueDate) {
+    if (!clientName || (hasDueDate && !dueDate)) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
       return;
     }
@@ -358,7 +366,7 @@ export default function InvoiceFormModal({
           client_phone: clientPhone || undefined,
           client_address: clientAddress || undefined,
           invoice_date: invoiceDate,
-          due_date: dueDate,
+          due_date: hasDueDate ? dueDate : null,
           payment_terms: paymentTerms,
           tax_rate: taxRate,
           notes: notes || undefined,
@@ -378,7 +386,7 @@ export default function InvoiceFormModal({
           client_phone: clientPhone || undefined,
           client_address: clientAddress || undefined,
           invoice_date: invoiceDate,
-          due_date: dueDate,
+          due_date: hasDueDate ? dueDate : null,
           payment_terms: paymentTerms,
           tax_rate: taxRate,
           tax_override: taxOverride,
@@ -627,16 +635,18 @@ export default function InvoiceFormModal({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Due Date</label>
-                  <input name="dueDate"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  />
-                </div>
+                {hasDueDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Due Date</label>
+                    <input name="dueDate"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

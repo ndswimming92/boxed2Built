@@ -250,7 +250,7 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
                     </div>
                     <div className="flex items-center gap-4 text-xs text-slate-500">
                       <span>Date: {formatDate(invoice.invoice_date)}</span>
-                      <span>Due: {formatDate(invoice.due_date)}</span>
+                      {invoice.due_date && <span>Due: {formatDate(invoice.due_date)}</span>}
                     </div>
                   </button>
                 );

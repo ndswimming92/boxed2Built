@@ -517,7 +517,9 @@ ${invoice.notes}` : ''}`,
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.invoice_date)}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{formatDate(invoice.due_date)}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {invoice.due_date ? formatDate(invoice.due_date) : <span className="text-slate-400">&mdash;</span>}
+                    </td>
                     <td className="px-6 py-4 text-right font-medium text-slate-900">
                       {formatCurrency(invoice.total_amount)}
                     </td>

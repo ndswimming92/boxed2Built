@@ -102,7 +102,7 @@ export type CustomerPortalInvoice = {
   invoice_number: string;
   invoice_type: 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
   invoice_date: string;
-  due_date: string;
+  due_date: string | null;
   payment_terms: string;
   payment_terms_description: string | null;
   status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';

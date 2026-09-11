@@ -61,12 +61,14 @@ export function generateInvoiceEmailHTML(invoice: Invoice, businessInfo: Busines
                           <span style="color: #1f2937; font-size: 14px; float: right;">${formatDate(invoice.invoice_date)}</span>
                         </td>
                       </tr>
+                      ${invoice.due_date ? `
                       <tr>
                         <td style="padding: 4px 0;">
                           <strong style="color: #6b7280; font-size: 12px;">Due Date:</strong>
                           <span style="color: #1f2937; font-size: 14px; float: right;">${formatDate(invoice.due_date)}</span>
                         </td>
                       </tr>
+                      ` : ''}
                       <tr>
                         <td style="padding: 4px 0;">
                           <strong style="color: #6b7280; font-size: 12px;">Payment Terms:</strong>
@@ -162,8 +164,8 @@ Thank you for choosing ${businessInfo.name}! Please find your invoice details be
 
 Invoice Details:
 - Invoice Number: ${invoice.invoice_number}
-- Invoice Date: ${formatDate(invoice.invoice_date)}
-- Due Date: ${formatDate(invoice.due_date)}
+- Invoice Date: ${formatDate(invoice.invoice_date)}${invoice.due_date ? `
+- Due Date: ${formatDate(invoice.due_date)}` : ''}
 - Payment Terms: ${invoice.payment_terms}
 
 Total Amount: $${invoice.total_amount.toFixed(2)}

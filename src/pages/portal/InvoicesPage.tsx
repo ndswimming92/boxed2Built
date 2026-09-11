@@ -145,7 +145,7 @@ export default function PortalInvoicesPage() {
                       <td className="px-4 py-3 text-sm text-slate-700 capitalize">{invoice.status.replace('_', ' ')}</td>
                       <td className="px-4 py-3 text-sm text-slate-700">
                         <p>Issued: {formatDate(invoice.invoice_date)}</p>
-                        <p>Due: {formatDate(invoice.due_date)}</p>
+                        {invoice.due_date && <p>Due: {formatDate(invoice.due_date)}</p>}
                       </td>
                       <td className="px-4 py-3 text-right text-sm text-slate-800">
                         <p className="font-semibold">{formatCurrency(invoice.amount_due)}</p>

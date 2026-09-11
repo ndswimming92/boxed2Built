@@ -11,7 +11,8 @@ export interface CreateInvoiceData {
   client_phone?: string;
   client_address?: string;
   invoice_date: string;
-  due_date: string;
+  // Null for estimates — a quote has no payment deadline.
+  due_date: string | null;
   payment_terms: string;
   payment_terms_description?: string;
   tax_rate?: number;
@@ -30,7 +31,7 @@ export interface UpdateInvoiceData {
   client_phone?: string;
   client_address?: string;
   invoice_date?: string;
-  due_date?: string;
+  due_date?: string | null;
   payment_terms?: string;
   payment_terms_description?: string;
   status?: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
@@ -228,7 +229,7 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
       customer_id,
       client_id,
       invoice_date: data.invoice_date,
-      due_date: data.due_date,
+      due_date: data.due_date || null,
       payment_terms: data.payment_terms,
       payment_terms_description: data.payment_terms_description || null,
       tax_rate: taxRate,
@@ -683,7 +684,9 @@ export async function createInvoiceFromInquiry(
   const today = new Date();
   const invoiceDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const paymentTerms = settings?.default_payment_terms || 'Net 30';
-  const dueDate = calculatePaymentTermsDueDate(invoiceDate, paymentTerms);
+  const dueDate = invoiceTypeHasDueDate(invoiceType)
+    ? calculatePaymentTermsDueDate(invoiceDate, paymentTerms)
+    : null;
 
   const invoice = await createInvoice({
     business_id: inquiry.business_id,
@@ -721,7 +724,9 @@ export async function createInvoiceFromJob(
   const today = new Date();
   const invoiceDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const paymentTerms = settings?.default_payment_terms || 'Net 30';
-  const dueDate = calculatePaymentTermsDueDate(invoiceDate, paymentTerms);
+  const dueDate = invoiceTypeHasDueDate(invoiceType)
+    ? calculatePaymentTermsDueDate(invoiceDate, paymentTerms)
+    : null;
 
   const invoice = await createInvoice({
     business_id: job.business_id,
@@ -750,6 +755,16 @@ export async function createInvoiceFromJob(
   }
 
   return invoice;
+}
+
+/**
+ * An estimate is a quote, not a bill: nothing is owed until the customer
+ * accepts it, so it carries no due date anywhere — form, PDF, or email.
+ */
+export function invoiceTypeHasDueDate(
+  invoiceType: 'estimate' | 'deposit' | 'progress' | 'final' | 'general'
+): boolean {
+  return invoiceType !== 'estimate';
 }
 
 export function calculatePaymentTermsDueDate(invoiceDate: string, paymentTerms: string): string {
