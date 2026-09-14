@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, KeyRound } from 'lucide-react';
+import { isPasskeySupported } from '../../services/passkeyService';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,8 +11,16 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const { signIn, signInWithGoogle, user, getHomeRouteForUser } = useAuth();
+  const [passkeysAvailable, setPasskeysAvailable] = useState(false);
+  const { signIn, signInWithGoogle, signInWithPasskeyForAdmin, user, getHomeRouteForUser } = useAuth();
   const navigate = useNavigate();
+
+  // Feature-detect after mount, never during render: these admin routes are
+  // prerendered, and vite-react-ssg's mocked DOM would otherwise answer for a
+  // browser that is not there.
+  useEffect(() => {
+    setPasskeysAvailable(isPasskeySupported());
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -58,6 +67,21 @@ export default function LoginPage() {
     }
   };
 
+  const handlePasskeySignIn = async () => {
+    setError('');
+    setLoading(true);
+
+    const { error } = await signInWithPasskeyForAdmin();
+
+    // Either way the button comes back: on success the redirect effect above
+    // takes over once the session lands, and a dismissed prompt returns no
+    // error precisely so it can pass in silence.
+    if (error) {
+      setError(error.message);
+    }
+    setLoading(false);
+  };
+
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
@@ -91,6 +115,18 @@ export default function LoginPage() {
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
+          )}
+
+          {passkeysAvailable && (
+            <button
+              type="button"
+              onClick={handlePasskeySignIn}
+              disabled={loading}
+              className="w-full bg-emerald-600 text-white py-3.5 px-4 rounded-lg font-semibold hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-4"
+            >
+              <KeyRound className="w-5 h-5" />
+              Sign in with a passkey
+            </button>
           )}
 
           <button

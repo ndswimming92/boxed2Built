@@ -81,6 +81,21 @@ Once your account is created:
 2. Enter your email and password
 3. Click "Sign In"
 
+### Signing in with a passkey
+
+Once you are in, set up a passkey so you can skip the password on that device:
+
+1. **System & Tools → Security → Add a passkey**
+2. Confirm with your fingerprint, face or device PIN
+
+After that, "Sign in with a passkey" on the login page signs you in without typing
+anything. Add one per device you actually use. Email+password and Google both keep
+working, so a lost device is never a lockout.
+
+Passkeys need to be switched on for the Supabase project first, and they only work on the
+live domain — never on localhost or a deploy preview. See `docs/PASSKEYS.md` for the
+one-time setup and the reasoning.
+
 You'll be redirected to the admin dashboard where you can manage:
 - Business Information (name, contact info, description)
 - Services (add, edit, delete services)
@@ -147,7 +162,7 @@ You'll be redirected to the admin dashboard where you can manage:
 ## Security Features
 
 - **Email-Based Authorization**: Only whitelisted email addresses can access admin portal
-- **Secure Authentication**: Supabase Auth with email/password and Google OAuth
+- **Secure Authentication**: Supabase Auth with email/password, Google OAuth and passkeys (WebAuthn)
 - **Protected Routes**: Unauthorized users are automatically signed out and redirected
 - **Session Management**: Automatic logout for unauthorized access attempts
 - **Logout Scopes**: Local sign-out and global "logout all sessions" are both supported

@@ -81,6 +81,7 @@ const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage')
 const ModelStudioPage = React.lazy(() => import('./pages/admin/ModelStudioPage'));
 const ModelStudioDetailPage = React.lazy(() => import('./pages/admin/ModelStudioDetailPage'));
 const ApiKeysPage = React.lazy(() => import('./pages/admin/ApiKeysPage'));
+const SecurityPage = React.lazy(() => import('./pages/admin/SecurityPage'));
 const ConnectionsPage = React.lazy(() => import('./pages/admin/ConnectionsPage'));
 const ClaudeUsagePage = React.lazy(() => import('./pages/admin/ClaudeUsagePage'));
 const SocialMetricsPage = React.lazy(() => import('./pages/admin/SocialMetricsPage'));
@@ -228,6 +229,7 @@ export const routes: RouteRecord[] = [
           { path: 'model-studio/:id', Component: ModelStudioDetailPage },
           { path: 'privacy-requests', Component: PrivacyRequestsPage },
           { path: 'api-keys', Component: ApiKeysPage },
+          { path: 'security', Component: SecurityPage },
           { path: 'connections', Component: ConnectionsPage },
           { path: 'claude-usage', Component: ClaudeUsagePage },
           { path: 'social-metrics', Component: SocialMetricsPage },

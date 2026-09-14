@@ -366,6 +366,7 @@ The remaining indexes are actively used:
 - [ ] Leaked password protection enabled in Supabase dashboard
 - [ ] All admin emails in `VITE_AUTHORIZED_ADMIN_EMAILS` are verified
 - [ ] Strong password policy enforced (12+ characters, mixed case, numbers, symbols)
+- [x] Passkeys (WebAuthn) available for admin and customer sign-in — see `docs/PASSKEYS.md`
 - [ ] Two-factor authentication considered for admin accounts
 - [ ] Rate limiting implemented on public endpoints
 - [ ] CAPTCHA added to contact forms
