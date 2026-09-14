@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { logAction } from './auditLogService';
 import { normalizeCouponCode, sortCouponsForQueue } from '../utils/coupon';
-import type { Coupon, CouponInput, CouponLookupResult } from '../types/coupon';
+import type { Coupon, CouponInput, CouponLookupResult, CouponRedemption } from '../types/coupon';
 
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
@@ -150,6 +150,59 @@ export async function deleteCoupon(id: string, code: string): Promise<void> {
     recordId: id,
     recordIdentifier: code,
   });
+}
+
+/**
+ * Who has used each code, keyed by the code they used.
+ *
+ * The counter on `coupons` has no names in it, so the people come from the
+ * inquiries the codes were entered on. One query for the whole page rather
+ * than one per card: a business with a dozen codes would otherwise open with a
+ * dozen requests to the same table.
+ *
+ * Deleted inquiries are left out — they were removed on purpose. Test
+ * submissions are kept, because the counter on the coupon counted them and a
+ * list that quietly disagrees with the number above it is worse than one that
+ * labels the odd row.
+ */
+export async function getCouponRedemptions(
+  businessId: string,
+): Promise<Record<string, CouponRedemption[]>> {
+  const { data, error } = await supabase
+    .from('form_inquiries')
+    .select('id, client_name, client_email, submission_date, coupon_code, coupon_discount_amount, is_test')
+    .eq('business_id', businessId)
+    .eq('is_active', true)
+    .not('coupon_code', 'is', null)
+    .order('submission_date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching coupon redemptions:', error);
+    throw new Error(`Failed to load coupon usage: ${error.message}`);
+  }
+
+  const byCode: Record<string, CouponRedemption[]> = {};
+
+  for (const row of (data ?? []) as Record<string, unknown>[]) {
+    // Codes are stored uppercase on both tables, but an inquiry from before
+    // that constraint existed can still carry whatever was typed.
+    const code = normalizeCouponCode(String(row.coupon_code ?? ''));
+    if (!code) continue;
+
+    const amount = Number(row.coupon_discount_amount);
+
+    byCode[code] = byCode[code] ?? [];
+    byCode[code].push({
+      inquiry_id: String(row.id),
+      client_name: String(row.client_name ?? '').trim() || 'Name not given',
+      client_email: String(row.client_email ?? '').trim(),
+      used_at: String(row.submission_date),
+      discount_amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+      is_test: row.is_test === true,
+    });
+  }
+
+  return byCode;
 }
 
 /**
