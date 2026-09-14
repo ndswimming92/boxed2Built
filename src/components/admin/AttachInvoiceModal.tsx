@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Search, FileText, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { Invoice, Job } from '../../lib/supabase';
 import { getUnattachedInvoices, attachInvoiceToJob } from '../../services/invoiceService';
+import { invoiceLabels } from '../../utils/invoiceLabels';
 
 interface AttachInvoiceModalProps {
   job: Job;
@@ -223,8 +224,8 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
                           <span className={`px-2 py-1 text-xs font-medium rounded border ${getStatusColor(invoice.status)}`}>
                             {formatStatus(invoice.status)}
                           </span>
-                          <span className="px-2 py-1 text-xs font-medium rounded border bg-slate-100 text-slate-700 border-slate-200 capitalize">
-                            {invoice.invoice_type}
+                          <span className="px-2 py-1 text-xs font-medium rounded border bg-slate-100 text-slate-700 border-slate-200">
+                            {invoiceLabels(invoice.invoice_type).type}
                           </span>
                           {isMatching && (
                             <span className="px-2 py-1 text-xs font-medium rounded border bg-emerald-100 text-emerald-700 border-emerald-200">

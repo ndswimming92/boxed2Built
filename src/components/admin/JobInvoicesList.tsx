@@ -4,6 +4,7 @@ import { Invoice } from '../../lib/supabase';
 import { getInvoicesByJob, detachInvoiceFromJob, getInvoice } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import { invoiceLabels } from '../../utils/invoiceLabels';
 
 interface JobInvoicesListProps {
   jobId: string;
@@ -159,8 +160,8 @@ export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached
                     <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getStatusColor(invoice.status)}`}>
                       {formatStatus(invoice.status)}
                     </span>
-                    <span className="px-2 py-0.5 text-xs font-medium rounded border bg-slate-100 text-slate-700 border-slate-200 capitalize">
-                      {invoice.invoice_type}
+                    <span className="px-2 py-0.5 text-xs font-medium rounded border bg-slate-100 text-slate-700 border-slate-200">
+                      {invoiceLabels(invoice.invoice_type).type}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-600">

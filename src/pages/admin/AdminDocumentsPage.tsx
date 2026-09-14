@@ -21,6 +21,7 @@ import {
   toggleDocumentVisibility,
   softDeleteDocument,
   getAdminDocumentSignedUrl,
+  ADMIN_DOCUMENT_TYPE_LABELS,
   type AdminDocument,
   type CustomerOption,
   type AdminDocumentType,
@@ -30,17 +31,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
-
-const DOCUMENT_TYPE_LABELS: Record<AdminDocumentType, string> = {
-  invoice: 'Invoice',
-  receipt: 'Receipt',
-  estimate: 'Estimate',
-  job_report: 'Job Report',
-  photo: 'Photo',
-  agreement: 'Agreement',
-  general: 'General',
-  other: 'Other',
-};
 
 const TYPE_COLORS: Record<AdminDocumentType, string> = {
   invoice: 'bg-blue-100 text-blue-700',
@@ -293,7 +283,7 @@ export default function AdminDocumentsPage() {
               className="appearance-none pl-3 pr-8 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
             >
               <option value="all">All Types</option>
-              {Object.entries(DOCUMENT_TYPE_LABELS).map(([val, label]) => (
+              {Object.entries(ADMIN_DOCUMENT_TYPE_LABELS).map(([val, label]) => (
                 <option key={val} value={val}>{label}</option>
               ))}
             </select>
@@ -384,7 +374,7 @@ export default function AdminDocumentsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredDocuments.map((doc) => {
-                  const typeLabel = DOCUMENT_TYPE_LABELS[doc.document_type as AdminDocumentType] ?? doc.document_type;
+                  const typeLabel = ADMIN_DOCUMENT_TYPE_LABELS[doc.document_type as AdminDocumentType] ?? doc.document_type;
                   const typeColor = TYPE_COLORS[doc.document_type as AdminDocumentType] ?? 'bg-slate-100 text-slate-600';
                   const isProcessing = togglingId === doc.id || deletingId === doc.id || downloadingId === doc.id;
 

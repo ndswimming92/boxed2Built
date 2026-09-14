@@ -1,3 +1,7 @@
+// The document this follows up on is stored as invoice_type = 'estimate' and is
+// shown to the customer as a "Quote". The copy below says Quote; the file,
+// function and payload names stay on the database's word. Twin file: src/services/estimateFollowUpEmailService.ts —
+// change both together, or the sent email and the clipboard fallback disagree.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
@@ -45,7 +49,7 @@ function getGreetingName(clientName: string): string {
 }
 
 function buildSubject(): string {
-  return 'Boxed2Built Estimate Follow-Up';
+  return 'Boxed2Built Quote Follow-Up';
 }
 
 function normalizeOptional(input?: string | null): string | null {
@@ -62,13 +66,13 @@ function buildPlainText(payload: Payload, contactPhone: string | null): string {
   const lines = [
     `Hello ${greetingName},`,
     '',
-    `I wanted to follow up on estimate ${payload.invoiceNumber}${serviceSummary ? ` for your ${serviceSummary}` : ''}.`,
+    `I wanted to follow up on quote ${payload.invoiceNumber}${serviceSummary ? ` for your ${serviceSummary}` : ''}.`,
     '',
   ];
 
   const detailLines = [
     serviceSummary ? `- Service: ${serviceSummary}` : null,
-    estimateTotal ? `- Estimate total: ${estimateTotal}` : null,
+    estimateTotal ? `- Quote total: ${estimateTotal}` : null,
     estimatedDuration ? `- Estimated time: ${estimatedDuration}` : null,
   ].filter(Boolean);
 
@@ -119,7 +123,7 @@ function buildHtml(payload: Payload, contactPhone: { display: string | null; tel
   const lookupRequestUrl = normalizeOptional(payload.lookupRequestUrl);
   const detailRows = [
     serviceSummary ? buildDetailRow('Service', serviceSummary) : '',
-    estimateTotal ? buildDetailRow('Estimate total', estimateTotal) : '',
+    estimateTotal ? buildDetailRow('Quote total', estimateTotal) : '',
     estimatedDuration ? buildDetailRow('Estimated time', estimatedDuration) : '',
   ].filter(Boolean).join('');
   const footerLinks = [
@@ -142,14 +146,14 @@ function buildHtml(payload: Payload, contactPhone: { display: string | null; tel
           <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
             <tr>
               <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Boxed2Built Estimate Follow-Up</h1>
-                <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;">Estimate ${safeInvoiceNumber}</p>
+                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Boxed2Built Quote Follow-Up</h1>
+                <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;">Quote ${safeInvoiceNumber}</p>
               </td>
             </tr>
             <tr>
               <td style="background:#ffffff;padding:32px;">
                 <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">Hello ${greetingName},</p>
-                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">I wanted to follow up on estimate <strong>${safeInvoiceNumber}</strong>${serviceSummary ? ` for your <strong>${escapeHtml(serviceSummary)}</strong>` : ''}.</p>
+                <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">I wanted to follow up on quote <strong>${safeInvoiceNumber}</strong>${serviceSummary ? ` for your <strong>${escapeHtml(serviceSummary)}</strong>` : ''}.</p>
                 ${detailRows ? `
                 <div style="margin:0 0 20px;padding:18px 20px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
                   <p style="margin:0 0 12px;color:#1f2937;font-size:15px;line-height:1.7;font-weight:600;">Here are the details I have for your project:</p>

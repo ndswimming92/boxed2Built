@@ -35,6 +35,7 @@ import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getDirectionsUrl as getAddressDirectionsUrl, hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 import ClientQRCodeModal from './ClientQRCodeModal';
+import { ADMIN_DOCUMENT_TYPE_LABELS } from '../../services/adminDocumentService';
 
 interface ClientDetailModalProps {
   client: Client;
@@ -693,12 +694,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       : [])
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const DOC_TYPE_LABELS: Record<string, string> = {
-    invoice: 'Invoice', receipt: 'Receipt', estimate: 'Estimate',
-    job_report: 'Job Report', photo: 'Photo', agreement: 'Agreement',
-    general: 'General', other: 'Other',
-  };
-
   const DOC_TYPE_COLORS: Record<string, string> = {
     invoice: 'bg-blue-100 text-blue-700',
     receipt: 'bg-green-100 text-green-700',
@@ -825,7 +820,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium text-gray-900 truncate">{doc.display_name}</p>
                           <span className={`flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${DOC_TYPE_COLORS[doc.document_type] ?? 'bg-gray-100 text-gray-600'}`}>
-                            {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type}
+                            {ADMIN_DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
                           </span>
                           {doc.is_internal_only ? (
                             <span className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">

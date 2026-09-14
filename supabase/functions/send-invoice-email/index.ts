@@ -1,6 +1,13 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import {
+  invoiceLabels,
+  amountLabel,
+  totalLabel,
+  headlineAmount,
+  invoiceEmailSubject,
+} from '../_shared/invoiceLabels.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -120,8 +127,8 @@ function buildTotalsBlock(invoice: Invoice): string {
             <td colspan="2" style="padding:8px 0 0 0;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background:#0E2748;border-radius:10px;">
                 <tr>
-                  <td style="padding:13px 16px;font-size:14px;font-weight:700;color:#ffffff;text-align:left;">Total Due</td>
-                  <td style="padding:13px 16px;font-size:17px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:-0.01em;">${formatCurrency(invoice.amount_due)}</td>
+                  <td style="padding:13px 16px;font-size:14px;font-weight:700;color:#ffffff;text-align:left;">${totalLabel(invoice.invoice_type)}</td>
+                  <td style="padding:13px 16px;font-size:17px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:-0.01em;">${formatCurrency(headlineAmount(invoice.invoice_type, invoice))}</td>
                 </tr>
               </table>
             </td>
@@ -132,7 +139,7 @@ function buildTotalsBlock(invoice: Invoice): string {
   </table>`;
 }
 
-function buildHtml(
+export function buildHtml(
   clientName: string,
   invoice: Invoice,
   lineItems: LineItem[],
@@ -142,10 +149,18 @@ function buildHtml(
   const firstName = escapeHtml((clientName.trim() || 'there').split(' ')[0] || 'there');
   const clientNameEsc = escapeHtml(clientName.trim() || 'there');
   const invoiceNum = escapeHtml(invoice.invoice_number);
-  const typeLabel = (invoice.invoice_type || 'invoice').charAt(0).toUpperCase() + (invoice.invoice_type || 'invoice').slice(1);
+  const labels = invoiceLabels(invoice.invoice_type);
   const dueDateStr = invoice.due_date ? formatDate(invoice.due_date) : null;
   const invoiceDateStr = formatDate(invoice.invoice_date);
-  const amountDueStr = formatCurrency(invoice.amount_due);
+  // A bill leads with what is still owed; a quote leads with the price of the job.
+  const headlineStr = formatCurrency(headlineAmount(invoice.invoice_type, invoice));
+  // A quote is an offer: it invites payment rather than expecting it.
+  const greeting = labels.isQuote
+    ? `Thanks for choosing ${escapeHtml(businessName)}. Your quote is ready — the details are below. Nothing is due now; if the numbers look right, reply and we'll get you on the schedule, or pay online any time you're ready.`
+    : `Thanks for choosing ${escapeHtml(businessName)}. Your ${labels.noun} is ready — the details are below, and you can pay securely online whenever you're ready. No payment is due until the job is done.`;
+  const payNote = labels.isQuote
+    ? `<div style="margin:-6px 0 16px 0;font-size:13px;color:#15803D;">Paying now locks in your spot — it's optional, and you're welcome to reply and book first.</div>`
+    : '';
   const termsCell = (span: string) => `<td ${span} style="padding:16px 20px;">
                     <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Payment Terms</div>
                     <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoice.payment_terms ? escapeHtml(invoice.payment_terms) : 'N/A'}</div>
@@ -201,7 +216,7 @@ function buildHtml(
                     </table>
                   </td>
                   <td align="right" style="vertical-align:middle;">
-                    <span style="display:inline-block;background:rgba(217,164,65,0.16);border:1px solid rgba(217,164,65,0.5);color:#F0C877;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:7px 13px;border-radius:9999px;">${escapeHtml(typeLabel)}</span>
+                    <span style="display:inline-block;background:rgba(217,164,65,0.16);border:1px solid rgba(217,164,65,0.5);color:#F0C877;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:7px 13px;border-radius:9999px;">${escapeHtml(labels.header)}</span>
                   </td>
                 </tr>
               </table>
@@ -214,12 +229,12 @@ function buildHtml(
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
                 <tr>
                   <td style="vertical-align:middle;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">${escapeHtml(typeLabel)}</div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">${escapeHtml(labels.bandTag)}</div>
                     <div style="margin-top:3px;font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:-0.01em;">${invoiceNum}</div>
                   </td>
                   <td align="right" style="vertical-align:middle;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">Amount Due</div>
-                    <div style="margin-top:3px;font-size:20px;font-weight:800;color:#4ADE80;letter-spacing:-0.01em;">${amountDueStr}</div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7E93B0;">${escapeHtml(amountLabel(invoice.invoice_type))}</div>
+                    <div style="margin-top:3px;font-size:20px;font-weight:800;color:#4ADE80;letter-spacing:-0.01em;">${headlineStr}</div>
                   </td>
                 </tr>
               </table>
@@ -230,7 +245,7 @@ function buildHtml(
           <tr>
             <td style="padding:34px 40px 0 40px;">
               <p style="margin:0 0 14px 0;font-size:17px;font-weight:700;color:#111827;letter-spacing:-0.01em;">Hi ${firstName},</p>
-              <p style="margin:0;font-size:15px;line-height:1.65;color:#4B5563;">Thanks for choosing ${escapeHtml(businessName)}. Your ${typeLabel.toLowerCase()} is ready — the details are below, and you can pay securely online whenever you're ready. No payment is due until the job is done.</p>
+              <p style="margin:0;font-size:15px;line-height:1.65;color:#4B5563;">${greeting}</p>
             </td>
           </tr>
 
@@ -244,7 +259,7 @@ function buildHtml(
                     <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${clientNameEsc}</div>
                   </td>
                   <td width="50%" style="padding:16px 20px;border-bottom:1px solid #E5E7EB;">
-                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Invoice Date</div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">${escapeHtml(labels.dateLabel)}</div>
                     <div style="margin-top:5px;font-size:14px;font-weight:600;color:#111827;">${invoiceDateStr}</div>
                   </td>
                 </tr>
@@ -283,8 +298,8 @@ function buildHtml(
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;">
                 <tr>
                   <td align="center" style="padding:26px 24px;">
-                    <div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#15803D;">Amount Due</div>
-                    <div style="margin:6px 0 18px 0;font-size:42px;font-weight:800;color:#0E2748;letter-spacing:-0.02em;line-height:1;">${amountDueStr}</div>
+                    <div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#15803D;">${escapeHtml(amountLabel(invoice.invoice_type))}</div>
+                    <div style="margin:6px 0 18px 0;font-size:42px;font-weight:800;color:#0E2748;letter-spacing:-0.02em;line-height:1;">${headlineStr}</div>${payNote}
                     <a href="${payUrl}" style="display:inline-block;background:#15803D;color:#FFFFFF;font-size:16px;font-weight:700;padding:15px 42px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px -4px rgba(21,128,61,0.5);">Pay Now &rarr;</a>
                     <div style="margin-top:14px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>
                   </td>
@@ -310,7 +325,7 @@ function buildHtml(
           <tr>
             <td style="padding:26px 40px 30px 40px;">
               <div style="border-top:1px solid #EEF1F5;padding-top:22px;">
-                <p style="margin:0 0 4px 0;font-size:14px;color:#4B5563;line-height:1.6;">Questions about this invoice? Call or text <strong style="color:#111827;">${CONTACT_PHONE}</strong> anytime.</p>
+                <p style="margin:0 0 4px 0;font-size:14px;color:#4B5563;line-height:1.6;">Questions about this ${labels.noun}? Call or text <strong style="color:#111827;">${CONTACT_PHONE}</strong> anytime.</p>
                 <p style="margin:0;font-size:14px;color:#4B5563;">&mdash; The ${escapeHtml(businessName)} Team</p>
               </div>
             </td>
@@ -341,7 +356,7 @@ function buildHtml(
           </tr>
 
         </table>
-        <div style="margin-top:16px;font-size:11px;color:#9CA3AF;">This invoice was sent by ${escapeHtml(businessName)}, Spring Hill, TN.</div>
+        <div style="margin-top:16px;font-size:11px;color:#9CA3AF;">This ${labels.noun} was sent by ${escapeHtml(businessName)}, Spring Hill, TN.</div>
       </td>
     </tr>
   </table>
@@ -349,15 +364,16 @@ function buildHtml(
 </body></html>`;
 }
 
-function buildPlainText(clientName: string, invoice: Invoice, lineItems: LineItem[], payUrl: string): string {
+export function buildPlainText(clientName: string, invoice: Invoice, lineItems: LineItem[], payUrl: string): string {
   const firstName = (clientName.trim() || 'there').split(' ')[0] || 'there';
+  const labels = invoiceLabels(invoice.invoice_type);
   const lines = [
     `Hi ${firstName},`,
     '',
-    `Please find your invoice details below.`,
+    `Please find your ${labels.noun} details below.`,
     '',
-    `Invoice #: ${invoice.invoice_number}`,
-    `Invoice Date: ${formatDate(invoice.invoice_date)}`,
+    `${labels.type} #: ${invoice.invoice_number}`,
+    `${labels.dateLabel}: ${formatDate(invoice.invoice_date)}`,
   ];
   if (invoice.due_date) lines.push(`Due Date: ${formatDate(invoice.due_date)}`);
   if (invoice.payment_terms) lines.push(`Terms: ${invoice.payment_terms}`);
@@ -370,9 +386,12 @@ function buildPlainText(clientName: string, invoice: Invoice, lineItems: LineIte
   lines.push(`Subtotal: ${formatCurrency(invoice.subtotal)}`);
   if (invoice.tax_amount > 0) lines.push(`Tax (${invoice.tax_rate}%): ${formatCurrency(invoice.tax_amount)}`);
   if (invoice.amount_paid > 0) lines.push(`Amount Paid: -${formatCurrency(invoice.amount_paid)}`);
-  lines.push(`Total Due: ${formatCurrency(invoice.amount_due)}`);
+  lines.push(`${totalLabel(invoice.invoice_type)}: ${formatCurrency(headlineAmount(invoice.invoice_type, invoice))}`);
   lines.push('');
-  lines.push('--- Pay Online ---');
+  lines.push(labels.isQuote ? '--- Pay Online (optional) ---' : '--- Pay Online ---');
+  if (labels.isQuote) {
+    lines.push("Nothing is due yet. Reply to this email if you'd like to go ahead and we'll get you scheduled.");
+  }
   lines.push(payUrl);
   lines.push('');
   lines.push(`Questions? Call or text us at ${CONTACT_PHONE} or email ${CONTACT_EMAIL}`);
@@ -496,7 +515,11 @@ Deno.serve(async (req) => {
 
     const payUrl = `${APP_URL}/pay/${invoice.id}/${(invoice as Invoice & { payment_access_token: string }).payment_access_token}`;
 
-    const subject = `Invoice ${invoice.invoice_number} — ${formatCurrency(invoice.amount_due)} Due`;
+    const subject = invoiceEmailSubject(
+      invoice.invoice_type,
+      invoice.invoice_number,
+      formatCurrency(headlineAmount(invoice.invoice_type, invoice)),
+    );
     const html = buildHtml(client.name, invoice as Invoice, (lineItems || []) as LineItem[], payUrl, businessName);
     const text = buildPlainText(client.name, invoice as Invoice, (lineItems || []) as LineItem[], payUrl);
 

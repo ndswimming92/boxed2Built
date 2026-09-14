@@ -1,4 +1,5 @@
 import { Invoice, InvoiceLineItem, InvoicePayment } from '../lib/supabase';
+import { invoiceLabels, amountLabel, headlineAmount } from './invoiceLabels';
 
 interface InvoiceWithDetails extends Invoice {
   lineItems: InvoiceLineItem[];
@@ -55,6 +56,7 @@ export async function generateInvoicePDF(
 ): Promise<Blob> {
   const { default: jsPDF } = await import('jspdf');
   const doc = new jsPDF();
+  const labels = invoiceLabels(invoice.invoice_type);
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let yPosition = 0;
@@ -98,7 +100,7 @@ export async function generateInvoicePDF(
   doc.setTextColor(...PALE_BLUE);
   doc.text('WE ASSEMBLE. YOU ENJOY.', margin + 24, wordY + 5.5);
 
-  const pillText = getDocumentHeaderText(invoice.invoice_type);
+  const pillText = labels.header;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   const pillPadX = 4;
@@ -142,7 +144,7 @@ export async function generateInvoicePDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(...PALE_BLUE);
-  doc.text(getDocumentDetailsLabel(invoice.invoice_type).replace(' DETAILS', ''), margin, bandY + 6);
+  doc.text(labels.bandTag, margin, bandY + 6);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(255, 255, 255);
@@ -151,11 +153,16 @@ export async function generateInvoicePDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(...PALE_BLUE);
-  doc.text('AMOUNT DUE', pageWidth - margin, bandY + 6, { align: 'right' });
+  doc.text(amountLabel(invoice.invoice_type).toUpperCase(), pageWidth - margin, bandY + 6, { align: 'right' });
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(...GREEN_ACCENT);
-  doc.text(`$${invoice.amount_due.toFixed(2)}`, pageWidth - margin, bandY + 12, { align: 'right' });
+  doc.text(
+    `$${headlineAmount(invoice.invoice_type, invoice).toFixed(2)}`,
+    pageWidth - margin,
+    bandY + 12,
+    { align: 'right' },
+  );
 
   doc.setTextColor(0, 0, 0);
   yPosition = bandY + bandHeight + 12;
@@ -183,7 +190,7 @@ export async function generateInvoicePDF(
   doc.setFont('helvetica', 'bold');
   doc.text('Type:', margin + 4, leftY);
   doc.setFont('helvetica', 'normal');
-  doc.text(formatInvoiceType(invoice.invoice_type), margin + 26, leftY);
+  doc.text(labels.type, margin + 26, leftY);
 
   leftY += 6;
   doc.setFont('helvetica', 'bold');
@@ -481,7 +488,7 @@ export async function downloadInvoicePDF(invoice: InvoiceWithDetails, businessIn
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `Invoice-${invoice.invoice_number}.pdf`;
+  link.download = `${invoiceLabels(invoice.invoice_type).fileNoun}-${invoice.invoice_number}.pdf`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -502,39 +509,6 @@ function formatDate(dateString: string): string {
     month: 'long',
     day: 'numeric',
   });
-}
-
-function formatInvoiceType(type: string): string {
-  const typeMap: { [key: string]: string } = {
-    estimate: 'Estimate',
-    deposit: 'Deposit',
-    progress: 'Progress',
-    final: 'Final',
-    general: 'General',
-  };
-  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
-}
-
-function getDocumentHeaderText(type: string): string {
-  const headerMap: { [key: string]: string } = {
-    estimate: 'QUOTE',
-    deposit: 'DEPOSIT INVOICE',
-    progress: 'PROGRESS INVOICE',
-    final: 'FINAL INVOICE',
-    general: 'INVOICE',
-  };
-  return headerMap[type] || 'INVOICE';
-}
-
-function getDocumentDetailsLabel(type: string): string {
-  const labelMap: { [key: string]: string } = {
-    estimate: 'QUOTE DETAILS',
-    deposit: 'DEPOSIT DETAILS',
-    progress: 'PROGRESS DETAILS',
-    final: 'INVOICE DETAILS',
-    general: 'INVOICE DETAILS',
-  };
-  return labelMap[type] || 'INVOICE DETAILS';
 }
 
 function formatItemType(type: string): string {

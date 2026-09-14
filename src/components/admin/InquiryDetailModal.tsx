@@ -8,6 +8,7 @@ import { describeDiscount, formatMoney } from '../../utils/coupon';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
 import ClientDetailModal from './ClientDetailModal';
+import { invoiceLabels } from '../../utils/invoiceLabels';
 
 function formatElapsedTime(seconds: number): string {
   if (seconds < 60) return 'Just now';
@@ -471,7 +472,7 @@ export default function InquiryDetailModal({
                       <FileText className="w-4 h-4 text-slate-400" />
                       <div>
                         <p className="text-sm font-medium text-slate-900">{invoice.invoice_number}</p>
-                        <p className="text-xs text-slate-500 capitalize">{invoice.invoice_type}</p>
+                        <p className="text-xs text-slate-500">{invoiceLabels(invoice.invoice_type).type}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

@@ -10,6 +10,28 @@ export type AdminDocumentType =
   | 'general'
   | 'other';
 
+/**
+ * Display names for the upload categories. `estimate` is stored under the
+ * database's word and shown as "Quote", the same rule invoices follow — see
+ * src/utils/invoiceLabels.ts. The customer reads these in the portal, so keep
+ * this the single source rather than re-declaring the map per component.
+ */
+export const ADMIN_DOCUMENT_TYPE_LABELS: Record<AdminDocumentType, string> = {
+  invoice: 'Invoice',
+  receipt: 'Receipt',
+  estimate: 'Quote',
+  job_report: 'Job Report',
+  photo: 'Photo',
+  agreement: 'Agreement',
+  general: 'General',
+  other: 'Other',
+};
+
+export function adminDocumentTypeLabel(documentType: string): string {
+  return ADMIN_DOCUMENT_TYPE_LABELS[documentType as AdminDocumentType]
+    ?? documentType.replace('_', ' ');
+}
+
 export interface AdminDocument {
   id: string;
   organization_id: string;
