@@ -4,6 +4,7 @@ import {
   uploadDocumentForCustomer,
   getJobsForCustomer,
   getInvoicesForCustomer,
+  ADMIN_DOCUMENT_TYPE_LABELS,
   type AdminDocumentType,
   type CustomerOption,
   type JobOption,
@@ -11,16 +12,10 @@ import {
 } from '../../services/adminDocumentService';
 import { useAuth } from '../../contexts/AuthContext';
 
-const DOCUMENT_TYPES: { value: AdminDocumentType; label: string }[] = [
-  { value: 'invoice', label: 'Invoice' },
-  { value: 'receipt', label: 'Receipt' },
-  { value: 'estimate', label: 'Estimate' },
-  { value: 'job_report', label: 'Job Report' },
-  { value: 'photo', label: 'Photo' },
-  { value: 'agreement', label: 'Agreement' },
-  { value: 'general', label: 'General' },
-  { value: 'other', label: 'Other' },
-];
+// Derived so the picker can never disagree with what the customer sees.
+const DOCUMENT_TYPES: { value: AdminDocumentType; label: string }[] = (
+  Object.entries(ADMIN_DOCUMENT_TYPE_LABELS) as [AdminDocumentType, string][]
+).map(([value, label]) => ({ value, label }));
 
 const STANDALONE_TYPES: AdminDocumentType[] = ['general', 'agreement', 'other'];
 

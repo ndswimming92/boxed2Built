@@ -4,6 +4,7 @@ import { Shield, Phone, Mail, MapPin, CreditCard, CheckCircle, AlertCircle, Pack
 import { supabase } from '../lib/supabase';
 import { getInvoiceExternalUrl, getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { invoiceLabels, invoiceNoun, amountLabel, totalLabel, headlineAmount } from '../utils/invoiceLabels';
 
 interface BusinessBranding {
   name: string;
@@ -173,6 +174,7 @@ export default function InvoicePaymentPage() {
     );
   }
 
+  const labels = invoiceLabels(invoice.invoice_type);
   const isPaid = invoice.status === 'paid';
   const isCancelled = invoice.status === 'cancelled';
   const canPay = !isPaid && !isCancelled && invoice.amount_due > 0;
@@ -225,9 +227,9 @@ export default function InvoicePaymentPage() {
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-sm text-slate-500 mb-1 uppercase tracking-wide font-medium">Invoice</p>
+              <p className="text-sm text-slate-500 mb-1 uppercase tracking-wide font-medium">{labels.type}</p>
               <h1 className="text-3xl font-bold text-slate-900">{invoice.invoice_number}</h1>
-              <p className="text-slate-500 mt-1 capitalize">{invoice.invoice_type} invoice</p>
+              <p className="text-slate-500 mt-1">{invoiceNoun(invoice.invoice_type)}</p>
             </div>
             <div className="text-right">
               {isPaid ? (
@@ -241,7 +243,7 @@ export default function InvoicePaymentPage() {
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full font-semibold text-sm">
-                  Payment Due
+                  {labels.isQuote ? 'Awaiting Approval' : 'Payment Due'}
                 </span>
               )}
             </div>
@@ -319,10 +321,10 @@ export default function InvoicePaymentPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-5 sm:col-span-2 lg:col-span-1">
-            <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">Invoice Details</p>
+            <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">{labels.type} Details</p>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Invoice Date</span>
+                <span className="text-slate-500">{labels.dateLabel}</span>
                 <span className="text-slate-900 font-medium">{formatDate(invoice.invoice_date)}</span>
               </div>
               {invoice.due_date && (
@@ -385,14 +387,14 @@ export default function InvoicePaymentPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold text-slate-900 border-t border-slate-200 pt-2 mt-2">
-                  <span>Total Due</span>
-                  <span>{formatCurrency(invoice.amount_due)}</span>
+                  <span>{totalLabel(invoice.invoice_type)}</span>
+                  <span>{formatCurrency(headlineAmount(invoice.invoice_type, invoice))}</span>
                 </div>
               </div>
             </>
           ) : (
             <div className="px-6 py-8 text-center text-slate-400 text-sm">
-              No line items on this invoice.
+              No line items on this {labels.noun}.
             </div>
           )}
         </div>
@@ -413,8 +415,8 @@ export default function InvoicePaymentPage() {
 
         {canPay && (
           <div className="bg-white rounded-xl border border-slate-200 px-6 py-6 text-center">
-            <p className="text-slate-500 text-sm mb-1">Amount Due</p>
-            <p className="text-4xl font-bold text-slate-900 mb-6">{formatCurrency(invoice.amount_due)}</p>
+            <p className="text-slate-500 text-sm mb-1">{amountLabel(invoice.invoice_type)}</p>
+            <p className="text-4xl font-bold text-slate-900 mb-6">{formatCurrency(headlineAmount(invoice.invoice_type, invoice))}</p>
             <button
               onClick={handlePayNow}
               disabled={paying}
@@ -442,7 +444,7 @@ export default function InvoicePaymentPage() {
         {isPaid && (
           <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-6 text-center">
             <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-3" />
-            <p className="font-semibold text-green-800 text-lg">This invoice has been paid in full.</p>
+            <p className="font-semibold text-green-800 text-lg">This {labels.noun} has been paid in full.</p>
             <p className="text-green-700 text-sm mt-1">Thank you for your payment!</p>
           </div>
         )}

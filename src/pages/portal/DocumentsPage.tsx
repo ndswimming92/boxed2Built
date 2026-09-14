@@ -7,6 +7,7 @@ import {
   type DocumentAccessMode,
 } from '../../services/customerPortalService';
 import { useNavigate } from 'react-router-dom';
+import { adminDocumentTypeLabel } from '../../services/adminDocumentService';
 
 const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : 'N/A');
 
@@ -78,7 +79,7 @@ export default function PortalDocumentsPage() {
                 {documents.map((doc) => (
                   <tr key={doc.id}>
                     <td className="px-4 py-3 text-sm font-medium text-slate-800">{doc.display_name}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700 capitalize">{doc.document_type.replace('_', ' ')}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{adminDocumentTypeLabel(doc.document_type)}</td>
                     <td className="px-4 py-3 text-sm text-slate-700">
                       {doc.related_invoice?.invoice_number
                         ? `Invoice #${doc.related_invoice.invoice_number}`

@@ -1,3 +1,7 @@
+// The document this follows up on is stored as invoice_type = 'estimate' and is
+// shown to the customer as a "Quote". The copy below says Quote; the file,
+// function and payload names stay on the database's word. Twin file: supabase/functions/send-estimate-follow-up-email/index.ts —
+// change both together, or the sent email and the clipboard fallback disagree.
 import { Invoice, Job, supabase } from '../lib/supabase';
 import { getInquiryById } from './inquiryService';
 import { getInvoice } from './invoiceService';
@@ -129,7 +133,7 @@ export async function getEstimateFollowUpDetails(
 }
 
 export function generateEstimateFollowUpEmailSubject(): string {
-  return 'Boxed2Built Estimate Follow-Up';
+  return 'Boxed2Built Quote Follow-Up';
 }
 
 export function generateEstimateFollowUpEmailPlainText(details: EstimateFollowUpDetails): string {
@@ -137,13 +141,13 @@ export function generateEstimateFollowUpEmailPlainText(details: EstimateFollowUp
   const lines = [
     `Hello ${greetingName},`,
     '',
-    `I wanted to follow up on estimate ${details.invoiceNumber}${details.serviceSummary ? ` for your ${details.serviceSummary}` : ''}.`,
+    `I wanted to follow up on quote ${details.invoiceNumber}${details.serviceSummary ? ` for your ${details.serviceSummary}` : ''}.`,
     '',
   ];
 
   const detailLines = [
     details.serviceSummary ? `- Service: ${details.serviceSummary}` : null,
-    details.estimateTotal ? `- Estimate total: ${details.estimateTotal}` : null,
+    details.estimateTotal ? `- Quote total: ${details.estimateTotal}` : null,
     details.estimatedDuration ? `- Estimated time: ${details.estimatedDuration}` : null,
   ].filter((line): line is string => Boolean(line));
 

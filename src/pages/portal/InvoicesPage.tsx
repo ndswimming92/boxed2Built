@@ -7,6 +7,7 @@ import {
   type CustomerPortalInvoice,
 } from '../../services/customerPortalService';
 import { getOfflineFriendlyErrorMessage } from '../../utils/retry';
+import { invoiceNoun } from '../../utils/invoiceLabels';
 
 const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : 'N/A');
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0);
@@ -140,7 +141,7 @@ export default function PortalInvoicesPage() {
                     <tr key={invoice.id}>
                       <td className="px-4 py-3 text-sm text-slate-800">
                         <p className="font-medium">{invoice.invoice_number}</p>
-                        <p className="text-xs text-slate-500 capitalize">{invoice.invoice_type} invoice</p>
+                        <p className="text-xs text-slate-500">{invoiceNoun(invoice.invoice_type)}</p>
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-700 capitalize">{invoice.status.replace('_', ' ')}</td>
                       <td className="px-4 py-3 text-sm text-slate-700">

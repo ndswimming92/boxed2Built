@@ -14,6 +14,7 @@ import {
   getInvoiceSettings,
 } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
+import { invoiceLabels } from '../../utils/invoiceLabels';
 import { getAppliedCoupon } from '../../services/inquiryService';
 import { couponLineDescription, discountAmount } from '../../utils/coupon';
 import { BusinessService } from '../../services/businessService';
@@ -53,13 +54,10 @@ const PAYMENT_TERMS_OPTIONS = [
   { value: 'Net 60', label: 'Net 60 (60 days)' },
 ];
 
-const INVOICE_TYPES = [
-  { value: 'general', label: 'General' },
-  { value: 'estimate', label: 'Estimate' },
-  { value: 'deposit', label: 'Deposit' },
-  { value: 'progress', label: 'Progress' },
-  { value: 'final', label: 'Final' },
-];
+// Derived so the dropdown can never disagree with what the customer is sent.
+const INVOICE_TYPES = (['general', 'estimate', 'deposit', 'progress', 'final'] as const).map(
+  (value) => ({ value, label: invoiceLabels(value).type }),
+);
 
 
 function formatPhoneNumber(value: string): string {

@@ -130,7 +130,13 @@ test('the copy link is the normal-case URL people can read', async ({ page }) =>
 
 test('the modal renders a QR image and reports scan activity', async ({ page }) => {
   await stubBackend(page);
-  await page.goto(`/tests/harness/referral-qr.html?code=${REFERRAL}&scans=12&last=2026-09-06T10:00:00Z`);
+  // describeLastScan reads the live clock, so a hardcoded date renders
+  // "3 days ago" only for the day it happens to be 3 days old. The extra hour
+  // keeps Math.floor at 3 rather than sitting on the boundary.
+  const threeDaysAgo = new Date(Date.now() - 3 * 86_400_000 - 3_600_000).toISOString();
+  await page.goto(
+    `/tests/harness/referral-qr.html?code=${REFERRAL}&scans=12&last=${encodeURIComponent(threeDaysAgo)}`,
+  );
 
   const img = page.getByAltText(/Referral QR code for/);
   await expect(img).toBeVisible();

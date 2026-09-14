@@ -24,6 +24,7 @@ import {
   getEstimateFollowUpDetails,
   sendEstimateFollowUpEmail,
 } from '../../services/estimateFollowUpEmailService';
+import { invoiceLabels } from '../../utils/invoiceLabels';
 
 export default function InvoicesPage() {
   const { maskFinancialValue } = usePrivacyMode();
@@ -209,7 +210,7 @@ ${invoice.notes}` : ''}`,
         await logInvoiceCommunication(
           invoice.id,
           'email',
-          `Estimate acceptance follow-up email sent for ${invoice.invoice_type} ${invoice.invoice_number}.`
+          `Quote acceptance follow-up email sent for ${invoiceLabels(invoice.invoice_type).type} ${invoice.invoice_number}.`
         );
         showToast({ type: 'success', message: `Approval follow-up sent to ${invoice.client_name}.` });
       } catch (error) {
@@ -493,7 +494,7 @@ ${invoice.notes}` : ''}`,
                       >
                         {invoice.invoice_number}
                       </button>
-                      <p className="text-xs text-slate-500 capitalize mt-0.5">{invoice.invoice_type}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{invoiceLabels(invoice.invoice_type).type}</p>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-slate-900">{invoice.client_name}</p>

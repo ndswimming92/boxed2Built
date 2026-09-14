@@ -503,7 +503,7 @@ export const GBP_OPTIMIZATION = {
     "Serves Franklin", 
     "Serves Columbia",
     "Weekend Service Available",
-    "Free Estimates",
+    "Free Quotes",
     "Professional Service",
     "IKEA Assembly Specialist"
   ],

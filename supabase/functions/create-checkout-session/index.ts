@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Stripe from "npm:stripe@17.7.0";
+import { invoiceLabels } from "../_shared/invoiceLabels.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,7 +60,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .select("id, customer_id, business_id, invoice_number, client_name, client_email, amount_due, status, payment_access_token")
+      .select("id, customer_id, business_id, invoice_number, invoice_type, client_name, client_email, amount_due, status, payment_access_token")
       .eq("id", invoiceId)
       .eq("is_active", true)
       .maybeSingle();
@@ -133,7 +134,7 @@ Deno.serve(async (req: Request) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `Invoice ${invoice.invoice_number}`,
+              name: `${invoiceLabels(invoice.invoice_type).type} ${invoice.invoice_number}`,
               description: `Payment for services from ${bizData?.business_name || "Boxed2Built"}`,
             },
             unit_amount: amountDueCents,
