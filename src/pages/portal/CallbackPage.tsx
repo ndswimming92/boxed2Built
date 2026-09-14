@@ -3,8 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
-import { customerPortalService } from '../../services/customerPortalService';
-import { portalAccountLinkingService } from '../../services/portalAccountLinkingService';
+import { runPortalPostLogin } from '../../services/portalPostLoginService';
 
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
 
@@ -47,33 +46,7 @@ export default function PortalCallbackPage() {
 
     if (!hasTrackedLogin.current) {
       hasTrackedLogin.current = true;
-
-      void (async () => {
-        const userEmail = user.email?.toLowerCase() ?? '';
-        const fullName = user.user_metadata?.full_name ?? user.user_metadata?.name ?? null;
-        let linked = false;
-
-        if (userEmail.endsWith('@gmail.com')) {
-          try {
-            const result = await portalAccountLinkingService.autoLinkGmailAccount(userEmail);
-            linked = result.status === 'linked' || result.status === 'already_linked';
-          } catch {
-            // best-effort auto-linking; do not block sign-in flow
-          }
-        }
-
-        if (!linked && userEmail) {
-          try {
-            await portalAccountLinkingService.autoCreatePortalCustomer(userEmail, fullName);
-          } catch {
-            // best-effort auto-create; do not block sign-in flow
-          }
-        }
-
-        await customerPortalService.trackFunnelEvent('login', {
-          source: 'oauth_callback',
-        }).catch(() => undefined);
-      })();
+      runPortalPostLogin(user, 'oauth_callback');
     }
 
     const storedPath = window.sessionStorage.getItem(PORTAL_POST_LOGIN_PATH_KEY);

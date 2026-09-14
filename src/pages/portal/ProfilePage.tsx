@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Check, Copy, Gift } from 'lucide-react';
+import { Check, Copy, Gift, KeyRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
+import PasskeyManager from '../../components/auth/PasskeyManager';
 import { customerPortalService, PortalServiceError, type CustomerPortalProfile } from '../../services/customerPortalService';
 
 export default function PortalProfilePage() {
@@ -158,6 +159,23 @@ export default function PortalProfilePage() {
             {saving ? 'Saving...' : 'Save changes'}
           </button>
         </form>
+
+          <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                <KeyRound className="h-5 w-5 text-blue-600" aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Passkeys</h2>
+                <p className="text-sm text-slate-600">Sign in without a password.</p>
+              </div>
+            </div>
+
+            <PasskeyManager
+              accent="blue"
+              recoveryHint="If you lose your devices, you can still sign in with Google."
+            />
+          </section>
         </div>
       ) : null}
     </PortalLayout>

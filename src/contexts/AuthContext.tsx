@@ -10,6 +10,9 @@ import {
   isUserAuthorized,
 } from '../utils/authorization';
 import { getSecureAuthRedirectUrl } from '../utils/authHardening';
+import { signInWithPasskey as runPasskeySignIn } from '../services/passkeyService';
+import { resetPortalPostLogin } from '../services/portalPostLoginService';
+import { describePasskeyError, isPasskeyCeremonyCancelled } from '../utils/passkeyErrors';
 import { Organization, OrganizationRole } from '../types';
 import { organizationService } from '../services/organizationService';
 
@@ -27,6 +30,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithGoogleForPortal: () => Promise<{ error: Error | null }>;
   signInWithGoogleForBooking: () => Promise<{ error: Error | null }>;
+  signInWithPasskeyForAdmin: () => Promise<{ error: Error | null }>;
+  signInWithPasskeyForPortal: () => Promise<{ error: Error | null; user: User | null }>;
   getHomeRouteForUser: (authUser: User | null) => string;
   signOut: () => Promise<void>;
   signOutAllSessions: () => Promise<void>;
@@ -52,6 +57,21 @@ const getAuthFlow = (): AuthFlow | null => {
 const clearAuthFlow = () => {
   localStorage.removeItem(AUTH_FLOW_KEY);
 };
+
+/**
+ * Which surface a passkey ceremony is currently running for, or null.
+ *
+ * The SIGNED_IN handler cannot work this out on its own: it reads
+ * app_metadata.provider, which is the provider the account was *created* with
+ * and never changes. A customer who signed up with Google and later added a
+ * passkey still reports 'google' there, so without this the audit log would
+ * record every passkey sign-in as a Google one.
+ *
+ * A module variable rather than localStorage on purpose — a passkey ceremony
+ * never leaves the page, so there is no redirect to survive, and nothing can
+ * go stale across a reload.
+ */
+let pendingPasskeyFlow: AuthFlow | null = null;
 
 
 const getOAuthRedirectUri = (type: AuthFlow): string => {
@@ -144,6 +164,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (event === 'SIGNED_IN' && session?.user) {
           const authFlow = getAuthFlow();
+          // Read and reset before any of the early returns below, so a rejected
+          // sign-in cannot leave this set and mislabel the next one.
+          const passkeyFlow = pendingPasskeyFlow;
+          pendingPasskeyFlow = null;
 
           if (authFlow === 'admin' && !isAdminUser(session.user)) {
             const authError = getAuthorizationError(session.user);
@@ -195,7 +219,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           const provider = session.user.app_metadata?.provider;
           console.log('User signed in with provider:', provider);
-          if (provider === 'google') {
+          if (passkeyFlow) {
+            await logAction({
+              actionType: 'LOGIN',
+              tableName: 'auth',
+              recordIdentifier: session.user.email || 'passkey',
+              status: 'success',
+              metadata: { provider: 'passkey', flow: passkeyFlow },
+            });
+          } else if (provider === 'google') {
             await logAction({
               actionType: 'LOGIN',
               tableName: 'auth',
@@ -223,6 +255,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserOrganizations([]);
           setIsPlatformAdmin(false);
           localStorage.removeItem('currentOrganizationId');
+          pendingPasskeyFlow = null;
+          // A passkey sign-in never reloads the page, so the post-login guard
+          // would otherwise still consider this user "seen" if they signed
+          // straight back in and would skip the linking and funnel work.
+          resetPortalPostLogin();
         }
       })();
     });
@@ -278,6 +315,103 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorMessage: (error as Error).message,
       });
       return { error: error as Error };
+    }
+  };
+
+  /**
+   * Passkey sign-in for the admin portal.
+   *
+   * Two things make this different from the OAuth helpers. First, the ceremony
+   * resolves in place, so unlike a redirect flow the caller is still mounted and
+   * has to be told what happened. Second, passkeys are discoverable credentials:
+   * the authenticator offers whichever accounts it holds for this domain, which
+   * on a shared device includes a customer's portal passkey. Supabase happily
+   * issues that session — it knows nothing about our admin allowlist.
+   *
+   * So the authorization check happens here, the same way signIn() does it for
+   * email+password. Without it signInWithPasskey() returns success, the login
+   * page never sees an error, and its button stays on "Signing in..." forever
+   * while the SIGNED_IN handler quietly tears the session down.
+   */
+  const signInWithPasskeyForAdmin = async () => {
+    setAuthFlow('admin');
+    pendingPasskeyFlow = 'admin';
+
+    try {
+      const { data, error } = await runPasskeySignIn();
+
+      if (error) {
+        pendingPasskeyFlow = null;
+        clearAuthFlow();
+        if (isPasskeyCeremonyCancelled(error)) {
+          return { error: null };
+        }
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'passkey',
+          status: 'error',
+          errorMessage: error.message,
+          metadata: { provider: 'passkey', flow: 'admin' },
+        });
+        return { error: new Error(describePasskeyError(error)) };
+      }
+
+      if (data?.user && !isUserAuthorized(data.user)) {
+        // The SIGNED_IN handler logs and signs this out; all this has to do is
+        // give the page something to render so the button comes back.
+        return { error: new Error(getAuthorizationError(data.user)) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      pendingPasskeyFlow = null;
+      clearAuthFlow();
+      return { error: new Error(describePasskeyError(error as { code?: string })) };
+    }
+  };
+
+  /**
+   * Passkey sign-in for the customer portal. Returns the user so the caller can
+   * run the post-login pipeline itself — context state lags this promise,
+   * because the SIGNED_IN handler only calls setUser after an awaited
+   * loadOrganizations round trip.
+   */
+  const signInWithPasskeyForPortal = async () => {
+    setAuthFlow('portal');
+    pendingPasskeyFlow = 'portal';
+
+    try {
+      const { data, error } = await runPasskeySignIn();
+
+      if (error) {
+        pendingPasskeyFlow = null;
+        clearAuthFlow();
+        if (isPasskeyCeremonyCancelled(error)) {
+          return { error: null, user: null };
+        }
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'passkey',
+          status: 'error',
+          errorMessage: error.message,
+          metadata: { provider: 'passkey', flow: 'portal' },
+        });
+        return { error: new Error(describePasskeyError(error)), user: null };
+      }
+
+      // Mirrors the portal rule in the SIGNED_IN handler: admins are allowed
+      // through here and get redirected to the admin side by the route guard.
+      if (data?.user && !isClientAuthorized(data.user) && !isAdminUser(data.user)) {
+        return { error: new Error('This account does not have portal access.'), user: null };
+      }
+
+      return { error: null, user: data?.user ?? null };
+    } catch (error) {
+      pendingPasskeyFlow = null;
+      clearAuthFlow();
+      return { error: new Error(describePasskeyError(error as { code?: string })), user: null };
     }
   };
 
@@ -437,6 +571,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signInWithGoogleForPortal,
     signInWithGoogleForBooking,
+    signInWithPasskeyForAdmin,
+    signInWithPasskeyForPortal,
     getHomeRouteForUser,
     signOut,
     signOutAllSessions,

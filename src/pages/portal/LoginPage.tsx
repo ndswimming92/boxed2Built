@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Home, LogIn, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Home, KeyRound, LogIn, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
+import { isPasskeySupported } from '../../services/passkeyService';
+import { runPortalPostLogin } from '../../services/portalPostLoginService';
 
 const PORTAL_BENEFITS = [
   'Track your project timeline and job status updates',
@@ -25,7 +27,14 @@ export default function PortalLoginPage() {
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, signInWithGoogleForPortal } = useAuth();
+  const [passkeysAvailable, setPasskeysAvailable] = useState(false);
+  const { user, signInWithGoogleForPortal, signInWithPasskeyForPortal } = useAuth();
+
+  // Feature-detect after mount, not during render — the prerender pass has a
+  // mocked DOM that would answer for a browser that is not there.
+  useEffect(() => {
+    setPasskeysAvailable(isPasskeySupported());
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -64,6 +73,40 @@ export default function PortalLoginPage() {
       setError('Authentication failed. Please try again.');
     }
   }, [searchParams]);
+
+  const handlePasskeySignIn = async () => {
+    setError('');
+    setLoading(true);
+
+    const nextPath = getSafeNextPath(searchParams.get('next'));
+    const { error, user: signedInUser } = await signInWithPasskeyForPortal();
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!signedInUser) {
+      // A dismissed prompt. Nothing to say; just give the button back.
+      setLoading(false);
+      return;
+    }
+
+    // Google sign-in reaches this pipeline by redirecting through
+    // /portal/callback. A passkey never leaves the page, and routing there
+    // would misfire anyway: AuthContext sets `user` only after an awaited
+    // organization fetch, so the callback page would still see a null user and
+    // bounce to "session expired". Run it here with the user we were handed.
+    runPortalPostLogin(signedInUser, 'passkey');
+
+    if (isAdminUser(signedInUser)) {
+      navigate('/admin/dashboard', { replace: true });
+      return;
+    }
+
+    navigate(nextPath, { replace: true });
+  };
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -133,6 +176,18 @@ export default function PortalLoginPage() {
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
+          )}
+
+          {passkeysAvailable && (
+            <button
+              type="button"
+              onClick={handlePasskeySignIn}
+              disabled={loading}
+              className="mb-4 flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3.5 font-semibold text-white transition-all hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <KeyRound className="h-5 w-5" />
+              Sign in with a passkey
+            </button>
           )}
 
           <button

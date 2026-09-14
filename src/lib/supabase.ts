@@ -4,18 +4,24 @@ import { z } from 'zod';
 import { getRequestTraceContext } from '../utils/telemetry';
 
 /** ────────────────────────────────────────────────────────────────────────────
- *  Environment & Client (public website settings)
- *  - No session persistence (public reads only)
- *  - No auto token refresh
+ *  Environment & Client
+ *  - One shared client for the public site, the admin portal and the customer
+ *    portal. Sessions persist and refresh in the browser only (see isBrowser).
  *  - Narrow global headers if you later add RLS audiences, etc.
  *  -------------------------------------------------------------------------- */
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
 // During SSG/SSR there is no browser context, so auth storage must be disabled
-// to prevent localStorage access in Node.js. The missing-env case is also safe:
-// createClient with empty strings produces a client that fails on network calls
-// but never throws at module load — all callers already handle fetch failures.
+// to prevent localStorage access in Node.js.
+//
+// The `?? ''` fallbacks above do NOT make a missing env var safe, despite what
+// this comment used to claim: createClient validates the URL and throws
+// "supabaseUrl is required." at module load on an empty string. Because
+// vite-react-ssg imports this module during prerender, `npm run build` fails
+// outright without VITE_SUPABASE_URL rather than degrading. The fallbacks only
+// keep TypeScript happy about `string | undefined`. Netlify supplies both vars
+// at build time; a local build needs them in the environment too.
 const isBrowser = typeof window !== 'undefined';
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -25,6 +31,10 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
     detectSessionInUrl: isBrowser,
     flowType: 'pkce',
     storageKey: 'boxed2built.auth.token',
+    // Passkeys (WebAuthn) are behind an explicit opt-in because Supabase still
+    // ships the API as experimental. Without this flag every auth.passkey.*
+    // method throws, so removing it silently disables passkey sign-in.
+    experimental: { passkey: true },
   },
   global: {
     fetch: async (input, init) => {
