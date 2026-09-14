@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { supabase, FormInquiry } from '../lib/supabase';
 import { getInquiries, getUnviewedCount } from '../services/inquiryService';
 import { showNewInquiryNotification } from '../utils/notificationService';
@@ -24,6 +24,13 @@ export function useRealtimeInquiries({
   enableNotifications = false,
   includeTestData = false,
 }: UseRealtimeInquiriesOptions): UseRealtimeInquiriesResult {
+  // Every instance of this hook needs its own Realtime channel. supabase.channel()
+  // returns an EXISTING channel when one is already registered under the same topic,
+  // and RealtimeChannel.on() throws once that channel has joined — so a shared,
+  // hardcoded topic crashes the second subscriber. AdminLayout's unviewed badge and
+  // InquiriesPage both mount this hook at the same time, which made /admin/inquiries
+  // fail every load. Do not collapse this back into a constant.
+  const instanceId = useId();
   const [inquiries, setInquiries] = useState<FormInquiry[]>([]);
   const [unviewedCount, setUnviewedCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -76,7 +83,7 @@ export function useRealtimeInquiries({
     if (!autoRefresh) return;
 
     const channel = supabase
-      .channel('form_inquiries_changes')
+      .channel(`form_inquiries_changes:${businessId}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -111,7 +118,7 @@ export function useRealtimeInquiries({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [businessId, autoRefresh, enableNotifications, includeTestData]);
+  }, [businessId, autoRefresh, enableNotifications, includeTestData, instanceId]);
 
   return {
     inquiries,
