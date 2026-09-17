@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react';
 import { CompleteBusinessData } from '../lib/supabase';
 import { fetchBusinessData, primeBusinessDataCache } from '../hooks/businessDataStore';
 
@@ -30,29 +30,45 @@ export function BusinessDataProvider({ initialData, children }: BusinessDataProv
   const [error, setError] = useState<Error | null>(null);
   const revalidatedRef = useRef(false);
 
+  const stableSetData = useCallback((fresh: CompleteBusinessData) => {
+    setData((prev) => {
+      if (!prev) return fresh;
+      if (
+        prev.info.id === fresh.info.id &&
+        prev.info.updated_at === fresh.info.updated_at &&
+        prev.info.total_client_hours_saved === fresh.info.total_client_hours_saved &&
+        prev.reviews.length === fresh.reviews.length &&
+        prev.services.length === fresh.services.length &&
+        prev.serviceAreas.length === fresh.serviceAreas.length &&
+        prev.businessHours.length === fresh.businessHours.length &&
+        prev.paymentMethods.length === fresh.paymentMethods.length &&
+        prev.socialMedia.length === fresh.socialMedia.length &&
+        prev.attributes.length === fresh.attributes.length &&
+        prev.reviews[0]?.id === fresh.reviews[0]?.id
+      ) {
+        return prev;
+      }
+      return fresh;
+    });
+  }, []);
+
   useEffect(() => {
     if (revalidatedRef.current) return;
     revalidatedRef.current = true;
 
-    // Make the loader payload available to any non-context consumer too.
     if (initialData) primeBusinessDataCache(initialData);
 
     let active = true;
 
-    // Stale-while-revalidate: when we already have loader data we paint it
-    // immediately and refresh in the background (no loading flash); otherwise
-    // this is the initial blocking fetch.
     fetchBusinessData(Boolean(initialData))
       .then((fresh) => {
         if (!active || !fresh) return;
-        setData(fresh);
+        stableSetData(fresh);
         setError(null);
       })
       .catch((err) => {
         if (!active) return;
         console.error('Error loading business data:', err);
-        // Keep showing initialData if present; only surface the error when we
-        // have nothing else to render.
         if (!initialData) setError(err as Error);
       })
       .finally(() => {
@@ -62,7 +78,7 @@ export function BusinessDataProvider({ initialData, children }: BusinessDataProv
     return () => {
       active = false;
     };
-  }, [initialData]);
+  }, [initialData, stableSetData]);
 
   return (
     <BusinessDataContext.Provider value={{ data, loading, error }}>

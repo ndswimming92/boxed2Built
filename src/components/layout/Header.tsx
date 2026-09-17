@@ -79,6 +79,7 @@ const Header: React.FC = () => {
   const cartCount = cart?.itemCount ?? 0;
 
   const [hasStoreProducts, setHasStoreProducts] = useState(false);
+  const [headerActionsReady, setHeaderActionsReady] = useState(false);
 
   useEffect(() => {
     let canceled = false;
@@ -87,7 +88,10 @@ const Header: React.FC = () => {
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true)
       .then(({ count }) => {
-        if (!canceled) setHasStoreProducts((count ?? 0) > 0);
+        if (!canceled) {
+          setHasStoreProducts((count ?? 0) > 0);
+          setHeaderActionsReady(true);
+        }
       });
     return () => { canceled = true; };
   }, []);
@@ -311,8 +315,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
-          {(hasStoreProducts || bookingEnabled) && (
-          <div className="hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3">
+          <div className={`hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3 transition-opacity duration-200 ${headerActionsReady && (hasStoreProducts || bookingEnabled) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             {/* The nav had no call to action at all, so booking takes the slot
                 rather than competing with one. Quoting stays the default path
                 for anyone who does not yet know what they need. */}
@@ -362,7 +365,6 @@ const Header: React.FC = () => {
             </a>
             )}
           </div>
-          )}
 
           {/* Mobile actions — RIGHT SIDE */}
           <div className="xl:hidden ml-auto flex items-center gap-1">
