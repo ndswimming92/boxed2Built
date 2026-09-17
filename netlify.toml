@@ -14,6 +14,25 @@ to = "https://:splat"
 status = 301
 force = true
 
+# Serve trailing-slash URLs directly instead of letting Netlify 301-redirect
+# them to the non-slash version. The build uses dirStyle:"flat" (about.html,
+# not about/index.html), so Netlify's default asset resolution redirects
+# /about/ → /about. Google flags those as "Page with redirect". These rewrites
+# intercept the request and serve the flat file at both paths with a 200.
+# Single-segment paths (/about/, /faq/, /gallery/, etc.)
+[[redirects]]
+from = "/:page/"
+to = "/:page"
+status = 200
+force = true
+
+# Two-segment paths (/services/furniture-assembly/, /service-areas/spring-hill-tn/, etc.)
+[[redirects]]
+from = "/:section/:page/"
+to = "/:section/:page"
+status = 200
+force = true
+
 [[headers]]
 for = "/*"
 
