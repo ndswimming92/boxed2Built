@@ -12,6 +12,10 @@ import {
   describeMagicLinkError,
   getMagicLinkErrorCode,
   isEmailRateLimited,
+  isKnownMagicLinkCode,
+  isMagicLinkSendBlocked,
+  isProbablyEmail,
+  normalizeEmail,
   parseEmailRateLimitSeconds,
 } from '../../src/utils/magicLinkErrors.ts';
 
@@ -98,4 +102,46 @@ test('returns null when there is no cooldown to read', () => {
   assert.equal(parseEmailRateLimitSeconds(''), null);
   assert.equal(parseEmailRateLimitSeconds('Email rate limit exceeded'), null);
   assert.equal(parseEmailRateLimitSeconds('after 0 seconds'), null);
+});
+
+test('only project-level and format failures escape the "check your email" card', () => {
+  // These say nothing about a particular address, so showing them leaks nothing.
+  for (const code of ['signup_disabled', 'email_provider_disabled', 'otp_disabled', 'email_address_invalid', 'validation_failed']) {
+    assert.equal(isMagicLinkSendBlocked({ code }), true, code);
+  }
+
+  // These would each reveal whether an address belongs to a customer.
+  for (const code of ['user_banned', 'over_email_send_rate_limit', 'otp_expired', 'unknown_code']) {
+    assert.equal(isMagicLinkSendBlocked({ code }), false, code);
+  }
+
+  assert.equal(isMagicLinkSendBlocked(null), false);
+});
+
+test('normalizeEmail collapses case and whitespace into one rate-limit bucket', () => {
+  assert.equal(normalizeEmail('  A@X.com '), 'a@x.com');
+  assert.equal(normalizeEmail('a@x.com'), 'a@x.com');
+  assert.equal(normalizeEmail(null), '');
+  assert.equal(normalizeEmail(undefined), '');
+});
+
+test('isProbablyEmail catches typos without rejecting real addresses', () => {
+  for (const good of ['a@x.co', 'someone@boxed2built.com', 'first.last+tag@sub.example.co.uk', '  A@X.COM ']) {
+    assert.equal(isProbablyEmail(good), true, good);
+  }
+
+  for (const bad of ['', 'nope', 'a@b', 'a@@b.com', 'a b@x.com', '@x.com', 'a@.com', 'a@x.', null, undefined]) {
+    assert.equal(isProbablyEmail(bad), false, String(bad));
+  }
+});
+
+test('isKnownMagicLinkCode separates our own copy from the catch-all', () => {
+  for (const code of KNOWN_CODES) {
+    assert.equal(isKnownMagicLinkCode(code), true, code);
+  }
+
+  assert.equal(isKnownMagicLinkCode('something_new_upstream'), false);
+  assert.equal(isKnownMagicLinkCode(''), false);
+  assert.equal(isKnownMagicLinkCode(null), false);
+  assert.equal(isKnownMagicLinkCode(undefined), false);
 });

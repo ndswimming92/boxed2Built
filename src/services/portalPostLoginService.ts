@@ -19,7 +19,7 @@ import { portalAccountLinkingService } from './portalAccountLinkingService';
  * context, and both callers invoke it directly.
  */
 
-export type PortalLoginSource = 'oauth_callback' | 'passkey';
+export type PortalLoginSource = 'oauth_callback' | 'passkey' | 'magic_link';
 
 const seenUserIds = new Set<string>();
 
@@ -49,7 +49,16 @@ export function runPortalPostLogin(user: User, source: PortalLoginSource): void 
 
     if (!linked && userEmail) {
       try {
-        await portalAccountLinkingService.autoCreatePortalCustomer(userEmail, fullName);
+        const result = await portalAccountLinkingService.autoCreatePortalCustomer(userEmail, fullName);
+
+        // Someone else's auth user already owns a customer row at this address,
+        // so there is no account to give this person. They land on the dashboard
+        // with no profile and get the "link existing records" panel, which is the
+        // right recovery — but the cause is invisible without this. Rare enough
+        // to need a hand-edited customers.email to reach at all.
+        if (result.status === 'email_taken') {
+          console.warn('[portal] auto-create skipped: email already linked to another account');
+        }
       } catch {
         // best-effort auto-create; do not block sign-in flow
       }

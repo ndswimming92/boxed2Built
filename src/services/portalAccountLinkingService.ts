@@ -5,7 +5,13 @@ export type VerificationMethod = 'email';
 export type StartLinkStatus = 'token_created' | 'no_match' | 'ambiguous';
 export type ConsumeLinkStatus = 'linked' | 'invalid_token' | 'already_linked';
 export type GmailAutoLinkStatus = 'linked' | 'not_gmail' | 'no_match' | 'ambiguous' | 'already_linked';
-export type AutoCreateStatus = 'created' | 'already_exists' | 'linked_existing' | 'missing_email' | 'no_organization';
+export type AutoCreateStatus =
+  | 'created'
+  | 'already_exists'
+  | 'linked_existing'
+  | 'email_taken'
+  | 'missing_email'
+  | 'no_organization';
 
 export interface StartLinkResult {
   status: StartLinkStatus;

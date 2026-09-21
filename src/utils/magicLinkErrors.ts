@@ -1,6 +1,7 @@
 /**
- * Human copy for the email sign-in link path, and the one number worth pulling
- * back out of an upstream message.
+ * Human copy for the email sign-in link path, the one number worth pulling back
+ * out of an upstream message, and the address normalisation that decides which
+ * rate-limit bucket a request lands in.
  *
  * Kept free of React, the Supabase client and import.meta.env so
  * `node --test` can import it directly — same constraint as
@@ -85,6 +86,11 @@ export function describeMagicLinkError(error: CodedError): string {
   return FALLBACK;
 }
 
+/** True when we have copy of our own for this code, rather than the catch-all. */
+export function isKnownMagicLinkCode(code: string | null | undefined): boolean {
+  return typeof code === 'string' && code in MESSAGES;
+}
+
 /**
  * Seconds left on Supabase's per-address cooldown, read out of the message it
  * sends with a 429: "For security purposes, you can only request this after
@@ -116,4 +122,50 @@ export function isEmailRateLimited(error: CodedError): boolean {
 
   const code = getMagicLinkErrorCode(error);
   return code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit' || error.status === 429;
+}
+
+/**
+ * Failures that must NOT be hidden behind the "check your email" card.
+ *
+ * That card is shown whatever the outcome, so that a known and an unknown
+ * address are indistinguishable — otherwise the form is a free oracle for
+ * testing whether someone is a customer. These codes are exempt because none of
+ * them says anything about a particular address: they are either project-wide
+ * misconfiguration or a malformed address the sender rejected. Telling the
+ * truth about them leaks nothing and saves someone waiting for an email that is
+ * never going to arrive.
+ *
+ * Deliberately absent: 'user_banned', which IS per-account and would leak.
+ */
+const SEND_BLOCKED_CODES = new Set([
+  'signup_disabled',
+  'email_provider_disabled',
+  'otp_disabled',
+  'email_address_invalid',
+  'validation_failed',
+]);
+
+export function isMagicLinkSendBlocked(error: CodedError): boolean {
+  return SEND_BLOCKED_CODES.has(getMagicLinkErrorCode(error));
+}
+
+/**
+ * Lowercased and trimmed, so that `A@x.com ` and `a@x.com` share one
+ * rate-limit bucket rather than each getting their own.
+ */
+export function normalizeEmail(raw: string | null | undefined): string {
+  return (raw ?? '').trim().toLowerCase();
+}
+
+/**
+ * Enough of a check to catch a typo before it costs a round trip and a slot in
+ * the per-address cooldown. Deliberately permissive — the server is the real
+ * validator, and an over-strict pattern here rejects addresses that work.
+ */
+export function isProbablyEmail(value: string | null | undefined): boolean {
+  const email = normalizeEmail(value);
+  if (email.length < 6 || email.length > 320) return false;
+  if (/\s/.test(email)) return false;
+
+  return /^[^@]+@[^@.]+(\.[^@.]+)+$/.test(email);
 }
