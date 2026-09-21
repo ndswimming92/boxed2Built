@@ -9,8 +9,27 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = "team@boxed2built.com";
-const OWNER_EMAIL = "nicholas.davidson@boxed2built.com";
-const OWNER_CC = "team@boxed2built.com";
+
+/**
+ * Every address that should receive a new lead.
+ *
+ * Resend blocks the WHOLE message when any single recipient is suppressed — the
+ * healthy addresses on the same email get nothing. So one dead address here
+ * silently kills the notification for everyone.
+ *
+ * That is not hypothetical. team@boxed2built.com hard-bounced on 8 July, was
+ * auto-suppressed, and sat in this list until 21 September. Eleven lead
+ * notifications were dropped in that window, every one of them addressed to a
+ * working mailbox as well:
+ *
+ *     To:     nicholas.davidson@boxed2built.com, team@boxed2built.com
+ *     Status: suppressed
+ *
+ * Nothing surfaced it — the function logs success because the Resend API call
+ * itself returns 200. Only add an address here that is known to accept mail,
+ * and check https://resend.com/suppressions before adding one back.
+ */
+const OWNER_RECIPIENTS = ["nicholas.davidson@boxed2built.com"];
 
 function escapeHtml(input: string): string {
   return input
@@ -524,7 +543,7 @@ Deno.serve(async (req: Request) => {
 
       try {
         await sendEmail(
-          [OWNER_EMAIL, OWNER_CC],
+          OWNER_RECIPIENTS,
           `New Quote Request — ${p.name} (${p.furnitureType}, ${p.pieces} pc${p.pieces !== 1 ? "s" : ""})`,
           ownerNotificationContact(p),
           p.email
@@ -551,7 +570,7 @@ Deno.serve(async (req: Request) => {
 
       try {
         await sendEmail(
-          [OWNER_EMAIL, OWNER_CC],
+          OWNER_RECIPIENTS,
           `Quick Contact from ${p.name}`,
           ownerNotificationQuick(p),
           p.email

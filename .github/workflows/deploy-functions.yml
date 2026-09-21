@@ -1,0 +1,80 @@
+name: Deploy edge functions
+
+# Edge functions did not deploy on merge, and nothing said so.
+#
+# The Supabase GitHub integration ships only brand-new functions. A function
+# that already exists and then changes is never redeployed, so main and
+# production drift apart silently — the repo says one thing and the running
+# code does another. That bit twice in one week: a fix to the portal invite
+# redirect sat unmerged-but-undeployed, and a dead notification address kept
+# dropping leads after the code that removed it was already on main.
+#
+# There is deliberately NO `supabase db push` here. Local migration filenames
+# and the remote `schema_migrations` versions have diverged badly (roughly 80
+# local-only and 58 remote-only versions, largely the same migrations stamped
+# differently by hand-applying, plus three colliding local prefixes). A push
+# today would try to re-run ~80 already-applied migrations, many of them not
+# idempotent. Migrations stay manual until that history is reconciled —
+# docs/DEPLOYMENT.md has the detail and what reconciliation would involve.
+# Do not add a db push step without reading it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/deploy-functions.yml'
+  workflow_dispatch:
+
+# A half-finished deploy is worse than a late one, so let a run finish rather
+# than cancelling it mid-way through a multi-function push.
+concurrency:
+  group: deploy-edge-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail here, loudly and with instructions, rather than letting the CLI
+      # die on a confusing auth error several steps later. Until the secrets
+      # are added this workflow is inert — which is the safe failure mode, but
+      # it should be an obvious one.
+      - name: Check deploy credentials are configured
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          missing=""
+          [ -z "$SUPABASE_ACCESS_TOKEN" ] && missing="$missing SUPABASE_ACCESS_TOKEN"
+          [ -z "$SUPABASE_PROJECT_REF" ] && missing="$missing SUPABASE_PROJECT_REF"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Add them under Settings -> Secrets and variables -> Actions."
+            echo "  SUPABASE_ACCESS_TOKEN: a personal access token from https://supabase.com/dashboard/account/tokens"
+            echo "  SUPABASE_PROJECT_REF:  the project ref (the id in the dashboard URL)"
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Deploys every function, not just the ones this push touched.
+      #
+      # Deploys are idempotent and there are only ~50, so the cost is a couple
+      # of minutes. Diffing changed paths instead would reintroduce exactly the
+      # bug this workflow exists to kill: a change to supabase/functions/_shared
+      # alters the behaviour of a dozen functions whose own files never changed,
+      # and a path filter would leave every one of them stale.
+      #
+      # verify_jwt comes from supabase/config.toml. Without those entries the
+      # CLI would deploy the public webhooks and the anonymous contact form with
+      # JWT verification ON and break them, so that file is load-bearing here.
+      - name: Deploy functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
