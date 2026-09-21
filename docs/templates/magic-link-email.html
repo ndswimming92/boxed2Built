@@ -1,0 +1,61 @@
+<!--
+  Supabase Auth → Emails → Templates → Magic Link
+
+  This is dashboard state and cannot be deployed from the repo. This file is the
+  recoverable copy — if you change one, change both.
+
+  Three things matter here and are easy to undo by accident:
+
+  1. The link is built from {{ .RedirectTo }} + {{ .TokenHash }}, NOT from
+     {{ .ConfirmationURL }}. Under PKCE the latter only works in the browser
+     that asked for the link, and it is burned by mail scanners that prefetch
+     URLs. See docs/PORTAL_SIGN_IN.md.
+  2. {{ .RedirectTo }} already carries ?flow=magic_link&next=..., which is how
+     the customer's destination survives the round trip through email. Append to
+     it with & — never replace it with a hard-coded URL.
+  3. {{ .Token }} is the 6-digit fallback. Keep it visible.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+            <tr>
+              <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
+                <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Sign in to Boxed2Built</h1>
+                <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Your client portal is one click away.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;padding:32px;">
+                <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Click below to sign in to your client portal. No password needed &mdash; if you don&rsquo;t have an account yet, this creates one.</p>
+
+                <p style="margin:0 0 28px;text-align:center;">
+                  <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email" style="display:inline-block;background:#2563eb;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:8px;">Sign In to My Portal</a>
+                </p>
+
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                  <tr>
+                    <td style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px 24px;text-align:center;">
+                      <p style="margin:0 0 8px;color:#64748b;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Or enter this code</p>
+                      <p style="margin:0;font-size:32px;font-weight:800;color:#1e3a5f;font-family:monospace;letter-spacing:6px;">{{ .Token }}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 8px;color:#6b7280;font-size:13px;line-height:1.6;">This link and code expire in 15 minutes and can only be used once.</p>
+                <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.6;">If you didn&rsquo;t request this, you can safely ignore this email &mdash; nobody can sign in without it.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

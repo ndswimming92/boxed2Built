@@ -33,6 +33,7 @@ interface AuthContextType {
   signInWithGoogleForBooking: () => Promise<{ error: Error | null }>;
   sendMagicLinkForPortal: (email: string, nextPath: string) => Promise<{ error: Error | null }>;
   verifyPortalEmailOtp: (email: string, token: string) => Promise<{ error: Error | null; user: User | null }>;
+  verifyPortalEmailTokenHash: (tokenHash: string, type: string) => Promise<{ error: Error | null; user: User | null }>;
   signInWithPasskeyForAdmin: () => Promise<{ error: Error | null }>;
   signInWithPasskeyForPortal: () => Promise<{ error: Error | null; user: User | null }>;
   getHomeRouteForUser: (authUser: User | null) => string;
@@ -105,6 +106,21 @@ const takeAuthLoginMethod = (): AuthLoginMethod | null => {
  */
 let pendingPasskeyFlow: AuthFlow | null = null;
 
+
+/**
+ * Narrows the `type` an emailed link carries to one Supabase accepts.
+ *
+ * It arrives in a query string, so it is untrusted input rather than something
+ * to cast. 'email' is the value our own Magic Link template sends; the others
+ * are here because an admin invite and a signup confirmation use the same
+ * landing page.
+ */
+const EMAIL_OTP_TYPES = ['email', 'magiclink', 'signup', 'invite', 'recovery', 'email_change'] as const;
+
+type EmailOtpType = (typeof EMAIL_OTP_TYPES)[number];
+
+const toEmailOtpType = (value: string): EmailOtpType =>
+  (EMAIL_OTP_TYPES as readonly string[]).includes(value) ? (value as EmailOtpType) : 'email';
 
 const getOAuthRedirectUri = (type: AuthFlow): string => {
   if (type === 'admin') {
@@ -670,6 +686,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /**
+   * Completes an emailed sign-in link that carries a token hash rather than a
+   * PKCE code.
+   *
+   * This is what makes the link work on a device other than the one that asked
+   * for it. A `?code=` link can only be exchanged where the code verifier is
+   * stored; a token hash is verified server-side against the hash Supabase
+   * already holds, so there is nothing local it depends on.
+   *
+   * It also survives link scanners. Prefetching `{{ .ConfirmationURL }}` burns
+   * the token, because that URL is a GET against Supabase's verify endpoint. A
+   * token hash sitting on our own page is only spent by the POST that
+   * verifyOtp makes, which a scanner fetching the HTML never runs.
+   */
+  const verifyPortalEmailTokenHash = async (tokenHash: string, type: string) => {
+    setAuthFlow('portal');
+    setAuthLoginMethod('magic_link');
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: toEmailOtpType(type),
+      });
+
+      if (error) {
+        clearAuthLoginMethod();
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'magic-link-token-hash-portal',
+          status: 'error',
+          errorMessage: error.message,
+        });
+        return { error: error as Error, user: null };
+      }
+
+      // Mirrors the portal rule in the SIGNED_IN handler and the other portal
+      // entry points: admins are let through and the route guard sends them on.
+      if (data?.user && !isClientAuthorized(data.user) && !isAdminUser(data.user)) {
+        return { error: new Error('This account does not have portal access.'), user: null };
+      }
+
+      return { error: null, user: data?.user ?? null };
+    } catch (error) {
+      clearAuthLoginMethod();
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: 'magic-link-token-hash-portal',
+        status: 'error',
+        errorMessage: (error as Error).message,
+      });
+      return { error: error as Error, user: null };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -729,6 +801,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogleForBooking,
     sendMagicLinkForPortal,
     verifyPortalEmailOtp,
+    verifyPortalEmailTokenHash,
     signInWithPasskeyForAdmin,
     signInWithPasskeyForPortal,
     getHomeRouteForUser,
