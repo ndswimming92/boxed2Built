@@ -13,7 +13,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM_EMAIL = 'team@boxed2built.com';
-const APP_URL = 'https://www.boxed2built.com';
+const APP_URL = 'https://boxed2built.com';
 
 /** One hour of queue at a time. The cron runs hourly, so this is generous. */
 const BATCH_SIZE = 50;
