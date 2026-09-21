@@ -42,6 +42,27 @@ Three buttons on every card:
 - **Share** — the phone's share sheet with a ready-made message, or the same
   message copied to the clipboard on desktop.
 
+## Who used a code
+
+Every card carries a usage count — *Used 4 times · last Sep 11* — and under it,
+the people behind that number: each customer's name, their email address as a
+link that opens a reply, the day they used it, and what the code took off their
+quote.
+
+Three names show at a time. **Show all 4** opens the rest, **Show fewer** folds
+it back.
+
+The names come from the quote requests the code was entered on, so a request
+you have deleted takes its name with it. When the count is higher than the list,
+the card says so — *2 earlier uses have no request on file* — rather than
+quietly showing a shorter list than the number above it. Renaming a code does
+the same thing: its earlier uses stay filed under the old spelling, so the
+count survives the rename but the names do not follow it.
+
+A submission from one of your registered test identities is counted by the
+coupon like any other, so it is tagged `TEST` in the list rather than hidden —
+the same badge the inquiry itself carries. Hiding it would leave the list one
+name short of the count with nothing to explain the gap.
 
 ## The posting queue
 
@@ -149,6 +170,11 @@ invoice raised months later still carries the discount they were promised.
   insert, because the customer submitting the form cannot write to `coupons`.
   That trigger function is not callable over the API — `EXECUTE` is revoked
   from `anon` and `authenticated`, which does not affect the trigger itself.
+- The names under that counter are read by `getCouponRedemptions()`, one query
+  across `form_inquiries` for the whole page rather than one per card, grouped
+  by `coupon_code`. `coupons` stores no customer, so there is nothing to
+  migrate and nothing duplicated: the inquiry stays the only record of who
+  entered a code. A failure there dims that one panel rather than the page.
 - Discount arithmetic lives in `src/utils/coupon.ts` so the form, the admin
   page and the invoice line all round the same way. A coupon never exceeds the
   amount it is discounting.

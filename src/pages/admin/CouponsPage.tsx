@@ -3,20 +3,21 @@ import { supabase } from '../../lib/supabase';
 import {
   Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon,
   Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Facebook, Clock, Mail,
+  Users, FlaskConical,
 } from 'lucide-react';
 import {
-  getCoupons, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
+  getCoupons, getCouponRedemptions, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
   draftCouponPromo, publishCouponPromo, sendCouponPromoReminder,
 } from '../../services/couponService';
 import {
   couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
   describeActiveDuration, describeDiscount, describePostDue, describeWindow,
-  endDateToTimestamp, formatPostAt, isValidCouponCode, nextCouponToPost,
+  endDateToTimestamp, formatMoney, formatPostAt, formatUsedOn, isValidCouponCode, nextCouponToPost,
   normalizeCouponCode, startDateToTimestamp, timestampToDatetimeLocal,
   timestampToEndDate, timestampToStartDate, toDatetimeLocal,
   type CouponDiscountType, type CouponState,
 } from '../../utils/coupon';
-import type { Coupon, CouponInput } from '../../types/coupon';
+import type { Coupon, CouponInput, CouponRedemption } from '../../types/coupon';
 
 interface FormState {
   id: string | null;
@@ -46,6 +47,13 @@ const EMPTY_FORM: FormState = {
   promo_message: '',
 };
 
+/**
+ * How many names a card lists before it offers to show the rest. Enough to
+ * see who has been using a code at a glance, few enough that a code used
+ * fifty times does not bury every card under it.
+ */
+const USES_PREVIEW = 3;
+
 const STATE_STYLES: Record<CouponState, { label: string; className: string }> = {
   active: { label: 'Active', className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
   scheduled: { label: 'Scheduled', className: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -63,6 +71,10 @@ export default function CouponsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Who used each code, keyed by code. Null means the lookup failed, which is
+  // not the same as nobody having used anything — the cards say so differently.
+  const [redemptions, setRedemptions] = useState<Record<string, CouponRedemption[]> | null>({});
+  const [expandedUses, setExpandedUses] = useState<string[]>([]);
   const [draftingId, setDraftingId] = useState<string | null>(null);
   const [postingId, setPostingId] = useState<string | null>(null);
   const [remindingId, setRemindingId] = useState<string | null>(null);
@@ -91,7 +103,19 @@ export default function CouponsPage() {
 
       setBusinessId(businessInfo.id);
       setOrganizationId(businessInfo.organization_id ?? null);
-      setCoupons(await getCoupons(businessInfo.id));
+
+      // Side by side: a coupon list with no names beside the counts is still
+      // worth showing, so a failure here dims that one panel, not the page.
+      const [codes, used] = await Promise.all([
+        getCoupons(businessInfo.id),
+        getCouponRedemptions(businessInfo.id).catch((error) => {
+          console.error('Error loading coupon usage:', error);
+          return null;
+        }),
+      ]);
+
+      setCoupons(codes);
+      setRedemptions(used);
     } catch (error) {
       console.error('Error loading coupons:', error);
       notify('error', 'Failed to load coupons');
@@ -299,6 +323,12 @@ export default function CouponsPage() {
       setRemindingId(null);
     }
   };
+
+  /** Expands a card's usage list past the preview, or folds it back. */
+  const toggleUses = (couponId: string) =>
+    setExpandedUses((open) =>
+      open.includes(couponId) ? open.filter((id) => id !== couponId) : [...open, couponId],
+    );
 
   const shareLink = (code: string) =>
     `${typeof window === 'undefined' ? 'https://www.boxed2built.com' : window.location.origin}/contact?coupon=${encodeURIComponent(code)}`;
@@ -695,6 +725,14 @@ export default function CouponsPage() {
             const style = STATE_STYLES[state];
             const promo = couponPromoState(coupon);
 
+            const used = redemptions?.[coupon.code] ?? [];
+            const showAllUses = expandedUses.includes(coupon.id);
+            const shownUses = showAllUses ? used : used.slice(0, USES_PREVIEW);
+            // The counter counts submissions; the list can only show the ones
+            // still on file. Renaming a code leaves its old uses behind under
+            // the old spelling, and a deleted inquiry takes its name with it.
+            const unaccounted = Math.max(0, coupon.times_used - used.length);
+
             return (
               <div key={coupon.id} className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -740,6 +778,84 @@ export default function CouponsPage() {
                           : ''}
                       </span>
                     </div>
+
+                    {used.length > 0 && (
+                      <div className="mt-3 rounded-lg border border-slate-200 overflow-hidden">
+                        <p className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          <Users className="w-3.5 h-3.5" />
+                          Who used it
+                        </p>
+
+                        <ul className="divide-y divide-slate-100 border-t border-slate-200">
+                          {shownUses.map((use) => (
+                            <li
+                              key={use.inquiry_id}
+                              className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-2"
+                            >
+                              <div className="min-w-0">
+                                <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                                  <span className="truncate">{use.client_name}</span>
+                                  {use.is_test && (
+                                    <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[10px] font-semibold text-amber-800">
+                                      <FlaskConical className="w-2.5 h-2.5" />
+                                      TEST
+                                    </span>
+                                  )}
+                                </p>
+                                {use.client_email ? (
+                                  <a
+                                    href={`mailto:${use.client_email}`}
+                                    className="text-sm text-emerald-700 hover:underline break-all"
+                                  >
+                                    {use.client_email}
+                                  </a>
+                                ) : (
+                                  <span className="text-sm text-slate-400">No email given</span>
+                                )}
+                              </div>
+
+                              <div className="ml-auto shrink-0 text-right">
+                                <p className="text-xs text-slate-500">{formatUsedOn(use.used_at)}</p>
+                                {use.discount_amount !== null && (
+                                  <p className="text-xs font-semibold text-emerald-700">
+                                    {formatMoney(use.discount_amount)} off
+                                  </p>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {(used.length > USES_PREVIEW || unaccounted > 0) && (
+                          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+                            {used.length > USES_PREVIEW ? (
+                              <button
+                                onClick={() => toggleUses(coupon.id)}
+                                aria-expanded={showAllUses}
+                                className="text-xs font-semibold text-emerald-700 hover:underline"
+                              >
+                                {showAllUses ? 'Show fewer' : `Show all ${used.length}`}
+                              </button>
+                            ) : (
+                              <span />
+                            )}
+                            {unaccounted > 0 && (
+                              <span className="text-xs text-slate-500">
+                                {unaccounted} earlier {unaccounted === 1 ? 'use has' : 'uses have'} no request on file
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {redemptions && used.length === 0 && coupon.times_used > 0 && (
+                      <p className="mt-3 text-xs text-slate-500">
+                        {coupon.times_used === 1
+                          ? 'No request on file for that use — it was deleted, or this code was renamed after it was used.'
+                          : 'No request on file for those uses — they were deleted, or this code was renamed after they were used.'}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 shrink-0">

@@ -66,3 +66,21 @@ export interface AppliedCoupon {
   coupon_discount_value: number;
   coupon_discount_amount: number;
 }
+
+/**
+ * One customer who entered a code on the quote form.
+ *
+ * `coupons.times_used` is a bare counter — the people behind it live on the
+ * inquiries the code was entered on, so the admin card reads them from there.
+ */
+export interface CouponRedemption {
+  inquiry_id: string;
+  client_name: string;
+  client_email: string;
+  /** Submission time: what the list is ordered and dated by. */
+  used_at: string;
+  /** Dollars this code took off their quote, as snapshotted at submission. */
+  discount_amount: number | null;
+  /** A test submission rather than a customer — tagged, never hidden. */
+  is_test: boolean;
+}

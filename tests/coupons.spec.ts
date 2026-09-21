@@ -37,14 +37,19 @@ async function stubBusiness(page: Page) {
   );
 }
 
-/** One coupon table, answering the public RPC and the admin list from it. */
-async function stubCoupons(page: Page, coupons: Row[]) {
+/**
+ * One coupon table, answering the public RPC and the admin list from it, plus
+ * the inquiries those codes were entered on — the admin card reads the names
+ * beside its usage count from there, so an empty table is the honest default.
+ */
+async function stubCoupons(page: Page, coupons: Row[], inquiries: Row[] = []) {
   await page.route('**/rest/v1/rpc/lookup_coupon_by_code', async (route) => {
     const { p_code } = JSON.parse(route.request().postData() || '{}');
     return route.fulfill({ json: coupons.filter((c) => c.code === p_code) });
   });
 
   await page.route('**/rest/v1/coupons*', (route) => route.fulfill({ json: coupons }));
+  await page.route('**/rest/v1/form_inquiries*', (route) => route.fulfill({ json: inquiries }));
 }
 
 async function openForm(page: Page) {
@@ -212,8 +217,8 @@ function promoCoupon(over: Row): Row {
   };
 }
 
-async function openAdmin(page: Page, coupons: Row[]) {
-  await stubCoupons(page, coupons);
+async function openAdmin(page: Page, coupons: Row[], inquiries: Row[] = []) {
+  await stubCoupons(page, coupons, inquiries);
   await stubBusiness(page);
   await page.goto('/tests/harness/coupons.html?view=admin');
   await expect(page.getByRole('heading', { name: 'Coupon Codes' })).toBeVisible();
@@ -344,4 +349,84 @@ test('a new coupon still opens at the top, above the list', async ({ page }) => 
 
   await page.getByRole('button', { name: 'New Coupon' }).click();
   await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'New coupon', 'ALPHA']);
+});
+
+/**
+ * Who used a code. The count on its own answers "is this working"; it does not
+ * answer "who do I follow up with", which for a business this size is the more
+ * useful question, and the answer is already sitting on the inquiries.
+ */
+function inquiry(over: Row): Row {
+  return {
+    id: 'i', client_name: 'Someone', client_email: 'someone@example.com',
+    submission_date: new Date().toISOString(), coupon_code: 'WELCOME25',
+    coupon_discount_amount: 25, is_test: false,
+    ...over,
+  };
+}
+
+test('a used code lists the people who used it, under the count', async ({ page }) => {
+  await openAdmin(
+    page,
+    [promoCoupon({
+      id: 'c-used', code: 'WELCOME25', discount_value: 25, times_used: 4,
+      last_used_at: new Date(Date.now() - day).toISOString(),
+    })],
+    [
+      inquiry({ id: 'i1', client_name: 'Dana Reyes', client_email: 'dana@example.com' }),
+      inquiry({ id: 'i2', client_name: 'Sam Okafor', client_email: 'sam@example.com' }),
+      inquiry({ id: 'i3', client_name: 'Priya Nair', client_email: 'priya@example.com' }),
+      inquiry({ id: 'i4', client_name: 'Bench Test', client_email: 'bench@example.com', is_test: true }),
+    ],
+  );
+
+  const card = page.locator('div.bg-white.rounded-xl')
+    .filter({ has: page.getByRole('heading', { level: 3, name: 'WELCOME25' }) });
+
+  await expect(card).toContainText('Used 4 times');
+
+  // The names sit under the count, each with the address to reply to.
+  await expect(card).toContainText('Dana Reyes');
+  await expect(card).toContainText('Sam Okafor');
+  await expect(card.getByRole('link', { name: 'dana@example.com' }))
+    .toHaveAttribute('href', 'mailto:dana@example.com');
+  await expect(card).toContainText('$25 off');
+
+  // Three fit; the fourth waits behind the button rather than stretching the card.
+  await expect(card).not.toContainText('Bench Test');
+  await card.getByRole('button', { name: 'Show all 4' }).click();
+  await expect(card).toContainText('Bench Test');
+  // A test submission counted towards the total, so it is labelled, not hidden —
+  // a list that silently disagrees with the number above it is worse.
+  await expect(card).toContainText('Test');
+
+  await card.getByRole('button', { name: 'Show fewer' }).click();
+  await expect(card).not.toContainText('Bench Test');
+});
+
+test('a count with nothing behind it explains itself rather than showing an empty list', async ({ page }) => {
+  // Renaming a code leaves its old uses filed under the old spelling: the
+  // counter still reads 2 and there is nobody to list.
+  await openAdmin(page, [promoCoupon({ id: 'c-renamed', code: 'NEWNAME', times_used: 2 })], []);
+
+  const card = page.locator('div.bg-white.rounded-xl')
+    .filter({ has: page.getByRole('heading', { level: 3, name: 'NEWNAME' }) });
+
+  await expect(card).toContainText('Used 2 times');
+  await expect(card).toContainText('No request on file for those uses');
+  await expect(card).not.toContainText('Who used it');
+});
+
+test('a partly-deleted history lists who is left and accounts for the rest', async ({ page }) => {
+  await openAdmin(
+    page,
+    [promoCoupon({ id: 'c-part', code: 'WELCOME25', times_used: 3 })],
+    [inquiry({ id: 'i1', client_name: 'Dana Reyes', client_email: 'dana@example.com' })],
+  );
+
+  const card = page.locator('div.bg-white.rounded-xl')
+    .filter({ has: page.getByRole('heading', { level: 3, name: 'WELCOME25' }) });
+
+  await expect(card).toContainText('Dana Reyes');
+  await expect(card).toContainText('2 earlier uses have no request on file');
 });

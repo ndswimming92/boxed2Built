@@ -128,6 +128,15 @@ export function timestampToEndDate(iso: string | null): string {
   return toDateInput(date);
 }
 
+/** "Sep 11, 2026" — the date beside a name in a code's usage list. */
+export function formatUsedOn(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 /** "Sep 1 – Sep 30", "From Sep 1", "Through Sep 30", or "Any time". */
 export function describeWindow(starts_at: string | null, ends_at: string | null): string {
   const format = (iso: string, endInclusive = false) => {
