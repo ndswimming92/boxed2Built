@@ -65,7 +65,18 @@ const MESSAGES: Record<string, string> = {
 
   user_banned:
     'This account is not able to sign in. Please contact us.',
+
+  // Not a code Supabase sends — set from `status` below, because auth-js throws
+  // AuthRetryableFetchError for 5xx and never parses a code out of the body.
+  server_error:
+    "We couldn't send that email just now. This is a problem on our end, not with your address — please try again in a few minutes, or use \u201cContinue with Google\u201d.",
 };
+
+/** A server fault, as opposed to anything about the address that was entered. */
+function isServerFault(error: CodedError): boolean {
+  if (!error || typeof error !== 'object') return false;
+  return typeof error.status === 'number' && error.status >= 500;
+}
 
 const FALLBACK =
   'That did not work. Please try again, or sign in another way.';
@@ -82,6 +93,11 @@ export function describeMagicLinkError(error: CodedError): string {
   if (error && typeof error === 'object' && error.status === 429) {
     return MESSAGES.over_email_send_rate_limit;
   }
+
+  // 5xx arrives with no code at all: auth-js throws AuthRetryableFetchError for
+  // anything in that range and returns before the body is inspected. Matching
+  // on status is the only way to recognise it.
+  if (isServerFault(error)) return MESSAGES.server_error;
 
   return FALLBACK;
 }
@@ -135,6 +151,13 @@ export function isEmailRateLimited(error: CodedError): boolean {
  * truth about them leaks nothing and saves someone waiting for an email that is
  * never going to arrive.
  *
+ * A 5xx counts too, and is matched on status rather than code. It is a fault on
+ * our side — it says nothing about the address, so surfacing it leaks nothing,
+ * and hiding it turns a broken mail configuration into a silent one. That is
+ * not hypothetical: an SMTP password Resend rejected with
+ * `535 "Authentication credentials invalid"` sent every customer the
+ * "check your email" card while nothing was being sent at all.
+ *
  * Deliberately absent: 'user_banned', which IS per-account and would leak.
  */
 const SEND_BLOCKED_CODES = new Set([
@@ -146,7 +169,7 @@ const SEND_BLOCKED_CODES = new Set([
 ]);
 
 export function isMagicLinkSendBlocked(error: CodedError): boolean {
-  return SEND_BLOCKED_CODES.has(getMagicLinkErrorCode(error));
+  return SEND_BLOCKED_CODES.has(getMagicLinkErrorCode(error)) || isServerFault(error);
 }
 
 /**

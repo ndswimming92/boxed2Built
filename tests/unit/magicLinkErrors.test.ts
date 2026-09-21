@@ -145,3 +145,39 @@ test('isKnownMagicLinkCode separates our own copy from the catch-all', () => {
   assert.equal(isKnownMagicLinkCode(null), false);
   assert.equal(isKnownMagicLinkCode(undefined), false);
 });
+
+test('a server fault is surfaced, not hidden behind the sent card', () => {
+  // The real failure this covers: an SMTP password Resend rejected with
+  // 535 "Authentication credentials invalid" surfaced as /otp -> 500, and the
+  // page told every customer to check an inbox nothing had been sent to.
+  for (const status of [500, 502, 503, 504]) {
+    assert.equal(isMagicLinkSendBlocked({ status }), true, String(status));
+  }
+
+  // A cooldown is not a block — it drives the countdown instead.
+  assert.equal(isMagicLinkSendBlocked({ status: 429 }), false);
+  assert.equal(isEmailRateLimited({ status: 500 }), false);
+});
+
+test('server-fault copy says it is our problem, not their address', () => {
+  const copy = describeMagicLinkError({ status: 500 });
+
+  assert.notEqual(copy, 'That did not work. Please try again, or sign in another way.');
+  assert.match(copy, /our end/);
+  assert.match(copy, /not with your address/);
+});
+
+test('a 5xx resolves with no code at all', () => {
+  // This is the shape auth-js actually delivers: it throws
+  // AuthRetryableFetchError for 5xx and returns before parsing a code, so
+  // matching on `code` alone is what let this through in the first place.
+  assert.equal(getMagicLinkErrorCode({ status: 503 }), '');
+  assert.equal(describeMagicLinkError({ status: 503 }), describeMagicLinkError({ status: 500 }));
+  assert.equal(isMagicLinkSendBlocked({ status: 503 }), true);
+});
+
+test('4xx below 429 is not mistaken for a server fault', () => {
+  assert.equal(isMagicLinkSendBlocked({ status: 400 }), false);
+  assert.equal(isMagicLinkSendBlocked({ status: 404 }), false);
+  assert.equal(isMagicLinkSendBlocked({ status: 499 }), false);
+});
