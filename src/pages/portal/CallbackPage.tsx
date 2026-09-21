@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,11 +9,22 @@ import { resolveNextPath } from '../../utils/portalNextPath';
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
 
 export default function PortalCallbackPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, verifyPortalEmailTokenHash } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const hasTrackedLogin = useRef(false);
+  const hasVerifiedTokenHash = useRef(false);
+
+  // Present when the Magic Link template built its own link out of
+  // {{ .TokenHash }} rather than {{ .ConfirmationURL }}. Unlike a PKCE `?code=`,
+  // this can be redeemed from any browser, so the link works wherever the
+  // customer happens to read their mail.
+  const tokenHash = searchParams.get('token_hash');
+
+  // Null until the verification resolves, so the redirect effect below can tell
+  // "still working" from "there is genuinely no session".
+  const [tokenHashError, setTokenHashError] = useState<string | null>(null);
 
   const callbackError = useMemo(() => {
     const errorDescription = searchParams.get('error_description');
@@ -31,7 +42,23 @@ export default function PortalCallbackPage() {
   const isMagicLink = searchParams.get('flow') === 'magic_link';
 
   useEffect(() => {
+    if (!tokenHash || hasVerifiedTokenHash.current) return;
+    hasVerifiedTokenHash.current = true;
+
+    void (async () => {
+      const { error } = await verifyPortalEmailTokenHash(tokenHash, searchParams.get('type') ?? 'email');
+      if (error) setTokenHashError(error.message);
+      // On success nothing happens here. Establishing the session fires
+      // SIGNED_IN, which sets `user`, and the effect below takes it from there.
+    })();
+  }, [tokenHash, searchParams, verifyPortalEmailTokenHash]);
+
+  useEffect(() => {
     if (loading || callbackError) return;
+
+    // A token hash is still being redeemed, or has just failed. Either way the
+    // absent session is not yet the dead one the branch below assumes.
+    if (tokenHash && !user && !tokenHashError) return;
 
     if (!user) {
       // A magic link that arrives without a session is almost always the PKCE
@@ -40,7 +67,9 @@ export default function PortalCallbackPage() {
       // that "session expired" sends people looking for a problem they do not
       // have.
       navigate(
-        isMagicLink ? '/portal/login?error=magic_link_failed' : '/portal/login?error=session_expired',
+        isMagicLink || tokenHash
+          ? '/portal/login?error=magic_link_failed'
+          : '/portal/login?error=session_expired',
         { replace: true },
       );
       return;
@@ -53,7 +82,7 @@ export default function PortalCallbackPage() {
 
     if (!hasTrackedLogin.current) {
       hasTrackedLogin.current = true;
-      const source: PortalLoginSource = isMagicLink ? 'magic_link' : 'oauth_callback';
+      const source: PortalLoginSource = isMagicLink || tokenHash ? 'magic_link' : 'oauth_callback';
       runPortalPostLogin(user, source);
     }
 
@@ -67,7 +96,7 @@ export default function PortalCallbackPage() {
     }
 
     navigate(resolveNextPath(searchParams.get('next'), storedPath), { replace: true });
-  }, [loading, user, callbackError, navigate, isMagicLink, searchParams]);
+  }, [loading, user, callbackError, navigate, isMagicLink, searchParams, tokenHash, tokenHashError]);
 
   if (callbackError) {
     return (

@@ -5,7 +5,7 @@ someone in. Only one of them can create an account from nothing.
 
 | Method | Creates an account? | Works cross-device? | Testable off production? |
 | --- | --- | --- | --- |
-| Email sign-in link | **Yes** | Link no, 6-digit code yes | Yes |
+| Email sign-in link | **Yes** | **Yes** (token-hash link, or the 6-digit code) | Yes |
 | Google | Yes | n/a (same tab) | Yes |
 | Passkey | **No** | n/a (same device) | No |
 | Admin invite | Yes | **Yes** | Yes |
@@ -66,18 +66,31 @@ rather than assuming 60.
 
 ### 4. Authentication → Emails → Templates → Magic Link
 
-Rebrand to match the other transactional mail: `#1e3a5f` header bar, `#2563eb`
-CTA button, 600px table layout. Copy the structure from
-`supabase/functions/send-portal-link-email/index.ts`.
+Two things the template **must** contain, and one it must **not**:
 
-Two things the template **must** keep:
+- The link built from **`{{ .RedirectTo }}` + `{{ .TokenHash }}`**, as below.
+- `{{ .Token }}` — the 6-digit code, displayed prominently.
+- **Not `{{ .ConfirmationURL }}`.** That is the default, and it is the one thing
+  that reintroduces the same-browser problem. See the next section.
 
-- `{{ .ConfirmationURL }}` — the link itself.
-- `{{ .Token }}` — **the 6-digit code, displayed prominently.** This is not
-  optional. See *The same-browser constraint* below.
+`{{ .RedirectTo }}` is the `emailRedirectTo` that `sendMagicLinkForPortal`
+passed, so it already carries `?flow=magic_link&next=…`. Appending the token
+hash to it is what preserves the customer's destination through the email.
 
-This template is dashboard state and cannot be version-controlled. Paste a copy
-of the final HTML into this file when you change it, so it is recoverable.
+```html
+<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email">Sign in</a>
+```
+
+A full template, branded to match the other transactional mail (`#1e3a5f`
+header, `#2563eb` CTA), is in `docs/templates/magic-link-email.html`. Paste it
+into the dashboard whole.
+
+This template is dashboard state and cannot be version-controlled, which is why
+that copy exists — update both together.
+
+**Do not turn on click tracking in Resend.** Any link-tracking rewrite replaces
+the URL and the token never reaches us. It is currently off for
+`boxed2built.com`; leave it that way.
 
 ### 5. Authentication → URL Configuration
 
@@ -108,30 +121,36 @@ Until that exists the job runs and the function answers 401, which shows up in
 
 ---
 
-## The same-browser constraint, and why the 6-digit code exists
+## Why the template must not use `{{ .ConfirmationURL }}`
 
-The Supabase client runs `flowType: 'pkce'` (`src/lib/supabase.ts`). When a link
-is requested, the client stores a code verifier in **that browser's**
-localStorage, and the emailed link arrives as `?code=…` which is worthless
-without it.
+The Supabase client runs `flowType: 'pkce'` (`src/lib/supabase.ts`). Under PKCE,
+`{{ .ConfirmationURL }}` produces a `?code=…` link that can only be exchanged by
+the browser holding the code verifier in its localStorage.
 
-So: **request the link on a laptop, open the email on a phone, and the link
-cannot work.** Not slowly, not with a warning — the exchange fails outright.
-That is the single most common way this feature disappoints someone, because
-reading mail on a phone is completely normal.
+So with the default template: **request the link on a laptop, open the email on
+a phone, and the link cannot work.** Not slowly, not with a warning — the
+exchange fails outright. Since reading mail on a phone is completely normal,
+that is the single most common way this feature disappoints someone.
 
-The 6-digit code has no such constraint. `verifyOtp` needs no verifier, so the
-code can be typed into the tab that asked for it regardless of where the email
-was read. It also survives corporate link scanners (Outlook Safe Links and
-similar) that prefetch URLs in email and burn the single-use token before the
-human ever clicks.
+A **token hash** has no such constraint. It is verified server-side against a
+hash Supabase already holds, so there is nothing local it depends on.
+`CallbackPage` reads `token_hash` and `type` off the URL and calls
+`verifyOtp({ token_hash, type })` — which is why the link now works wherever the
+customer happens to read their mail.
 
-This is why step 4 above insists on `{{ .Token }}`. Without it the escape hatch
-is not in the email, and the copy that points at it is a lie.
+It also survives link scanners. Outlook Safe Links and similar prefetch URLs in
+email; a `{{ .ConfirmationURL }}` is a GET straight at Supabase's verify
+endpoint, so prefetching **burns the token** and the human gets *"Token has
+expired or is invalid"*. A token hash sitting on our own page is only spent by
+the POST that `verifyOtp` makes, which a scanner fetching the HTML never runs.
 
-Admin invites are exempt: `generateLink` registers no PKCE challenge, so those
-links work in any browser. That is why invites use it rather than
-`signInWithOtp`.
+The 6-digit code stays for the cases neither of those covers — a link mangled in
+transit, a mail client that strips anchors, or someone who would simply rather
+type six digits than hunt for a button.
+
+Admin invites take a third route: `generateLink` registers no PKCE challenge, so
+those links work in any browser without the template change. That is why the
+invite function uses it rather than `signInWithOtp`.
 
 ---
 
@@ -198,7 +217,7 @@ beats guessing at what to say.
 | Login page UI and cooldown | `src/pages/portal/LoginPage.tsx` |
 | Error copy (pure, unit-tested) | `src/utils/magicLinkErrors.ts` |
 | Post-login destination (pure, unit-tested) | `src/utils/portalNextPath.ts` |
-| Landing, and telling a magic link from OAuth | `src/pages/portal/CallbackPage.tsx` |
+| Landing, token-hash redemption, telling a magic link from OAuth | `src/pages/portal/CallbackPage.tsx` |
 | Account provisioning | `auto_create_portal_customer` (SQL), via `portalPostLoginService` |
 | Admin invite | `supabase/functions/send-portal-invite-email/` + `clientService.sendPortalInvite` |
 | Welcome drip | `supabase/functions/send-portal-welcome-emails/` + hourly `cron.schedule` |
@@ -258,9 +277,11 @@ assert that the stubs match what the tests already assume. Verify those by hand:
    `sent` on the next hourly tick.
 7. `/portal/login?next=/portal/invoices` → sign in by link → land on invoices,
    not the dashboard.
-8. Request a link on a laptop, open it on a phone. It must fail with the
-   *different browser* copy, **not** "session expired". Then type the 6-digit
-   code on the laptop and confirm it signs in.
+8. Request a link on a laptop and open it **on a phone**. With the token-hash
+   template it must sign in there. If it instead fails with the *different
+   browser* copy, the template is still on `{{ .ConfirmationURL }}` — fix step 4.
+   Then check the 6-digit code path too: request a fresh link and type the code
+   on the laptop.
 9. Invite a client with existing jobs from Admin → Clients. Open that email on a
    different device — it must sign in. Their jobs are already visible.
    `/admin/portal-adoption` shows them as `invite_sent`. A second invite
