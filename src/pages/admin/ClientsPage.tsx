@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode } from 'lucide-react';
+import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode, MailCheck } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
   getClientSegmentStats,
   searchClients,
   deleteClient,
+  sendPortalInvite,
+  PortalInviteCooldownError,
   type Client,
   type ClientSegmentStats,
   calculateClientMetrics
@@ -63,6 +65,9 @@ export default function ClientsPage() {
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [clientToInvite, setClientToInvite] = useState<Client | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const { currentOrganization } = useAuth();
 
   const organizationId = currentOrganization?.id;
@@ -349,6 +354,32 @@ export default function ClientsPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+  }
+
+  async function handleConfirmInvite() {
+    if (!clientToInvite) return;
+
+    setInviting(true);
+    setInviteError(null);
+
+    try {
+      const { sentAt } = await sendPortalInvite(clientToInvite.id, clientToInvite.organization_id);
+
+      setClients((prev) =>
+        prev.map((c) => (c.id === clientToInvite.id ? { ...c, last_portal_invite_sent_at: sentAt } : c))
+      );
+      logAction({ actionType: 'UPDATE', tableName: 'clients', recordIdentifier: `portal invite: ${clientToInvite.name}` });
+      setClientToInvite(null);
+    } catch (error) {
+      if (error instanceof PortalInviteCooldownError) {
+        const hours = Math.ceil(error.remainingSeconds / 3600);
+        setInviteError(`This client was invited recently. You can send another in about ${hours} hour${hours === 1 ? '' : 's'}.`);
+      } else {
+        setInviteError(error instanceof Error ? error.message : 'Failed to send the portal invite.');
+      }
+    } finally {
+      setInviting(false);
+    }
   }
 
   function formatDate(date: string | null): string {
@@ -762,6 +793,29 @@ export default function ClientsPage() {
                       )}
                     </td>
                     <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-2">
+                        {client.last_portal_invite_sent_at && (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-medium text-sky-600"
+                            title={`Portal invite sent ${formatDate(client.last_portal_invite_sent_at)}`}
+                          >
+                            <MailCheck className="w-3.5 h-3.5" />
+                            Invited
+                          </span>
+                        )}
+                        <button
+                          onClick={() => {
+                            setClientToInvite(client);
+                            setInviteError(null);
+                          }}
+                          disabled={!client.email}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          title={client.email ? `Invite ${client.name} to the client portal` : 'No email address on file'}
+                          aria-label={`Invite ${client.name} to the client portal`}
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Invite
+                        </button>
                       <button
                         onClick={() => {
                           setClientToDelete(client);
@@ -774,6 +828,7 @@ export default function ClientsPage() {
                         <Trash2 className="w-3.5 h-3.5" />
                         Delete
                       </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -863,6 +918,76 @@ export default function ClientsPage() {
                   <>
                     <Trash2 className="w-3.5 h-3.5" />
                     Delete Client
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {clientToInvite && (
+        <Modal
+          isOpen
+          onClose={() => { if (!inviting) { setClientToInvite(null); setInviteError(null); } }}
+          title="Invite to client portal"
+          size="small"
+        >
+          <div className="space-y-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Send className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Send a portal invite?</h2>
+                {/* The address is shown because one misdirected invite is one
+                    customer seeing another customer's email. */}
+                <p className="mt-1 text-sm text-gray-600">
+                  We&rsquo;ll email <span className="font-medium text-gray-900">{clientToInvite.name}</span> a sign-in
+                  link at <span className="font-medium text-gray-900">{clientToInvite.email}</span>.
+                </p>
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 list-disc list-inside">
+                  <li>Their existing jobs, invoices and documents are linked automatically</li>
+                  <li>No password is needed &mdash; the link signs them straight in</li>
+                  <li>Another invite can&rsquo;t be sent for 24 hours</li>
+                </ul>
+                {clientToInvite.last_portal_invite_sent_at && (
+                  <p className="mt-2 text-sm text-amber-700">
+                    Last invited {formatDate(clientToInvite.last_portal_invite_sent_at)}.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {inviteError && (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {inviteError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => { setClientToInvite(null); setInviteError(null); }}
+                disabled={inviting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmInvite}
+                disabled={inviting}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {inviting ? (
+                  <>
+                    <LoadingSpinner />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    Send Invite
                   </>
                 )}
               </button>

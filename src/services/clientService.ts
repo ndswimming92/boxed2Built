@@ -33,6 +33,7 @@ export interface Client {
   referral_scan_count: number;
   referral_last_scanned_at: string | null;
   last_followup_email_sent_at: string | null;
+  last_portal_invite_sent_at: string | null;
   last_invoice_email_sent_at: string | null;
   last_quote_email_sent_at: string | null;
   created_at: string;
@@ -711,4 +712,59 @@ export async function getReferralStats(organizationId: string): Promise<{
       0
     ),
   };
+}
+
+export interface PortalInviteResult {
+  sentAt: string;
+}
+
+export class PortalInviteCooldownError extends Error {
+  readonly remainingSeconds: number;
+
+  constructor(remainingSeconds: number) {
+    super('This client was invited very recently.');
+    this.name = 'PortalInviteCooldownError';
+    this.remainingSeconds = remainingSeconds;
+  }
+}
+
+/**
+ * Emails an existing client a sign-in link for the portal.
+ *
+ * The link is minted server-side with the service role and never comes back
+ * here — the endpoint answers only with when it was sent. The 24-hour cooldown
+ * is enforced there too; the UI's copy of it is a courtesy, not the control.
+ */
+export async function sendPortalInvite(
+  clientId: string,
+  organizationId: string,
+): Promise<PortalInviteResult> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('You need to be signed in to send a portal invite.');
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-portal-invite-email`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ clientId, organizationId }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok || !payload?.success) {
+    if (payload?.error === 'cooldown') {
+      throw new PortalInviteCooldownError(Number(payload.remainingSeconds) || 0);
+    }
+
+    throw new Error(typeof payload?.error === 'string' ? payload.error : 'Failed to send the portal invite.');
+  }
+
+  return { sentAt: payload.sentAt as string };
 }
