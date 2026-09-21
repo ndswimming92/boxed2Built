@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
 import { isPasskeySupported } from '../../services/passkeyService';
 import { runPortalPostLogin } from '../../services/portalPostLoginService';
+import { getSafeNextPath } from '../../utils/portalNextPath';
 
 const PORTAL_BENEFITS = [
   'Track your project timeline and job status updates',
@@ -13,14 +14,6 @@ const PORTAL_BENEFITS = [
 ];
 
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
-
-const getSafeNextPath = (value: string | null): string => {
-  if (!value || !value.startsWith('/portal')) {
-    return '/portal/dashboard';
-  }
-
-  return value;
-};
 
 export default function PortalLoginPage() {
   const [loading, setLoading] = useState(false);

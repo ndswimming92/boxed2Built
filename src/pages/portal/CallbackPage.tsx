@@ -4,16 +4,9 @@ import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
 import { runPortalPostLogin } from '../../services/portalPostLoginService';
+import { resolveNextPath } from '../../utils/portalNextPath';
 
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
-
-const getSafeNextPath = (value: string | null): string => {
-  if (!value || !value.startsWith('/portal')) {
-    return '/portal/dashboard';
-  }
-
-  return value;
-};
 
 export default function PortalCallbackPage() {
   const { user, loading } = useAuth();
@@ -54,7 +47,7 @@ export default function PortalCallbackPage() {
       window.sessionStorage.removeItem(PORTAL_POST_LOGIN_PATH_KEY);
     }
 
-    navigate(getSafeNextPath(storedPath), { replace: true });
+    navigate(resolveNextPath(null, storedPath), { replace: true });
   }, [loading, user, callbackError, navigate]);
 
   if (callbackError) {
