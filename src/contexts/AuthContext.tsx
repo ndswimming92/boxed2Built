@@ -10,6 +10,7 @@ import {
   isUserAuthorized,
 } from '../utils/authorization';
 import { getSecureAuthRedirectUrl } from '../utils/authHardening';
+import { getSafeNextPath } from '../utils/portalNextPath';
 import { signInWithPasskey as runPasskeySignIn } from '../services/passkeyService';
 import { resetPortalPostLogin } from '../services/portalPostLoginService';
 import { describePasskeyError, isPasskeyCeremonyCancelled } from '../utils/passkeyErrors';
@@ -30,6 +31,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithGoogleForPortal: () => Promise<{ error: Error | null }>;
   signInWithGoogleForBooking: () => Promise<{ error: Error | null }>;
+  sendMagicLinkForPortal: (email: string, nextPath: string) => Promise<{ error: Error | null }>;
+  verifyPortalEmailOtp: (email: string, token: string) => Promise<{ error: Error | null; user: User | null }>;
   signInWithPasskeyForAdmin: () => Promise<{ error: Error | null }>;
   signInWithPasskeyForPortal: () => Promise<{ error: Error | null; user: User | null }>;
   getHomeRouteForUser: (authUser: User | null) => string;
@@ -56,6 +59,35 @@ const getAuthFlow = (): AuthFlow | null => {
 
 const clearAuthFlow = () => {
   localStorage.removeItem(AUTH_FLOW_KEY);
+};
+
+/**
+ * How the current sign-in was started, when knowing that later matters.
+ *
+ * localStorage rather than a module variable, unlike pendingPasskeyFlow: a
+ * passkey ceremony never leaves the page, but an emailed link is a fresh page
+ * load in a brand new tab, so nothing in memory survives to label it. This is
+ * the same reason AUTH_FLOW_KEY is stored rather than held.
+ *
+ * Cleared by whoever reads it, and by the Google and passkey entry points, so
+ * an unused link request cannot mislabel a later sign-in by another route.
+ */
+const AUTH_LOGIN_METHOD_KEY = 'authLoginMethod';
+
+type AuthLoginMethod = 'magic_link';
+
+const setAuthLoginMethod = (method: AuthLoginMethod) => {
+  localStorage.setItem(AUTH_LOGIN_METHOD_KEY, method);
+};
+
+const clearAuthLoginMethod = () => {
+  localStorage.removeItem(AUTH_LOGIN_METHOD_KEY);
+};
+
+const takeAuthLoginMethod = (): AuthLoginMethod | null => {
+  const method = localStorage.getItem(AUTH_LOGIN_METHOD_KEY);
+  clearAuthLoginMethod();
+  return method === 'magic_link' ? method : null;
 };
 
 /**
@@ -168,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // sign-in cannot leave this set and mislabel the next one.
           const passkeyFlow = pendingPasskeyFlow;
           pendingPasskeyFlow = null;
+          const loginMethod = takeAuthLoginMethod();
 
           if (authFlow === 'admin' && !isAdminUser(session.user)) {
             const authError = getAuthorizationError(session.user);
@@ -227,6 +260,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               status: 'success',
               metadata: { provider: 'passkey', flow: passkeyFlow },
             });
+          } else if (loginMethod === 'magic_link') {
+            await logAction({
+              actionType: 'LOGIN',
+              tableName: 'auth',
+              recordIdentifier: session.user.email || 'magic-link',
+              status: 'success',
+              metadata: { provider: 'magic_link', flow: authFlow || 'portal' },
+            });
           } else if (provider === 'google') {
             await logAction({
               actionType: 'LOGIN',
@@ -256,6 +297,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsPlatformAdmin(false);
           localStorage.removeItem('currentOrganizationId');
           pendingPasskeyFlow = null;
+          clearAuthLoginMethod();
           // A passkey sign-in never reloads the page, so the post-login guard
           // would otherwise still consider this user "seen" if they signed
           // straight back in and would skip the linking and funnel work.
@@ -379,6 +421,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const signInWithPasskeyForPortal = async () => {
     setAuthFlow('portal');
+    clearAuthLoginMethod();
     pendingPasskeyFlow = 'portal';
 
     try {
@@ -484,6 +527,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogleForPortal = async () => {
     try {
       setAuthFlow('portal');
+      clearAuthLoginMethod();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -511,6 +555,118 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorMessage: (error as Error).message,
       });
       return { error: error as Error };
+    }
+  };
+
+  /**
+   * Emails a sign-in link that doubles as a sign-up: shouldCreateUser mints the
+   * auth user when the address is new, and runPortalPostLogin provisions the
+   * customer record on arrival, exactly as it does after Google.
+   *
+   * shouldCreateUser is also what keeps this from enumerating accounts. With it
+   * false, Supabase answers a known address with success and an unknown one
+   * with 'otp_disabled' — a free oracle for testing whether someone is a
+   * customer. With it true both answers are identical.
+   *
+   * `next` rides in the redirect URL rather than sessionStorage because the
+   * link opens in a new tab, where per-tab storage is empty. Re-validated here
+   * as well as at the callback: this value ends up in an email, so it is worth
+   * refusing to mail a bad one in the first place.
+   */
+  const sendMagicLinkForPortal = async (email: string, nextPath: string) => {
+    try {
+      setAuthFlow('portal');
+      setAuthLoginMethod('magic_link');
+
+      // new URL(...) rather than string concatenation: when
+      // VITE_PORTAL_OAUTH_REDIRECT_URI is set, getSecureAuthRedirectUrl returns
+      // it verbatim and ignores the path argument, so the shape of what comes
+      // back is not fixed.
+      const redirectUrl = new URL(getOAuthRedirectUri('portal'));
+      redirectUrl.searchParams.set('flow', 'magic_link');
+      redirectUrl.searchParams.set('next', getSafeNextPath(nextPath));
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectUrl.toString(),
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        clearAuthLoginMethod();
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'magic-link-portal',
+          status: 'error',
+          errorMessage: error.message,
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      clearAuthLoginMethod();
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: 'magic-link-portal',
+        status: 'error',
+        errorMessage: (error as Error).message,
+      });
+      return { error: error as Error };
+    }
+  };
+
+  /**
+   * The six-digit code from the same email, verified in the tab that asked for
+   * it. This exists because the client runs flowType: 'pkce' — the emailed link
+   * can only be completed in the browser holding the code verifier, so someone
+   * who requests on a laptop and reads mail on a phone cannot use the link at
+   * all. Typing the code has no such constraint.
+   *
+   * Returns the user rather than leaving the caller to read context, for the
+   * same reason signInWithPasskeyForPortal does: the SIGNED_IN handler sets
+   * `user` only after an awaited loadOrganizations, so context still reads null
+   * when this resolves.
+   */
+  const verifyPortalEmailOtp = async (email: string, token: string) => {
+    setAuthFlow('portal');
+    setAuthLoginMethod('magic_link');
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+
+      if (error) {
+        clearAuthLoginMethod();
+        await logAction({
+          actionType: 'LOGIN',
+          tableName: 'auth',
+          recordIdentifier: 'magic-link-otp-portal',
+          status: 'error',
+          errorMessage: error.message,
+        });
+        return { error: error as Error, user: null };
+      }
+
+      // Mirrors the portal rule in the SIGNED_IN handler and in the passkey
+      // path: admins are allowed through and the route guard sends them on.
+      if (data?.user && !isClientAuthorized(data.user) && !isAdminUser(data.user)) {
+        return { error: new Error('This account does not have portal access.'), user: null };
+      }
+
+      return { error: null, user: data?.user ?? null };
+    } catch (error) {
+      clearAuthLoginMethod();
+      await logAction({
+        actionType: 'LOGIN',
+        tableName: 'auth',
+        recordIdentifier: 'magic-link-otp-portal',
+        status: 'error',
+        errorMessage: (error as Error).message,
+      });
+      return { error: error as Error, user: null };
     }
   };
 
@@ -571,6 +727,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signInWithGoogleForPortal,
     signInWithGoogleForBooking,
+    sendMagicLinkForPortal,
+    verifyPortalEmailOtp,
     signInWithPasskeyForAdmin,
     signInWithPasskeyForPortal,
     getHomeRouteForUser,

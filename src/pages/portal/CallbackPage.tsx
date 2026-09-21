@@ -3,17 +3,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageLoader from '../../components/ui/PageLoader';
 import { useAuth } from '../../contexts/AuthContext';
 import { isAdminUser } from '../../utils/authorization';
-import { runPortalPostLogin } from '../../services/portalPostLoginService';
+import { runPortalPostLogin, type PortalLoginSource } from '../../services/portalPostLoginService';
+import { resolveNextPath } from '../../utils/portalNextPath';
 
 const PORTAL_POST_LOGIN_PATH_KEY = 'portalPostLoginPath';
-
-const getSafeNextPath = (value: string | null): string => {
-  if (!value || !value.startsWith('/portal')) {
-    return '/portal/dashboard';
-  }
-
-  return value;
-};
 
 export default function PortalCallbackPage() {
   const { user, loading } = useAuth();
@@ -31,11 +24,25 @@ export default function PortalCallbackPage() {
     return '';
   }, [searchParams]);
 
+  // Set by sendMagicLinkForPortal on the redirect it mails. There is no way to
+  // read this off the session instead: app_metadata.provider reports the
+  // provider the account was created with and never changes, so a customer who
+  // signed up with Google and later used a link still reports 'google'.
+  const isMagicLink = searchParams.get('flow') === 'magic_link';
+
   useEffect(() => {
     if (loading || callbackError) return;
 
     if (!user) {
-      navigate('/portal/login?error=session_expired', { replace: true });
+      // A magic link that arrives without a session is almost always the PKCE
+      // case: the code verifier lives in the browser that asked for the link, so
+      // opening the mail on another device cannot complete the exchange. Calling
+      // that "session expired" sends people looking for a problem they do not
+      // have.
+      navigate(
+        isMagicLink ? '/portal/login?error=magic_link_failed' : '/portal/login?error=session_expired',
+        { replace: true },
+      );
       return;
     }
 
@@ -46,16 +53,21 @@ export default function PortalCallbackPage() {
 
     if (!hasTrackedLogin.current) {
       hasTrackedLogin.current = true;
-      runPortalPostLogin(user, 'oauth_callback');
+      const source: PortalLoginSource = isMagicLink ? 'magic_link' : 'oauth_callback';
+      runPortalPostLogin(user, source);
     }
 
+    // The URL wins over storage. sessionStorage is per-tab and a mail client
+    // always opens a new tab, so the value LoginPage stored is guaranteed
+    // missing on every magic-link landing; Google still uses it because it
+    // redirects the same tab.
     const storedPath = window.sessionStorage.getItem(PORTAL_POST_LOGIN_PATH_KEY);
     if (storedPath) {
       window.sessionStorage.removeItem(PORTAL_POST_LOGIN_PATH_KEY);
     }
 
-    navigate(getSafeNextPath(storedPath), { replace: true });
-  }, [loading, user, callbackError, navigate]);
+    navigate(resolveNextPath(searchParams.get('next'), storedPath), { replace: true });
+  }, [loading, user, callbackError, navigate, isMagicLink, searchParams]);
 
   if (callbackError) {
     return (

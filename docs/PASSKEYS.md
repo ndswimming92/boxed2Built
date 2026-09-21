@@ -5,8 +5,12 @@ credential held by your phone, laptop or password manager and unlocked with a fi
 face or device PIN. Passkeys cannot be phished: the browser will only release one to the
 real boxed2built.com, so a lookalike site gets nothing.
 
-Passkeys are **additive**. Google sign-in and the admin email+password form still work
-exactly as before, and they are the recovery path if every enrolled device is lost.
+Passkeys are **additive**. Google sign-in, customer email sign-in links and the admin
+email+password form all still work exactly as before, and they are the recovery path if
+every enrolled device is lost.
+
+See `PORTAL_SIGN_IN.md` for the customer side: what each method can do, and the one thing
+passkeys cannot.
 
 ---
 
@@ -63,7 +67,8 @@ This is expected, not a bug. Consequences:
 
 A passkey can only be added to an account that is already signed in — there is no way to
 create an account from a passkey alone. So the first sign-in on a new device is always
-Google or, for admin, email+password.
+something else: for a customer, an emailed sign-in link or Google; for admin, Google or
+email+password.
 
 - **Admin:** sign in, then **System & Tools → Security → Add a passkey**
 - **Customer:** sign in, then **My Profile → Passkeys → Add a passkey**

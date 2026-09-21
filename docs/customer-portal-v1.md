@@ -6,18 +6,22 @@ Customer Portal V1 provides authenticated customers with a minimal, secure self-
 ## V1 Pages and Allowed Data Fields
 
 ### 1) Login
-**Purpose:** Authenticate an existing customer user.
+**Purpose:** Authenticate a customer, or create their account if they do not have one.
+
+> **Updated 2026-09-21.** The password design below was specified for V1 and never
+> shipped. The portal has no customer passwords at all. Sign-in is an emailed link plus a
+> 6-digit code, Google, or a passkey; the emailed link doubles as sign-up. See
+> `PORTAL_SIGN_IN.md` for the current design.
 
 **Allowed fields shown/collected:**
 - Email address
-- Password
-- "Remember me" (optional)
-- "Forgot password" link
+- 6-digit code from the sign-in email
 - Generic authentication error message (no user-enumeration details)
 
 **Explicitly excluded:**
 - Any job, financial, or profile data before authentication
 - Internal user IDs or system diagnostics
+- Any indication of whether the address entered already has an account
 
 ### 2) Dashboard
 **Purpose:** High-level summary of the customer's account and jobs.
@@ -123,9 +127,14 @@ Users may only access records where record ownership maps to their authenticated
 - Browser back-button after logout must not restore authenticated data (no-cache headers on protected pages).
 
 ### Account recovery path
-- "Forgot password" initiates email-based password reset with single-use, time-limited token (15 minutes).
-- Reset responses must be generic to prevent account enumeration.
-- Successful password reset invalidates existing active sessions.
+There is nothing to recover: no customer password exists. Requesting a fresh sign-in link
+is the recovery path, and it is the same flow as signing in.
+
+- Sign-in links are single-use and time-limited (15 minutes).
+- Responses are generic to prevent account enumeration — the same card is shown whether or
+  not the address has an account.
+- A link is only usable in the browser that requested it (PKCE). The 6-digit code in the
+  same email is the cross-device path.
 
 ## Definition of Done (V1)
 - [ ] All six V1 pages implemented: Login, Dashboard, Job History, Job Detail, Profile, Support Contact.
