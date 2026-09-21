@@ -106,17 +106,30 @@ the URL and the token never reaches us. It is currently off for
 
 ### 5. Authentication → URL Configuration
 
-- **Site URL**: `https://www.boxed2built.com`
+- **Site URL**: `https://boxed2built.com`
+
+  The apex, not `www`. That is the canonical domain everywhere else —
+  `src/constants/serviceLocations.ts` exports it as `SITE_URL`, and the SEO
+  schema uses it. An earlier version of this file said `www` and was wrong.
+
 - **Redirect URLs** must include:
-  - `https://www.boxed2built.com/portal/callback**`
-  - `https://boxed2built.com/portal/callback**`
-  - `http://127.0.0.1:5173/portal/callback**` (local testing)
+  - `https://boxed2built.com/**`
+  - `https://www.boxed2built.com/**`
+  - `http://127.0.0.1:5173/**` (local testing)
   - your deploy-preview pattern, if you want previews to work
 
 The **double** asterisk matters. Supabase's globs treat `/` as a separator, so
-a single `*` will not match a `redirect_to` carrying `?next=/portal/jobs`. A
-`redirect_to` that matches nothing does not error — it silently falls back to
-Site URL, which presents as "the link did nothing".
+a single `*` will not match a `redirect_to` carrying `?next=/portal/jobs`.
+
+**Include `www` even though the apex is canonical.** A `redirect_to` that
+matches nothing does not error — Supabase silently substitutes Site URL, so the
+customer is signed in but lands on the marketing homepage instead of their
+portal, with nothing to explain it. That check happens before any HTTP redirect,
+so a Netlify `www` → apex rule does not save you: Supabase never sees it.
+
+Check these entries character by character. `boxedtobuilt.com` is a different
+domain from `boxed2built.com`, and an allowlist full of near-misses looks
+correct at a glance while matching nothing.
 
 ### 6. One-time Vault secret for the welcome-email cron
 

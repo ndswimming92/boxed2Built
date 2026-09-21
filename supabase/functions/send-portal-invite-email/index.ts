@@ -16,7 +16,7 @@ const FROM_EMAIL = 'team@boxed2built.com';
 
 // Built here on a fixed origin and never taken from the request body, so a
 // caller cannot make the business's sending domain mail an arbitrary URL.
-const APP_URL = 'https://www.boxed2built.com';
+const APP_URL = 'https://boxed2built.com';
 
 // An invite is not a nudge. Ten minutes is right for a follow-up someone asked
 // for twice; a second portal invite the same day reads as spam to the customer.
