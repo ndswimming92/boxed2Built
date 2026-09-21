@@ -328,11 +328,22 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     }
   }
 
-  async function handleUpdatePreferences() {
+  /**
+   * Takes the new value rather than reading `emailOptIn`, because the caller
+   * sets that in the same click: a state update is not visible to the handler
+   * queued alongside it, so reading it here persisted the pre-toggle value —
+   * the opposite of what the switch had just moved to.
+   *
+   * On failure the switch is put back, so it cannot sit showing a preference
+   * that was never saved. That matters more now that a customer's own portal
+   * opt-out writes this same flag.
+   */
+  async function handleUpdatePreferences(nextOptIn: boolean) {
     try {
-      await updateMarketingPreferences(currentClient.id, emailOptIn);
+      await updateMarketingPreferences(currentClient.id, nextOptIn);
     } catch (error) {
       console.error('Error updating preferences:', error);
+      setEmailOptIn(!nextOptIn);
     }
   }
 
@@ -1511,8 +1522,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               </div>
               <button
                 onClick={() => {
-                  setEmailOptIn(!emailOptIn);
-                  handleUpdatePreferences();
+                  const nextOptIn = !emailOptIn;
+                  setEmailOptIn(nextOptIn);
+                  handleUpdatePreferences(nextOptIn);
                 }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   emailOptIn ? 'bg-blue-600' : 'bg-gray-200'
