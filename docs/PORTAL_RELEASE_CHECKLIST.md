@@ -37,6 +37,18 @@ Use this checklist before rolling out portal access in production.
 - [ ] Confirm `portal_welcome_email_queue` drains on the hourly cron and opt-outs are
       skipped rather than mailed.
 
+## 2c) Apply the migrations
+
+Migrations do **not** deploy automatically. The Supabase GitHub integration ships
+edge functions on merge, but cannot run migrations without a `supabase/config.toml`,
+which this repo does not have. A merge therefore deploys code and functions while
+leaving the schema behind, and nothing warns you.
+
+- [ ] After merging, run `list_migrations` (or check the dashboard) and confirm every
+      migration file in `supabase/migrations/` is applied.
+- [ ] Apply any that are missing, in filename order.
+- [ ] Re-run the security and performance advisors afterwards and confirm no new findings.
+
 ## 3) Migration validation in staging (production-like data subset)
 
 - [ ] Run pending schema/policy migrations in staging using a sanitized production-like dataset.
