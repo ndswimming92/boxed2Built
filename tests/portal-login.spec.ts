@@ -154,6 +154,24 @@ test('a disabled provider is surfaced rather than hidden behind the sent card', 
   await expect(page.getByRole('heading', { name: 'Check your email' })).toBeHidden();
 });
 
+test('a server fault is surfaced rather than hidden behind the sent card', async ({ page }) => {
+  // The regression this guards is one that reached production: an SMTP password
+  // Resend rejected with 535 surfaced here as /otp -> 500, and the page told
+  // every customer to check an inbox nothing had been sent to. A 5xx says
+  // nothing about the address, so showing it leaks nothing.
+  await stubAuth(page, {
+    status: 500,
+    body: { code: 'unexpected_failure', error_code: 'unexpected_failure', message: 'Error sending magic link' },
+  });
+  await page.goto(HARNESS);
+
+  await page.getByLabel('Email address').fill('someone@example.com');
+  await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
+
+  await expect(page.getByRole('alert')).toContainText('our end');
+  await expect(page.getByRole('heading', { name: 'Check your email' })).toBeHidden();
+});
+
 test('prefills the address an invite deep-links', async ({ page }) => {
   await stubAuth(page);
   await page.goto(`${HARNESS}?email=invited%40example.com`);
