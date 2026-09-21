@@ -58,11 +58,23 @@ Raise **"Rate limit for sending emails"** from its default once custom SMTP is
 on — it cannot be edited before that. Check the current number in the dashboard
 rather than trusting any written here; it has changed over time.
 
-Separately, Supabase enforces a per-address cooldown of roughly 60 seconds and
-answers a request inside it with HTTP 429 and *"For security purposes, you can
-only request this after N seconds."* That one is not configurable. The login
-page parses N out of that message and counts down from the server's number
-rather than assuming 60.
+### 3b. Authentication → Emails → SMTP Settings → **Minimum interval per user**
+
+**Set this to 60 seconds.** It is the per-address cooldown: request a link for
+an address inside the window and Supabase answers HTTP 429 with *"For security
+purposes, you can only request this after N seconds."*
+
+This is the throttle that stops the login form being used to flood a stranger's
+inbox. Anyone can type any address into it — that is the nature of a sign-in
+form — so the only thing standing between it and a mail-bomb is this number. At
+1 second there is effectively no limit, and the damage lands on this domain's
+sending reputation, not the attacker's.
+
+The login page's own 60-second countdown is **not** a substitute. It constrains
+someone using the page; it does nothing about a script calling the API directly.
+It does read the server's number out of the 429 message and count down from
+that, rather than assuming 60, so raising or lowering this stays in sync with
+what customers see.
 
 ### 4. Authentication → Emails → Templates → Magic Link
 
