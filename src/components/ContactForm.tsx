@@ -14,6 +14,7 @@ import {
 } from '../services/referralQRService';
 import type { CouponLookupResult } from '../types/coupon';
 import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
+import AddToWalletButton from './AddToWalletButton';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
 import ProgressBar from './ui/ProgressBar';
@@ -1342,11 +1343,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
               <p className="text-xs text-gray-500 mt-1">Checking code…</p>
             )}
             {appliedCoupon && !couponChecking && (
-              <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
-                <CheckCircle size={12} />
-                {appliedCoupon.code} applied — {describeDiscount(appliedCoupon)}
-                {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
-              </p>
+              <>
+                <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
+                  <CheckCircle size={12} />
+                  {appliedCoupon.code} applied — {describeDiscount(appliedCoupon)}
+                  {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
+                </p>
+                {/* Renders only on Apple devices — see AddToWalletButton. */}
+                <AddToWalletButton code={appliedCoupon.code} className="mt-2" />
+              </>
             )}
             {prefilledReferral && !appliedCoupon && !couponChecking && (
               <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">

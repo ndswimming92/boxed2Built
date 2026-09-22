@@ -78,6 +78,17 @@ export function describeDuration(startsAt: string, endsAt: string): string {
   return `${days} day${days === 1 ? '' : 's'}`;
 }
 
+/**
+ * "Tuesday, September 30" — the last day a customer can actually use the code.
+ *
+ * Exported so the Wallet pass and the reminder email cannot disagree about the
+ * deadline: `ends_at` is the midnight *after* the last valid day, and getting
+ * that off by one is the single easiest mistake to make with this column.
+ */
+export function describeValidThrough(endsAt: string): string {
+  return formatDate(endsAt, true);
+}
+
 /** The quote form with the code already filled in and applied. */
 export function couponShareUrl(code: string, siteUrl: string): string {
   return `${siteUrl.replace(/\/+$/, '')}/contact?coupon=${encodeURIComponent(code)}`;

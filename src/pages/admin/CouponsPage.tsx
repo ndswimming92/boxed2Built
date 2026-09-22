@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import AddToWalletButton from '../../components/AddToWalletButton';
 import {
   Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon,
   Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Facebook, Clock, Mail,
@@ -867,6 +868,9 @@ export default function CouponsPage() {
                       <Copy className="w-4 h-4" />
                       {copiedId === coupon.id ? 'Copied' : 'Copy'}
                     </button>
+                    {/* Always shown for admins, unlike the customer-facing
+                        button, so the pass can be checked from any machine. */}
+                    <AddToWalletButton code={coupon.code} variant="admin" />
                     <button
                       onClick={() => copy(`${coupon.id}-link`, shareLink(coupon.code), 'Link')}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"

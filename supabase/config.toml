@@ -42,6 +42,12 @@ verify_jwt = false
 [functions.get-shop-order]
 verify_jwt = false
 
+# A Facebook promo link opens this directly in the browser, with no session.
+# Its own protection is lookup_coupon_by_code, which is IP-throttled and only
+# returns coupons that are active and in-window.
+[functions.generate-coupon-pass]
+verify_jwt = false
+
 [functions.redeem-gift-card]
 verify_jwt = false
 
