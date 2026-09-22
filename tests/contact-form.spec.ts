@@ -370,3 +370,76 @@ test('the referral code a scanned token supplies reaches the lead', async ({ pag
   // introduced this client.
   expect(backend.inquiries[0]).toMatchObject({ referral_code_used: 'B2B-ADRIA-4F7D' });
 });
+
+/**
+ * Whether the close button is the element that would actually receive a click
+ * at its own centre, sampled across several frames.
+ *
+ * The bounce animation on the success tick made this intermittent rather than
+ * constant, so a single reading can pass over a button nobody can click.
+ */
+async function framesWhereCloseIsClickable(page: Page, samples = 6) {
+  let reachable = 0;
+  for (let i = 0; i < samples; i++) {
+    reachable += await page.evaluate(() => {
+      const btn = document.querySelector('[aria-label="Close modal"]');
+      if (!btn) return 0;
+      const r = btn.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return hit === btn || btn.contains(hit) ? 1 : 0;
+    });
+    await page.waitForTimeout(80);
+  }
+  return reachable;
+}
+
+/**
+ * The success modal is the last thing a paying customer sees, and its only
+ * dismiss control other than Escape is the × in the corner.
+ *
+ * It broke once because the × was absolutely positioned with no stacking
+ * order of its own, while the tick above it animates on `transform` — which
+ * makes that full-width block a stacking context painted over the button. The
+ * × stayed perfectly visible and stopped responding to the pointer, leaving
+ * the customer with a modal they could not close.
+ *
+ * Hence the hit test rather than a plain click: `click()` retries until
+ * something lands, so an intermittently covered button can still satisfy it.
+ * This asserts the button is what the pointer reaches on every frame, both
+ * before and after the body scrolls.
+ */
+test('the customer can always close the confirmation modal with the corner X', async ({ page }) => {
+  await stubBackend(page);
+  await openForm(page);
+  await fillEverything(page);
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  const close = page.getByRole('button', { name: 'Close modal' });
+  await expect(close).toBeVisible();
+
+  // Nothing in the modal body may cover the button.
+  expect(await framesWhereCloseIsClickable(page)).toBe(6);
+
+  // A comfortable target, not a sliver of one.
+  const box = (await close.boundingBox())!;
+  expect(box.width).toBeGreaterThanOrEqual(36);
+  expect(box.height).toBeGreaterThanOrEqual(36);
+
+  // The summary is longer than the modal, so the body scrolls. The button has
+  // to stay put and stay reachable, or a customer who read to the bottom has
+  // to scroll back up to find a way out.
+  await page.mouse.move(box.x - 200, box.y + 300);
+  await page.mouse.wheel(0, 600);
+  await page.waitForTimeout(200);
+
+  const scrolled = (await close.boundingBox())!;
+  expect(Math.abs(scrolled.y - box.y)).toBeLessThan(1);
+  expect(Math.abs(scrolled.x - box.x)).toBeLessThan(1);
+  expect(await framesWhereCloseIsClickable(page)).toBe(6);
+
+  // And it closes the modal.
+  await close.click();
+  await expect(confirmation(page)).toHaveCount(0);
+});

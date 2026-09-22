@@ -110,7 +110,7 @@ const Modal: React.FC<ModalProps> = ({
     >
       <div
         ref={modalRef}
-        className={`bg-white rounded-t-lg sm:rounded-lg ${sizeClasses[size]} w-full p-6 relative overflow-y-auto max-h-dvh sm:max-h-[90vh] shadow-2xl`}
+        className={`bg-white rounded-t-lg sm:rounded-lg ${sizeClasses[size]} w-full relative flex flex-col max-h-dvh sm:max-h-[90vh] shadow-2xl`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
@@ -118,9 +118,12 @@ const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Sits above the scrolling body so modal content can never cover the
+            hit area, and outside it so it stays put when the body scrolls. */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="absolute top-3 right-3 z-10 text-gray-500 hover:text-black text-xl w-9 h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Close modal"
         >
           &times;
@@ -133,7 +136,9 @@ const Modal: React.FC<ModalProps> = ({
           <p id="modal-description" className="sr-only">{description}</p>
         )}
 
-        {children}
+        <div className="min-h-0 overflow-y-auto p-6">
+          {children}
+        </div>
       </div>
     </div>
   );
