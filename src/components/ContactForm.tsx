@@ -1307,7 +1307,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
               id="referralCode"
               name="referralCode"
               type="text"
-              placeholder="e.g. WELCOME20 or B2B-JONES-4X2"
+              placeholder="Referral or Coupon Code"
               className={getInputClasses('referralCode')}
               autoCapitalize="characters"
               autoCorrect="off"
