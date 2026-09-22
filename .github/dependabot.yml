@@ -1,0 +1,40 @@
+# .github/dependabot.yml
+# Keeps dependencies current with low PR noise, and plays nicely with your
+# dependabot-auto-merge.yml (which auto-merges patch + minor updates once checks pass).
+
+version: 2
+updates:
+  # ── JavaScript / npm dependencies ────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Chicago"
+    open-pull-requests-limit: 10
+    groups:
+      # Batch all patch + minor bumps into ONE weekly PR.
+      # These are the ones your auto-merge workflow lets through.
+      npm-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Major version bumps are intentionally NOT grouped, so each one
+    # arrives as its own PR and waits for you to review it.
+
+  # ── GitHub Actions used in your workflows ────────────────────────
+  # Keeps things like dependabot/fetch-metadata and actions/checkout current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Chicago"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
