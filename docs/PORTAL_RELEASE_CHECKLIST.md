@@ -39,14 +39,19 @@ Use this checklist before rolling out portal access in production.
 
 ## 2c) Apply the migrations
 
-Migrations do **not** deploy automatically. The Supabase GitHub integration ships
-edge functions on merge, but cannot run migrations without a `supabase/config.toml`,
-which this repo does not have. A merge therefore deploys code and functions while
-leaving the schema behind, and nothing warns you.
+Migrations do **not** deploy automatically, and adding `supabase/config.toml`
+did not change that. See `docs/DEPLOYMENT.md` for the full picture; the short
+version is that local migration filenames and the remote `schema_migrations`
+versions have drifted apart (about 80 local-only and 58 remote-only versions,
+largely the same migrations stamped differently by hand-applying), so a
+`supabase db push` would try to re-run migrations that are already applied.
+A merge therefore deploys code and edge functions while leaving the schema
+behind, and nothing warns you.
 
 - [ ] After merging, run `list_migrations` (or check the dashboard) and confirm every
       migration file in `supabase/migrations/` is applied.
 - [ ] Apply any that are missing, in filename order.
+- [ ] Note in the PR which migrations you applied by hand, so nobody applies them twice.
 - [ ] Re-run the security and performance advisors afterwards and confirm no new findings.
 
 ## 3) Migration validation in staging (production-like data subset)

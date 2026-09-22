@@ -1,0 +1,78 @@
+# Supabase CLI project config.
+#
+# This file exists for one reason above all: `supabase functions deploy` reads
+# per-function `verify_jwt` from here, and WITHOUT IT THE CLI DEFAULTS EVERY
+# FUNCTION TO verify_jwt = true.
+#
+# Eighteen of this project's functions run with verify_jwt = false on purpose —
+# public webhooks (Stripe, Resend, gift cards), the anonymous contact form, the
+# OAuth callbacks, the calendar feed. Deploying them with JWT verification on
+# would reject every real caller: the contact form would stop taking leads and
+# Stripe would start failing its webhooks. The values below were read back from
+# production (`list_edge_functions`) on 21 September 2026 and match it exactly.
+#
+# So: when adding a function that must be callable without a signed-in user,
+# add it here in the same breath. A missing entry silently means `true`.
+#
+# Everything not listed defaults to verify_jwt = true, which is the safe default
+# and what the other ~33 functions already use.
+
+project_id = "nlqzjzxkqteihffptkah"
+
+# ── Public webhooks: called by external services with their own signatures ───
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.resend-webhook]
+verify_jwt = false
+
+[functions.gift-card-webhook]
+verify_jwt = false
+
+# ── Anonymous site traffic: no session exists at call time ──────────────────
+[functions.send-form-email]
+verify_jwt = false
+
+[functions.api-v1]
+verify_jwt = false
+
+[functions.job-calendar-feed]
+verify_jwt = false
+
+[functions.get-shop-order]
+verify_jwt = false
+
+[functions.redeem-gift-card]
+verify_jwt = false
+
+# ── OAuth callbacks: the provider redirects the browser here, no bearer ─────
+[functions.google-business-oauth-callback]
+verify_jwt = false
+
+[functions.facebook-oauth-callback]
+verify_jwt = false
+
+# ── Internal / cron callers presenting the service role key directly ────────
+[functions.reconcile-stripe-payments]
+verify_jwt = false
+
+[functions.send-portal-link-email]
+verify_jwt = false
+
+[functions.send-estimate-follow-up-email]
+verify_jwt = false
+
+[functions.send-followup-email]
+verify_jwt = false
+
+[functions.send-invoice-email]
+verify_jwt = false
+
+[functions.send-quote-email]
+verify_jwt = false
+
+[functions.publish-gallery-photo]
+verify_jwt = false
+
+[functions.check-social-post-status]
+verify_jwt = false

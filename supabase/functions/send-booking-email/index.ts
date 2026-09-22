@@ -318,22 +318,35 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (event === 'created') {
-      const ownerInbox = settings?.notify_email?.trim() || business?.email?.trim() || FROM_EMAIL;
+      // Deliberately does NOT fall back to FROM_EMAIL. That address is a
+      // send-only identity, and falling back to it once meant booking alerts
+      // would have gone to a mailbox nobody reads — the same failure that cost
+      // send-form-email eleven lead notifications. If no real inbox is
+      // configured, say so in the logs rather than mail into a void; the
+      // customer confirmation below still goes out either way.
+      const ownerInbox = settings?.notify_email?.trim() || business?.email?.trim() || '';
 
-      await sendEmail({
-        from,
-        to: [ownerInbox],
-        subject: `New booking ${booking.status === 'pending' ? 'request' : ''}: ${booking.customer_name} — ${when}`.replace(/\s+/g, ' '),
-        html: wrap(
-          booking.status === 'pending' ? 'A customer is holding a slot' : 'A customer booked a slot',
-          booking.status === 'pending'
-            ? 'It is held until you confirm or decline it.'
-            : 'It is already on your Jobs calendar.',
-          bookingSummaryHtml(booking),
-          `Open ${SITE_URL}/admin/bookings to act on it.`,
-        ),
-        reply_to: booking.customer_email,
-      });
+      if (!ownerInbox) {
+        console.error(
+          'No owner inbox configured for business', booking.business_id,
+          '- set booking_settings.notify_email or business_info.email. Owner alert skipped.',
+        );
+      } else {
+        await sendEmail({
+          from,
+          to: [ownerInbox],
+          subject: `New booking ${booking.status === 'pending' ? 'request' : ''}: ${booking.customer_name} — ${when}`.replace(/\s+/g, ' '),
+          html: wrap(
+            booking.status === 'pending' ? 'A customer is holding a slot' : 'A customer booked a slot',
+            booking.status === 'pending'
+              ? 'It is held until you confirm or decline it.'
+              : 'It is already on your Jobs calendar.',
+            bookingSummaryHtml(booking),
+            `Open ${SITE_URL}/admin/bookings to act on it.`,
+          ),
+          reply_to: booking.customer_email,
+        });
+      }
 
       await sendEmail({
         from,
@@ -365,7 +378,10 @@ Deno.serve(async (req: Request) => {
             : undefined,
       });
 
-      return json({ success: true, notified: [ownerInbox, booking.customer_email] });
+      return json({
+        success: true,
+        notified: [ownerInbox, booking.customer_email].filter(Boolean),
+      });
     }
 
     if (event === 'confirmed') {
