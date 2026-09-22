@@ -145,3 +145,15 @@ for = "/portal/*"
 
 [headers.values]
 X-Robots-Tag = "noindex, nofollow"
+
+# Apple Pay domain verification. Stripe checks this file over HTTPS before it
+# will render an Apple Pay button in the Express Checkout element on the pay
+# page. It has no extension, so pin the type rather than let Netlify guess, and
+# keep it out of the index. Absent the file the pay page still works — the
+# wallet button simply never appears. See docs/apple-pay.md.
+[[headers]]
+for = "/.well-known/apple-developer-merchantid-domain-association"
+
+[headers.values]
+Content-Type = "text/plain"
+X-Robots-Tag = "noindex, nofollow"

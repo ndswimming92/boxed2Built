@@ -600,6 +600,9 @@ export type Invoice = {
   late_fee_charged: number;
   sent_at: string | null;
   paid_at: string | null;
+  // Secret half of the public payment URL: /pay/:invoiceId/:paymentToken.
+  // A link built without it does not match the route and 404s.
+  payment_access_token: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

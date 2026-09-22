@@ -180,7 +180,12 @@ ${invoice.notes}` : ''}`,
   };
 
   const handleCopyPaymentLink = (invoice: Invoice) => {
-    const url = `${window.location.origin}/pay/${invoice.id}`;
+    if (!invoice.payment_access_token) {
+      showToast({ type: 'error', message: 'This invoice has no payment link yet.' });
+      return;
+    }
+
+    const url = `${window.location.origin}/pay/${invoice.id}/${invoice.payment_access_token}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopiedLinkId(invoice.id);
       showToast({ type: 'success', message: 'Payment link copied to clipboard!' });

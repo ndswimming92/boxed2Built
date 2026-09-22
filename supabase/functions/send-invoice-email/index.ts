@@ -301,7 +301,8 @@ export function buildHtml(
                     <div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#15803D;">${escapeHtml(amountLabel(invoice.invoice_type))}</div>
                     <div style="margin:6px 0 18px 0;font-size:42px;font-weight:800;color:#0E2748;letter-spacing:-0.02em;line-height:1;">${headlineStr}</div>${payNote}
                     <a href="${payUrl}" style="display:inline-block;background:#15803D;color:#FFFFFF;font-size:16px;font-weight:700;padding:15px 42px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px -4px rgba(21,128,61,0.5);">Pay Now &rarr;</a>
-                    <div style="margin-top:14px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>
+                    <div style="margin-top:14px;font-size:13px;color:#374151;">Pay with Apple&nbsp;Pay, Google&nbsp;Pay, or any major card.</div>
+                    <div style="margin-top:8px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>
                   </td>
                 </tr>
               </table>
