@@ -117,6 +117,12 @@ export default function PortalInvoicesPage() {
         </div>
       ) : null}
 
+      {!loading && !error && summary.unpaidCount > 0 ? (
+        <p className="mb-4 text-sm text-slate-600">
+          Pay with Apple&nbsp;Pay, Google&nbsp;Pay, or any major card.
+        </p>
+      ) : null}
+
       {!loading && !error && invoices.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">No invoices are available yet.</div>
       ) : null}

@@ -98,6 +98,62 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Second pass: invoices paid through the pay page's Express Checkout element
+  // have a PaymentIntent but no Checkout Session, so the query above skips them.
+  // The webhook normally settles these in real time; this is the backstop for a
+  // webhook that was missed or arrived while the function was down.
+  const { data: intentInvoices } = await supabase
+    .from("invoices")
+    .select("id, stripe_payment_intent_id")
+    .in("status", ["sent", "partially_paid", "overdue"])
+    .is("stripe_session_id", null)
+    .not("stripe_payment_intent_id", "is", null)
+    .limit(100);
+
+  for (const invoice of intentInvoices || []) {
+    try {
+      const intent = await stripe.paymentIntents.retrieve(invoice.stripe_payment_intent_id);
+
+      if (intent.status !== "succeeded") {
+        continue;
+      }
+
+      const { data: existing } = await supabase
+        .from("invoice_payments")
+        .select("id")
+        .eq("invoice_id", invoice.id)
+        .eq("payment_reference", intent.id)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from("invoice_payments").insert({
+          invoice_id: invoice.id,
+          payment_date: new Date().toISOString().split("T")[0],
+          payment_amount: (intent.amount_received || intent.amount || 0) / 100,
+          payment_method: "Stripe",
+          payment_reference: intent.id,
+          notes: "Reconciled payment from Stripe payment intent",
+          source: "stripe_reconciliation",
+        });
+      }
+
+      await supabase.from("invoices").update({
+        stripe_payment_status: intent.status,
+        stripe_last_webhook_at: new Date().toISOString(),
+      }).eq("id", invoice.id);
+      updated += 1;
+    } catch (reconcileError) {
+      console.error("Failed to reconcile invoice intent", invoice.id, reconcileError);
+      await supabase.from("payment_webhook_events").insert({
+        provider: "stripe",
+        provider_event_id: `reconcile-intent-${invoice.id}-${Date.now()}`,
+        event_type: "reconciliation.error",
+        payload: { invoiceId: invoice.id, error: String(reconcileError) },
+        processing_status: "failed",
+      });
+    }
+  }
+
   return new Response(JSON.stringify({ reconciled: updated }), {
     headers: { "Content-Type": "application/json" },
   });

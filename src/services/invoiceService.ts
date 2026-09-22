@@ -64,6 +64,9 @@ export interface CreatePaymentData {
   payment_reference?: string;
   notes?: string;
   recorded_by?: string;
+  /** Provenance, e.g. 'stripe_terminal' for a linked in-person tap. Left unset
+   *  for a payment typed in by hand. */
+  source?: string;
 }
 
 export interface InvoiceWithDetails extends Invoice {
@@ -499,6 +502,7 @@ export async function recordPayment(data: CreatePaymentData): Promise<InvoicePay
       payment_reference: data.payment_reference || null,
       notes: data.notes || null,
       recorded_by: data.recorded_by || null,
+      source: data.source || null,
     })
     .select()
     .single();

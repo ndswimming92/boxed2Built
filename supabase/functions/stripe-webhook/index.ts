@@ -86,6 +86,14 @@ async function handleEvent(event: Stripe.Event, stripe: Stripe) {
     return;
   }
 
+  // Express Checkout on the pay page charges a PaymentIntent directly, with no
+  // Checkout Session behind it. The generic branches below drop bare
+  // payment_intent.* events, so invoices have to be settled before we reach them.
+  if (metadata.invoice_id) {
+    await handleInvoicePaymentEvent(event);
+    return;
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }
@@ -145,6 +153,80 @@ async function handleEvent(event: Stripe.Event, stripe: Stripe) {
         console.error('Error processing one-time payment:', error);
       }
     }
+  }
+}
+
+async function handleInvoicePaymentEvent(event: Stripe.Event) {
+  const intent = event.data.object as Stripe.PaymentIntent;
+  const invoiceId = intent.metadata?.invoice_id;
+  if (!invoiceId) return;
+
+  if (event.type === 'payment_intent.succeeded') {
+    // Idempotency is keyed on the intent id rather than the event id, because
+    // reconcile-stripe-payments can settle the same intent from a different
+    // event. Both write payment_reference = the intent id, so this one check
+    // stops a replay and a reconciler run from double-crediting the invoice.
+    const { data: existing } = await supabase
+      .from('invoice_payments')
+      .select('id')
+      .eq('invoice_id', invoiceId)
+      .eq('payment_reference', intent.id)
+      .maybeSingle();
+
+    if (!existing) {
+      const { error: insertError } = await supabase.from('invoice_payments').insert({
+        invoice_id: invoiceId,
+        payment_date: new Date().toISOString().split('T')[0],
+        payment_amount: (intent.amount_received || intent.amount || 0) / 100,
+        payment_method: 'Stripe',
+        payment_reference: intent.id,
+        notes: 'Paid online via Apple Pay, Google Pay, or card',
+        source: 'stripe_express',
+      });
+
+      if (insertError) {
+        console.error('Failed to record invoice payment', invoiceId, insertError.message);
+        await supabase.from('payment_webhook_events').insert({
+          provider: 'stripe',
+          provider_event_id: event.id,
+          event_type: event.type,
+          payload: { invoiceId, intentId: intent.id, error: insertError.message },
+          processing_status: 'failed',
+        });
+        return;
+      }
+    }
+
+    // invoice_payments carries a trigger that recomputes amount_paid/amount_due
+    // and moves the invoice to paid or partially_paid, so status is not set here.
+    await supabase
+      .from('invoices')
+      .update({
+        stripe_payment_intent_id: intent.id,
+        stripe_payment_status: intent.status,
+        stripe_last_webhook_at: new Date().toISOString(),
+      })
+      .eq('id', invoiceId);
+
+    await supabase.from('payment_webhook_events').insert({
+      provider: 'stripe',
+      provider_event_id: event.id,
+      event_type: event.type,
+      payload: { invoiceId, intentId: intent.id, amount: intent.amount_received },
+      processing_status: 'processed',
+    });
+    return;
+  }
+
+  if (event.type === 'payment_intent.payment_failed') {
+    await supabase
+      .from('invoices')
+      .update({
+        stripe_payment_status: intent.status,
+        stripe_payment_failure_reason: intent.last_payment_error?.message ?? 'Payment failed',
+        stripe_last_webhook_at: new Date().toISOString(),
+      })
+      .eq('id', invoiceId);
   }
 }
 

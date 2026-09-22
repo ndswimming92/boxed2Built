@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { getInvoiceExternalUrl, getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { invoiceLabels, invoiceNoun, amountLabel, totalLabel, headlineAmount } from '../utils/invoiceLabels';
+import ExpressCheckout from '../components/payments/ExpressCheckout';
 
 interface BusinessBranding {
   name: string;
@@ -63,6 +64,9 @@ export default function InvoicePaymentPage() {
   });
 
   const { invoiceId, paymentToken } = useParams<{ invoiceId: string; paymentToken: string }>();
+  // null until Stripe reports back, so the card button never flashes a
+  // "or pay with card" label on a device that will not show a wallet at all.
+  const [hasWallet, setHasWallet] = useState<boolean | null>(null);
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [branding, setBranding] = useState<BusinessBranding | null>(null);
   const [address, setAddress] = useState<BusinessAddress | null>(null);
@@ -417,6 +421,27 @@ export default function InvoicePaymentPage() {
           <div className="bg-white rounded-xl border border-slate-200 px-6 py-6 text-center">
             <p className="text-slate-500 text-sm mb-1">{amountLabel(invoice.invoice_type)}</p>
             <p className="text-4xl font-bold text-slate-900 mb-6">{formatCurrency(headlineAmount(invoice.invoice_type, invoice))}</p>
+
+            {invoiceId && paymentToken && (
+              <div className="mb-4">
+                <ExpressCheckout
+                  invoiceId={invoiceId}
+                  paymentToken={paymentToken}
+                  returnUrl={`${window.location.origin}/pay/${invoiceId}/${paymentToken}/thank-you`}
+                  onError={setError}
+                  onAvailabilityChange={setHasWallet}
+                />
+              </div>
+            )}
+
+            {hasWallet && (
+              <div className="flex items-center gap-3 mb-4 text-slate-400 text-xs">
+                <span className="h-px flex-1 bg-slate-200" />
+                <span>or</span>
+                <span className="h-px flex-1 bg-slate-200" />
+              </div>
+            )}
+
             <button
               onClick={handlePayNow}
               disabled={paying}
@@ -434,7 +459,12 @@ export default function InvoicePaymentPage() {
                 </>
               )}
             </button>
-            <div className="flex items-center justify-center gap-2 mt-4 text-slate-400 text-xs">
+            {!hasWallet && (
+              <p className="mt-4 text-slate-500 text-sm">
+                Pay with Apple&nbsp;Pay, Google&nbsp;Pay, or any major card.
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-2 mt-2 text-slate-400 text-xs">
               <Shield className="w-3.5 h-3.5" />
               <span>Secured by Stripe. Your payment info is never stored on our servers.</span>
             </div>

@@ -29,7 +29,10 @@ export default function InvoiceThankYouPage() {
 
   const { invoiceId, paymentToken } = useParams<{ invoiceId: string; paymentToken: string }>();
   const [searchParams] = useSearchParams();
+  // Checkout returns session_id; the pay page's Express Checkout (Apple Pay /
+  // Google Pay) confirms a PaymentIntent instead and returns payment_intent.
   const sessionId = searchParams.get('session_id');
+  const paymentReference = sessionId ?? searchParams.get('payment_intent');
 
   const [invoice, setInvoice] = useState<InvoiceSummary | null>(null);
   const [branding, setBranding] = useState<BusinessBranding | null>(null);
@@ -129,10 +132,10 @@ export default function InvoiceThankYouPage() {
                 <span className="text-slate-500">Amount Paid</span>
                 <span className="font-semibold text-emerald-700">{formatCurrency(invoice.total_amount)}</span>
               </div>
-              {sessionId && (
+              {paymentReference && (
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-500">Reference</span>
-                  <span className="font-mono text-xs text-slate-400 truncate max-w-[160px]">{sessionId}</span>
+                  <span className="font-mono text-xs text-slate-400 truncate max-w-[160px]">{paymentReference}</span>
                 </div>
               )}
               <div className="pt-2 border-t border-slate-100">
