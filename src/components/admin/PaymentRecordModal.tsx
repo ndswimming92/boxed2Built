@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { X, DollarSign, CreditCard, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, DollarSign, CreditCard, CheckCircle, AlertCircle, Smartphone, Link2, RefreshCw } from 'lucide-react';
 import { Invoice } from '../../lib/supabase';
 import { recordPayment } from '../../services/invoiceService';
+import {
+  listUnlinkedStripePayments,
+  linkStripePaymentToInvoice,
+  type UnlinkedStripePayment,
+} from '../../services/stripePaymentLinkService';
 
 interface PaymentRecordModalProps {
   invoice: Invoice;
@@ -14,6 +19,8 @@ const PAYMENT_METHODS = [
   { value: 'check', label: 'Check' },
   { value: 'credit_card', label: 'Credit Card' },
   { value: 'debit_card', label: 'Debit Card' },
+  { value: 'tap_to_pay', label: 'Tap to Pay (in person)' },
+  { value: 'apple_pay', label: 'Apple Pay' },
   { value: 'bank_transfer', label: 'Bank Transfer' },
   { value: 'venmo', label: 'Venmo' },
   { value: 'zelle', label: 'Zelle' },
@@ -29,11 +36,68 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // Stripe payments taken outside this system — a Tap to Pay charge in the
+  // Stripe Dashboard app carries no invoice metadata, so it has to be attached
+  // by hand. null means "not looked yet", [] means "looked, found nothing".
+  const [stripePayments, setStripePayments] = useState<UnlinkedStripePayment[] | null>(null);
+  const [loadingStripe, setLoadingStripe] = useState(false);
+  const [linkingId, setLinkingId] = useState<string | null>(null);
+
   const remainingAfterPayment = invoice.amount_due - paymentAmount;
 
   const handleQuickAmount = (percentage: number) => {
     setPaymentAmount(Math.round((invoice.amount_due * percentage) * 100) / 100);
   };
+
+  const handleFindStripePayments = async () => {
+    setLoadingStripe(true);
+    setMessage(null);
+    try {
+      setStripePayments(await listUnlinkedStripePayments());
+    } catch (error) {
+      console.error('Error loading Stripe payments:', error);
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Could not reach Stripe.',
+      });
+    } finally {
+      setLoadingStripe(false);
+    }
+  };
+
+  const handleLinkStripePayment = async (payment: UnlinkedStripePayment) => {
+    // Same ceiling the typed-in form enforces. Linking a larger charge would
+    // push amount_paid past the total and leave the invoice overpaid.
+    if (payment.amount > invoice.amount_due) {
+      setMessage({
+        type: 'error',
+        text: `That payment is $${payment.amount.toFixed(2)} but only $${invoice.amount_due.toFixed(2)} is due. Record it against the right invoice.`,
+      });
+      return;
+    }
+
+    setLinkingId(payment.id);
+    setMessage(null);
+    try {
+      await linkStripePaymentToInvoice(invoice.id, payment);
+      setMessage({ type: 'success', text: 'Stripe payment linked to this invoice.' });
+      setTimeout(() => {
+        onPaymentRecorded();
+        onClose();
+      }, 1000);
+    } catch (error) {
+      console.error('Error linking Stripe payment:', error);
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to link that payment.',
+      });
+    } finally {
+      setLinkingId(null);
+    }
+  };
+
+  const formatStripeDate = (iso: string) =>
+    new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +186,69 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
                 <p className="text-lg font-bold text-blue-600">${invoice.amount_due.toFixed(2)}</p>
               </div>
             </div>
+          </div>
+
+          {/* Took the payment on your phone? Attach the real Stripe charge
+              instead of retyping it, so the amount and reference match Stripe
+              exactly and the reconciler stops chasing this invoice. */}
+          <div className="border border-slate-200 rounded-lg p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <Smartphone className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Link a Stripe payment</p>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    For a tap taken in the Stripe app at the job site.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleFindStripePayments}
+                disabled={loadingStripe}
+                className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingStripe ? 'animate-spin' : ''}`} />
+                {stripePayments === null ? 'Find payments' : 'Refresh'}
+              </button>
+            </div>
+
+            {stripePayments !== null && stripePayments.length === 0 && !loadingStripe && (
+              <p className="mt-3 text-sm text-slate-500">
+                No unlinked Stripe payments in the last 30 days.
+              </p>
+            )}
+
+            {stripePayments !== null && stripePayments.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {stripePayments.map((payment) => (
+                  <li
+                    key={payment.id}
+                    className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">
+                        ${payment.amount.toFixed(2)}
+                        <span className="ml-2 font-normal text-slate-600">{payment.methodLabel}</span>
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {formatStripeDate(payment.created)}
+                        {payment.receiptEmail ? ` · ${payment.receiptEmail}` : ''}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleLinkStripePayment(payment)}
+                      disabled={linkingId !== null}
+                      className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors disabled:opacity-50"
+                    >
+                      <Link2 className="w-4 h-4" />
+                      {linkingId === payment.id ? 'Linking…' : 'Link'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>

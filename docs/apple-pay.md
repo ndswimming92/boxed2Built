@@ -97,11 +97,57 @@ Verify after paying:
 - a `payment_webhook_events` row exists with `processing_status = 'processed'`
 - replaying the webhook from the Stripe dashboard creates no second payment row
 
+## In person: Tap to Pay at the job site
+
+Tap to Pay on iPhone — the customer holding their phone against yours — needs a native iOS app
+carrying Apple's ProximityReader entitlement. Safari has no API for it, so no amount of work on
+this site can provide it.
+
+**Use the Stripe Dashboard iOS app.** It already holds the entitlement, works with the existing
+Stripe account, and needs no code. Requires an iPhone XS or newer; it accepts Apple Pay, Google
+Pay and contactless cards. Stripe charges the usual rate plus 10¢ per tap.
+
+### Linking the tap back to the invoice
+
+A charge taken in the Dashboard app carries no invoice metadata, so nothing connects it to this
+system on its own: the invoice would sit at `sent` and `clients.total_revenue` would never move.
+
+Field flow:
+
+1. Finish the job.
+2. Open the Stripe app, enter the amount, let the customer tap.
+3. In admin, open the invoice → **Record Payment** → **Link a Stripe payment** → **Find payments**.
+4. Press **Link** on the matching charge.
+
+`list-unlinked-stripe-payments` lists succeeded PaymentIntents from the last 30 days that have no
+`invoice_payments` row, labelled by how they were taken ("Tap to Pay · VISA ····4242"). It is
+read-only and staff-only via `authorizeAdminOrService`; the write happens client-side through
+`linkStripePaymentToInvoice`.
+
+The amount comes from Stripe, never from anything typed in, so an invoice can only be credited
+what was actually charged. The row is tagged `source = 'stripe_terminal'` and
+`payment_method = 'tap_to_pay'`, and the usual `invoice_payments` trigger closes the invoice out.
+
+### Why a partial unique index
+
+Migration `20260922120000_guard_stripe_payment_reference_uniqueness.sql` adds a unique index on
+`payment_reference` covering only `pi_%` and `cs_%`.
+
+Three writers can now record a Stripe payment — the webhook, the reconciler, and this link action
+— and each does a check-then-insert, which is not atomic. Two racing on the same intent would both
+see nothing and both insert. The index is what actually prevents the double credit.
+
+It is partial because `payment_reference` also holds hand-typed check numbers and Venmo notes,
+which legitimately repeat across customers; a blanket unique index would reject the second
+customer's check #1234. Stripe object ids are globally unique, so only they are constrained.
+
 ## What is deliberately not here
 
-- **Tap to Pay on iPhone** (customer taps their phone against yours) needs a native iOS app with
-  Apple's ProximityReader entitlement. Use the **Stripe Dashboard iOS app** instead — it already
-  holds the entitlement and needs no code.
-- **Money does not land in an Apple Wallet.** Payments settle to the Stripe balance and then to
-  the payout bank account. Apple Cash is the only thing that pays into a Wallet and its terms
-  forbid business use.
+**Money does not land in an Apple Wallet.** Payments settle to the Stripe balance and then to the
+payout bank account — set that to the Found business checking account and everything this site
+collects lands there. Apple Cash is the only thing that pays into a Wallet, and its terms forbid
+business use.
+
+**Found cannot replace Stripe.** Found partners with Stripe for card acceptance, lists no Apple
+Pay among the methods a client can use to pay a Found invoice, and exposes no developer API, so
+its invoicing cannot be driven from this site.

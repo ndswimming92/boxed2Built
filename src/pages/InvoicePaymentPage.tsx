@@ -422,7 +422,7 @@ export default function InvoicePaymentPage() {
             <p className="text-slate-500 text-sm mb-1">{amountLabel(invoice.invoice_type)}</p>
             <p className="text-4xl font-bold text-slate-900 mb-6">{formatCurrency(headlineAmount(invoice.invoice_type, invoice))}</p>
 
-            {invoiceId && (
+            {invoiceId && paymentToken && (
               <div className="mb-4">
                 <ExpressCheckout
                   invoiceId={invoiceId}
