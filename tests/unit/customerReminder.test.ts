@@ -69,7 +69,10 @@ test('holds the email until 5pm the day before, then sends', () => {
     now: new Date('2026-09-25T21:59:00Z'),
     timeZone: CHICAGO,
   });
-  assert.deepEqual(justBefore, { send: false, reason: 'too_early' });
+  assert.equal(justBefore.send, false);
+  assert.equal(justBefore.send === false && justBefore.reason, 'too_early');
+  // The admin preview shows this, so a refusal still has to say when it is due.
+  assert.equal(justBefore.sendAt?.toISOString(), '2026-09-25T22:00:00.000Z');
 
   const onTime = decideReminder(facts(), {
     now: new Date('2026-09-25T22:00:00Z'),
@@ -92,7 +95,8 @@ test('stops once the job has started', () => {
     now: new Date('2026-09-26T16:30:00Z'),
     timeZone: CHICAGO,
   });
-  assert.deepEqual(decision, { send: false, reason: 'job_already_started' });
+  assert.equal(decision.send, false);
+  assert.equal(decision.send === false && decision.reason, 'job_already_started');
 });
 
 test('a job with no start time is not reminded on its own day', () => {
@@ -100,7 +104,8 @@ test('a job with no start time is not reminded on its own day', () => {
     now: new Date('2026-09-26T13:00:00Z'),
     timeZone: CHICAGO,
   });
-  assert.deepEqual(decision, { send: false, reason: 'job_already_started' });
+  assert.equal(decision.send, false);
+  assert.equal(decision.send === false && decision.reason, 'job_already_started');
 });
 
 test('does not send twice for the same date and time', () => {
@@ -108,7 +113,8 @@ test('does not send twice for the same date and time', () => {
     facts({ reminderFor: '2026-09-26', reminderStartTime: '11:30:00' }),
     { now: new Date('2026-09-25T22:00:00Z'), timeZone: CHICAGO },
   );
-  assert.deepEqual(decision, { send: false, reason: 'already_reminded' });
+  assert.equal(decision.send, false);
+  assert.equal(decision.send === false && decision.reason, 'already_reminded');
 });
 
 test('a reschedule to a new time re-sends', () => {
@@ -178,4 +184,59 @@ test('describeProximity reads the date in the business timezone', () => {
 
 test('the default send hour is 5pm', () => {
   assert.equal(DEFAULT_SEND_HOUR, '17:00');
+});
+
+test('force sends a job that is not due yet — the Send it now button', () => {
+  // A week out: the scheduled send is still days away.
+  const decision = decideReminder(facts(), {
+    now: new Date('2026-09-19T15:00:00Z'),
+    timeZone: CHICAGO,
+    force: true,
+  });
+  assert.equal(decision.send, true);
+
+  // Without force the same call waits.
+  const waiting = decideReminder(facts(), {
+    now: new Date('2026-09-19T15:00:00Z'),
+    timeZone: CHICAGO,
+  });
+  assert.equal(waiting.send, false);
+  assert.equal(waiting.send === false && waiting.reason, 'too_early');
+});
+
+test('force also overrides a job that has already started', () => {
+  const decision = decideReminder(facts(), {
+    now: new Date('2026-09-26T16:30:00Z'),
+    timeZone: CHICAGO,
+    force: true,
+  });
+  assert.equal(decision.send, true);
+});
+
+test('force never overrides eligibility, only timing', () => {
+  const now = new Date('2026-09-25T22:00:00Z');
+  const blocked: Array<[Partial<ReminderJobFacts>, string]> = [
+    [{ dateScheduled: null }, 'no_scheduled_date'],
+    [{ isActive: false }, 'job_inactive'],
+    [{ jobStatus: 'completed' }, 'status_not_remindable'],
+    [{ clientEmail: 'NA' }, 'no_client_email'],
+  ];
+  for (const [override, reason] of blocked) {
+    const decision = decideReminder(facts(override), { now, timeZone: CHICAGO, force: true });
+    assert.equal(decision.send, false, `${reason} should survive force`);
+    assert.equal(decision.send === false && decision.reason, reason);
+  }
+});
+
+test('a refusal carries sendAt whenever the job has a date', () => {
+  const now = new Date('2026-09-25T22:00:00Z');
+  const reminded = decideReminder(
+    facts({ reminderFor: '2026-09-26', reminderStartTime: '11:30' }),
+    { now, timeZone: CHICAGO },
+  );
+  assert.equal(reminded.sendAt?.toISOString(), '2026-09-25T22:00:00.000Z');
+
+  // ...and cannot when there is no date to compute one from.
+  const undated = decideReminder(facts({ dateScheduled: null }), { now, timeZone: CHICAGO });
+  assert.equal(undated.sendAt, undefined);
 });

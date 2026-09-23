@@ -5,6 +5,7 @@ import { icsToBase64 } from '../_shared/ics.ts';
 import {
   DEFAULT_SEND_HOUR,
   decideReminder,
+  isSendableEmail,
   type ReminderSkipReason,
 } from '../_shared/customerReminder.ts';
 import {
@@ -12,6 +13,7 @@ import {
   type ReminderBusiness,
   type ReminderJob,
 } from '../_shared/customerReminderEmail.ts';
+
 
 /**
  * Emails the customer about their upcoming job: the date, the arrival time, the
@@ -23,9 +25,17 @@ import {
  *
  * POST with no body (how cron calls it) sweeps every job that is due.
  * POST {"jobId": "..."} judges one job and reports why it did or did not send.
- * POST {"jobId": "...", "force": true} re-sends one the customer already got.
+ * POST {"jobId": "...", "preview": true} returns the rendered email and its
+ *   send status without sending. This is what the admin console displays, so
+ *   the preview is the same HTML the customer would receive rather than a
+ *   second copy of the template maintained in the browser.
+ * POST {"jobId": "...", "force": true} sends now, overriding the timing guards.
  *   force is rejected without a jobId, since a forced sweep would re-mail every
  *   upcoming customer.
+ * POST {"jobId": "...", "test": true} sends the real email to the signed-in
+ *   admin instead of the customer. The recipient comes from the caller's own
+ *   token, never from the request body — nothing here can be aimed at a
+ *   third party.
  * POST {"dryRun": true} renders everything and sends nothing.
  */
 
@@ -66,21 +76,44 @@ interface JobRow extends ReminderJob {
   is_active: boolean;
   customer_reminder_for: string | null;
   customer_reminder_start_time: string | null;
+  customer_reminder_sent_at: string | null;
 }
 
 const JOB_COLUMNS =
   'id, business_id, client_name, client_email, client_address, service_address, job_type, ' +
   'job_description, date_scheduled, scheduled_start_time, scheduled_end_time, location_city, ' +
   'quoted_price, job_status, is_active, customer_reminder_for, customer_reminder_start_time, ' +
-  'customer_reminder_ics_sequence';
+  'customer_reminder_sent_at, customer_reminder_ics_sequence';
 
 interface Payload {
   /** Send for one job only. Omitted by cron, which sweeps everything due. */
   jobId?: string;
-  /** Re-send even when this exact date and time were already covered. */
+  /** Send now, overriding the timing guards. Requires jobId. */
   force?: boolean;
+  /** Return the rendered email and its status without sending. Requires jobId. */
+  preview?: boolean;
+  /** Send the real email to the signed-in admin instead of the customer. */
+  test?: boolean;
   /** Render everything and send nothing. */
   dryRun?: boolean;
+}
+
+/** What the admin console needs to show a preview and a status line. */
+interface PreviewPayload {
+  subject: string;
+  html: string;
+  text: string;
+  /** The customer address this would go to, or null when there is not one. */
+  recipient: string | null;
+  /** Whether it is waiting to send, already sent, or cannot send. */
+  status: 'due' | 'scheduled' | 'sent' | 'blocked';
+  reason: ReminderSkipReason | null;
+  /** ISO instant the reminder is or was due; null when the job has no date. */
+  sendAt: string | null;
+  /** ISO instant it actually went out, when it has. */
+  sentAt: string | null;
+  /** So the browser can render both instants on the business's clock. */
+  timeZone: string;
 }
 
 interface SendOutcome {
@@ -164,8 +197,10 @@ async function sendReminder(
   business: ReminderBusiness,
   now: Date,
   dryRun: boolean,
+  /** A test send goes to the admin and must not touch the job's send markers. */
+  testRecipient?: string,
 ): Promise<SendOutcome> {
-  const recipient = job.client_email!.trim();
+  const recipient = testRecipient ?? job.client_email!.trim();
 
   // Rendered before the dry-run branch on purpose: a dry run that skipped this
   // would not catch the thing it is most useful for catching.
@@ -207,6 +242,12 @@ async function sendReminder(
       await response.text(),
     );
     return { jobId: job.id, sent: false, reason: 'send_failed', to: recipient };
+  }
+
+  // A test copy went to the admin, not the customer, so the customer is still
+  // owed their reminder and the markers must not move.
+  if (testRecipient) {
+    return { jobId: job.id, sent: true, to: recipient, subject: email.subject };
   }
 
   // Only now advance the markers: a failed send above must stay re-sendable on
@@ -259,12 +300,21 @@ Deno.serve(async (req: Request) => {
   const now = new Date();
   const jobId = payload.jobId?.trim();
 
-  // force means "send this one again even though the customer already got it".
-  // Across a whole sweep it would mean re-mailing every customer in the window,
-  // which is never what anyone wants, so it has to name its job.
-  if (payload.force && !jobId) {
+  // force means "send now regardless of timing". Across a whole sweep it would
+  // mean mailing every upcoming customer at once, which is never what anyone
+  // wants, so it has to name its job. Same for the single-job-only modes.
+  for (const [flag, label] of [[payload.force, 'force'], [payload.preview, 'preview'], [payload.test, 'test']] as const) {
+    if (flag && !jobId) {
+      return json({ success: false, error: `${label} requires a jobId.` }, 400);
+    }
+  }
+
+  // A test copy goes to whoever is signed in, read from their own token. There
+  // is deliberately no recipient parameter: a body-supplied address would turn
+  // this into a way to mail arbitrary people from the business's domain.
+  if (payload.test && !auth.user?.email) {
     return json(
-      { success: false, error: 'force requires a jobId — it would otherwise re-send to every upcoming customer.' },
+      { success: false, error: 'A test send needs a signed-in admin with an email address.' },
       400,
     );
   }
@@ -312,15 +362,66 @@ Deno.serve(async (req: Request) => {
         reminderFor: job.customer_reminder_for,
         reminderStartTime: job.customer_reminder_start_time,
       },
-      { now, timeZone: business.timeZone, sendHour: SEND_HOUR, force: payload.force },
+      {
+        now,
+        timeZone: business.timeZone,
+        sendHour: SEND_HOUR,
+        // A test copy goes to the admin, so the timing guards are beside the
+        // point — they protect the customer's inbox, not this one. A preview
+        // never forces: its whole job is to report the real status.
+        force: !payload.preview && (payload.force || payload.test),
+      },
     );
+
+    if (payload.preview) {
+      // A preview answers "what would this look like, and when does it go?", so
+      // it renders even for a job the guards would refuse — seeing the email is
+      // how you work out what to fix. Only a job with no date has nothing to
+      // render, since the date is what the whole email is about.
+      const email = job.date_scheduled
+        ? renderCustomerReminder(job, business, { now, siteUrl: SITE_URL })
+        : null;
+
+      const reason = decision.send ? null : decision.reason;
+      const status: PreviewPayload['status'] = reason === null
+        ? 'due'
+        : reason === 'already_reminded'
+          ? 'sent'
+          : reason === 'too_early'
+            ? 'scheduled'
+            : 'blocked';
+
+      return json({
+        success: true,
+        preview: {
+          subject: email?.subject ?? '',
+          html: email?.html ?? '',
+          text: email?.text ?? '',
+          recipient: isSendableEmail(job.client_email) ? job.client_email!.trim() : null,
+          status,
+          reason,
+          sendAt: decision.sendAt?.toISOString() ?? null,
+          sentAt: job.customer_reminder_sent_at,
+          timeZone: business.timeZone,
+        } satisfies PreviewPayload,
+      });
+    }
 
     if (!decision.send) {
       outcomes.push({ jobId: job.id, sent: false, reason: decision.reason });
       continue;
     }
 
-    outcomes.push(await sendReminder(supabase, job, business, now, payload.dryRun === true));
+    outcomes.push(
+      await sendReminder(
+        supabase,
+        job,
+        business,
+        now,
+        payload.dryRun === true,
+        payload.test ? auth.user!.email! : undefined,
+      ),
+    );
   }
 
   const sent = outcomes.filter((outcome) => outcome.sent).length;

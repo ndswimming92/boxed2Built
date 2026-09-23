@@ -94,13 +94,20 @@ export type ReminderSkipReason =
 
 export type ReminderDecision =
   | { send: true; sendAt: Date }
-  | { send: false; reason: ReminderSkipReason };
+  /** `sendAt` is present whenever the job has a date, even on a refusal. */
+  | { send: false; reason: ReminderSkipReason; sendAt?: Date };
 
 export interface ReminderOptions {
   now: Date;
   timeZone: string;
   sendHour?: string;
-  /** Manual re-send: skips the "already reminded" guard, never the eligibility ones. */
+  /**
+   * A human pressing "Send it now". It overrides the three timing guards —
+   * already reminded, not yet due, job already under way — because the person
+   * clicking can see the job and the clock. It never overrides the eligibility
+   * guards: no date, inactive, wrong status, or no usable email mean the email
+   * is wrong to send rather than merely early, and no button should force one.
+   */
   force?: boolean;
 }
 
@@ -119,6 +126,8 @@ export function decideReminder(
 ): ReminderDecision {
   const { now, timeZone, sendHour = DEFAULT_SEND_HOUR, force = false } = options;
 
+  // Eligibility first: these say the email is wrong, not early, so `force` does
+  // not reach them and none of them can report a sendAt.
   if (!job.dateScheduled) return { send: false, reason: 'no_scheduled_date' };
   if (!job.isActive) return { send: false, reason: 'job_inactive' };
   if (!REMINDABLE_STATUSES.has(job.jobStatus?.trim().toLowerCase() ?? '')) {
@@ -126,23 +135,27 @@ export function decideReminder(
   }
   if (!isSendableEmail(job.clientEmail)) return { send: false, reason: 'no_client_email' };
 
+  // Every refusal past this point can say when the email was or is due, which is
+  // what the admin preview puts on screen.
+  const sendAt = reminderSendAt(job.dateScheduled, timeZone, sendHour);
+  if (force) return { send: true, sendAt };
+
   // A reschedule changes one of these two, which is what makes the customer
   // worth mailing a second time. Times are normalized because Postgres returns
   // 'HH:MM:SS' where the Jobs form sends 'HH:MM'.
   const alreadyReminded =
     job.reminderFor === job.dateScheduled &&
     normalizeScheduleTime(job.reminderStartTime) === normalizeScheduleTime(job.scheduledStartTime);
-  if (!force && alreadyReminded) return { send: false, reason: 'already_reminded' };
+  if (alreadyReminded) return { send: false, reason: 'already_reminded', sendAt };
 
   // Past the start, the email is no longer a reminder — it is a receipt for a
   // visit already in progress. Checked before `too_early` so a same-day job
   // that has begun reports the honest reason.
   if (now >= jobStartInstant(job.dateScheduled, job.scheduledStartTime, timeZone)) {
-    return { send: false, reason: 'job_already_started' };
+    return { send: false, reason: 'job_already_started', sendAt };
   }
 
-  const sendAt = reminderSendAt(job.dateScheduled, timeZone, sendHour);
-  if (now < sendAt) return { send: false, reason: 'too_early' };
+  if (now < sendAt) return { send: false, reason: 'too_early', sendAt };
 
   return { send: true, sendAt };
 }
