@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown, QrCode } from 'lucide-react';
+import { X, Mail, Phone, MapPin, DollarSign, Briefcase, Tag, FileText, AlertCircle, Pencil, Check, Gift, Copy, Users, Plus, Minus, Upload, FolderOpen, Eye, Lock, Trash2, Download, ExternalLink, Send, Receipt, ChevronDown, QrCode, CalendarClock } from 'lucide-react';
 import Modal from '../Modal';
 import {
   type Client,
@@ -27,6 +27,7 @@ import {
   getAdminDocumentSignedUrl,
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
+import JobReminderCard from './JobReminderCard';
 import InvoiceFormModal from './InvoiceFormModal';
 import JobFormModal from './JobFormModal';
 import type { Job } from '../../lib/supabase';
@@ -293,6 +294,26 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setConfirmDeleteId(null);
     }
   }
+
+  /**
+   * The jobs this client has coming up that a reminder could cover: still
+   * active, still going to happen, and not in the past. Sorted soonest first so
+   * the card at the top is the next visit.
+   *
+   * The date is compared as a plain YYYY-MM-DD string against today's local
+   * date rather than through Date parsing — `date_scheduled` is a date column
+   * with no time, and parsing it as an instant shifts it a day for anyone west
+   * of Greenwich. The server makes the real send decision; this only decides
+   * which jobs are worth showing a card for.
+   */
+  const todayLocal = new Date().toLocaleDateString('en-CA');
+  const upcomingScheduledJobs = (history?.jobs ?? [])
+    .filter((job: any) =>
+      job.is_active !== false &&
+      typeof job.date_scheduled === 'string' &&
+      job.date_scheduled >= todayLocal &&
+      ['scheduled', 'accepted'].includes(String(job.job_status ?? '').toLowerCase()))
+    .sort((a: any, b: any) => String(a.date_scheduled).localeCompare(String(b.date_scheduled)));
 
   async function loadClientDetails() {
     try {
@@ -1139,6 +1160,33 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <p className="text-2xl font-bold text-cyan-900">{formatCurrency(currentClient.job_count > 0 ? currentClient.total_revenue / currentClient.job_count : 0)}</p>
           </div>
         </div>
+
+        {/* Upcoming appointment reminders — one card per scheduled job, showing
+            the email the customer will actually receive and when it goes. */}
+        {upcomingScheduledJobs.length > 0 && (
+          <div className="p-6 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <CalendarClock className="w-5 h-5 text-blue-600" />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Upcoming Appointment Reminders</h3>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  What {currentClient.name.split(' ')[0]} receives the day before, and when it sends
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {upcomingScheduledJobs.map((job: any) => (
+                <div key={job.id}>
+                  <p className="text-xs font-medium text-gray-600 mb-1.5">
+                    {job.job_type || 'Job'} — {formatDate(job.date_scheduled)}
+                  </p>
+                  <JobReminderCard jobId={job.id} clientName={currentClient.name} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Follow-Up Email */}
         {currentClient.email && (
