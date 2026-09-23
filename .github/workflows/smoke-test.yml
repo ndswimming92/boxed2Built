@@ -6,38 +6,34 @@ name: Browser smoke tests
 # the inquiry working list keeps, and the money a coupon code takes off a
 # quote. Every bug they assert against passed typecheck, lint and build before
 # reaching production.
+#
+# `smoke` is a REQUIRED status check, and that is why the path filter no longer
+# lives on the trigger.
+#
+# A filtered-out workflow reports nothing at all — it does not report "skipped".
+# Branch protection then waits forever for a status that is never coming, and
+# the pull request sits at "Expected — Waiting for status to be reported" with
+# no way to merge it. #358 deadlocked exactly that way: it touched only
+# ClientDetailModal.tsx and an edge function, so this workflow never ran, so the
+# required check never reported.
+#
+# So the trigger fires on every pull request and the same path list is evaluated
+# inside the job instead. In-scope changes run the full browser suite exactly as
+# before; everything else reports success in a few seconds. Either way `smoke`
+# always reports, which is the one thing a required check has to do.
+#
+# Deliberately NOT done: a second workflow with a matching job name triggered on
+# `paths-ignore`. That reads like the inverse of `paths` and is not one — a pull
+# request touching an in-scope file AND an out-of-scope file matches both
+# filters, so both workflows run and two different `smoke` checks race to report
+# on the same commit.
+#
+# The covered list below is unchanged from the trigger filter it replaces. Only
+# where it is evaluated has moved, so which changes actually run the browser
+# suite is exactly as it was.
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'src/lib/openscad/**'
-      - 'src/lib/mesh/**'
-      - 'src/lib/threemf/**'
-      - 'src/components/admin/ModelViewer.tsx'
-      # Popover positioning and the admin chrome the mobile specs measure.
-      - 'src/components/ui/AnchoredPanel.tsx'
-      - 'src/components/admin/AdminLayout.tsx'
-      - 'src/components/admin/NotificationBell.tsx'
-      - 'src/components/admin/OrganizationSwitcher.tsx'
-      - 'src/components/admin/InvoiceRowActions.tsx'
-      # The inquiry working list: which submissions it holds on to.
-      - 'src/pages/admin/InquiriesPage.tsx'
-      - 'src/components/admin/InquiryDetailModal.tsx'
-      - 'src/utils/inquiryWorkflow.ts'
-      - 'src/services/inquiryService.ts'
-      # Coupon codes: what a customer is quoted after entering one.
-      - 'src/components/ContactForm.tsx'
-      # Referral QR codes: what a scanned thank-you token puts in that same box.
-      - 'src/pages/ReferralRedirectPage.tsx'
-      - 'src/services/referralQRService.ts'
-      - 'src/lib/qrExport.ts'
-      - 'src/utils/utmAttribution.ts'
-      - 'src/pages/admin/CouponsPage.tsx'
-      - 'src/services/couponService.ts'
-      - 'src/utils/coupon.ts'
-      - 'tests/**'
-      - 'playwright.config.ts'
-      - 'package-lock.json'
   workflow_dispatch:
 
 jobs:
@@ -46,24 +42,86 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The scope check diffs against the base commit, which shallow
+          # history would not contain.
+          fetch-depth: 0
+
+      - name: Does this change touch anything the browser tests cover?
+        id: scope
+        # Passed as env rather than interpolated into the script: a ${{ }}
+        # expansion inside `run` is a script injection waiting to happen.
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          COVERED='^(src/lib/(openscad|mesh|threemf)/'
+          COVERED="$COVERED"'|src/lib/qrExport\.ts$'
+          COVERED="$COVERED"'|src/components/admin/(ModelViewer|AdminLayout|NotificationBell|OrganizationSwitcher|InvoiceRowActions|InquiryDetailModal)\.tsx$'
+          COVERED="$COVERED"'|src/components/ui/AnchoredPanel\.tsx$'
+          COVERED="$COVERED"'|src/components/ContactForm\.tsx$'
+          COVERED="$COVERED"'|src/pages/admin/(InquiriesPage|CouponsPage)\.tsx$'
+          COVERED="$COVERED"'|src/pages/ReferralRedirectPage\.tsx$'
+          COVERED="$COVERED"'|src/services/(inquiryService|referralQRService|couponService)\.ts$'
+          COVERED="$COVERED"'|src/utils/(inquiryWorkflow|utmAttribution|coupon)\.ts$'
+          COVERED="$COVERED"'|tests/'
+          COVERED="$COVERED"'|playwright\.config\.ts$'
+          COVERED="$COVERED"'|package-lock\.json$)'
+
+          # Every bail-out below runs the suite rather than skipping it. A scope
+          # check that cannot see the diff must not be the reason a real
+          # regression ships.
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "Manual run — running the full suite."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "${BASE_SHA:-}" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "No usable base commit to diff against — running the full suite."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! CHANGED=$(git diff --name-only "$BASE_SHA" HEAD 2>&1); then
+            echo "Could not diff against $BASE_SHA — running the full suite."
+            echo "$CHANGED"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED" | sed 's/^/  /'
+
+          if echo "$CHANGED" | grep -Eq "$COVERED"; then
+            echo "In scope — running the browser suite."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nothing changed here is covered by the browser tests."
+            echo "Reporting success without running them."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci --include=dev
+        if: steps.scope.outputs.run == 'true'
 
       - name: Install Chromium
+        if: steps.scope.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run smoke tests
+        if: steps.scope.outputs.run == 'true'
         run: npm run test:smoke
         env:
           CI: 'true'
 
       - name: Upload failure artifacts
-        if: failure()
+        if: failure() && steps.scope.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
