@@ -1,15 +1,22 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { escapeIcsText, foldIcsLine, icsToBase64, toIcsTimestamp } from '../_shared/ics.ts';
+import {
+  escapeIcsText,
+  foldIcsLine,
+  icsToBase64,
+  toIcsTimestamp,
+  toIcsUtcStamp,
+  zonedToUtc,
+} from '../_shared/ics.ts';
 
 /**
  * Booking notifications: the owner hears about a new request, the customer
  * hears back when it is accepted or declined.
  *
- * Unlike the job schedule mail this sends a *timed* calendar event, so the ICS
- * is assembled here rather than through buildIcsCalendar(), which only writes
- * all-day events. The fiddly parts — line folding and TEXT escaping — are still
- * the shared implementation.
+ * The ICS is assembled here rather than through buildIcsCalendar() because a
+ * booking invite is a METHOD:REQUEST addressed to the customer, not the
+ * PUBLISH-style entry the job feed writes. The fiddly parts — line folding,
+ * TEXT escaping and the local-time-to-UTC conversion — are shared.
  */
 
 const corsHeaders = {
@@ -47,52 +54,6 @@ function escapeHtml(input: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
-}
-
-/**
- * Milliseconds a zone is ahead of UTC at a given instant. Formatting the
- * instant *in* the zone and reading the wall clock back is the only way to get
- * this without shipping a timezone database.
- */
-function zoneOffsetMs(instant: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hour12: false,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(instant);
-
-  const get = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? '0');
-  const hour = get('hour') === 24 ? 0 : get('hour');
-
-  return (
-    Date.UTC(get('year'), get('month') - 1, get('day'), hour, get('minute'), get('second')) -
-    instant.getTime()
-  );
-}
-
-/**
- * '2026-09-14' + '13:00:00' in America/Chicago -> the matching UTC instant.
- * The offset is resolved twice because the first guess can land on the wrong
- * side of a DST change, which would put the appointment an hour out.
- */
-function zonedToUtc(date: string, time: string, timeZone: string): Date {
-  const [year, month, day] = date.slice(0, 10).split('-').map(Number);
-  const [hour, minute] = time.slice(0, 5).split(':').map(Number);
-  const wallClock = Date.UTC(year, month - 1, day, hour, minute, 0);
-
-  let instant = new Date(wallClock - zoneOffsetMs(new Date(wallClock), timeZone));
-  instant = new Date(wallClock - zoneOffsetMs(instant, timeZone));
-
-  return instant;
-}
-
-function toIcsUtcStamp(instant: Date): string {
-  return `${instant.toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`;
 }
 
 function formatLongDate(date: string): string {

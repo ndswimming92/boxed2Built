@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { addDays, buildIcsCalendar, type IcsEvent } from '../_shared/ics.ts';
+import { addDays, buildIcsCalendar, resolveTimedRange, type IcsEvent } from '../_shared/ics.ts';
+import { formatScheduleWhen } from '../_shared/scheduleLabels.ts';
 
 /**
  * Subscribable iCalendar feed of scheduled jobs.
@@ -19,8 +20,19 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://boxed2built.com';
 const ADMIN_JOBS_URL = `${SITE_URL}/admin/jobs`;
 
+/*
+ * All-day events start at local midnight, so -PT15H lands at 9:00am the day
+ * before and PT7H at 7:00am on the day itself. A timed event starts when the
+ * job does, so the same offsets would fire in the evening and — for PT7H — after
+ * the job was already over; timed jobs get their own pair, both before DTSTART.
+ */
 const ALARM_DAY_BEFORE = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_BEFORE') ?? '-PT15H';
 const ALARM_DAY_OF = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_OF') ?? 'PT7H';
+const TIMED_ALARM_DAY_BEFORE = Deno.env.get('JOB_SCHEDULE_TIMED_ALARM_DAY_BEFORE') ?? '-P1D';
+const TIMED_ALARM_LEAD = Deno.env.get('JOB_SCHEDULE_TIMED_ALARM_LEAD') ?? '-PT2H';
+
+/** Used when the org has no booking settings row to read a timezone from. */
+const DEFAULT_TIMEZONE = 'America/Chicago';
 
 /** Keep the feed small enough to stay fast; a year ahead covers any real booking. */
 const DAYS_BACK = 180;
@@ -52,6 +64,8 @@ interface FeedJobRow {
   job_type: string | null;
   job_description: string | null;
   date_scheduled: string;
+  scheduled_start_time: string | null;
+  scheduled_end_time: string | null;
   location_city: string | null;
   notes: string | null;
   job_status: string | null;
@@ -65,7 +79,10 @@ function resolveLocation(job: FeedJobRow): string {
 }
 
 function buildDescription(job: FeedJobRow, location: string): string {
-  const parts: string[] = [`Client: ${job.client_name}`];
+  const parts: string[] = [
+    `When: ${formatScheduleWhen(job.date_scheduled, job.scheduled_start_time, job.scheduled_end_time)}`,
+    `Client: ${job.client_name}`,
+  ];
   if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
@@ -104,13 +121,24 @@ Deno.serve(async (req: Request) => {
     return new Response('Not found', { status: 404, headers: corsHeaders });
   }
 
+  // Job times are stored as bare local times, so they only mean something against
+  // the business timezone the booking page already configures.
+  const { data: bookingSettings } = await supabase
+    .from('booking_settings')
+    .select('timezone')
+    .eq('organization_id', feedToken.organization_id)
+    .maybeSingle<{ timezone: string | null }>();
+
+  const timeZone = bookingSettings?.timezone?.trim() || DEFAULT_TIMEZONE;
+
   const today = new Date().toISOString().slice(0, 10);
 
   const { data: jobs, error: jobsError } = await supabase
     .from('jobs')
     .select(
       'id, client_name, client_phone, client_email, client_address, service_address, job_type, ' +
-        'job_description, date_scheduled, location_city, notes, job_status, schedule_ics_sequence',
+        'job_description, date_scheduled, scheduled_start_time, scheduled_end_time, location_city, ' +
+        'notes, job_status, schedule_ics_sequence',
     )
     .eq('organization_id', feedToken.organization_id)
     .eq('is_active', true)
@@ -129,21 +157,39 @@ Deno.serve(async (req: Request) => {
   const events: IcsEvent[] = (jobs ?? []).map((job) => {
     const location = resolveLocation(job);
     const jobType = job.job_type?.trim() || 'Job';
-    return {
+
+    const event: IcsEvent = {
       // Same UID scheme as the emailed invite: it is the same logical event, and
       // a client that files both into one calendar can then collapse them.
       uid: `job-${job.id}@boxed2built.com`,
       sequence: job.schedule_ics_sequence ?? 0,
       startDate: job.date_scheduled,
+      // With no start time the job stays an all-day block, which is also how the
+      // booking page reads it: the whole day is busy.
+      startTime: job.scheduled_start_time,
+      endTime: job.scheduled_end_time,
+      timeZone,
       summary: `${jobType} — ${job.client_name}`,
       description: buildDescription(job, location),
       location: location || undefined,
       url: ADMIN_JOBS_URL,
-      alarms: [
-        { trigger: ALARM_DAY_BEFORE, description: `Tomorrow: ${jobType} for ${job.client_name}` },
-        { trigger: ALARM_DAY_OF, description: `Today: ${jobType} for ${job.client_name}` },
-      ],
     };
+
+    // Ask the writer whether the times actually produced a timed event rather
+    // than assuming, so the alarms can never disagree with DTSTART.
+    const isTimed = resolveTimedRange(event) !== null;
+    event.alarms = [
+      {
+        trigger: isTimed ? TIMED_ALARM_DAY_BEFORE : ALARM_DAY_BEFORE,
+        description: `Tomorrow: ${jobType} for ${job.client_name}`,
+      },
+      {
+        trigger: isTimed ? TIMED_ALARM_LEAD : ALARM_DAY_OF,
+        description: `Today: ${jobType} for ${job.client_name}`,
+      },
+    ];
+
+    return event;
   });
 
   const ics = buildIcsCalendar(events, {

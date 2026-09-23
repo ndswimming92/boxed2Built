@@ -1,7 +1,12 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
-import { buildIcsCalendar, icsToBase64, type IcsEvent } from '../_shared/ics.ts';
+import { buildIcsCalendar, icsToBase64, resolveTimedRange, type IcsEvent } from '../_shared/ics.ts';
+import {
+  formatScheduleDate,
+  formatScheduleWhen,
+  normalizeScheduleTime,
+} from '../_shared/scheduleLabels.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,12 +29,21 @@ const ADMIN_JOBS_URL = `${SITE_URL}/admin/jobs`;
 const NOTIFY_EMAIL_OVERRIDE = Deno.env.get('JOB_SCHEDULE_NOTIFY_EMAIL');
 
 /**
- * Jobs are scheduled by date, so the event is all-day and DTSTART is local
- * midnight. Triggers are relative to that: -PT15H lands at 9:00am the day
- * before, PT7H at 7:00am on the day itself.
+ * A job with no start time is scheduled by date alone, so the event is all-day
+ * and DTSTART is local midnight. Triggers are relative to that: -PT15H lands at
+ * 9:00am the day before, PT7H at 7:00am on the day itself.
+ *
+ * Once a job has a start time, DTSTART moves to it and those offsets stop
+ * making sense — PT7H would fire after an 11:30am job had finished. Timed jobs
+ * get their own pair, both comfortably before the start.
  */
 const ALARM_DAY_BEFORE = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_BEFORE') ?? '-PT15H';
 const ALARM_DAY_OF = Deno.env.get('JOB_SCHEDULE_ALARM_DAY_OF') ?? 'PT7H';
+const TIMED_ALARM_DAY_BEFORE = Deno.env.get('JOB_SCHEDULE_TIMED_ALARM_DAY_BEFORE') ?? '-P1D';
+const TIMED_ALARM_LEAD = Deno.env.get('JOB_SCHEDULE_TIMED_ALARM_LEAD') ?? '-PT2H';
+
+/** Used when the business has no booking settings row to read a timezone from. */
+const DEFAULT_TIMEZONE = 'America/Chicago';
 
 interface Payload {
   jobId?: string;
@@ -53,16 +67,9 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** 2026-08-25 -> Tuesday, August 25, 2026. Parsed as UTC so the date never slips a day. */
-function formatLongDate(date: string): string {
-  const [year, month, day] = date.slice(0, 10).split('-').map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
+/** The job's date, plus its hours once it has a start time. */
+function jobWhen(job: JobRow): string {
+  return formatScheduleWhen(job.date_scheduled!, job.scheduled_start_time, job.scheduled_end_time);
 }
 
 interface JobRow {
@@ -77,11 +84,15 @@ interface JobRow {
   job_type: string | null;
   job_description: string | null;
   date_scheduled: string | null;
+  scheduled_start_time: string | null;
+  scheduled_end_time: string | null;
   location_city: string | null;
   quoted_price: number | null;
   notes: string | null;
   is_active: boolean;
   schedule_notified_for: string | null;
+  schedule_notified_start_time: string | null;
+  schedule_notified_end_time: string | null;
   schedule_ics_sequence: number | null;
 }
 
@@ -93,7 +104,7 @@ function resolveLocation(job: JobRow): string {
 }
 
 function buildEventDescription(job: JobRow, location: string): string {
-  const parts: string[] = [`Client: ${job.client_name}`];
+  const parts: string[] = [`When: ${jobWhen(job)}`, `Client: ${job.client_name}`];
   if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
@@ -105,10 +116,9 @@ function buildEventDescription(job: JobRow, location: string): string {
 
 /** Plain-text alternative. Sending html without it hurts deliverability. */
 function buildEmailText(job: JobRow, location: string, isReschedule: boolean): string {
-  const prettyDate = formatLongDate(job.date_scheduled!);
   const jobType = job.job_type?.trim() || 'Job';
   const lines = [
-    `${isReschedule ? 'Job rescheduled' : 'Job scheduled'}: ${prettyDate}`,
+    `${isReschedule ? 'Job rescheduled' : 'Job scheduled'}: ${jobWhen(job)}`,
     '',
     `Client: ${job.client_name}`,
     `Job type: ${jobType}`,
@@ -120,7 +130,9 @@ function buildEmailText(job: JobRow, location: string, isReschedule: boolean): s
   if (job.job_description) lines.push('', job.job_description.trim());
   lines.push(
     '',
-    'The attached job.ics adds this to your calendar, with reminders the morning before and the morning of.',
+    job.scheduled_start_time
+      ? 'The attached job.ics adds this to your calendar at the times above, with reminders the day before and two hours ahead.'
+      : 'The attached job.ics adds this to your calendar, with reminders the morning before and the morning of.',
     '',
     `Open job in admin: ${ADMIN_JOBS_URL}`,
   );
@@ -128,13 +140,13 @@ function buildEmailText(job: JobRow, location: string, isReschedule: boolean): s
 }
 
 function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): string {
-  const prettyDate = formatLongDate(job.date_scheduled!);
+  const prettyDate = formatScheduleDate(job.date_scheduled!);
   const jobType = job.job_type?.trim() || 'Job';
   const heading = isReschedule ? 'Job rescheduled' : 'Job scheduled';
   const rows: Array<[string, string]> = [
     ['Client', job.client_name],
     ['Job type', jobType],
-    ['Date', prettyDate],
+    ['When', jobWhen(job)],
   ];
   if (location) rows.push(['Where', location]);
   if (job.client_phone) rows.push(['Phone', job.client_phone]);
@@ -170,7 +182,7 @@ function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): s
 
         <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:18px 22px;margin-bottom:24px;">
           <p style="margin:0 0 6px;color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Add to your calendar</p>
-          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">Open the attached <strong>job.ics</strong> file on this device and your calendar app will file it, with reminders set for the morning before and the morning of.</p>
+          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">Open the attached <strong>job.ics</strong> file on this device and your calendar app will file it${job.scheduled_start_time ? ' at the times above, with reminders the day before and two hours ahead' : ', with reminders set for the morning before and the morning of'}.</p>
         </div>
 
         <table width="100%" cellpadding="0" cellspacing="0">${rowsHtml}</table>
@@ -230,8 +242,9 @@ Deno.serve(async (req: Request) => {
     .from('jobs')
     .select(
       'id, organization_id, business_id, client_name, client_phone, client_email, client_address, ' +
-        'service_address, job_type, job_description, date_scheduled, location_city, quoted_price, ' +
-        'notes, is_active, schedule_notified_for, schedule_ics_sequence',
+        'service_address, job_type, job_description, date_scheduled, scheduled_start_time, ' +
+        'scheduled_end_time, location_city, quoted_price, notes, is_active, schedule_notified_for, ' +
+        'schedule_notified_start_time, schedule_notified_end_time, schedule_ics_sequence',
     )
     .eq('id', jobId)
     .maybeSingle<JobRow>();
@@ -252,7 +265,12 @@ Deno.serve(async (req: Request) => {
     if (job.schedule_notified_for !== null) {
       const { error: clearError } = await supabase
         .from('jobs')
-        .update({ schedule_notified_for: null, schedule_notified_at: null })
+        .update({
+          schedule_notified_for: null,
+          schedule_notified_at: null,
+          schedule_notified_start_time: null,
+          schedule_notified_end_time: null,
+        })
         .eq('id', job.id);
       if (clearError) {
         console.error('send-job-schedule-email: failed to clear notification state', clearError);
@@ -264,18 +282,40 @@ Deno.serve(async (req: Request) => {
     return json({ success: true, skipped: true, reason: 'job_inactive' });
   }
 
-  // The guard that makes this safe to call on every save: only a date that
-  // differs from the one already notified produces another email.
+  // The guard that makes this safe to call on every save: only a date or time
+  // that differs from the one already notified produces another email. Moving a
+  // job from 11:30am to 2:00pm on the same day is a reschedule like any other,
+  // so the hours are part of the comparison.
   const isReschedule = job.schedule_notified_for !== null;
-  if (!payload.force && job.schedule_notified_for === job.date_scheduled) {
+  const notifiedStart = normalizeScheduleTime(job.schedule_notified_start_time);
+  const notifiedEnd = normalizeScheduleTime(job.schedule_notified_end_time);
+  const scheduledStart = normalizeScheduleTime(job.scheduled_start_time);
+  const scheduledEnd = normalizeScheduleTime(job.scheduled_end_time);
+  const unchanged =
+    job.schedule_notified_for === job.date_scheduled &&
+    notifiedStart === scheduledStart &&
+    notifiedEnd === scheduledEnd;
+
+  if (!payload.force && unchanged) {
     return json({ success: true, skipped: true, reason: 'already_notified' });
   }
 
-  const { data: business } = await supabase
-    .from('business_info')
-    .select('name, email')
-    .eq('id', job.business_id)
-    .maybeSingle<{ name: string | null; email: string | null }>();
+  const [{ data: business }, { data: bookingSettings }] = await Promise.all([
+    supabase
+      .from('business_info')
+      .select('name, email')
+      .eq('id', job.business_id)
+      .maybeSingle<{ name: string | null; email: string | null }>(),
+    // Job times are bare local times; they only mean something against the
+    // business timezone the booking page already configures.
+    supabase
+      .from('booking_settings')
+      .select('timezone')
+      .eq('business_id', job.business_id)
+      .maybeSingle<{ timezone: string | null }>(),
+  ]);
+
+  const timeZone = bookingSettings?.timezone?.trim() || DEFAULT_TIMEZONE;
 
   const recipient = NOTIFY_EMAIL_OVERRIDE?.trim() || business?.email?.trim();
   if (!recipient) {
@@ -290,18 +330,33 @@ Deno.serve(async (req: Request) => {
     uid: `job-${job.id}@boxed2built.com`,
     sequence: (job.schedule_ics_sequence ?? 0) + 1,
     startDate: job.date_scheduled,
+    // With no start time the job stays an all-day block, which is also how the
+    // booking page reads it: the whole day is busy.
+    startTime: job.scheduled_start_time,
+    endTime: job.scheduled_end_time,
+    timeZone,
     summary: `${jobType} — ${job.client_name}`,
     description: buildEventDescription(job, location),
     location: location || undefined,
     url: ADMIN_JOBS_URL,
-    alarms: [
-      { trigger: ALARM_DAY_BEFORE, description: `Tomorrow: ${jobType} for ${job.client_name}` },
-      { trigger: ALARM_DAY_OF, description: `Today: ${jobType} for ${job.client_name}` },
-    ],
   };
 
+  // Ask the shared writer whether the times actually produced a timed event —
+  // an unparseable start falls back to all-day, and the alarms have to follow.
+  const isTimed = resolveTimedRange(event) !== null;
+  event.alarms = [
+    {
+      trigger: isTimed ? TIMED_ALARM_DAY_BEFORE : ALARM_DAY_BEFORE,
+      description: `Tomorrow: ${jobType} for ${job.client_name}`,
+    },
+    {
+      trigger: isTimed ? TIMED_ALARM_LEAD : ALARM_DAY_OF,
+      description: `Today: ${jobType} for ${job.client_name}`,
+    },
+  ];
+
   const ics = buildIcsCalendar([event], { method: 'PUBLISH' });
-  const prettyDate = formatLongDate(job.date_scheduled);
+  const prettyWhen = jobWhen(job);
   const subjectPrefix = isReschedule ? 'Rescheduled' : 'Scheduled';
 
   const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -313,7 +368,7 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       from: `${business?.name?.trim() || 'Boxed2Built'} <${FROM_EMAIL}>`,
       to: [recipient],
-      subject: `${subjectPrefix}: ${jobType} for ${job.client_name} — ${prettyDate}`,
+      subject: `${subjectPrefix}: ${jobType} for ${job.client_name} — ${prettyWhen}`,
       html: buildEmailHtml(job, location, isReschedule),
       text: buildEmailText(job, location, isReschedule),
       reply_to: FROM_EMAIL,
@@ -341,6 +396,8 @@ Deno.serve(async (req: Request) => {
     .update({
       schedule_notified_for: job.date_scheduled,
       schedule_notified_at: sentAt,
+      schedule_notified_start_time: job.scheduled_start_time,
+      schedule_notified_end_time: job.scheduled_end_time,
       schedule_ics_sequence: event.sequence,
     })
     .eq('id', job.id);
@@ -356,9 +413,14 @@ Deno.serve(async (req: Request) => {
       organization_id: job.organization_id,
       type: 'job_scheduled',
       title: `${subjectPrefix}: ${jobType} for ${job.client_name}`,
-      body: `${prettyDate}${location ? ` — ${location}` : ''}. Calendar invite emailed to ${recipient}.`,
+      body: `${prettyWhen}${location ? ` — ${location}` : ''}. Calendar invite emailed to ${recipient}.`,
       link: '/admin/jobs',
-      metadata: { job_id: job.id, date_scheduled: job.date_scheduled },
+      metadata: {
+        job_id: job.id,
+        date_scheduled: job.date_scheduled,
+        scheduled_start_time: job.scheduled_start_time,
+        scheduled_end_time: job.scheduled_end_time,
+      },
     });
     if (notificationError) {
       console.error('send-job-schedule-email: failed to create admin notification', notificationError);
