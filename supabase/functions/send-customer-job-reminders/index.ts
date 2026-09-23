@@ -42,7 +42,14 @@ import {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  // x-correlation-id / x-session-correlation-id are added to every request by the
+  // Supabase client's fetch wrapper in src/lib/supabase.ts. A preflight that does
+  // not allow them is rejected by the browser before the POST is ever sent, which
+  // surfaces as "Failed to send a request to the Edge Function" rather than as
+  // anything mentioning CORS. Only functions the browser calls need these, which
+  // is why the server-only send-job-schedule-email next door does without them.
+  'Access-Control-Allow-Headers':
+    'Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
