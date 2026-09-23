@@ -22,6 +22,27 @@ export interface IcsAlarm {
   description: string;
 }
 
+/**
+ * Minutes before DTSTART as an RFC 5545 TRIGGER value: 45 -> '-PT45M',
+ * 75 -> '-PT1H15M', 1500 -> '-P1DT1H'.
+ *
+ * '-PT75M' would be legal too, but hours and days are what calendar apps show
+ * back to the user when they open the reminder, so the duration is written the
+ * way it will be read. Zero is '-PT0M', which fires exactly at DTSTART.
+ */
+export function icsLeadTrigger(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes));
+  const days = Math.floor(total / (24 * 60));
+  const hours = Math.floor((total % (24 * 60)) / 60);
+  const rest = total % 60;
+
+  // dur-value is P[nD][T[nH][nM]]; the T is required before any time part, and
+  // an empty time part must not be emitted at all ('-P1DT' is malformed).
+  const time = [hours ? `${hours}H` : '', rest ? `${rest}M` : ''].join('');
+  if (!days) return `-PT${time || '0M'}`;
+  return `-P${days}D${time ? `T${time}` : ''}`;
+}
+
 export interface IcsEvent {
   /** Stable across re-sends: same UID + higher SEQUENCE replaces the old entry. */
   uid: string;

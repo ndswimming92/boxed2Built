@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { MileageSettings, TravelSettings } from '../../lib/supabase';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info, MapPin, Lock } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, DollarSign, Calendar, Info, MapPin, Lock, LogOut } from 'lucide-react';
+
+/** Matches the DEFAULT on travel_settings.departure_buffer_minutes. */
+const DEFAULT_DEPARTURE_BUFFER_MINUTES = 15;
+
+/** Matches the CHECK on the same column. */
+const MAX_DEPARTURE_BUFFER_MINUTES = 240;
 
 export default function MileageSettingsPage() {
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -20,6 +26,7 @@ export default function MileageSettingsPage() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [travelSettings, setTravelSettings] = useState<TravelSettings | null>(null);
   const [originDraft, setOriginDraft] = useState('');
+  const [bufferDraft, setBufferDraft] = useState(String(DEFAULT_DEPARTURE_BUFFER_MINUTES));
   const [savingOrigin, setSavingOrigin] = useState(false);
 
   useEffect(() => {
@@ -60,6 +67,9 @@ export default function MileageSettingsPage() {
 
         setTravelSettings(travelData ?? null);
         setOriginDraft(travelData?.origin_address ?? '');
+        setBufferDraft(
+          String(travelData?.departure_buffer_minutes ?? DEFAULT_DEPARTURE_BUFFER_MINUTES),
+        );
       }
     }
 
@@ -79,6 +89,22 @@ export default function MileageSettingsPage() {
       return;
     }
 
+    // The column carries a CHECK, so a bad number would come back as an opaque
+    // Postgres error rather than something the page can explain.
+    const nextBuffer = Number(bufferDraft);
+    if (
+      !Number.isInteger(nextBuffer) ||
+      nextBuffer < 0 ||
+      nextBuffer > MAX_DEPARTURE_BUFFER_MINUTES
+    ) {
+      setMessage({
+        type: 'error',
+        text: `Buffer must be a whole number of minutes between 0 and ${MAX_DEPARTURE_BUFFER_MINUTES}`,
+      });
+      setTimeout(() => setMessage(null), 4000);
+      return;
+    }
+
     setSavingOrigin(true);
 
     try {
@@ -89,6 +115,7 @@ export default function MileageSettingsPage() {
           .from('travel_settings')
           .update({
             origin_address: nextOrigin,
+            departure_buffer_minutes: nextBuffer,
             // Cleared so the next drive-time lookup re-geocodes rather than
             // routing from wherever the old address was.
             origin_latitude: null,
@@ -102,6 +129,7 @@ export default function MileageSettingsPage() {
         const { error } = await supabase.from('travel_settings').insert({
           organization_id: organizationId,
           origin_address: nextOrigin,
+          departure_buffer_minutes: nextBuffer,
           is_active: true,
         });
 
@@ -118,7 +146,10 @@ export default function MileageSettingsPage() {
           .eq('origin_address', normalizeOrigin(previousOrigin));
       }
 
-      setMessage({ type: 'success', text: 'Starting address saved. Drive times will recalculate.' });
+      setMessage({
+        type: 'success',
+        text: 'Saved. Drive times and leave-by times will recalculate.',
+      });
       fetchData();
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -234,6 +265,27 @@ export default function MileageSettingsPage() {
 
   const currentRate = getCurrentRate();
 
+  /** One button saves both fields, so it stays enabled while either differs from what is stored. */
+  const travelDraftChanged =
+    originDraft.trim() !== (travelSettings?.origin_address ?? '') ||
+    bufferDraft.trim() !==
+      String(travelSettings?.departure_buffer_minutes ?? DEFAULT_DEPARTURE_BUFFER_MINUTES);
+
+  // A worked example under the input, so the number means something before it is
+  // saved. Clamped the same way the save is, so a half-typed value still reads sensibly.
+  const bufferPreviewMinutes = Math.min(
+    MAX_DEPARTURE_BUFFER_MINUTES,
+    Math.max(0, Math.round(Number(bufferDraft)) || 0),
+  );
+  const bufferPreviewLeaveBy = (() => {
+    // 11:30 AM is 690 minutes past midnight; 45 is the drive in the sentence above.
+    const minutes = 690 - 45 - bufferPreviewMinutes;
+    const hour24 = Math.floor(minutes / 60);
+    const period = hour24 >= 12 ? 'PM' : 'AM';
+    const hour = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    return `${hour}:${String(minutes % 60).padStart(2, '0')} ${period}`;
+  })();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -294,12 +346,46 @@ export default function MileageSettingsPage() {
           />
           <button
             onClick={handleSaveOrigin}
-            disabled={savingOrigin || originDraft.trim() === (travelSettings?.origin_address ?? '')}
+            disabled={savingOrigin || !travelDraftChanged}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Save className="w-4 h-4" />
             <span>{savingOrigin ? 'Saving...' : 'Save'}</span>
           </button>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <label
+            htmlFor="departure_buffer_minutes"
+            className="flex items-center gap-2 text-sm font-semibold text-gray-900"
+          >
+            <LogOut className="w-4 h-4 text-amber-600" />
+            Departure Buffer
+          </label>
+          <p className="text-sm text-gray-600 mt-0.5 mb-2">
+            Added on top of the drive time to work out when to leave. Covers loading the truck,
+            parking and traffic &mdash; none of which the route estimate includes.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              id="departure_buffer_minutes"
+              name="departure_buffer_minutes"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={MAX_DEPARTURE_BUFFER_MINUTES}
+              step={5}
+              value={bufferDraft}
+              onChange={(e) => setBufferDraft(e.target.value)}
+              className="w-28 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+            <span className="text-sm text-gray-600">minutes</span>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            A job at 11:30 AM with a 45 minute drive and a {bufferPreviewMinutes} minute buffer
+            means leaving by <strong className="text-gray-700">{bufferPreviewLeaveBy}</strong>. That
+            time rides along in the calendar invite, with an alarm set to match.
+          </p>
         </div>
 
         <div className="flex items-start gap-2 mt-3 text-sm text-gray-600">

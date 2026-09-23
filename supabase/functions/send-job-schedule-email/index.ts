@@ -1,12 +1,22 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
-import { buildIcsCalendar, icsToBase64, resolveTimedRange, type IcsEvent } from '../_shared/ics.ts';
 import {
+  buildIcsCalendar,
+  icsLeadTrigger,
+  icsToBase64,
+  resolveTimedRange,
+  type IcsEvent,
+} from '../_shared/ics.ts';
+import {
+  formatDurationMinutes,
+  formatLeaveByLabel,
+  formatLeaveByTime,
   formatScheduleDate,
   formatScheduleWhen,
   normalizeScheduleTime,
 } from '../_shared/scheduleLabels.ts';
+import { resolveLeaveBy, resolveWorkAddress, type LeaveBy } from '../_shared/travel.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,8 +113,12 @@ function resolveLocation(job: JobRow): string {
   return job.location_city?.trim() || '';
 }
 
-function buildEventDescription(job: JobRow, location: string): string {
-  const parts: string[] = [`When: ${jobWhen(job)}`, `Client: ${job.client_name}`];
+function buildEventDescription(job: JobRow, location: string, leaveBy: LeaveBy | null): string {
+  const parts: string[] = [`When: ${jobWhen(job)}`];
+  // Directly under the start time: the job's hour is no use on its own if the
+  // drive still has to be worked out by hand every morning.
+  if (leaveBy) parts.push(`Leave by: ${formatLeaveByLabel(leaveBy)}`);
+  parts.push(`Client: ${job.client_name}`);
   if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
@@ -115,14 +129,18 @@ function buildEventDescription(job: JobRow, location: string): string {
 }
 
 /** Plain-text alternative. Sending html without it hurts deliverability. */
-function buildEmailText(job: JobRow, location: string, isReschedule: boolean): string {
+function buildEmailText(
+  job: JobRow,
+  location: string,
+  isReschedule: boolean,
+  leaveBy: LeaveBy | null,
+): string {
   const jobType = job.job_type?.trim() || 'Job';
   const lines = [
     `${isReschedule ? 'Job rescheduled' : 'Job scheduled'}: ${jobWhen(job)}`,
-    '',
-    `Client: ${job.client_name}`,
-    `Job type: ${jobType}`,
   ];
+  if (leaveBy) lines.push(`Leave by: ${formatLeaveByLabel(leaveBy)}`);
+  lines.push('', `Client: ${job.client_name}`, `Job type: ${jobType}`);
   if (location) lines.push(`Where: ${location}`);
   if (job.client_phone) lines.push(`Phone: ${job.client_phone}`);
   if (job.client_email) lines.push(`Email: ${job.client_email}`);
@@ -131,7 +149,7 @@ function buildEmailText(job: JobRow, location: string, isReschedule: boolean): s
   lines.push(
     '',
     job.scheduled_start_time
-      ? 'The attached job.ics adds this to your calendar at the times above, with reminders the day before and two hours ahead.'
+      ? `The attached job.ics adds this to your calendar at the times above, with reminders the day before and two hours ahead${leaveBy ? ', plus one that goes off when it is time to leave' : ''}.`
       : 'The attached job.ics adds this to your calendar, with reminders the morning before and the morning of.',
     '',
     `Open job in admin: ${ADMIN_JOBS_URL}`,
@@ -139,7 +157,12 @@ function buildEmailText(job: JobRow, location: string, isReschedule: boolean): s
   return lines.join('\n');
 }
 
-function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): string {
+function buildEmailHtml(
+  job: JobRow,
+  location: string,
+  isReschedule: boolean,
+  leaveBy: LeaveBy | null,
+): string {
   const prettyDate = formatScheduleDate(job.date_scheduled!);
   const jobType = job.job_type?.trim() || 'Job';
   const heading = isReschedule ? 'Job rescheduled' : 'Job scheduled';
@@ -148,6 +171,7 @@ function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): s
     ['Job type', jobType],
     ['When', jobWhen(job)],
   ];
+  if (leaveBy) rows.push(['Leave by', formatLeaveByLabel(leaveBy)]);
   if (location) rows.push(['Where', location]);
   if (job.client_phone) rows.push(['Phone', job.client_phone]);
   if (job.client_email) rows.push(['Email', job.client_email]);
@@ -167,6 +191,23 @@ function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): s
     ? `<p style="margin:20px 0 0;color:#374151;font-size:14px;line-height:1.7;">${escapeHtml(job.job_description.trim())}</p>`
     : '';
 
+  // The one number worth reading before anything else, so it gets the banner
+  // rather than a table row. Absent — no start hour, no trip origin, an address
+  // Mapbox could not place — the email simply goes back to how it read before.
+  const leaveByHtml = leaveBy
+    ? `
+        <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:18px 22px;margin-bottom:20px;">
+          <p style="margin:0 0 6px;color:#9a3412;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Leave by</p>
+          <p style="margin:0;color:#111827;font-size:26px;font-weight:700;line-height:1.2;">${escapeHtml(formatLeaveByTime(leaveBy))}</p>
+          <p style="margin:6px 0 0;color:#7c2d12;font-size:13px;line-height:1.6;">${escapeHtml(
+            `${formatDurationMinutes(leaveBy.driveMinutes)} drive from your starting address` +
+              (leaveBy.bufferMinutes > 0
+                ? `, plus a ${formatDurationMinutes(leaveBy.bufferMinutes)} buffer for loading and traffic.`
+                : '.'),
+          )}</p>
+        </div>`
+    : '';
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
@@ -179,10 +220,10 @@ function buildEmailHtml(job: JobRow, location: string, isReschedule: boolean): s
       </td></tr>
 
       <tr><td style="background:#ffffff;padding:32px;">
-
+        ${leaveByHtml}
         <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:18px 22px;margin-bottom:24px;">
           <p style="margin:0 0 6px;color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Add to your calendar</p>
-          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">Open the attached <strong>job.ics</strong> file on this device and your calendar app will file it${job.scheduled_start_time ? ' at the times above, with reminders the day before and two hours ahead' : ', with reminders set for the morning before and the morning of'}.</p>
+          <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">Open the attached <strong>job.ics</strong> file on this device and your calendar app will file it${job.scheduled_start_time ? ' at the times above, with reminders the day before and two hours ahead' : ', with reminders set for the morning before and the morning of'}${leaveBy ? ', plus an alarm that goes off at the leave-by time' : ''}.</p>
         </div>
 
         <table width="100%" cellpadding="0" cellspacing="0">${rowsHtml}</table>
@@ -324,6 +365,20 @@ Deno.serve(async (req: Request) => {
 
   const location = resolveLocation(job);
   const jobType = job.job_type?.trim() || 'Job';
+
+  // Worth a live Mapbox call: this runs once per scheduling change, not per
+  // page view, and the estimate it writes back is what lets the subscribed feed
+  // put a leave-by on the same job without calling Mapbox at all. The raw
+  // address, not the comma-joined `location`, so the cache key matches the one
+  // the admin card and the feed use. Never throws — see resolveLeaveBy.
+  const leaveBy = await resolveLeaveBy(
+    supabase,
+    job.organization_id,
+    resolveWorkAddress(job),
+    job.scheduled_start_time,
+    { allowLookup: true },
+  );
+
   // UID is derived from the job id and never changes, so a reschedule replaces
   // the calendar entry the earlier email created instead of adding a second one.
   const event: IcsEvent = {
@@ -336,7 +391,7 @@ Deno.serve(async (req: Request) => {
     endTime: job.scheduled_end_time,
     timeZone,
     summary: `${jobType} — ${job.client_name}`,
-    description: buildEventDescription(job, location),
+    description: buildEventDescription(job, location, leaveBy),
     location: location || undefined,
     url: ADMIN_JOBS_URL,
   };
@@ -355,6 +410,18 @@ Deno.serve(async (req: Request) => {
     },
   ];
 
+  // The alarm that does the actual work: it fires at the moment to walk out the
+  // door, so the drive never has to be worked out by hand. Only on a timed event
+  // — on an all-day one DTSTART is local midnight and a lead time measured back
+  // from it means nothing.
+  if (isTimed && leaveBy) {
+    event.alarms.push({
+      trigger: icsLeadTrigger(leaveBy.leadMinutes),
+      description:
+        `Leave now for ${jobType} — ${job.client_name}` + (location ? ` (${location})` : ''),
+    });
+  }
+
   const ics = buildIcsCalendar([event], { method: 'PUBLISH' });
   const prettyWhen = jobWhen(job);
   const subjectPrefix = isReschedule ? 'Rescheduled' : 'Scheduled';
@@ -369,8 +436,8 @@ Deno.serve(async (req: Request) => {
       from: `${business?.name?.trim() || 'Boxed2Built'} <${FROM_EMAIL}>`,
       to: [recipient],
       subject: `${subjectPrefix}: ${jobType} for ${job.client_name} — ${prettyWhen}`,
-      html: buildEmailHtml(job, location, isReschedule),
-      text: buildEmailText(job, location, isReschedule),
+      html: buildEmailHtml(job, location, isReschedule, leaveBy),
+      text: buildEmailText(job, location, isReschedule, leaveBy),
       reply_to: FROM_EMAIL,
       attachments: [
         {
@@ -413,7 +480,10 @@ Deno.serve(async (req: Request) => {
       organization_id: job.organization_id,
       type: 'job_scheduled',
       title: `${subjectPrefix}: ${jobType} for ${job.client_name}`,
-      body: `${prettyWhen}${location ? ` — ${location}` : ''}. Calendar invite emailed to ${recipient}.`,
+      body:
+        `${prettyWhen}${location ? ` — ${location}` : ''}.` +
+        `${leaveBy ? ` Leave by ${formatLeaveByTime(leaveBy)}.` : ''}` +
+        ` Calendar invite emailed to ${recipient}.`,
       link: '/admin/jobs',
       metadata: {
         job_id: job.id,

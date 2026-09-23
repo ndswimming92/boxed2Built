@@ -1,7 +1,21 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { addDays, buildIcsCalendar, resolveTimedRange, type IcsEvent } from '../_shared/ics.ts';
-import { formatScheduleWhen } from '../_shared/scheduleLabels.ts';
+import {
+  addDays,
+  buildIcsCalendar,
+  icsLeadTrigger,
+  resolveTimedRange,
+  type IcsEvent,
+} from '../_shared/ics.ts';
+import { formatLeaveByLabel, formatScheduleWhen } from '../_shared/scheduleLabels.ts';
+import {
+  computeLeaveBy,
+  loadCachedTravelSeconds,
+  loadTravelOrigin,
+  normalizeAddress,
+  resolveWorkAddress,
+  type LeaveBy,
+} from '../_shared/travel.ts';
 
 /**
  * Subscribable iCalendar feed of scheduled jobs.
@@ -78,11 +92,14 @@ function resolveLocation(job: FeedJobRow): string {
   return job.location_city?.trim() || '';
 }
 
-function buildDescription(job: FeedJobRow, location: string): string {
+function buildDescription(job: FeedJobRow, location: string, leaveBy: LeaveBy | null): string {
   const parts: string[] = [
     `When: ${formatScheduleWhen(job.date_scheduled, job.scheduled_start_time, job.scheduled_end_time)}`,
-    `Client: ${job.client_name}`,
   ];
+  // Directly under the start time, because it is the line that decides what the
+  // morning looks like — the job's own hour is no use without it.
+  if (leaveBy) parts.push(`Leave by: ${formatLeaveByLabel(leaveBy)}`);
+  parts.push(`Client: ${job.client_name}`);
   if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
@@ -154,9 +171,34 @@ Deno.serve(async (req: Request) => {
     return new Response('Unable to build feed', { status: 500, headers: corsHeaders });
   }
 
+  // Read once for the whole feed, not once per job: this endpoint is polled
+  // hourly by every subscribed calendar. Cache-only for the same reason — a
+  // Mapbox call per job per poll per subscriber would be the wrong trade for a
+  // line of text, so a job whose drive time was never looked up simply ships
+  // without a leave-by until something warms the cache (the schedule email does,
+  // as does opening the job's card in admin).
+  const travelOrigin = await loadTravelOrigin(supabase, feedToken.organization_id);
+  const driveSeconds = await loadCachedTravelSeconds(
+    supabase,
+    feedToken.organization_id,
+    travelOrigin.address,
+  );
+
   const events: IcsEvent[] = (jobs ?? []).map((job) => {
     const location = resolveLocation(job);
     const jobType = job.job_type?.trim() || 'Job';
+
+    // The cache is keyed on the raw address, not the comma-joined display form
+    // resolveLocation() builds, so the lookup has to start from the same value
+    // the estimate was stored under.
+    const destinationKey = normalizeAddress(resolveWorkAddress(job));
+    const leaveBy = destinationKey
+      ? computeLeaveBy(
+          job.scheduled_start_time,
+          driveSeconds.get(destinationKey) ?? null,
+          travelOrigin.bufferMinutes,
+        )
+      : null;
 
     const event: IcsEvent = {
       // Same UID scheme as the emailed invite: it is the same logical event, and
@@ -170,7 +212,7 @@ Deno.serve(async (req: Request) => {
       endTime: job.scheduled_end_time,
       timeZone,
       summary: `${jobType} — ${job.client_name}`,
-      description: buildDescription(job, location),
+      description: buildDescription(job, location, leaveBy),
       location: location || undefined,
       url: ADMIN_JOBS_URL,
     };
@@ -188,6 +230,20 @@ Deno.serve(async (req: Request) => {
         description: `Today: ${jobType} for ${job.client_name}`,
       },
     ];
+
+    // The alarm that does the actual work: it fires at the moment to walk out
+    // the door, so the drive never has to be worked out by hand. Only on a timed
+    // event — on an all-day one DTSTART is local midnight and a lead time
+    // measured back from it means nothing. Emitted last so it sorts after the
+    // heads-up reminders in clients that show them in file order.
+    if (isTimed && leaveBy) {
+      event.alarms.push({
+        trigger: icsLeadTrigger(leaveBy.leadMinutes),
+        description:
+          `Leave now for ${jobType} — ${job.client_name}` +
+          (location ? ` (${location})` : ''),
+      });
+    }
 
     return event;
   });
