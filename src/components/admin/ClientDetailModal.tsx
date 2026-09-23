@@ -28,6 +28,15 @@ import {
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import JobReminderCard from './JobReminderCard';
+import EmailPreviewActions from './EmailPreviewActions';
+import {
+  previewFollowupEmail,
+  previewInvoiceEmail,
+  previewQuoteEmail,
+  sendFollowupEmailTest,
+  sendInvoiceEmailTest,
+  sendQuoteEmailTest,
+} from '../../services/clientEmailService';
 import { parseJobDate } from '../../services/analyticsCalculations';
 import InvoiceFormModal from './InvoiceFormModal';
 import JobFormModal from './JobFormModal';
@@ -111,6 +120,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   // Invoice email state
   const [selectedJobId, setSelectedJobId] = useState<string>('');
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  /**
+   * Bumped whenever the invoice form saves. Editing an invoice leaves its id
+   * alone, so without this an open preview would keep showing the totals from
+   * before the edit — the one thing the preview exists to be trusted about.
+   */
+  const [invoiceRevision, setInvoiceRevision] = useState(0);
   const [invoiceForEdit, setInvoiceForEdit] = useState<any | null>(null);
   const [invoiceReviewed, setInvoiceReviewed] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
@@ -614,6 +629,42 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setQuoteSending(false);
     }
   }
+
+  // The preview and test-send pairs EmailPreviewActions takes. Memoised because
+  // this modal re-renders on every cooldown tick, and a callback that changed
+  // identity each second would be a new fetch waiting to happen.
+  const clientId = currentClient.id;
+  const clientOrgId = currentClient.organization_id;
+
+  const loadFollowupPreview = useCallback(
+    () => previewFollowupEmail(clientId, clientOrgId),
+    [clientId, clientOrgId],
+  );
+  const testFollowupEmail = useCallback(
+    () => sendFollowupEmailTest(clientId, clientOrgId),
+    [clientId, clientOrgId],
+  );
+
+  const loadQuotePreview = useCallback(
+    () => previewQuoteEmail(clientId, clientOrgId, selectedQuoteJobId),
+    [clientId, clientOrgId, selectedQuoteJobId],
+  );
+  const testQuoteEmail = useCallback(
+    () => sendQuoteEmailTest(clientId, clientOrgId, selectedQuoteJobId),
+    [clientId, clientOrgId, selectedQuoteJobId],
+  );
+
+  // The override address only changes who the preview names as the recipient,
+  // so it is read at fetch time rather than keyed on — re-keying would reset an
+  // open preview on every keystroke.
+  const loadInvoicePreview = useCallback(
+    () => previewInvoiceEmail(clientId, clientOrgId, selectedInvoiceId ?? '', invoiceEmailOverride),
+    [clientId, clientOrgId, selectedInvoiceId, invoiceEmailOverride],
+  );
+  const testInvoiceEmail = useCallback(
+    () => sendInvoiceEmailTest(clientId, clientOrgId, selectedInvoiceId ?? ''),
+    [clientId, clientOrgId, selectedInvoiceId],
+  );
 
   async function handlePermanentDelete() {
     if (deleteConfirmText !== currentClient.name) return;
@@ -1240,6 +1291,15 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 Last sent {currentClient.last_followup_email_sent_at ? formatDateTime(currentClient.last_followup_email_sent_at) : ''}. Can resend after cooldown.
               </p>
             )}
+
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <EmailPreviewActions
+                label="Post-job follow-up email"
+                previewKey={`followup:${clientId}`}
+                loadPreview={loadFollowupPreview}
+                sendTest={testFollowupEmail}
+              />
+            </div>
           </div>
         )}
 
@@ -1300,6 +1360,16 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   Last sent {currentClient.last_quote_email_sent_at ? formatDateTime(currentClient.last_quote_email_sent_at) : ''}. Can resend after cooldown.
                 </p>
               )}
+
+              <div className="pt-3 border-t border-gray-100">
+                <EmailPreviewActions
+                  label="Quote email"
+                  previewKey={`quote:${selectedQuoteJobId}`}
+                  loadPreview={loadQuotePreview}
+                  sendTest={testQuoteEmail}
+                  disabled={!selectedQuoteJobId}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -1438,6 +1508,16 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   Last sent {currentClient.last_invoice_email_sent_at ? formatDateTime(currentClient.last_invoice_email_sent_at) : ''}. Can resend after cooldown.
                 </p>
               )}
+
+              <div className="pt-3 border-t border-gray-100">
+                <EmailPreviewActions
+                  label="Invoice email"
+                    previewKey={`invoice:${selectedInvoiceId ?? ''}:${invoiceRevision}`}
+                  loadPreview={loadInvoicePreview}
+                  sendTest={testInvoiceEmail}
+                  disabled={!selectedInvoiceId}
+                />
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-start gap-3 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center sm:justify-between">
@@ -1910,6 +1990,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           onSaved={async () => {
             setShowInvoiceForm(false);
             setInvoiceReviewed(true);
+            setInvoiceRevision((revision) => revision + 1);
             if (selectedJobId) {
               const { supabase } = await import('../../lib/supabase');
               const { data } = await supabase

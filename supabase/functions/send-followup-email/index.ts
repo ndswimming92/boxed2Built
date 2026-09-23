@@ -1,6 +1,28 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import {
+  cooldownSecondsRemaining,
+  describeCooldown,
+  testRecipientFrom,
+  type EmailPreviewPayload,
+} from '../_shared/adminEmailModes.ts';
+
+/**
+ * The post-job thank-you: a Google review ask, a way back to a quote, and the
+ * client's referral code. Sent by hand from the client's profile, never on a
+ * schedule.
+ *
+ * POST {"clientId": "...", "organizationId": "..."} sends it to the client.
+ * POST {..., "preview": true} returns the rendered email and what would stop it
+ *   sending, without sending. This is what the admin console displays, so the
+ *   preview is the same HTML the client would receive rather than a second copy
+ *   of the template maintained in the browser.
+ * POST {..., "test": true} sends the real email to the signed-in admin instead
+ *   of the client. The recipient comes from the caller's own token, never from
+ *   the request body — nothing here can be aimed at a third party. A test
+ *   leaves the cooldown marker alone, so the client is still owed theirs.
+ */
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,6 +48,10 @@ const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
 interface Payload {
   clientId: string;
   organizationId: string;
+  /** Render the email and return it without sending. Touches nothing. */
+  preview?: boolean;
+  /** Send the real email to the signed-in admin instead of the client. */
+  test?: boolean;
 }
 
 function escapeHtml(input: string): string {
@@ -195,6 +221,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Where a test copy goes, resolved from the caller's own token. Decided
+    // before any database work so a test with nobody to send to fails early.
+    let testRecipient: string | null = null;
+    if (body.test) {
+      const resolved = testRecipientFrom(auth);
+      if (!resolved.ok) {
+        return new Response(JSON.stringify({ success: false, error: resolved.error }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      testRecipient = resolved.email;
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: client, error: clientError } = await supabase
@@ -211,35 +251,65 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!client.email) {
+    const subject = 'Thank You from Boxed2Built';
+    const html = buildHtml(client.name, client.referral_code ?? null);
+    const text = buildPlainText(client.name, client.referral_code ?? null);
+
+    const recipient = client.email?.trim() || null;
+    const cooldownRemaining = cooldownSecondsRemaining(
+      client.last_followup_email_sent_at,
+      COOLDOWN_MS,
+    );
+
+    // A preview renders even when the guards below would refuse, and reports
+    // which one refused: seeing the email is how you work out what to fix.
+    // Nothing past this point runs, so nothing is sent and nothing is written.
+    if (body.preview) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          preview: {
+            subject,
+            html,
+            text,
+            recipient,
+            blocked: !recipient
+              ? 'This client has no email address on file.'
+              : cooldownRemaining > 0
+                ? describeCooldown(cooldownRemaining)
+                : null,
+          } satisfies EmailPreviewPayload,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Not waived for a test copy either: with no address on file this email is
+    // wrong rather than early, and a test would only show something misleading.
+    if (!recipient) {
       return new Response(JSON.stringify({ success: false, error: 'Client has no email address.' }), {
         status: 422,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (client.last_followup_email_sent_at) {
-      const lastSent = new Date(client.last_followup_email_sent_at).getTime();
-      const elapsed = Date.now() - lastSent;
-      if (elapsed < COOLDOWN_MS) {
-        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'cooldown',
-            remainingSeconds,
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
-        );
-      }
+    // The cooldown keeps the client from being mailed the same thing twice. A
+    // test copy goes to the admin's own inbox, so it is not what that protects.
+    if (!testRecipient && cooldownRemaining > 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'cooldown',
+          remainingSeconds: cooldownRemaining,
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
-    const subject = 'Thank You from Boxed2Built';
-    const html = buildHtml(client.name, client.referral_code ?? null);
-    const text = buildPlainText(client.name, client.referral_code ?? null);
+    const sendTo = testRecipient ?? recipient;
 
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -249,8 +319,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: `Boxed2Built <${FROM_EMAIL}>`,
-        to: [client.email],
-        bcc: [BCC_EMAIL],
+        to: [sendTo],
+        ...(testRecipient ? {} : { bcc: [BCC_EMAIL] }),
         subject,
         html,
         text,
@@ -267,23 +337,38 @@ Deno.serve(async (req) => {
     const messageId: string = resendData?.id ?? '';
     const now = new Date().toISOString();
 
-    await supabase.from('clients').update({ last_followup_email_sent_at: now }).eq('id', client.id);
+    // A test copy went to the admin, not the client, so the client is still owed
+    // their follow-up and the cooldown marker must not move.
+    if (!testRecipient) {
+      await supabase.from('clients').update({ last_followup_email_sent_at: now }).eq('id', client.id);
+    }
 
+    // Logged either way: Resend will post delivery and open events for a test
+    // send too, and a log missing the send they belong to reads as an orphan.
     await supabase.from('email_events').insert({
       resend_event_id: messageId ? `send-${messageId}` : null,
       message_id: messageId || null,
       event_type: 'email.sent',
-      recipient: client.email,
+      recipient: sendTo,
       subject,
       from_address: FROM_EMAIL,
       occurred_at: now,
-      payload: { source: 'send-followup-email', clientId: client.id, clientName: client.name },
+      payload: {
+        source: 'send-followup-email',
+        clientId: client.id,
+        clientName: client.name,
+        ...(testRecipient ? { test: true } : {}),
+      },
     });
 
-    return new Response(JSON.stringify({ success: true, sentAt: now }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify(
+        testRecipient
+          ? { success: true, test: true, to: sendTo }
+          : { success: true, sentAt: now, to: sendTo },
+      ),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to send follow-up email.';
     console.error('send-followup-email error:', error);
