@@ -28,6 +28,7 @@ import {
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import JobReminderCard from './JobReminderCard';
+import { parseJobDate } from '../../services/analyticsCalculations';
 import InvoiceFormModal from './InvoiceFormModal';
 import JobFormModal from './JobFormModal';
 import type { Job } from '../../lib/supabase';
@@ -670,6 +671,23 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     });
   }
 
+  /**
+   * `date_scheduled` is a date column with no time, so `new Date('2026-09-26')`
+   * parses it as UTC midnight and renders the day before anywhere west of
+   * Greenwich — the job on the 26th read "Sep 25" in Chicago. parseJobDate puts
+   * a bare date on its own local calendar day; formatDate above is left alone
+   * because every other caller here passes a real timestamp.
+   */
+  function formatScheduledDate(date: string | null): string {
+    const parsed = parseJobDate(date);
+    if (!parsed) return 'Not scheduled';
+    return parsed.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
   function formatDateTime(date: string): string {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
@@ -1179,7 +1197,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
               {upcomingScheduledJobs.map((job: any) => (
                 <div key={job.id}>
                   <p className="text-xs font-medium text-gray-600 mb-1.5">
-                    {job.job_type || 'Job'} — {formatDate(job.date_scheduled)}
+                    {job.job_type || 'Job'} — {formatScheduledDate(job.date_scheduled)}
                   </p>
                   <JobReminderCard jobId={job.id} clientName={currentClient.name} />
                 </div>
