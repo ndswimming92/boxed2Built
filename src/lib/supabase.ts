@@ -903,6 +903,8 @@ export type TravelSettings = {
   origin_address: string;
   origin_latitude: number | null;
   origin_longitude: number | null;
+  /** Padding added to the drive time when working out a job's leave-by time. 0-240. */
+  departure_buffer_minutes: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;

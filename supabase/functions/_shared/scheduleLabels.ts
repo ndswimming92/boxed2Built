@@ -64,3 +64,46 @@ export function formatScheduleWhen(
 
   return `${prettyDate}, ${end ? `${start} – ${end}` : start}`;
 }
+
+/** 45 -> '45 min', 72 -> '1 hr 12 min', 120 -> '2 hr'. Mirrors formatTravelDuration() in the browser. */
+export function formatDurationMinutes(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes));
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  if (!hours) return `${rest} min`;
+  return rest ? `${hours} hr ${rest} min` : `${hours} hr`;
+}
+
+/**
+ * The shape of a leave-by, without importing it: `_shared/travel.ts` already
+ * imports this module, and a type import back the other way would close the loop.
+ */
+export interface LeaveByLabelParts {
+  /** HH:MM on the job's own wall clock. */
+  time: string;
+  /** Whole days before the job's date; 0 for the same morning. */
+  daysEarlier: number;
+  driveMinutes: number;
+  bufferMinutes: number;
+}
+
+/** '10:45 AM', or '10:45 PM the day before' when the drive starts before midnight. */
+export function formatLeaveByTime(leaveBy: LeaveByLabelParts): string {
+  const clock = formatScheduleTime(leaveBy.time) ?? leaveBy.time;
+  if (leaveBy.daysEarlier === 1) return `${clock} the day before`;
+  if (leaveBy.daysEarlier > 1) return `${clock}, ${leaveBy.daysEarlier} days before`;
+  return clock;
+}
+
+/**
+ * '10:45 AM (45 min drive + 15 min buffer)' — the whole point is that the number
+ * is checkable, so the parts it was built from travel with it. A zero buffer is
+ * left off rather than printed as "+ 0 min".
+ */
+export function formatLeaveByLabel(leaveBy: LeaveByLabelParts): string {
+  const drive = `${formatDurationMinutes(leaveBy.driveMinutes)} drive`;
+  const buffer = leaveBy.bufferMinutes > 0
+    ? ` + ${formatDurationMinutes(leaveBy.bufferMinutes)} buffer`
+    : '';
+  return `${formatLeaveByTime(leaveBy)} (${drive}${buffer})`;
+}

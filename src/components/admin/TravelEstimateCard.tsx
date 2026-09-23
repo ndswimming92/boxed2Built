@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Car, Clock, MapPinned, RefreshCw, Route } from 'lucide-react';
+import { AlertCircle, Car, Clock, LogOut, MapPinned, RefreshCw, Route } from 'lucide-react';
 import { getDirectionsUrl } from '../../utils/jobAddress';
 import {
+  formatLeaveByTime,
   formatTravelDistance,
   formatTravelDuration,
   type JobTravelEstimate,
@@ -142,6 +143,26 @@ export default function TravelEstimateCard({
               {formatTravelDistance(estimate.distanceMeters)} each way
             </span>
           </div>
+
+          {/* The number the drive time exists to produce. Absent whenever the
+              row has no start hour to count back from, which is also when it
+              would be meaningless. */}
+          {estimate.leaveBy && (
+            <div className="mt-2 flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+              <LogOut className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-900">
+                  Leave by {formatLeaveByTime(estimate.leaveBy)}
+                </p>
+                <p className="text-xs text-amber-800/80">
+                  {formatTravelDuration(estimate.durationSeconds)} drive
+                  {estimate.leaveBy.bufferMinutes > 0
+                    ? ` + ${estimate.leaveBy.bufferMinutes} min buffer`
+                    : ''}
+                </p>
+              </div>
+            </div>
+          )}
         </>
       )}
 
