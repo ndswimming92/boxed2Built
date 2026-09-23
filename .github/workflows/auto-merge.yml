@@ -1,0 +1,43 @@
+# .github/workflows/auto-merge.yml
+# Auto-merges every PR once required checks pass — with ONE exception:
+# major dependency bumps from Dependabot pause and wait for you to review.
+# (Your own PRs and patch/minor dependency updates still merge automatically.)
+# Replaces the old dependabot-auto-merge.yml (delete that file so they don't overlap).
+
+name: Auto-merge PRs
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Don't touch draft PRs — they'll get picked up once marked "ready for review".
+    if: github.event.pull_request.draft == false
+    steps:
+      # Only Dependabot PRs have a semver "update type". Look it up so we can
+      # tell a major bump apart from a patch/minor one.
+      - name: Fetch Dependabot metadata
+        id: metadata
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Enable auto-merge
+        # Merge when EITHER:
+        #   - it's not a Dependabot PR (your own PRs always qualify), OR
+        #   - it is Dependabot and the bump is patch or minor.
+        # A major Dependabot bump matches neither, so it's left open for review.
+        if: |
+          github.event.pull_request.user.login != 'dependabot[bot]' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
