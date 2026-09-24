@@ -57,6 +57,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM_EMAIL = 'team@boxed2built.com';
+// team@boxed2built.com cannot receive mail — it hard-bounces. This is the
+// address that actually accepts replies.
+const REPLY_TO_EMAIL = 'replies@reply.boxed2built.com';
 const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://boxed2built.com').replace(/\/+$/, '');
 
 /** Local wall clock, the day before, that the reminder aims for. */
@@ -230,7 +233,7 @@ async function sendReminder(
       html: email.html,
       text: email.text,
       // Replies belong in the inbox the business actually reads.
-      reply_to: business.email ?? FROM_EMAIL,
+      reply_to: business.email ?? REPLY_TO_EMAIL,
       attachments: [
         {
           filename: 'appointment.ics',

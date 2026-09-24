@@ -31,6 +31,9 @@ const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM_EMAIL = 'team@boxed2built.com';
+// team@boxed2built.com cannot receive mail — it hard-bounces (see resend-webhook's
+// TEAM_INBOX comment). This is the address that actually accepts replies.
+const REPLY_TO_EMAIL = 'replies@reply.boxed2built.com';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://boxed2built.com';
 
 type BookingEvent = 'created' | 'confirmed' | 'declined';
@@ -324,7 +327,7 @@ Deno.serve(async (req: Request) => {
           bookingSummaryHtml(booking),
           'Reply to this email if anything changes.',
         ),
-        reply_to: FROM_EMAIL,
+        reply_to: REPLY_TO_EMAIL,
         // A pending slot is not an appointment yet, so no invite goes out until
         // it is confirmed — otherwise a decline leaves a ghost in their calendar.
         attachments:
@@ -356,7 +359,7 @@ Deno.serve(async (req: Request) => {
           bookingSummaryHtml(booking),
           'The attached invite adds it to your calendar.',
         ),
-        reply_to: FROM_EMAIL,
+        reply_to: REPLY_TO_EMAIL,
         attachments: [
           {
             filename: 'booking.ics',
@@ -381,7 +384,7 @@ Deno.serve(async (req: Request) => {
         bookingSummaryHtml(booking),
         `Book another time at ${SITE_URL}/book`,
       ),
-      reply_to: FROM_EMAIL,
+      reply_to: REPLY_TO_EMAIL,
     });
 
     return json({ success: true, notified: [booking.customer_email] });

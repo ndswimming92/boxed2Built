@@ -10,8 +10,12 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 // Every outbound send in this codebase sets this as reply_to, so it's the
-// address customer replies actually land on. Forward mail addressed here.
-const TEAM_INBOX = "team@boxed2built.com";
+// address customer replies actually land on. team@boxed2built.com itself
+// cannot receive mail — it hard-bounces, because the root domain's real MX
+// is Google Workspace, not Resend. This lives on reply.boxed2built.com, a
+// dedicated receiving-only subdomain, so it doesn't fight Workspace for the
+// root domain's mail. Forward mail addressed here.
+const TEAM_INBOX = "replies@reply.boxed2built.com";
 // Where forwarded replies actually get read. Also excluded as a forward
 // source below, so a forwarded copy can never trigger forwarding itself.
 const FORWARD_TO = "nicholas.davidson@boxed2built.com";

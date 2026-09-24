@@ -13,6 +13,9 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const FROM_EMAIL = 'team@boxed2built.com';
+// team@boxed2built.com cannot receive mail — it hard-bounces. This is the
+// address that actually accepts replies.
+const REPLY_TO_EMAIL = 'replies@reply.boxed2built.com';
 const BCC_EMAIL = 'nicholas.davidson@boxed2built.com';
 const APP_URL = 'https://www.boxed2built.com';
 
@@ -402,7 +405,7 @@ Deno.serve(async (req) => {
         subject,
         html,
         text,
-        reply_to: FROM_EMAIL,
+        reply_to: REPLY_TO_EMAIL,
       }),
     });
 
@@ -423,7 +426,7 @@ Deno.serve(async (req) => {
           subject: adminSubject,
           html: adminHtml,
           text: adminText,
-          reply_to: FROM_EMAIL,
+          reply_to: REPLY_TO_EMAIL,
         }),
       });
     } catch (adminEmailErr) {

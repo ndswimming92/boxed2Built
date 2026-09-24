@@ -9,6 +9,9 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = "team@boxed2built.com";
+// team@boxed2built.com cannot receive mail — it hard-bounces. This is the
+// address that actually accepts replies.
+const REPLY_TO_EMAIL = "replies@reply.boxed2built.com";
 
 /**
  * Every address that should receive a new lead.
@@ -557,7 +560,8 @@ Deno.serve(async (req: Request) => {
         await sendEmail(
           p.email,
           `Your Boxed2Built request is confirmed — Code: ${p.confirmationCode}`,
-          customerConfirmationContact(p)
+          customerConfirmationContact(p),
+          REPLY_TO_EMAIL
         );
         emailResults.client = true;
       } catch (err) {
@@ -584,7 +588,8 @@ Deno.serve(async (req: Request) => {
         await sendEmail(
           p.email,
           "We received your message — Boxed2Built",
-          customerConfirmationQuick(p)
+          customerConfirmationQuick(p),
+          REPLY_TO_EMAIL
         );
         emailResults.client = true;
       } catch (err) {
