@@ -1,33 +1,40 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
-import {
-  cooldownSecondsRemaining,
-  describeCooldown,
-  testRecipientFrom,
-  type EmailPreviewPayload,
-} from '../_shared/adminEmailModes.ts';
+import { decideFollowup, isSendableEmail, type FollowupSkipReason } from '../_shared/customerFollowup.ts';
 
 /**
  * The post-job thank-you: a Google review ask, a way back to a quote, and the
- * client's referral code. Sent by hand from the client's profile, never on a
- * schedule.
+ * client's referral code. Fires automatically once a job's scheduled end time
+ * passes; also sendable by hand from that job's card.
  *
- * POST {"clientId": "...", "organizationId": "..."} sends it to the client.
- * POST {..., "preview": true} returns the rendered email and what would stop it
- *   sending, without sending. This is what the admin console displays, so the
- *   preview is the same HTML the client would receive rather than a second copy
- *   of the template maintained in the browser.
- * POST {..., "test": true} sends the real email to the signed-in admin instead
- *   of the client. The recipient comes from the caller's own token, never from
- *   the request body — nothing here can be aimed at a third party. A test
- *   leaves the cooldown marker alone, so the client is still owed theirs.
+ * POST with no body (how cron calls it) sweeps every job that is due.
+ * POST {"jobId": "..."} judges one job and reports why it did or did not send.
+ * POST {"jobId": "...", "preview": true} returns the rendered email and its
+ *   send status without sending. This is what the admin console displays, so
+ *   the preview is the same HTML the client would receive rather than a
+ *   second copy of the template maintained in the browser.
+ * POST {"jobId": "...", "force": true} sends now, overriding the timing guard.
+ *   force is rejected without a jobId, since a forced sweep would re-mail
+ *   every eligible customer at once.
+ * POST {"jobId": "...", "test": true} sends the real email to the signed-in
+ *   admin instead of the client. The recipient comes from the caller's own
+ *   token, never from the request body — nothing here can be aimed at a
+ *   third party. A test leaves the job's markers alone, so the client is
+ *   still owed theirs.
+ * POST {"dryRun": true} renders everything and sends nothing.
  */
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  // x-correlation-id / x-session-correlation-id are added to every request by
+  // the Supabase client's fetch wrapper in src/lib/supabase.ts. A preflight
+  // that does not allow them is rejected by the browser before the POST is
+  // ever sent, which surfaces as "Failed to send a request to the Edge
+  // Function" rather than as anything mentioning CORS.
+  'Access-Control-Allow-Headers':
+    'Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -42,19 +49,87 @@ const BCC_EMAIL = 'nicholas.davidson@boxed2built.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const CONTACT_URL = 'https://boxed2built.com/contact';
 const REVIEW_URL = 'https://g.page/r/CW-qaf93r1ZuEAI/review';
-const CONTACT_PHONE = '615-403-4538';
 const CONTACT_EMAIL = 'nicholas.davidson@boxed2built.com';
 
-const COOLDOWN_MINUTES = 10;
-const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000;
+/** Used when the business has no booking settings row to read a timezone from. */
+const DEFAULT_TIMEZONE = 'America/Chicago';
+
+/**
+ * How far back the sweep looks for jobs whose end time might be due. Bounded
+ * deliberately tight: these columns start NULL on every job, including ones
+ * completed months or years ago, and an unbounded sweep would read that as
+ * every one of them being newly due. See the migration that added these
+ * columns for the full reasoning.
+ */
+const LOOKBACK_DAYS = 3;
+
+interface JobRow {
+  id: string;
+  business_id: string;
+  client_id: string | null;
+  client_name: string | null;
+  client_email: string | null;
+  job_status: string | null;
+  is_active: boolean;
+  date_scheduled: string | null;
+  scheduled_end_time: string | null;
+  follow_up_for_date: string | null;
+  follow_up_for_end_time: string | null;
+  follow_up_sent_at: string | null;
+}
+
+const JOB_COLUMNS =
+  'id, business_id, client_id, client_name, client_email, job_status, is_active, ' +
+  'date_scheduled, scheduled_end_time, follow_up_for_date, follow_up_for_end_time, follow_up_sent_at';
 
 interface Payload {
-  clientId: string;
-  organizationId: string;
-  /** Render the email and return it without sending. Touches nothing. */
+  /** Judge or send for one job only. Omitted by cron, which sweeps everything due. */
+  jobId?: string;
+  /** Send now, overriding the timing guard. Requires jobId. */
+  force?: boolean;
+  /** Return the rendered email and its status without sending. Requires jobId. */
   preview?: boolean;
   /** Send the real email to the signed-in admin instead of the client. */
   test?: boolean;
+  /** Render everything and send nothing. */
+  dryRun?: boolean;
+}
+
+/** What the admin console needs to show a preview and a status line. */
+interface PreviewPayload {
+  subject: string;
+  html: string;
+  text: string;
+  /** The client address this would go to, or null when there is not one. */
+  recipient: string | null;
+  status: 'due' | 'scheduled' | 'sent' | 'blocked';
+  reason: FollowupSkipReason | null;
+  /** ISO instant the follow-up is or was due; null when the job has no date/end time. */
+  sendAt: string | null;
+  /** ISO instant it actually went out, when it has. */
+  sentAt: string | null;
+  /** So the browser can render both instants on the business's clock. */
+  timeZone: string;
+}
+
+interface SendOutcome {
+  jobId: string;
+  sent: boolean;
+  reason?: FollowupSkipReason | 'send_failed' | 'dry_run';
+  to?: string;
+  subject?: string;
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+/** YYYY-MM-DD, `days` from now in UTC. Only ever used to bound the sweep. */
+function utcDateOffset(now: Date, days: number): string {
+  return new Date(now.getTime() + days * 86_400_000).toISOString().slice(0, 10);
 }
 
 function escapeHtml(input: string): string {
@@ -185,199 +260,298 @@ function buildPlainText(clientName: string, referralCode: string | null): string
   return lines.join('\n');
 }
 
-Deno.serve(async (req) => {
+async function loadTimeZone(supabase: SupabaseClient, businessId: string): Promise<string> {
+  // Job times are bare local times; they only mean something against the
+  // business timezone the booking page already configures.
+  const { data } = await supabase
+    .from('booking_settings')
+    .select('timezone')
+    .eq('business_id', businessId)
+    .maybeSingle<{ timezone: string | null }>();
+  return data?.timezone?.trim() || DEFAULT_TIMEZONE;
+}
+
+async function loadReferralCode(supabase: SupabaseClient, clientId: string | null): Promise<string | null> {
+  if (!clientId) return null;
+  const { data } = await supabase
+    .from('clients')
+    .select('referral_code')
+    .eq('id', clientId)
+    .maybeSingle<{ referral_code: string | null }>();
+  return data?.referral_code ?? null;
+}
+
+async function sendFollowup(
+  supabase: SupabaseClient,
+  job: JobRow,
+  referralCode: string | null,
+  now: Date,
+  dryRun: boolean,
+  /** A test send goes to the admin and must not touch the job's or client's markers. */
+  testRecipient?: string,
+): Promise<SendOutcome> {
+  const recipient = testRecipient ?? job.client_email!.trim();
+  const subject = 'Thank You from Boxed2Built';
+  const html = buildHtml(job.client_name ?? '', referralCode);
+  const text = buildPlainText(job.client_name ?? '', referralCode);
+
+  if (dryRun) {
+    return { jobId: job.id, sent: false, reason: 'dry_run', to: recipient, subject };
+  }
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: `Boxed2Built <${FROM_EMAIL}>`,
+      to: [recipient],
+      ...(testRecipient ? {} : { bcc: [BCC_EMAIL] }),
+      subject,
+      html,
+      text,
+      reply_to: REPLY_TO_EMAIL,
+    }),
+  });
+
+  if (!res.ok) {
+    console.error('send-followup-email: Resend rejected the send', job.id, res.status, await res.text());
+    return { jobId: job.id, sent: false, reason: 'send_failed', to: recipient };
+  }
+
+  // A test copy went to the admin, not the client, so the client is still
+  // owed their follow-up and the markers must not move.
+  if (testRecipient) {
+    return { jobId: job.id, sent: true, to: recipient, subject };
+  }
+
+  const resendData = await res.json();
+  const messageId: string = resendData?.id ?? '';
+  const nowIso = now.toISOString();
+
+  // Only now advance the markers: a failed send above must stay re-sendable
+  // on the next tick.
+  const { error } = await supabase
+    .from('jobs')
+    .update({
+      follow_up_for_date: job.date_scheduled,
+      follow_up_for_end_time: job.scheduled_end_time,
+      follow_up_sent_at: nowIso,
+    })
+    .eq('id', job.id);
+  if (error) {
+    // The email is already out; log rather than report a failure that would
+    // send the client a second copy next hour.
+    console.error('send-followup-email: failed to record follow-up state', job.id, error);
+  }
+
+  // Kept in step so the Clients page's "Follow-up email" badge, which reads
+  // this column, still reflects reality now that sends are job-driven.
+  if (job.client_id) {
+    const { error: clientError } = await supabase
+      .from('clients')
+      .update({ last_followup_email_sent_at: nowIso })
+      .eq('id', job.client_id);
+    if (clientError) {
+      console.error('send-followup-email: failed to update client marker', job.client_id, clientError);
+    }
+  }
+
+  await supabase.from('email_events').insert({
+    resend_event_id: messageId ? `send-${messageId}` : null,
+    message_id: messageId || null,
+    event_type: 'email.sent',
+    recipient,
+    subject,
+    from_address: FROM_EMAIL,
+    occurred_at: nowIso,
+    payload: {
+      source: 'send-followup-email',
+      jobId: job.id,
+      clientId: job.client_id,
+      clientName: job.client_name,
+    },
+  });
+
+  return { jobId: job.id, sent: true, to: recipient, subject };
+}
+
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
-
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ success: false, error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json({ success: false, error: 'Method not allowed' }, 405);
+  }
+
+  const auth = await authorizeAdminOrService(req);
+  if (!auth.ok) {
+    return json({ success: false, error: auth.error ?? 'Unauthorized' }, auth.status ?? 401);
   }
 
   if (!RESEND_API_KEY) {
-    return new Response(JSON.stringify({ success: false, error: 'Email service is not configured.' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json({ success: false, error: 'Email service is not configured.' }, 500);
   }
 
+  // Cron posts {"trigger":"cron"}; a manual call may post nothing at all.
+  let payload: Payload = {};
   try {
-    // F15: mailing a client follow-up is a staff action. The published anon key is
-    // itself a valid JWT, so without this the endpoint was reachable by anyone.
-    const auth = await authorizeAdminOrService(req);
-    if (!auth.ok) {
-      return new Response(JSON.stringify({ success: false, error: auth.error }), {
-        status: auth.status ?? 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const body = (await req.json()) as Payload;
-
-    if (!body?.clientId || !body?.organizationId) {
-      return new Response(JSON.stringify({ success: false, error: 'Missing required fields.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Where a test copy goes, resolved from the caller's own token. Decided
-    // before any database work so a test with nobody to send to fails early.
-    let testRecipient: string | null = null;
-    if (body.test) {
-      const resolved = testRecipientFrom(auth);
-      if (!resolved.ok) {
-        return new Response(JSON.stringify({ success: false, error: resolved.error }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      testRecipient = resolved.email;
-    }
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const { data: client, error: clientError } = await supabase
-      .from('clients')
-      .select('id, name, email, last_followup_email_sent_at, referral_code')
-      .eq('id', body.clientId)
-      .eq('organization_id', body.organizationId)
-      .maybeSingle();
-
-    if (clientError || !client) {
-      return new Response(JSON.stringify({ success: false, error: 'Client not found.' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const subject = 'Thank You from Boxed2Built';
-    const html = buildHtml(client.name, client.referral_code ?? null);
-    const text = buildPlainText(client.name, client.referral_code ?? null);
-
-    const recipient = client.email?.trim() || null;
-    const cooldownRemaining = cooldownSecondsRemaining(
-      client.last_followup_email_sent_at,
-      COOLDOWN_MS,
-    );
-
-    // A preview renders even when the guards below would refuse, and reports
-    // which one refused: seeing the email is how you work out what to fix.
-    // Nothing past this point runs, so nothing is sent and nothing is written.
-    if (body.preview) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          preview: {
-            subject,
-            html,
-            text,
-            recipient,
-            blocked: !recipient
-              ? 'This client has no email address on file.'
-              : cooldownRemaining > 0
-                ? describeCooldown(cooldownRemaining)
-                : null,
-          } satisfies EmailPreviewPayload,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Not waived for a test copy either: with no address on file this email is
-    // wrong rather than early, and a test would only show something misleading.
-    if (!recipient) {
-      return new Response(JSON.stringify({ success: false, error: 'Client has no email address.' }), {
-        status: 422,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // The cooldown keeps the client from being mailed the same thing twice. A
-    // test copy goes to the admin's own inbox, so it is not what that protects.
-    if (!testRecipient && cooldownRemaining > 0) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'cooldown',
-          remainingSeconds: cooldownRemaining,
-        }),
-        {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    const sendTo = testRecipient ?? recipient;
-
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: `Boxed2Built <${FROM_EMAIL}>`,
-        to: [sendTo],
-        ...(testRecipient ? {} : { bcc: [BCC_EMAIL] }),
-        subject,
-        html,
-        text,
-        reply_to: REPLY_TO_EMAIL,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const err = await resendRes.text();
-      throw new Error(`Resend API error: ${err}`);
-    }
-
-    const resendData = await resendRes.json();
-    const messageId: string = resendData?.id ?? '';
-    const now = new Date().toISOString();
-
-    // A test copy went to the admin, not the client, so the client is still owed
-    // their follow-up and the cooldown marker must not move.
-    if (!testRecipient) {
-      await supabase.from('clients').update({ last_followup_email_sent_at: now }).eq('id', client.id);
-    }
-
-    // Logged either way: Resend will post delivery and open events for a test
-    // send too, and a log missing the send they belong to reads as an orphan.
-    await supabase.from('email_events').insert({
-      resend_event_id: messageId ? `send-${messageId}` : null,
-      message_id: messageId || null,
-      event_type: 'email.sent',
-      recipient: sendTo,
-      subject,
-      from_address: FROM_EMAIL,
-      occurred_at: now,
-      payload: {
-        source: 'send-followup-email',
-        clientId: client.id,
-        clientName: client.name,
-        ...(testRecipient ? { test: true } : {}),
-      },
-    });
-
-    return new Response(
-      JSON.stringify(
-        testRecipient
-          ? { success: true, test: true, to: sendTo }
-          : { success: true, sentAt: now, to: sendTo },
-      ),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-    );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to send follow-up email.';
-    console.error('send-followup-email error:', error);
-    return new Response(JSON.stringify({ success: false, error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    payload = (await req.json()) as Payload;
+  } catch {
+    payload = {};
   }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const now = new Date();
+  const jobId = payload.jobId?.trim();
+
+  // force means "send now regardless of timing". Across a whole sweep it
+  // would mean mailing every eligible client at once, which is never what
+  // anyone wants, so it has to name its job. Same for the single-job-only modes.
+  for (const [flag, label] of [[payload.force, 'force'], [payload.preview, 'preview'], [payload.test, 'test']] as const) {
+    if (flag && !jobId) {
+      return json({ success: false, error: `${label} requires a jobId.` }, 400);
+    }
+  }
+
+  // A test copy goes to whoever is signed in, read from their own token.
+  // There is deliberately no recipient parameter: a body-supplied address
+  // would turn this into a way to mail arbitrary people from the business's
+  // domain.
+  if (payload.test && !auth.user?.email) {
+    return json(
+      { success: false, error: 'A test send needs a signed-in admin with an email address.' },
+      400,
+    );
+  }
+
+  let query = supabase.from('jobs').select(JOB_COLUMNS);
+  if (jobId) {
+    // No eligibility filters here: decideFollowup reports *why* a named job
+    // is not getting an email, which is the whole value of asking about one.
+    query = query.eq('id', jobId);
+  } else {
+    query = query
+      .eq('is_active', true)
+      .in('job_status', ['scheduled', 'accepted', 'in_progress', 'completed'])
+      .gte('date_scheduled', utcDateOffset(now, -LOOKBACK_DAYS))
+      .lte('date_scheduled', utcDateOffset(now, 0));
+  }
+
+  const { data: jobs, error: jobsError } = await query.returns<JobRow[]>();
+
+  if (jobsError) {
+    console.error('send-followup-email: job lookup failed', jobsError);
+    return json({ success: false, error: 'Failed to load jobs' }, 500);
+  }
+  if (jobId && !jobs?.length) {
+    return json({ success: false, error: 'Job not found' }, 404);
+  }
+
+  const timeZones = new Map<string, string>();
+  const outcomes: SendOutcome[] = [];
+
+  for (const job of jobs ?? []) {
+    let timeZone = timeZones.get(job.business_id);
+    if (!timeZone) {
+      timeZone = await loadTimeZone(supabase, job.business_id);
+      timeZones.set(job.business_id, timeZone);
+    }
+
+    const decision = decideFollowup(
+      {
+        dateScheduled: job.date_scheduled,
+        scheduledEndTime: job.scheduled_end_time,
+        clientEmail: job.client_email,
+        isActive: job.is_active,
+        jobStatus: job.job_status,
+        followUpForDate: job.follow_up_for_date,
+        followUpForEndTime: job.follow_up_for_end_time,
+      },
+      {
+        now,
+        timeZone,
+        // A test copy goes to the admin, so the timing guard is beside the
+        // point — it protects the client's inbox, not this one. A preview
+        // never forces: its whole job is to report the real status.
+        force: !payload.preview && (payload.force || payload.test),
+      },
+    );
+
+    if (payload.preview) {
+      // A preview answers "what would this look like, and when does it go?",
+      // so it renders even for a job the guard would refuse — seeing the
+      // email is how you work out what to fix.
+      const referralCode = await loadReferralCode(supabase, job.client_id);
+      const subject = 'Thank You from Boxed2Built';
+      const html = buildHtml(job.client_name ?? '', referralCode);
+      const text = buildPlainText(job.client_name ?? '', referralCode);
+
+      const reason = decision.send ? null : decision.reason;
+      const status: PreviewPayload['status'] = reason === null
+        ? 'due'
+        : reason === 'already_sent'
+          ? 'sent'
+          : reason === 'too_early'
+            ? 'scheduled'
+            : 'blocked';
+
+      return json({
+        success: true,
+        preview: {
+          subject,
+          html,
+          text,
+          recipient: isSendableEmail(job.client_email) ? job.client_email!.trim() : null,
+          status,
+          reason,
+          sendAt: decision.sendAt?.toISOString() ?? null,
+          sentAt: job.follow_up_sent_at,
+          timeZone,
+        } satisfies PreviewPayload,
+      });
+    }
+
+    if (!decision.send) {
+      outcomes.push({ jobId: job.id, sent: false, reason: decision.reason });
+      continue;
+    }
+
+    const referralCode = await loadReferralCode(supabase, job.client_id);
+    outcomes.push(
+      await sendFollowup(
+        supabase,
+        job,
+        referralCode,
+        now,
+        payload.dryRun === true,
+        payload.test ? auth.user!.email! : undefined,
+      ),
+    );
+  }
+
+  const sent = outcomes.filter((outcome) => outcome.sent).length;
+  const failed = outcomes.filter((outcome) => outcome.reason === 'send_failed').length;
+
+  if (sent || failed) {
+    console.log(`send-followup-email: ${sent} sent, ${failed} failed, ${outcomes.length} considered`);
+  }
+
+  // A sweep over a quiet week is mostly skips, so it reports only the news.
+  // An explicit jobId or dryRun call is a question about specific jobs and
+  // gets every row back, skip reasons included.
+  const verbose = Boolean(jobId) || payload.dryRun === true;
+
+  return json({
+    success: true,
+    considered: outcomes.length,
+    sent,
+    failed,
+    dryRun: payload.dryRun === true,
+    results: verbose
+      ? outcomes
+      : outcomes.filter((outcome) => outcome.sent || outcome.reason === 'send_failed'),
+  });
 });
