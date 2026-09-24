@@ -8,6 +8,29 @@ import {
   headlineAmount,
   invoiceEmailSubject,
 } from '../_shared/invoiceLabels.ts';
+import {
+  cooldownSecondsRemaining,
+  describeCooldown,
+  testRecipientFrom,
+  type EmailPreviewPayload,
+} from '../_shared/adminEmailModes.ts';
+
+/**
+ * The invoice or estimate, with its line items and a link that takes payment.
+ * Sent by hand from the client's profile or the invoice form.
+ *
+ * POST {"clientId": "...", "organizationId": "...", "invoiceId": "..."} sends
+ *   it, and moves a draft invoice to sent. An optional overrideEmail addresses
+ *   a client who has none on file.
+ * POST {..., "preview": true} returns the rendered email and what would stop it
+ *   sending, without sending. This is what the admin console displays, so the
+ *   preview is the same HTML the client would receive rather than a second copy
+ *   of the template maintained in the browser.
+ * POST {..., "test": true} sends the real email to the signed-in admin instead
+ *   of the client. The recipient comes from the caller's own token, never from
+ *   overrideEmail or anywhere else in the body — nothing here can be aimed at a
+ *   third party. A test leaves the cooldown marker alone and a draft a draft.
+ */
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,6 +58,10 @@ interface Payload {
   organizationId: string;
   invoiceId: string;
   overrideEmail?: string;
+  /** Render the email and return it without sending. Touches nothing. */
+  preview?: boolean;
+  /** Send the real email to the signed-in admin instead of the client. */
+  test?: boolean;
 }
 
 interface LineItem {
@@ -442,6 +469,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Where a test copy goes, resolved from the caller's own token — never from
+    // overrideEmail, which is how the client is reached, not the admin. Decided
+    // before any database work so a test with nobody to send to fails early.
+    let testRecipient: string | null = null;
+    if (body.test) {
+      const resolved = testRecipientFrom(auth);
+      if (!resolved.ok) {
+        return new Response(JSON.stringify({ success: false, error: resolved.error }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      testRecipient = resolved.email;
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: client, error: clientError } = await supabase
@@ -458,26 +500,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const recipientEmail: string | null = body.overrideEmail?.trim() || client.email;
-
-    if (!recipientEmail) {
-      return new Response(JSON.stringify({ success: false, error: 'no_email' }), {
-        status: 422,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (client.last_invoice_email_sent_at) {
-      const lastSent = new Date(client.last_invoice_email_sent_at).getTime();
-      const elapsed = Date.now() - lastSent;
-      if (elapsed < COOLDOWN_MS) {
-        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
-        return new Response(
-          JSON.stringify({ success: false, error: 'cooldown', remainingSeconds }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
+    const recipientEmail: string | null = body.overrideEmail?.trim() || client.email?.trim() || null;
+    const cooldownRemaining = cooldownSecondsRemaining(
+      client.last_invoice_email_sent_at,
+      COOLDOWN_MS,
+    );
 
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
@@ -493,12 +520,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (invoice.status === 'paid' || invoice.status === 'cancelled') {
-      return new Response(JSON.stringify({ success: false, error: 'Invoice is already paid or cancelled.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const settled = invoice.status === 'paid' || invoice.status === 'cancelled';
 
     const { data: lineItems } = await supabase
       .from('invoice_line_items')
@@ -524,6 +546,61 @@ Deno.serve(async (req) => {
     const html = buildHtml(client.name, invoice as Invoice, (lineItems || []) as LineItem[], payUrl, businessName);
     const text = buildPlainText(client.name, invoice as Invoice, (lineItems || []) as LineItem[], payUrl);
 
+    // A preview renders even when the guards below would refuse, and reports
+    // which one refused: seeing the email is how you work out what to fix.
+    // Nothing past this point runs, so nothing is sent and nothing is written.
+    // The pay link it shows is live, which is the point — an admin checking the
+    // email before it goes out should be able to follow it as the client will.
+    if (body.preview) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          preview: {
+            subject,
+            html,
+            text,
+            recipient: recipientEmail,
+            blocked: settled
+              ? `This invoice is already ${invoice.status} and will not be sent.`
+              : !recipientEmail
+                ? 'This client has no email address on file.'
+                : cooldownRemaining > 0
+                  ? describeCooldown(cooldownRemaining)
+                  : null,
+          } satisfies EmailPreviewPayload,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Neither of these is waived for a test copy: a settled invoice or a client
+    // with no address means this email is wrong rather than early, and a test
+    // would only show something misleading.
+    if (settled) {
+      return new Response(JSON.stringify({ success: false, error: 'Invoice is already paid or cancelled.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!recipientEmail) {
+      return new Response(JSON.stringify({ success: false, error: 'no_email' }), {
+        status: 422,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // The cooldown keeps the client from being billed twice over. A test copy
+    // goes to the admin's own inbox, so it is not what that protects.
+    if (!testRecipient && cooldownRemaining > 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'cooldown', remainingSeconds: cooldownRemaining }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const sendTo = testRecipient ?? recipientEmail;
+
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -532,8 +609,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: `Boxed2Built <${FROM_EMAIL}>`,
-        to: [recipientEmail],
-        bcc: [BCC_EMAIL],
+        to: [sendTo],
+        ...(testRecipient ? {} : { bcc: [BCC_EMAIL] }),
         subject,
         html,
         text,
@@ -550,17 +627,23 @@ Deno.serve(async (req) => {
     const messageId: string = resendData?.id ?? '';
     const now = new Date().toISOString();
 
-    await supabase.from('clients').update({ last_invoice_email_sent_at: now }).eq('id', client.id);
+    // A test copy went to the admin, not the client, so the invoice has not been
+    // sent: the cooldown marker stays put and a draft stays a draft.
+    if (!testRecipient) {
+      await supabase.from('clients').update({ last_invoice_email_sent_at: now }).eq('id', client.id);
 
-    if (invoice.status === 'draft') {
-      await supabase.from('invoices').update({ status: 'sent', sent_at: now }).eq('id', invoice.id);
+      if (invoice.status === 'draft') {
+        await supabase.from('invoices').update({ status: 'sent', sent_at: now }).eq('id', invoice.id);
+      }
     }
 
+    // Logged either way: Resend will post delivery and open events for a test
+    // send too, and a log missing the send they belong to reads as an orphan.
     await supabase.from('email_events').insert({
       resend_event_id: messageId ? `send-${messageId}` : null,
       message_id: messageId || null,
       event_type: 'email.sent',
-      recipient: recipientEmail,
+      recipient: sendTo,
       subject,
       from_address: FROM_EMAIL,
       occurred_at: now,
@@ -570,13 +653,18 @@ Deno.serve(async (req) => {
         clientName: client.name,
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoice_number,
+        ...(testRecipient ? { test: true } : {}),
       },
     });
 
-    return new Response(JSON.stringify({ success: true, sentAt: now }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify(
+        testRecipient
+          ? { success: true, test: true, to: sendTo }
+          : { success: true, sentAt: now, to: sendTo },
+      ),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to send invoice email.';
     console.error('send-invoice-email error:', error);

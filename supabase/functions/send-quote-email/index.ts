@@ -1,6 +1,27 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import {
+  cooldownSecondsRemaining,
+  describeCooldown,
+  testRecipientFrom,
+  type EmailPreviewPayload,
+} from '../_shared/adminEmailModes.ts';
+
+/**
+ * The pricing quote for one job: the estimate, what it covers, and how long it
+ * stands. Sent by hand from the client's profile.
+ *
+ * POST {"clientId": "...", "organizationId": "...", "jobId": "..."} sends it.
+ * POST {..., "preview": true} returns the rendered email and what would stop it
+ *   sending, without sending. This is what the admin console displays, so the
+ *   preview is the same HTML the client would receive rather than a second copy
+ *   of the template maintained in the browser.
+ * POST {..., "test": true} sends the real email to the signed-in admin instead
+ *   of the client. The recipient comes from the caller's own token, never from
+ *   the request body — nothing here can be aimed at a third party. A test
+ *   leaves the cooldown marker alone, so the client has not been quoted.
+ */
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +46,10 @@ interface Payload {
   clientId: string;
   organizationId: string;
   jobId: string;
+  /** Render the email and return it without sending. Touches nothing. */
+  preview?: boolean;
+  /** Send the real email to the signed-in admin instead of the client. */
+  test?: boolean;
 }
 
 function escapeHtml(input: string): string {
@@ -251,6 +276,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Where a test copy goes, resolved from the caller's own token. Decided
+    // before any database work so a test with nobody to send to fails early.
+    let testRecipient: string | null = null;
+    if (body.test) {
+      const resolved = testRecipientFrom(auth);
+      if (!resolved.ok) {
+        return new Response(JSON.stringify({ success: false, error: resolved.error }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      testRecipient = resolved.email;
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Fetch client
@@ -268,25 +307,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!client.email) {
-      return new Response(JSON.stringify({ success: false, error: 'Client has no email address.' }), {
-        status: 422,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Cooldown check
-    if (client.last_quote_email_sent_at) {
-      const lastSent = new Date(client.last_quote_email_sent_at).getTime();
-      const elapsed = Date.now() - lastSent;
-      if (elapsed < COOLDOWN_MS) {
-        const remainingSeconds = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
-        return new Response(
-          JSON.stringify({ success: false, error: 'cooldown', remainingSeconds }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
+    const recipient = client.email?.trim() || null;
+    const cooldownRemaining = cooldownSecondsRemaining(
+      client.last_quote_email_sent_at,
+      COOLDOWN_MS,
+    );
 
     // Fetch job
     const { data: job, error: jobError } = await supabase
@@ -303,6 +328,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Refused for a preview too, unlike the guards below: the price is what the
+    // email is about, so without one there is nothing to render or look at.
     if (job.quoted_price == null) {
       return new Response(JSON.stringify({ success: false, error: 'This job does not have a quoted price set.' }), {
         status: 422,
@@ -333,6 +360,49 @@ Deno.serve(async (req) => {
     const html = buildHtml(client.name, quote, businessName, contactPhone);
     const text = buildPlainText(client.name, quote, businessName, contactPhone);
 
+    // A preview renders even when the guards below would refuse, and reports
+    // which one refused: seeing the email is how you work out what to fix.
+    // Nothing past this point runs, so nothing is sent and nothing is written.
+    if (body.preview) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          preview: {
+            subject,
+            html,
+            text,
+            recipient,
+            blocked: !recipient
+              ? 'This client has no email address on file.'
+              : cooldownRemaining > 0
+                ? describeCooldown(cooldownRemaining)
+                : null,
+          } satisfies EmailPreviewPayload,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Not waived for a test copy either: with no address on file this email is
+    // wrong rather than early, and a test would only show something misleading.
+    if (!recipient) {
+      return new Response(JSON.stringify({ success: false, error: 'Client has no email address.' }), {
+        status: 422,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // The cooldown keeps the client from being quoted the same job twice. A
+    // test copy goes to the admin's own inbox, so it is not what that protects.
+    if (!testRecipient && cooldownRemaining > 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'cooldown', remainingSeconds: cooldownRemaining }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const sendTo = testRecipient ?? recipient;
+
     // Send via Resend
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -342,8 +412,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: `${businessName} <${FROM_EMAIL}>`,
-        to: [client.email],
-        bcc: [BCC_EMAIL],
+        to: [sendTo],
+        ...(testRecipient ? {} : { bcc: [BCC_EMAIL] }),
         subject,
         html,
         text,
@@ -360,25 +430,40 @@ Deno.serve(async (req) => {
     const messageId: string = resendData?.id ?? '';
     const now = new Date().toISOString();
 
-    // Update cooldown timestamp
-    await supabase.from('clients').update({ last_quote_email_sent_at: now }).eq('id', client.id);
+    // A test copy went to the admin, not the client, so the client has not been
+    // quoted and the cooldown marker must not move.
+    if (!testRecipient) {
+      await supabase.from('clients').update({ last_quote_email_sent_at: now }).eq('id', client.id);
+    }
 
-    // Log email event
+    // Logged either way: Resend will post delivery and open events for a test
+    // send too, and a log missing the send they belong to reads as an orphan.
     await supabase.from('email_events').insert({
       resend_event_id: messageId ? `send-${messageId}` : null,
       message_id: messageId || null,
       event_type: 'email.sent',
-      recipient: client.email,
+      recipient: sendTo,
       subject,
       from_address: FROM_EMAIL,
       occurred_at: now,
-      payload: { source: 'send-quote-email', clientId: client.id, clientName: client.name, jobId: job.id, quotedPrice: quote.quotedPrice },
+      payload: {
+        source: 'send-quote-email',
+        clientId: client.id,
+        clientName: client.name,
+        jobId: job.id,
+        quotedPrice: quote.quotedPrice,
+        ...(testRecipient ? { test: true } : {}),
+      },
     });
 
-    return new Response(JSON.stringify({ success: true, sentAt: now }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify(
+        testRecipient
+          ? { success: true, test: true, to: sendTo }
+          : { success: true, sentAt: now, to: sendTo },
+      ),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to send quote email.';
     console.error('send-quote-email error:', error);
