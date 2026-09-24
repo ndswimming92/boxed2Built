@@ -13,6 +13,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FROM_EMAIL = 'team@boxed2built.com';
+// team@boxed2built.com cannot receive mail — it hard-bounces. This is the
+// address that actually accepts replies.
+const REPLY_TO_EMAIL = 'replies@reply.boxed2built.com';
 
 // Built here on a fixed origin and never taken from the request body, so a
 // caller cannot make the business's sending domain mail an arbitrary URL.
@@ -217,7 +220,7 @@ Deno.serve(async (req) => {
         subject,
         html: buildInviteEmailHtml(actionLink, client.name ?? ''),
         text: buildInvitePlainText(actionLink, client.name ?? ''),
-        reply_to: FROM_EMAIL,
+        reply_to: REPLY_TO_EMAIL,
       }),
     });
 
