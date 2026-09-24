@@ -17,6 +17,7 @@ import {
   normalizeScheduleTime,
 } from '../_shared/scheduleLabels.ts';
 import { resolveLeaveBy, resolveWorkAddress, type LeaveBy } from '../_shared/travel.ts';
+import { loadLaborDescriptionsForJob } from '../_shared/laborLineItems.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -113,7 +114,12 @@ function resolveLocation(job: JobRow): string {
   return job.location_city?.trim() || '';
 }
 
-function buildEventDescription(job: JobRow, location: string, leaveBy: LeaveBy | null): string {
+function buildEventDescription(
+  job: JobRow,
+  location: string,
+  leaveBy: LeaveBy | null,
+  laborDescriptions: string[],
+): string {
   const parts: string[] = [`When: ${jobWhen(job)}`];
   // Directly under the start time: the job's hour is no use on its own if the
   // drive still has to be worked out by hand every morning.
@@ -122,6 +128,7 @@ function buildEventDescription(job: JobRow, location: string, leaveBy: LeaveBy |
   if (job.client_phone) parts.push(`Phone: ${job.client_phone}`);
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
+  for (const description of laborDescriptions) parts.push(`Labor: ${description}`);
   if (job.job_description) parts.push('', job.job_description.trim());
   if (job.notes) parts.push('', `Notes: ${job.notes.trim()}`);
   parts.push('', `Open in admin: ${ADMIN_JOBS_URL}`);
@@ -134,6 +141,7 @@ function buildEmailText(
   location: string,
   isReschedule: boolean,
   leaveBy: LeaveBy | null,
+  laborDescriptions: string[],
 ): string {
   const jobType = job.job_type?.trim() || 'Job';
   const lines = [
@@ -141,6 +149,7 @@ function buildEmailText(
   ];
   if (leaveBy) lines.push(`Leave by: ${formatLeaveByLabel(leaveBy)}`);
   lines.push('', `Client: ${job.client_name}`, `Job type: ${jobType}`);
+  for (const description of laborDescriptions) lines.push(`Labor: ${description}`);
   if (location) lines.push(`Where: ${location}`);
   if (job.client_phone) lines.push(`Phone: ${job.client_phone}`);
   if (job.client_email) lines.push(`Email: ${job.client_email}`);
@@ -162,6 +171,7 @@ function buildEmailHtml(
   location: string,
   isReschedule: boolean,
   leaveBy: LeaveBy | null,
+  laborDescriptions: string[],
 ): string {
   const prettyDate = formatScheduleDate(job.date_scheduled!);
   const jobType = job.job_type?.trim() || 'Job';
@@ -169,6 +179,7 @@ function buildEmailHtml(
   const rows: Array<[string, string]> = [
     ['Client', job.client_name],
     ['Job type', jobType],
+    ...laborDescriptions.map((description): [string, string] => ['Labor', description]),
     ['When', jobWhen(job)],
   ];
   if (leaveBy) rows.push(['Leave by', formatLeaveByLabel(leaveBy)]);
@@ -378,6 +389,7 @@ Deno.serve(async (req: Request) => {
     job.scheduled_start_time,
     { allowLookup: true },
   );
+  const laborDescriptions = await loadLaborDescriptionsForJob(supabase, job.id);
 
   // UID is derived from the job id and never changes, so a reschedule replaces
   // the calendar entry the earlier email created instead of adding a second one.
@@ -391,7 +403,7 @@ Deno.serve(async (req: Request) => {
     endTime: job.scheduled_end_time,
     timeZone,
     summary: `${jobType} — ${job.client_name}`,
-    description: buildEventDescription(job, location, leaveBy),
+    description: buildEventDescription(job, location, leaveBy, laborDescriptions),
     location: location || undefined,
     url: ADMIN_JOBS_URL,
   };
@@ -436,8 +448,8 @@ Deno.serve(async (req: Request) => {
       from: `${business?.name?.trim() || 'Boxed2Built'} <${FROM_EMAIL}>`,
       to: [recipient],
       subject: `${subjectPrefix}: ${jobType} for ${job.client_name} — ${prettyWhen}`,
-      html: buildEmailHtml(job, location, isReschedule, leaveBy),
-      text: buildEmailText(job, location, isReschedule, leaveBy),
+      html: buildEmailHtml(job, location, isReschedule, leaveBy, laborDescriptions),
+      text: buildEmailText(job, location, isReschedule, leaveBy, laborDescriptions),
       reply_to: FROM_EMAIL,
       attachments: [
         {
