@@ -35,6 +35,7 @@ const EVENT_LABELS: Record<string, { label: string; color: string; bg: string; i
   'email.delivery_delayed':  { label: 'Delayed',          color: 'text-yellow-700', bg: 'bg-yellow-50',  icon: Clock },
   'email.scheduled':         { label: 'Scheduled',        color: 'text-slate-600',  bg: 'bg-slate-100',  icon: Clock },
   'email.received':          { label: 'Received',         color: 'text-slate-600',  bg: 'bg-slate-100',  icon: Mail },
+  'email.forwarded':         { label: 'Forwarded',        color: 'text-purple-700', bg: 'bg-purple-50',  icon: Send },
   'email.suppressed':        { label: 'Suppressed',       color: 'text-slate-600',  bg: 'bg-slate-100',  icon: Ban },
 };
 

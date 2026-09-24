@@ -7,6 +7,75 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+// Every outbound send in this codebase sets this as reply_to, so it's the
+// address customer replies actually land on. Forward mail addressed here.
+const TEAM_INBOX = "team@boxed2built.com";
+// Where forwarded replies actually get read. Also excluded as a forward
+// source below, so a forwarded copy can never trigger forwarding itself.
+const FORWARD_TO = "nicholas.davidson@boxed2built.com";
+
+function includesAddress(list: unknown, address: string): boolean {
+  if (!Array.isArray(list)) return false;
+  const target = address.toLowerCase();
+  return list.some((entry) => typeof entry === "string" && entry.toLowerCase() === target);
+}
+
+interface ReceivedEmail {
+  from: string;
+  subject: string;
+  text: string | null;
+  html: string | null;
+  attachments: { filename: string | null }[];
+}
+
+async function fetchReceivedEmail(emailId: string): Promise<ReceivedEmail> {
+  const res = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Resend receiving fetch failed (${res.status}): ${await res.text()}`);
+  }
+  return res.json();
+}
+
+async function forwardReceivedEmail(received: ReceivedEmail, emailId: string): Promise<{ id: string }> {
+  const subject = received.subject?.toLowerCase().startsWith("fwd:")
+    ? received.subject
+    : `Fwd: ${received.subject || "(no subject)"}`;
+
+  const attachmentNote = received.attachments?.length
+    ? `\n\n(${received.attachments.length} attachment${received.attachments.length === 1 ? "" : "s"} on the original message — view it in the Resend dashboard to download.)`
+    : "";
+
+  const header = `———— Forwarded message ————\nFrom: ${received.from}\nTo: ${TEAM_INBOX}\nSubject: ${received.subject || "(no subject)"}\n\n`;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `fwd-${emailId}`,
+    },
+    body: JSON.stringify({
+      from: `Boxed2Built <${TEAM_INBOX}>`,
+      to: [FORWARD_TO],
+      subject,
+      text: `${header}${received.text || ""}${attachmentNote}`,
+      ...(received.html
+        ? { html: `<p style="color:#888;font-size:12px">Forwarded message from ${received.from}</p>${received.html}` }
+        : {}),
+      reply_to: received.from,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Resend forward send failed (${res.status}): ${await res.text()}`);
+  }
+  return res.json();
+}
+
 async function verifySignature(req: Request, rawBody: string): Promise<boolean> {
   const webhookSecret = Deno.env.get("RESEND_WEBHOOK");
   if (!webhookSecret) return false;
@@ -93,6 +162,32 @@ Deno.serve(async (req: Request) => {
         });
       }
       throw error;
+    }
+
+    const emailId: string | undefined = payload.data?.email_id;
+    const isForLoopTarget =
+      includesAddress(payload.data?.to, FORWARD_TO) || includesAddress(payload.data?.received_for, FORWARD_TO);
+    const isForTeamInbox =
+      includesAddress(payload.data?.to, TEAM_INBOX) || includesAddress(payload.data?.received_for, TEAM_INBOX);
+
+    if (eventType === "email.received" && emailId && isForTeamInbox && !isForLoopTarget) {
+      try {
+        const received = await fetchReceivedEmail(emailId);
+        const forwarded = await forwardReceivedEmail(received, emailId);
+
+        await supabase.from("email_events").insert({
+          resend_event_id: `fwd-${emailId}`,
+          message_id: forwarded.id,
+          event_type: "email.forwarded",
+          recipient: FORWARD_TO,
+          subject: received.subject ?? null,
+          from_address: received.from ?? null,
+          occurred_at: new Date().toISOString(),
+          payload: { forwarded_from_email_id: emailId },
+        });
+      } catch (forwardErr) {
+        console.error("resend-webhook forward error:", forwardErr);
+      }
     }
 
     return new Response(JSON.stringify({ ok: true }), {
