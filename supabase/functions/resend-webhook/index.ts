@@ -14,7 +14,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 // cannot receive mail — it hard-bounces, because the root domain's real MX
 // is Google Workspace, not Resend. This lives on reply.boxed2built.com, a
 // dedicated receiving-only subdomain, so it doesn't fight Workspace for the
-// root domain's mail. Forward mail addressed here.
+// root domain's mail. Forward mail addressed here. Verified end-to-end
+// (DNS, receiving, and the forward below) against a live reply on 2026-09-24.
 const TEAM_INBOX = "replies@reply.boxed2built.com";
 // Where forwarded replies actually get read. Also excluded as a forward
 // source below, so a forwarded copy can never trigger forwarding itself.
