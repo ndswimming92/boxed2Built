@@ -28,12 +28,11 @@ import {
 } from '../../services/adminDocumentService';
 import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import JobReminderCard from './JobReminderCard';
+import JobFollowupCard from './JobFollowupCard';
 import EmailPreviewActions from './EmailPreviewActions';
 import {
-  previewFollowupEmail,
   previewInvoiceEmail,
   previewQuoteEmail,
-  sendFollowupEmailTest,
   sendInvoiceEmailTest,
   sendQuoteEmailTest,
 } from '../../services/clientEmailService';
@@ -112,10 +111,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   }
 
   const COOLDOWN_MS = 10 * 60 * 1000;
-  const [followupSending, setFollowupSending] = useState(false);
-  const [followupMessage, setFollowupMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [followupCooldownRemaining, setFollowupCooldownRemaining] = useState<number>(0);
-  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Invoice email state
   const [selectedJobId, setSelectedJobId] = useState<string>('');
@@ -157,29 +152,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     const normalizedPhone = phone.replace(/[^\d+]/g, '');
     return `tel:${normalizedPhone}`;
   }, []);
-
-  const startCooldownTimer = useCallback((sentAt: string | null) => {
-    if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
-    if (!sentAt) { setFollowupCooldownRemaining(0); return; }
-    const elapsed = Date.now() - new Date(sentAt).getTime();
-    const remaining = Math.max(0, COOLDOWN_MS - elapsed);
-    setFollowupCooldownRemaining(Math.ceil(remaining / 1000));
-    if (remaining <= 0) return;
-    cooldownTimerRef.current = setInterval(() => {
-      setFollowupCooldownRemaining((prev) => {
-        if (prev <= 1) {
-          if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    startCooldownTimer(currentClient.last_followup_email_sent_at);
-    return () => { if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current); };
-  }, [currentClient.last_followup_email_sent_at, startCooldownTimer]);
 
   const startInvoiceCooldownTimer = useCallback((sentAt: string | null) => {
     if (invoiceCooldownTimerRef.current) clearInterval(invoiceCooldownTimerRef.current);
@@ -331,6 +303,25 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       ['scheduled', 'accepted'].includes(String(job.job_status ?? '').toLowerCase()))
     .sort((a: any, b: any) => String(a.date_scheduled).localeCompare(String(b.date_scheduled)));
 
+  /**
+   * The jobs this client has that a post-job follow-up could cover: still
+   * active, not just a quote, and not lost or cancelled. Unlike the reminder
+   * above, this deliberately is not future-only — the follow-up fires after
+   * a job's end time passes, so a job that already happened is exactly the
+   * case worth showing a card for. Bounded to a trailing window so a client
+   * with years of history does not turn this into a scroll of old jobs the
+   * follow-up sweep itself would no longer touch (it only looks back a few
+   * days) — sorted soonest/most-recent first either way.
+   */
+  const followupWindowStart = new Date(Date.now() - 90 * 86_400_000).toLocaleDateString('en-CA');
+  const followupEligibleJobs = (history?.jobs ?? [])
+    .filter((job: any) =>
+      job.is_active !== false &&
+      typeof job.date_scheduled === 'string' &&
+      job.date_scheduled >= followupWindowStart &&
+      ['scheduled', 'accepted', 'in_progress', 'completed'].includes(String(job.job_status ?? '').toLowerCase()))
+    .sort((a: any, b: any) => String(b.date_scheduled).localeCompare(String(a.date_scheduled)));
+
   async function loadClientDetails() {
     try {
       setLoading(true);
@@ -416,41 +407,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     setEditAddress(currentClient.address ?? '');
     setSaveInfoError(null);
     setEditingInfo(false);
-  }
-
-  async function handleSendFollowup() {
-    if (!currentClient.email || followupCooldownRemaining > 0 || followupSending) return;
-    setFollowupSending(true);
-    setFollowupMessage(null);
-    try {
-      const { supabase } = await import('../../lib/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const res = await fetch(`${supabaseUrl}/functions/v1/send-followup-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token ?? ''}`,
-        },
-        body: JSON.stringify({ clientId: currentClient.id, organizationId: currentClient.organization_id }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        if (json.error === 'cooldown') {
-          startCooldownTimer(new Date(Date.now() - (10 * 60 * 1000 - json.remainingSeconds * 1000)).toISOString());
-          setFollowupMessage({ type: 'error', text: 'This email was sent very recently. Please wait before sending again.' });
-        } else {
-          setFollowupMessage({ type: 'error', text: json.error ?? 'Failed to send follow-up email.' });
-        }
-        return;
-      }
-      setCurrentClient((prev) => ({ ...prev, last_followup_email_sent_at: json.sentAt }));
-      setFollowupMessage({ type: 'success', text: 'Follow-up email sent successfully.' });
-    } catch {
-      setFollowupMessage({ type: 'error', text: 'Failed to send follow-up email. Please try again.' });
-    } finally {
-      setFollowupSending(false);
-    }
   }
 
   async function resolveBusinessId(): Promise<string | null> {
@@ -635,15 +591,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   // identity each second would be a new fetch waiting to happen.
   const clientId = currentClient.id;
   const clientOrgId = currentClient.organization_id;
-
-  const loadFollowupPreview = useCallback(
-    () => previewFollowupEmail(clientId, clientOrgId),
-    [clientId, clientOrgId],
-  );
-  const testFollowupEmail = useCallback(
-    () => sendFollowupEmailTest(clientId, clientOrgId),
-    [clientId, clientOrgId],
-  );
 
   const loadQuotePreview = useCallback(
     () => previewQuoteEmail(clientId, clientOrgId, selectedQuoteJobId),
@@ -1257,48 +1204,30 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           </div>
         )}
 
-        {/* Follow-Up Email */}
-        {currentClient.email && (
+        {/* Post-job follow-ups — one card per eligible job, showing the email
+            the client will actually receive and when it goes, mirroring the
+            reminder cards above. */}
+        {currentClient.email && followupEligibleJobs.length > 0 && (
           <div className="p-6 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Send className="w-5 h-5 text-blue-600" />
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">Post-Job Follow-Up</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">Send a thank-you email with a Google review link</p>
-                </div>
+            <div className="flex items-center gap-2 mb-4">
+              <Send className="w-5 h-5 text-blue-600" />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Post-Job Follow-Ups</h3>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  A thank-you with a Google review link, sent once each job's scheduled end time passes
+                </p>
               </div>
-              <button
-                onClick={handleSendFollowup}
-                disabled={followupSending || followupCooldownRemaining > 0}
-                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send className="w-3.5 h-3.5" />
-                {followupSending
-                  ? 'Sending...'
-                  : followupCooldownRemaining > 0
-                  ? `Available in ${followupCooldownRemaining >= 60 ? `${Math.ceil(followupCooldownRemaining / 60)}m` : `${followupCooldownRemaining}s`}`
-                  : 'Send Follow-Up'}
-              </button>
             </div>
-            {followupMessage && (
-              <div className={`mt-3 px-3 py-2 rounded-lg text-sm ${followupMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-                {followupMessage.text}
-              </div>
-            )}
-            {followupCooldownRemaining > 0 && !followupMessage && (
-              <p className="mt-2 text-xs text-gray-500">
-                Last sent {currentClient.last_followup_email_sent_at ? formatDateTime(currentClient.last_followup_email_sent_at) : ''}. Can resend after cooldown.
-              </p>
-            )}
 
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <EmailPreviewActions
-                label="Post-job follow-up email"
-                previewKey={`followup:${clientId}`}
-                loadPreview={loadFollowupPreview}
-                sendTest={testFollowupEmail}
-              />
+            <div className="space-y-4">
+              {followupEligibleJobs.map((job: any) => (
+                <div key={job.id}>
+                  <p className="text-xs font-medium text-gray-600 mb-1.5">
+                    {job.job_type || 'Job'} — {formatScheduledDate(job.date_scheduled)}
+                  </p>
+                  <JobFollowupCard jobId={job.id} clientName={currentClient.name} />
+                </div>
+              ))}
             </div>
           </div>
         )}

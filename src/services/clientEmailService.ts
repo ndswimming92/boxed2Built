@@ -2,7 +2,10 @@ import { supabase } from '../lib/supabase';
 
 /**
  * Previewing and test-sending the emails an admin sends by hand from a client's
- * profile: the post-job follow-up, the quote, and the invoice.
+ * profile: the quote and the invoice.
+ *
+ * (The post-job follow-up used to live here too, but it is now per-job and
+ * driven by jobFollowupService, which mirrors jobReminderService.)
  *
  * Every body here is rendered by the edge function that sends it — the same
  * code path that actually mails the client. The browser deliberately does not
@@ -96,20 +99,6 @@ async function sendTest(
   );
 
   return { to: json.to ?? null };
-}
-
-export function previewFollowupEmail(
-  clientId: string,
-  organizationId: string,
-): Promise<ClientEmailPreview> {
-  return loadPreview('send-followup-email', { clientId, organizationId });
-}
-
-export function sendFollowupEmailTest(
-  clientId: string,
-  organizationId: string,
-): Promise<TestSendResult> {
-  return sendTest('send-followup-email', { clientId, organizationId });
 }
 
 export function previewQuoteEmail(
