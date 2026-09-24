@@ -40,4 +40,13 @@ jobs:
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A merge performed with the default GITHUB_TOKEN does not trigger
+          # other workflows' `push` events — GitHub suppresses it to prevent
+          # recursive runs. That silently starved deploy-functions.yml: two
+          # PRs merged here on 2026-09-24 sat unreleased on main for over an
+          # hour with no error anywhere. AUTOMERGE_TOKEN, a PAT scoped to this
+          # repo (Contents + Pull requests: read/write), merges as a real user
+          # instead, so the resulting push triggers deploy-functions.yml
+          # normally. Falls back to GITHUB_TOKEN — same broken-quietly
+          # behavior as before — until that secret is added.
+          GH_TOKEN: ${{ secrets.AUTOMERGE_TOKEN || secrets.GITHUB_TOKEN }}
