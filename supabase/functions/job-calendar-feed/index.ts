@@ -16,6 +16,7 @@ import {
   resolveWorkAddress,
   type LeaveBy,
 } from '../_shared/travel.ts';
+import { loadLaborDescriptionsByJob } from '../_shared/laborLineItems.ts';
 
 /**
  * Subscribable iCalendar feed of scheduled jobs.
@@ -92,7 +93,12 @@ function resolveLocation(job: FeedJobRow): string {
   return job.location_city?.trim() || '';
 }
 
-function buildDescription(job: FeedJobRow, location: string, leaveBy: LeaveBy | null): string {
+function buildDescription(
+  job: FeedJobRow,
+  location: string,
+  leaveBy: LeaveBy | null,
+  laborDescriptions: string[],
+): string {
   const parts: string[] = [
     `When: ${formatScheduleWhen(job.date_scheduled, job.scheduled_start_time, job.scheduled_end_time)}`,
   ];
@@ -104,6 +110,7 @@ function buildDescription(job: FeedJobRow, location: string, leaveBy: LeaveBy | 
   if (job.client_email) parts.push(`Email: ${job.client_email}`);
   if (location) parts.push(`Where: ${location}`);
   if (job.job_status) parts.push(`Status: ${job.job_status.replace(/_/g, ' ')}`);
+  for (const description of laborDescriptions) parts.push(`Labor: ${description}`);
   if (job.job_description) parts.push('', job.job_description.trim());
   if (job.notes) parts.push('', `Notes: ${job.notes.trim()}`);
   parts.push('', `Open in admin: ${ADMIN_JOBS_URL}`);
@@ -183,6 +190,10 @@ Deno.serve(async (req: Request) => {
     feedToken.organization_id,
     travelOrigin.address,
   );
+  const laborDescriptionsByJob = await loadLaborDescriptionsByJob(
+    supabase,
+    (jobs ?? []).map((job) => job.id),
+  );
 
   const events: IcsEvent[] = (jobs ?? []).map((job) => {
     const location = resolveLocation(job);
@@ -212,7 +223,7 @@ Deno.serve(async (req: Request) => {
       endTime: job.scheduled_end_time,
       timeZone,
       summary: `${jobType} — ${job.client_name}`,
-      description: buildDescription(job, location, leaveBy),
+      description: buildDescription(job, location, leaveBy, laborDescriptionsByJob.get(job.id) ?? []),
       location: location || undefined,
       url: ADMIN_JOBS_URL,
     };

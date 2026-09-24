@@ -18,6 +18,18 @@ They fail in opposite directions, so running both covers the gap in each:
 The email is the reliable "act on this now" signal. The feed is the always-correct
 picture of the schedule. Neither needs Google OAuth.
 
+## What's being built
+
+`job_type` is a short, fixed category ("Furniture Assembly", "Table"). The actual
+piece — "Farmhouse Queen Murphy Bed With Charging Station" — gets typed once as
+an invoice's **labor** line item description, so the calendar entry (both the
+per-job email's `.ics` and the subscribed feed) borrows it from there rather than
+duplicating it onto the job as a second free-text field. `_shared/laborLineItems.ts`
+loads every labor-type line item off the job's non-cancelled invoice(s) and adds
+one `Labor: <description>` line per distinct item, oldest invoice first; a final
+invoice that just restates the deposit's line item does not repeat it. A job with
+no invoice yet, or none carrying a labor line, gets no `Labor:` line at all.
+
 ## How the email works
 
 `supabase/functions/send-job-schedule-email` is called after a job saves
