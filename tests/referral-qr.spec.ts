@@ -92,7 +92,14 @@ test('the code survives browsing away from the form and back', async ({ page }) 
   await expect(codeField(page)).toHaveValue(REFERRAL);
 
   // Same session, no query string: the referral is remembered rather than lost.
-  await page.goto('/tests/harness/coupons.html');
+  //
+  // waitUntil: 'domcontentloaded' rather than the default 'load': the default
+  // also waits on the Vite dev server's HMR websocket and other long-lived
+  // connections, which under CI load has intermittently aborted this exact
+  // re-navigation (`page.goto: net::ERR_ABORTED; maybe frame was detached?`).
+  // The assertions below already wait for the DOM to settle, so nothing this
+  // test checks depends on the 'load' event itself firing.
+  await page.goto('/tests/harness/coupons.html', { waitUntil: 'domcontentloaded' });
 
   await expect(codeField(page)).toHaveValue(REFERRAL);
   await expect(welcome(page)).toBeVisible();
