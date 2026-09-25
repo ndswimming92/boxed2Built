@@ -6,6 +6,7 @@ import { getRecentInquiries, getInquiryStats, getAvgResponseTime, type ResponseT
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
 import { getReferralStats } from '../../services/clientService';
 import { calculateClientTimeSaved } from '../../services/analyticsService';
+import { listScheduledEmails, type ScheduledEmailRow } from '../../services/scheduledEmailsService';
 import type { Goal } from '../../lib/supabase';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,6 +30,7 @@ import {
   Bell,
   Phone,
   Calendar,
+  Send,
 } from 'lucide-react';
 
 interface Stats {
@@ -93,10 +95,17 @@ export default function DashboardPage() {
   const [upcomingGoals, setUpcomingGoals] = useState<Goal[]>([]);
   const [pendingReminders, setPendingReminders] = useState<DashboardReminder[]>([]);
   const [responseTimeStats, setResponseTimeStats] = useState<ResponseTimeStats | null>(null);
+  const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmailRow[]>([]);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
 
   useEffect(() => {
     fetchStats();
+  }, []);
+
+  useEffect(() => {
+    // Its own call rather than folded into fetchStats: a slow or failed load
+    // here should never hold up the rest of the dashboard.
+    listScheduledEmails().then(setScheduledEmails).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -576,6 +585,76 @@ export default function DashboardPage() {
                   </Link>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {scheduledEmails.length > 0 && (
+        <div className="mt-12">
+          <div className="bg-white rounded-xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Mail className="w-5 h-5 text-blue-600" />
+                Scheduled Emails
+              </h2>
+              <Link
+                to="/admin/scheduled-emails"
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+              >
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-3 mb-5">
+              {scheduledEmails.filter(e => e.status === 'due').length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+                  <Send className="w-3.5 h-3.5" />
+                  {scheduledEmails.filter(e => e.status === 'due').length} Sending Soon
+                </span>
+              )}
+              {scheduledEmails.filter(e => e.status === 'scheduled').length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {scheduledEmails.filter(e => e.status === 'scheduled').length} Upcoming
+                </span>
+              )}
+              {scheduledEmails.filter(e => e.status === 'blocked').length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {scheduledEmails.filter(e => e.status === 'blocked').length} Need Attention
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              {scheduledEmails
+                .filter(e => e.status === 'due' || e.status === 'scheduled')
+                .slice(0, 5)
+                .map(email => (
+                  <Link
+                    key={email.id}
+                    to="/admin/scheduled-emails"
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-900 truncate">
+                        {email.recipientName || email.recipientEmail || 'Unknown recipient'}
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">{email.label}</p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${
+                        email.status === 'due'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                          : 'bg-blue-100 text-blue-800 border-blue-200'
+                      }`}
+                    >
+                      {email.status === 'due' ? 'Sending soon' : 'Upcoming'}
+                    </span>
+                  </Link>
+                ))}
             </div>
           </div>
         </div>

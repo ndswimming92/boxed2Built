@@ -76,11 +76,13 @@ interface JobRow {
   follow_up_for_date: string | null;
   follow_up_for_end_time: string | null;
   follow_up_sent_at: string | null;
+  follow_up_cancelled_at: string | null;
 }
 
 const JOB_COLUMNS =
   'id, business_id, client_id, client_name, client_email, job_status, is_active, ' +
-  'date_scheduled, scheduled_end_time, follow_up_for_date, follow_up_for_end_time, follow_up_sent_at';
+  'date_scheduled, scheduled_end_time, follow_up_for_date, follow_up_for_end_time, follow_up_sent_at, ' +
+  'follow_up_cancelled_at';
 
 interface Payload {
   /** Judge or send for one job only. Omitted by cron, which sweeps everything due. */
@@ -469,6 +471,7 @@ Deno.serve(async (req: Request) => {
         jobStatus: job.job_status,
         followUpForDate: job.follow_up_for_date,
         followUpForEndTime: job.follow_up_for_end_time,
+        followUpCancelledAt: job.follow_up_cancelled_at,
       },
       {
         now,

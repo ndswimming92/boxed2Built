@@ -170,6 +170,7 @@ const navigationGroups: NavigationGroup[] = [
     defaultExpanded: false,
     items: [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+      { name: 'Scheduled Emails', href: '/admin/scheduled-emails', icon: CalendarClock },
       { name: 'Email Activity', href: '/admin/email-activity', icon: Mail },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
       { name: 'API Keys', href: '/admin/api-keys', icon: KeyRound },

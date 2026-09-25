@@ -210,6 +210,34 @@ test('force never overrides eligibility, only timing', () => {
   }
 });
 
+test('a cancelled follow-up is silenced, and force cannot resurrect it', () => {
+  const now = new Date('2026-09-27T12:00:00Z');
+
+  const cancelled = decideFollowup(facts({ followUpCancelledAt: '2026-09-20T00:00:00Z' }), {
+    now,
+    timeZone: CHICAGO,
+  });
+  assert.equal(cancelled.send, false);
+  assert.equal(cancelled.send === false && cancelled.reason, 'cancelled');
+  // Still reports when it would have gone out, same as any other refusal.
+  assert.equal(cancelled.sendAt?.toISOString(), '2026-09-26T21:10:00.000Z');
+
+  const forced = decideFollowup(facts({ followUpCancelledAt: '2026-09-20T00:00:00Z' }), {
+    now,
+    timeZone: CHICAGO,
+    force: true,
+  });
+  assert.equal(forced.send, false);
+  assert.equal(forced.send === false && forced.reason, 'cancelled');
+
+  // Clearing the column (resuming it) puts it right back on schedule.
+  const resumed = decideFollowup(facts({ followUpCancelledAt: null }), {
+    now,
+    timeZone: CHICAGO,
+  });
+  assert.equal(resumed.send, true);
+});
+
 test('a refusal carries sendAt whenever the job has a date and end time', () => {
   const now = new Date('2026-09-27T12:00:00Z');
   const sent = decideFollowup(

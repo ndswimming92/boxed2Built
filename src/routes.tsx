@@ -68,6 +68,7 @@ const RemindersPage = React.lazy(() => import('./pages/admin/RemindersPage'));
 const ClientsPage = React.lazy(() => import('./pages/admin/ClientsPage'));
 const TestIdentifiersPage = React.lazy(() => import('./pages/admin/TestIdentifiersPage'));
 const EmailActivityPage = React.lazy(() => import('./pages/admin/EmailActivityPage'));
+const ScheduledEmailsPage = React.lazy(() => import('./pages/admin/ScheduledEmailsPage'));
 const AccountLinkReviewQueuePage = React.lazy(() => import('./pages/admin/AccountLinkReviewQueuePage'));
 const PrivacyRequestsPage = React.lazy(() => import('./pages/admin/PrivacyRequestsPage'));
 const SupportQueuePage = React.lazy(() => import('./pages/admin/SupportQueuePage'));
@@ -216,6 +217,7 @@ export const routes: RouteRecord[] = [
           { path: 'utm-link-builder', Component: UTMLinkBuilderPage },
           { path: 'attributes', Component: AttributesPage },
           { path: 'email-activity', Component: EmailActivityPage },
+          { path: 'scheduled-emails', Component: ScheduledEmailsPage },
           { path: 'account-link-review', Component: AccountLinkReviewQueuePage },
           { path: 'support', Component: SupportQueuePage },
           { path: 'portal-adoption', Component: PortalAdoptionPage },

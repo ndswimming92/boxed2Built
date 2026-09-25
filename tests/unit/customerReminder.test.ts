@@ -228,6 +228,34 @@ test('force never overrides eligibility, only timing', () => {
   }
 });
 
+test('a cancelled reminder is silenced, and force cannot resurrect it', () => {
+  const now = new Date('2026-09-25T22:00:00Z');
+
+  const cancelled = decideReminder(facts({ reminderCancelledAt: '2026-09-20T00:00:00Z' }), {
+    now,
+    timeZone: CHICAGO,
+  });
+  assert.equal(cancelled.send, false);
+  assert.equal(cancelled.send === false && cancelled.reason, 'cancelled');
+  // Still reports when it would have gone out, same as any other refusal.
+  assert.equal(cancelled.sendAt?.toISOString(), '2026-09-25T22:00:00.000Z');
+
+  const forced = decideReminder(facts({ reminderCancelledAt: '2026-09-20T00:00:00Z' }), {
+    now,
+    timeZone: CHICAGO,
+    force: true,
+  });
+  assert.equal(forced.send, false);
+  assert.equal(forced.send === false && forced.reason, 'cancelled');
+
+  // Clearing the column (resuming it) puts it right back on schedule.
+  const resumed = decideReminder(facts({ reminderCancelledAt: null }), {
+    now,
+    timeZone: CHICAGO,
+  });
+  assert.equal(resumed.send, true);
+});
+
 test('a refusal carries sendAt whenever the job has a date', () => {
   const now = new Date('2026-09-25T22:00:00Z');
   const reminded = decideReminder(

@@ -12,6 +12,7 @@ export type ReminderReason =
   | 'job_inactive'
   | 'status_not_remindable'
   | 'no_client_email'
+  | 'cancelled'
   | 'already_reminded'
   | 'too_early'
   | 'job_already_started';
@@ -66,6 +67,7 @@ const REASON_TEXT: Record<ReminderReason, string> = {
   job_inactive: 'This job is archived.',
   status_not_remindable: 'Only jobs marked Scheduled or Accepted get a reminder.',
   no_client_email: 'There is no usable email address on this job.',
+  cancelled: 'This reminder was cancelled. Resume it from Scheduled Emails to send it again.',
   already_reminded: 'The customer has already been reminded.',
   too_early: 'Not due yet.',
   job_already_started: 'The start time has already passed.',

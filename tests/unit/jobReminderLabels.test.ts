@@ -63,6 +63,7 @@ test('every blocked reason reads as something you can act on', () => {
     ['job_inactive', 'This job is archived.'],
     ['job_already_started', 'The start time has already passed.'],
     ['no_scheduled_date', 'This job has no scheduled date yet.'],
+    ['cancelled', 'This reminder was cancelled. Resume it from Scheduled Emails to send it again.'],
   ];
   for (const [reason, expected] of cases) {
     assert.equal(describeReminderStatus(preview({ status: 'blocked', reason })), expected);
@@ -84,7 +85,7 @@ test('a missing instant degrades to a plain label rather than "Invalid Date"', (
 test('the status line never leaks a raw reason code to the screen', () => {
   const reasons: Array<JobReminderPreview['reason']> = [
     'no_scheduled_date', 'job_inactive', 'status_not_remindable',
-    'no_client_email', 'already_reminded', 'too_early', 'job_already_started',
+    'no_client_email', 'cancelled', 'already_reminded', 'too_early', 'job_already_started',
   ];
   for (const reason of reasons) {
     for (const status of ['due', 'scheduled', 'sent', 'blocked'] as const) {

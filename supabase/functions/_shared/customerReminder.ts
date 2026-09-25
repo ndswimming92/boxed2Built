@@ -81,6 +81,8 @@ export interface ReminderJobFacts {
   reminderFor: string | null;
   /** Start time last reminded for, so a same-day time change re-sends. */
   reminderStartTime: string | null;
+  /** Set from the admin console to silence this job's reminder. Null means not cancelled. */
+  reminderCancelledAt?: string | null;
 }
 
 export type ReminderSkipReason =
@@ -88,6 +90,7 @@ export type ReminderSkipReason =
   | 'job_inactive'
   | 'status_not_remindable'
   | 'no_client_email'
+  | 'cancelled'
   | 'already_reminded'
   | 'too_early'
   | 'job_already_started';
@@ -138,6 +141,12 @@ export function decideReminder(
   // Every refusal past this point can say when the email was or is due, which is
   // what the admin preview puts on screen.
   const sendAt = reminderSendAt(job.dateScheduled, timeZone, sendHour);
+
+  // Cancelling is a deliberate override of the customer's inbox from the admin
+  // console, so it sits ahead of `force`: nothing short of clearing the column
+  // (resuming it) brings this reminder back, not even "send it now".
+  if (job.reminderCancelledAt) return { send: false, reason: 'cancelled', sendAt };
+
   if (force) return { send: true, sendAt };
 
   // A reschedule changes one of these two, which is what makes the customer

@@ -13,6 +13,7 @@ export type FollowupReason =
   | 'job_inactive'
   | 'status_not_eligible'
   | 'no_client_email'
+  | 'cancelled'
   | 'already_sent'
   | 'too_early';
 
@@ -63,6 +64,7 @@ const REASON_TEXT: Record<FollowupReason, string> = {
   job_inactive: 'This job is archived.',
   status_not_eligible: 'Quoted, lost, or cancelled jobs don’t get a follow-up.',
   no_client_email: 'There is no usable email address on this job.',
+  cancelled: 'This follow-up was cancelled. Resume it from Scheduled Emails to send it again.',
   already_sent: 'This job has already been followed up on.',
   too_early: 'Not due yet.',
 };
