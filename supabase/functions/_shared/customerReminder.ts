@@ -129,23 +129,29 @@ export function decideReminder(
 ): ReminderDecision {
   const { now, timeZone, sendHour = DEFAULT_SEND_HOUR, force = false } = options;
 
-  // Eligibility first: these say the email is wrong, not early, so `force` does
-  // not reach them and none of them can report a sendAt.
+  // Without a date there is nothing to schedule, so nothing to compute a
+  // sendAt from either.
   if (!job.dateScheduled) return { send: false, reason: 'no_scheduled_date' };
-  if (!job.isActive) return { send: false, reason: 'job_inactive' };
-  if (!REMINDABLE_STATUSES.has(job.jobStatus?.trim().toLowerCase() ?? '')) {
-    return { send: false, reason: 'status_not_remindable' };
-  }
-  if (!isSendableEmail(job.clientEmail)) return { send: false, reason: 'no_client_email' };
 
   // Every refusal past this point can say when the email was or is due, which is
   // what the admin preview puts on screen.
   const sendAt = reminderSendAt(job.dateScheduled, timeZone, sendHour);
 
-  // Cancelling is a deliberate override of the customer's inbox from the admin
-  // console, so it sits ahead of `force`: nothing short of clearing the column
-  // (resuming it) brings this reminder back, not even "send it now".
+  // Cancelling is a deliberate override from the admin console, and it wins
+  // over every other reason this reminder might not go out — including one
+  // that would otherwise block it outright, like a job with no usable email.
+  // There is nothing left to fix once an admin has said "not this one", so
+  // nothing short of clearing the column (resuming it) brings it back — not
+  // even `force`, and not becoming eligible again on its own.
   if (job.reminderCancelledAt) return { send: false, reason: 'cancelled', sendAt };
+
+  // The rest say the email is wrong, not early, so `force` does not reach
+  // them and none of them can report a sendAt.
+  if (!job.isActive) return { send: false, reason: 'job_inactive' };
+  if (!REMINDABLE_STATUSES.has(job.jobStatus?.trim().toLowerCase() ?? '')) {
+    return { send: false, reason: 'status_not_remindable' };
+  }
+  if (!isSendableEmail(job.clientEmail)) return { send: false, reason: 'no_client_email' };
 
   if (force) return { send: true, sendAt };
 

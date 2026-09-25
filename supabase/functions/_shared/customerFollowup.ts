@@ -103,24 +103,30 @@ export interface FollowupOptions {
 export function decideFollowup(job: FollowupJobFacts, options: FollowupOptions): FollowupDecision {
   const { now, timeZone, force = false } = options;
 
-  // Eligibility first: these say the email is wrong, not early, so `force`
-  // does not reach them and none of them can report a sendAt.
+  // Without a date or an end time there is nothing to compute a sendAt from,
+  // so these come first regardless of anything else.
   if (!job.dateScheduled) return { send: false, reason: 'no_scheduled_date' };
-  if (!job.isActive) return { send: false, reason: 'job_inactive' };
-  if (!FOLLOWUP_ELIGIBLE_STATUSES.has(job.jobStatus?.trim().toLowerCase() ?? '')) {
-    return { send: false, reason: 'status_not_eligible' };
-  }
-  if (!isSendableEmail(job.clientEmail)) return { send: false, reason: 'no_client_email' };
   if (!normalizeScheduleTime(job.scheduledEndTime)) return { send: false, reason: 'no_end_time' };
 
   // Every refusal past this point can say when the email was or is due, which
   // is what the admin preview puts on screen.
   const sendAt = jobEndInstant(job.dateScheduled, job.scheduledEndTime!, timeZone);
 
-  // Cancelling is a deliberate override of the client's inbox from the admin
-  // console, so it sits ahead of `force`: nothing short of clearing the column
-  // (resuming it) brings this follow-up back, not even "send it now".
+  // Cancelling is a deliberate override from the admin console, and it wins
+  // over every other reason this follow-up might not go out — including one
+  // that would otherwise block it outright, like a job with no usable email.
+  // There is nothing left to fix once an admin has said "not this one", so
+  // nothing short of clearing the column (resuming it) brings it back — not
+  // even `force`, and not becoming eligible again on its own.
   if (job.followUpCancelledAt) return { send: false, reason: 'cancelled', sendAt };
+
+  // The rest say the email is wrong, not early, so `force` does not reach
+  // them and none of them can report a sendAt.
+  if (!job.isActive) return { send: false, reason: 'job_inactive' };
+  if (!FOLLOWUP_ELIGIBLE_STATUSES.has(job.jobStatus?.trim().toLowerCase() ?? '')) {
+    return { send: false, reason: 'status_not_eligible' };
+  }
+  if (!isSendableEmail(job.clientEmail)) return { send: false, reason: 'no_client_email' };
 
   if (force) return { send: true, sendAt };
 

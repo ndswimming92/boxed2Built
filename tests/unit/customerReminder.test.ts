@@ -256,6 +256,28 @@ test('a cancelled reminder is silenced, and force cannot resurrect it', () => {
   assert.equal(resumed.send, true);
 });
 
+test('cancelling wins even over a job that would otherwise be blocked', () => {
+  const now = new Date('2026-09-25T22:00:00Z');
+
+  // No usable email on the job at all — normally 'no_client_email', but an
+  // admin cancelling it should still be able to see and resume it as
+  // 'cancelled' rather than have it stuck reporting the block forever.
+  const noEmail = decideReminder(
+    facts({ clientEmail: 'NA', reminderCancelledAt: '2026-09-20T00:00:00Z' }),
+    { now, timeZone: CHICAGO },
+  );
+  assert.equal(noEmail.send, false);
+  assert.equal(noEmail.send === false && noEmail.reason, 'cancelled');
+
+  // An inactive (archived) job behaves the same way.
+  const inactive = decideReminder(
+    facts({ isActive: false, reminderCancelledAt: '2026-09-20T00:00:00Z' }),
+    { now, timeZone: CHICAGO },
+  );
+  assert.equal(inactive.send, false);
+  assert.equal(inactive.send === false && inactive.reason, 'cancelled');
+});
+
 test('a refusal carries sendAt whenever the job has a date', () => {
   const now = new Date('2026-09-25T22:00:00Z');
   const reminded = decideReminder(

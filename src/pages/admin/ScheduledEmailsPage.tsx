@@ -325,8 +325,13 @@ export default function ScheduledEmailsPage() {
                       </p>
                     </div>
 
-                    <div className="shrink-0">
-                      {(row.status === 'due' || row.status === 'scheduled') && (
+                    <div className="shrink-0 flex flex-col items-end gap-2">
+                      {row.status === 'blocked' && (
+                        <p className="text-xs text-amber-700 max-w-[16rem] text-right">
+                          Add an email to {row.kind === 'welcome' ? 'this customer' : 'this job'} and it sends automatically — or cancel it if it's no longer valid.
+                        </p>
+                      )}
+                      {(row.status === 'due' || row.status === 'scheduled' || row.status === 'blocked') && (
                         <button
                           onClick={() => handleCancel(row)}
                           disabled={busyId === row.id}
@@ -345,11 +350,6 @@ export default function ScheduledEmailsPage() {
                           <RotateCcw className="w-3.5 h-3.5" />
                           {busyId === row.id ? 'Resuming…' : 'Resume'}
                         </button>
-                      )}
-                      {row.status === 'blocked' && (
-                        <p className="text-xs text-amber-700 max-w-[16rem] text-right">
-                          Add an email to {row.kind === 'welcome' ? 'this customer' : 'this job'} and it sends automatically.
-                        </p>
                       )}
                     </div>
                   </div>
