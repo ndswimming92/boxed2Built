@@ -87,13 +87,14 @@ interface JobRow extends ReminderJob {
   customer_reminder_for: string | null;
   customer_reminder_start_time: string | null;
   customer_reminder_sent_at: string | null;
+  customer_reminder_cancelled_at: string | null;
 }
 
 const JOB_COLUMNS =
   'id, business_id, client_name, client_email, client_address, service_address, job_type, ' +
   'job_description, date_scheduled, scheduled_start_time, scheduled_end_time, location_city, ' +
   'quoted_price, job_status, is_active, customer_reminder_for, customer_reminder_start_time, ' +
-  'customer_reminder_sent_at, customer_reminder_ics_sequence';
+  'customer_reminder_sent_at, customer_reminder_ics_sequence, customer_reminder_cancelled_at';
 
 interface Payload {
   /** Send for one job only. Omitted by cron, which sweeps everything due. */
@@ -371,6 +372,7 @@ Deno.serve(async (req: Request) => {
         jobStatus: job.job_status,
         reminderFor: job.customer_reminder_for,
         reminderStartTime: job.customer_reminder_start_time,
+        reminderCancelledAt: job.customer_reminder_cancelled_at,
       },
       {
         now,

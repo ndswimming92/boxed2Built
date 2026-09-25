@@ -162,9 +162,10 @@ export default function JobFollowupCard({ jobId, clientName }: JobFollowupCardPr
             )}
           </div>
 
-          {/* Every blocked reason is something the job itself fixes, so the
-              card says which one rather than leaving it to be guessed at. */}
-          {preview.status === 'blocked' && (
+          {/* Every other blocked reason is something the job itself fixes, so
+              the card says so — except a cancellation, which the job can't
+              fix, only resuming it can. */}
+          {preview.status === 'blocked' && preview.reason !== 'cancelled' && (
             <p className="mt-1.5 text-xs text-amber-800">
               Fix this on the job and the follow-up picks it up automatically.
             </p>

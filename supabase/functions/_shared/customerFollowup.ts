@@ -60,6 +60,8 @@ export interface FollowupJobFacts {
   followUpForDate: string | null;
   /** scheduled_end_time last followed up for, so a same-day time change re-sends. */
   followUpForEndTime: string | null;
+  /** Set from the admin console to silence this job's follow-up. Null means not cancelled. */
+  followUpCancelledAt?: string | null;
 }
 
 export type FollowupSkipReason =
@@ -68,6 +70,7 @@ export type FollowupSkipReason =
   | 'job_inactive'
   | 'status_not_eligible'
   | 'no_client_email'
+  | 'cancelled'
   | 'already_sent'
   | 'too_early';
 
@@ -113,6 +116,12 @@ export function decideFollowup(job: FollowupJobFacts, options: FollowupOptions):
   // Every refusal past this point can say when the email was or is due, which
   // is what the admin preview puts on screen.
   const sendAt = jobEndInstant(job.dateScheduled, job.scheduledEndTime!, timeZone);
+
+  // Cancelling is a deliberate override of the client's inbox from the admin
+  // console, so it sits ahead of `force`: nothing short of clearing the column
+  // (resuming it) brings this follow-up back, not even "send it now".
+  if (job.followUpCancelledAt) return { send: false, reason: 'cancelled', sendAt };
+
   if (force) return { send: true, sendAt };
 
   // A reschedule changes one of these two, which is what makes the customer
