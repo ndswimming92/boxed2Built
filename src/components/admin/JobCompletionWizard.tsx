@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, Star, PenTool, Calendar, AlertCircle, Download, Share2, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, Camera, FileText, PenTool, AlertCircle, Download, Share2, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { supabase, Job } from '../../lib/supabase';
 import SignatureCapture from './SignatureCapture';
 import SatisfactionRating from './SatisfactionRating';
 import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, isMobileDevice, canShare } from '../../utils/photoDownload';
 import { hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 
-type WizardStep = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
+type WizardStep = 'details' | 'photos' | 'signoff' | 'finish';
+
+type Section = 'review' | 'checklist' | 'photos' | 'satisfaction' | 'signature' | 'notes' | 'reminders' | 'confirm';
 
 type ChecklistItem = {
   id: string;
@@ -22,7 +24,7 @@ type JobCompletionWizardProps = {
 };
 
 export default function JobCompletionWizard({ job, onClose, onSuccess }: JobCompletionWizardProps) {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('review');
+  const [currentStep, setCurrentStep] = useState<WizardStep>('details');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignatureCapture, setShowSignatureCapture] = useState(false);
@@ -53,45 +55,34 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const steps: WizardStep[] = ['review', 'checklist', 'photos', 'satisfaction', 'signature', 'notes', 'reminders', 'confirm'];
+  const steps: WizardStep[] = ['details', 'photos', 'signoff', 'finish'];
   const currentStepIndex = steps.indexOf(currentStep);
   const onMobile = isMobileDevice();
 
   const stepTitles: Record<WizardStep, string> = {
-    review: 'Review Job Details',
-    checklist: 'Work Completion Checklist',
+    details: 'Job Details & Checklist',
     photos: 'Upload Completion Photos',
-    satisfaction: 'Customer Satisfaction',
-    signature: 'Customer Signature',
-    notes: 'Admin Notes',
-    reminders: 'Follow-up Reminders',
-    confirm: 'Review & Confirm',
+    signoff: 'Customer Sign-off',
+    finish: 'Notes & Follow-up',
   };
 
   const stepIcons: Record<WizardStep, any> = {
-    review: FileText,
-    checklist: Check,
+    details: FileText,
     photos: Camera,
-    satisfaction: Star,
-    signature: PenTool,
-    notes: FileText,
-    reminders: Calendar,
-    confirm: Check,
+    signoff: PenTool,
+    finish: Check,
   };
 
   const canProceed = () => {
     switch (currentStep) {
-      case 'review':
+      case 'details':
         return (
           finalPrice !== '' && parseFloat(finalPrice) >= 0 &&
-          hoursWorked !== '' && parseFloat(hoursWorked) > 0
+          hoursWorked !== '' && parseFloat(hoursWorked) > 0 &&
+          checklist.filter(item => item.required).every(item => item.checked)
         );
-      case 'checklist':
-        return checklist.filter(item => item.required).every(item => item.checked);
-      case 'satisfaction':
-        return satisfactionRating > 0;
-      case 'signature':
-        return signatureData.length > 0 || signatureSkipped;
+      case 'signoff':
+        return satisfactionRating > 0 && (signatureData.length > 0 || signatureSkipped);
       default:
         return true;
     }
@@ -311,8 +302,8 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     }
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
+  const renderSection = (section: Section) => {
+    switch (section) {
       case 'review':
         return (
           <div className="space-y-6">
@@ -600,7 +591,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 </button>
               </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-6">
                 <PenTool className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                 <p className="text-slate-600 mb-6">Customer signature required to complete job</p>
                 <button
@@ -635,7 +626,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
               id="admin-notes"
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
-              rows={8}
+              rows={4}
               placeholder="Any additional notes about the job completion, warranty information, or follow-up needed..."
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
             />
@@ -694,62 +685,98 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
 
       case 'confirm':
         return (
-          <div className="space-y-6">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
-              <h3 className="font-semibold text-emerald-900 mb-4">Completion Summary</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Client:</span>
-                  <span className="font-medium text-emerald-900">{job.client_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Final Price:</span>
-                  <span className="font-medium text-emerald-900">${finalPrice}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Hours Worked:</span>
-                  <span className="font-medium text-emerald-900">{hoursWorked} hrs</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Satisfaction Rating:</span>
-                  <span className="font-medium text-emerald-900">{satisfactionRating}/5 stars</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Checklist Items:</span>
-                  <span className="font-medium text-emerald-900">
-                    {checklist.filter(i => i.checked).length}/{checklist.length}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Photos:</span>
-                  <span className="font-medium text-emerald-900">{photos.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Signature:</span>
-                  <span className="font-medium text-emerald-900">
-                    {signatureData ? 'Captured' : 'Skipped'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-emerald-700">Job Status:</span>
-                  <span className="font-medium text-emerald-900">Completed</span>
-                </div>
-                {createReminder && (
-                  <div className="flex justify-between">
-                    <span className="text-emerald-700">Reminder:</span>
-                    <span className="font-medium text-emerald-900">{reminderType} on {reminderDate}</span>
-                  </div>
-                )}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+            <h3 className="font-semibold text-emerald-900 mb-3">Completion Summary</h3>
+            <div className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Client:</span>
+                <span className="font-medium text-emerald-900">{job.client_name}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Final Price:</span>
+                <span className="font-medium text-emerald-900">${finalPrice}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Hours Worked:</span>
+                <span className="font-medium text-emerald-900">{hoursWorked} hrs</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Satisfaction:</span>
+                <span className="font-medium text-emerald-900">{satisfactionRating}/5 stars</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Checklist:</span>
+                <span className="font-medium text-emerald-900">
+                  {checklist.filter(i => i.checked).length}/{checklist.length}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Photos:</span>
+                <span className="font-medium text-emerald-900">{photos.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-emerald-700">Signature:</span>
+                <span className="font-medium text-emerald-900">
+                  {signatureData ? 'Captured' : 'Skipped'}
+                </span>
+              </div>
+              {createReminder && (
+                <div className="flex justify-between">
+                  <span className="text-emerald-700">Reminder:</span>
+                  <span className="font-medium text-emerald-900">{reminderType} on {reminderDate}</span>
+                </div>
+              )}
             </div>
-
-            <p className="text-sm text-slate-600 text-center">
-              Review the information above and click Complete Job to finalize. The job
-              is marked completed for you — no need to edit the status afterwards.
-            </p>
           </div>
         );
 
+      default:
+        return null;
+    }
+  };
+
+  const sectionHeading = (text: string) => (
+    <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">{text}</h4>
+  );
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 'details':
+        return (
+          <div className="space-y-8">
+            {renderSection('review')}
+            <div>
+              {sectionHeading('Work Completion Checklist')}
+              {renderSection('checklist')}
+            </div>
+          </div>
+        );
+      case 'photos':
+        return renderSection('photos');
+      case 'signoff':
+        return (
+          <div className="space-y-8">
+            <div>
+              {sectionHeading('Customer Satisfaction')}
+              {renderSection('satisfaction')}
+            </div>
+            <div>
+              {sectionHeading('Customer Signature')}
+              {renderSection('signature')}
+            </div>
+          </div>
+        );
+      case 'finish':
+        return (
+          <div className="space-y-8">
+            {renderSection('notes')}
+            <div>
+              {sectionHeading('Follow-up Reminder')}
+              {renderSection('reminders')}
+            </div>
+            {renderSection('confirm')}
+          </div>
+        );
       default:
         return null;
     }
