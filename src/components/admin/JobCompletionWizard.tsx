@@ -396,6 +396,18 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       case 'checklist':
         return (
           <div className="space-y-4">
+            <label className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={checklist.every(i => i.checked)}
+                onChange={(e) => {
+                  setChecklist(checklist.map(i => ({ ...i, checked: e.target.checked })));
+                }}
+                className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+              />
+              <span className="text-emerald-900 font-semibold">Check all</span>
+            </label>
+
             {checklist.map((item) => (
               <label
                 key={item.id}
