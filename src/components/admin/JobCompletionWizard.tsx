@@ -166,13 +166,16 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const { data: bizData } = await supabase
-        .from('business_info')
-        .select('organization_id')
-        .eq('id', job.business_id)
-        .maybeSingle();
+      // getSession reads the cached session locally; getUser is a network round trip.
+      const [{ data: { session } }, { data: bizData }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase
+          .from('business_info')
+          .select('organization_id')
+          .eq('id', job.business_id)
+          .maybeSingle(),
+      ]);
+      const user = session?.user ?? null;
 
       const completedAt = new Date().toISOString();
       const parsedFinalPrice = parseFloat(finalPrice);
@@ -213,78 +216,90 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       const { data: completion, error: completionError } = await supabase
         .from('job_completions')
         .insert([completionData])
-        .select()
+        .select('id')
         .single();
 
       if (completionError) throw completionError;
 
+      // Everything below only needs the completion id, so run it concurrently.
+      const followUps: PromiseLike<void>[] = [];
+
       // The signed completion is what makes the job done, so close it out here
       // instead of leaving the status to be corrected by hand afterwards.
-      const { error: jobStatusError } = await supabase
-        .from('jobs')
-        .update({
-          job_status: 'completed',
-          date_completed: completedAt.split('T')[0],
-          completion_id: completion.id,
-          has_signature: true,
-          signed_off_at: completedAt,
-          status_changed_by: user?.id || null,
-        })
-        .eq('id', job.id);
-
-      if (jobStatusError) throw jobStatusError;
+      followUps.push(
+        supabase
+          .from('jobs')
+          .update({
+            job_status: 'completed',
+            date_completed: completedAt.split('T')[0],
+            completion_id: completion.id,
+            has_signature: true,
+            signed_off_at: completedAt,
+            status_changed_by: user?.id || null,
+          })
+          .eq('id', job.id)
+          .then(({ error: jobStatusError }) => {
+            if (jobStatusError) throw jobStatusError;
+          })
+      );
 
       if (photos.length > 0) {
-        const completionPhotos = photos.map(photo => photo.dataUrl);
-        const { error: completionPhotosError } = await supabase
-          .from('job_completions')
-          .update({ completion_photos: completionPhotos })
-          .eq('id', completion.id);
-
-        if (completionPhotosError) {
-          console.error('Error saving completion photos:', completionPhotosError);
-        }
+        followUps.push(
+          supabase
+            .from('job_completions')
+            .update({ completion_photos: photos.map(photo => photo.dataUrl) })
+            .eq('id', completion.id)
+            .then(({ error: completionPhotosError }) => {
+              if (completionPhotosError) {
+                console.error('Error saving completion photos:', completionPhotosError);
+              }
+            })
+        );
       }
 
       if (satisfactionComment.trim()) {
-        const reviewData = {
-          business_id: job.business_id,
-          author_name: job.client_name,
-          review_body: satisfactionComment,
-          rating_value: satisfactionRating,
-          date_published: new Date().toISOString().split('T')[0],
-          is_featured: satisfactionRating >= 4,
-          is_verified: true,
-          is_active: true,
-          job_completion_id: completion.id,
-          source: 'job_completion',
-          collected_at_completion: true,
-        };
-
-        const { error: reviewError } = await supabase
-          .from('customer_reviews')
-          .insert([reviewData]);
-
-        if (reviewError) console.error('Error creating review:', reviewError);
+        followUps.push(
+          supabase
+            .from('customer_reviews')
+            .insert([{
+              business_id: job.business_id,
+              author_name: job.client_name,
+              review_body: satisfactionComment,
+              rating_value: satisfactionRating,
+              date_published: new Date().toISOString().split('T')[0],
+              is_featured: satisfactionRating >= 4,
+              is_verified: true,
+              is_active: true,
+              job_completion_id: completion.id,
+              source: 'job_completion',
+              collected_at_completion: true,
+            }])
+            .then(({ error: reviewError }) => {
+              if (reviewError) console.error('Error creating review:', reviewError);
+            })
+        );
       }
 
       if (createReminder) {
-        const reminderData = {
-          job_completion_id: completion.id,
-          job_id: job.id,
-          reminder_type: reminderType,
-          scheduled_date: reminderDate,
-          status: 'pending',
-          admin_notes: `Follow up for: ${job.client_name}`,
-          created_by: user?.id || null,
-        };
-
-        const { error: reminderError } = await supabase
-          .from('job_completion_reminders')
-          .insert([reminderData]);
-
-        if (reminderError) console.error('Error creating reminder:', reminderError);
+        followUps.push(
+          supabase
+            .from('job_completion_reminders')
+            .insert([{
+              job_completion_id: completion.id,
+              job_id: job.id,
+              reminder_type: reminderType,
+              scheduled_date: reminderDate,
+              status: 'pending',
+              admin_notes: `Follow up for: ${job.client_name}`,
+              created_by: user?.id || null,
+            }])
+            .then(({ error: reminderError }) => {
+              if (reminderError) console.error('Error creating reminder:', reminderError);
+            })
+        );
       }
+
+      await Promise.all(followUps);
 
       onSuccess();
     } catch (err: any) {
