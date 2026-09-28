@@ -42,7 +42,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const [signatureData, setSignatureData] = useState('');
   const [signatureSkipped, setSignatureSkipped] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
-  const [createReminder, setCreateReminder] = useState(true);
+  const [createReminder, setCreateReminder] = useState(false);
   const [reminderDate, setReminderDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() + 7);
