@@ -40,6 +40,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
   const [satisfactionRating, setSatisfactionRating] = useState(5);
   const [satisfactionComment, setSatisfactionComment] = useState('');
   const [signatureData, setSignatureData] = useState('');
+  const [signatureSkipped, setSignatureSkipped] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [createReminder, setCreateReminder] = useState(true);
   const [reminderDate, setReminderDate] = useState(() => {
@@ -90,7 +91,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       case 'satisfaction':
         return satisfactionRating > 0;
       case 'signature':
-        return signatureData.length > 0;
+        return signatureData.length > 0 || signatureSkipped;
       default:
         return true;
     }
@@ -233,8 +234,8 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
             job_status: 'completed',
             date_completed: completedAt.split('T')[0],
             completion_id: completion.id,
-            has_signature: true,
-            signed_off_at: completedAt,
+            has_signature: signatureData.length > 0,
+            signed_off_at: signatureData ? completedAt : null,
             status_changed_by: user?.id || null,
           })
           .eq('id', job.id)
@@ -608,6 +609,17 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 >
                   Capture Signature
                 </button>
+                <div className="mt-4">
+                  <label className="inline-flex items-center gap-2 text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={signatureSkipped}
+                      onChange={(e) => setSignatureSkipped(e.target.checked)}
+                      className="w-5 h-5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+                    />
+                    <span>Skip signature for this job</span>
+                  </label>
+                </div>
               </div>
             )}
           </div>
@@ -715,7 +727,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                 <div className="flex justify-between">
                   <span className="text-emerald-700">Signature:</span>
                   <span className="font-medium text-emerald-900">
-                    {signatureData ? 'Captured' : 'Missing'}
+                    {signatureData ? 'Captured' : 'Skipped'}
                   </span>
                 </div>
                 <div className="flex justify-between">
