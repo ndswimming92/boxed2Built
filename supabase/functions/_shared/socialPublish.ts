@@ -15,6 +15,8 @@ export interface PlatformResult {
   success: boolean;
   post_id?: string;
   error?: string;
+  /** True when this network wasn't requested, so nothing was attempted. */
+  skipped?: boolean;
 }
 
 export function buildCaption(title: string, description?: string | null, hashtags?: string[] | null): string {

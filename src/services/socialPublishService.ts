@@ -6,7 +6,11 @@ export interface PlatformPublishResult {
   success: boolean;
   post_id?: string;
   error?: string;
+  /** True when this network wasn't requested, so nothing was attempted. */
+  skipped?: boolean;
 }
+
+export type SocialPlatform = 'facebook' | 'instagram';
 
 export interface PublishGalleryPhotoResult {
   facebook: PlatformPublishResult;
@@ -17,7 +21,10 @@ export interface PublishGalleryPhotoResult {
   instagram_reformat_note?: string | null;
 }
 
-export async function publishGalleryPhoto(galleryItemId: string): Promise<PublishGalleryPhotoResult> {
+export async function publishGalleryPhoto(
+  galleryItemId: string,
+  platforms: SocialPlatform[] = ['facebook', 'instagram'],
+): Promise<PublishGalleryPhotoResult> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('Not authenticated');
 
@@ -27,7 +34,7 @@ export async function publishGalleryPhoto(galleryItemId: string): Promise<Publis
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify({ gallery_item_id: galleryItemId }),
+    body: JSON.stringify({ gallery_item_id: galleryItemId, platforms }),
   });
 
   const body = await res.json().catch(() => ({}));
