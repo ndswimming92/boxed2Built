@@ -3,7 +3,7 @@ import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, S
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
-import { publishGalleryPhoto, checkSocialPostStatus, YoutubeUploadResult } from '../../services/socialPublishService';
+import { publishGalleryPhoto, checkSocialPostStatus, SocialPlatform, YoutubeUploadResult } from '../../services/socialPublishService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
@@ -52,6 +52,7 @@ export default function GalleryPage() {
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [reorderMode, setReorderMode] = useState(false);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [postTarget, setPostTarget] = useState<'both' | SocialPlatform>('both');
   const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const [scheduleValue, setScheduleValue] = useState('');
@@ -139,18 +140,23 @@ export default function GalleryPage() {
   const handlePostToSocial = async (item: GalleryItem) => {
     try {
       setPublishingId(item.id);
-      const result = await publishGalleryPhoto(item.id);
+      const platforms: SocialPlatform[] = postTarget === 'both' ? ['facebook', 'instagram'] : [postTarget];
+      const result = await publishGalleryPhoto(item.id, platforms);
       const parts: string[] = [];
-      if (result.facebook.success) parts.push('Facebook: posted');
-      else parts.push(`Facebook: ${result.facebook.error ?? 'failed'}`);
-      if (result.instagram.success) {
-        parts.push(
-          result.instagram_reformatted
-            ? 'Instagram: posted (photo reformatted to fit Instagram)'
-            : 'Instagram: posted',
-        );
-      } else {
-        parts.push(`Instagram: ${result.instagram.error ?? 'failed'}`);
+      if (!result.facebook.skipped) {
+        if (result.facebook.success) parts.push('Facebook: posted');
+        else parts.push(`Facebook: ${result.facebook.error ?? 'failed'}`);
+      }
+      if (!result.instagram.skipped) {
+        if (result.instagram.success) {
+          parts.push(
+            result.instagram_reformatted
+              ? 'Instagram: posted (photo reformatted to fit Instagram)'
+              : 'Instagram: posted',
+          );
+        } else {
+          parts.push(`Instagram: ${result.instagram.error ?? 'failed'}`);
+        }
       }
 
       setPublishMessage({
@@ -566,6 +572,24 @@ export default function GalleryPage() {
                         Cancel
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {item.type === 'image' && item.eligible_for_social && !item.social_scheduled_at && schedulingId !== item.id && (
+                  <div className="w-full mb-1.5 flex rounded bg-slate-100 p-0.5 text-xs font-medium" role="group" aria-label="Post to">
+                    {([['both', 'Both'], ['facebook', 'Facebook'], ['instagram', 'Instagram']] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setPostTarget(value)}
+                        aria-pressed={postTarget === value}
+                        className={`flex-1 px-2 py-1 rounded transition-colors ${
+                          postTarget === value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 )}
 

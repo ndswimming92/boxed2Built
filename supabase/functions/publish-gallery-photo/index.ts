@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { buildCaption, postToFacebook, postToInstagram, FacebookTokens } from '../_shared/socialPublish.ts';
+import { buildCaption, postToFacebook, postToInstagram, FacebookTokens, PlatformResult } from '../_shared/socialPublish.ts';
 import { annotateInstagramError, prepareInstagramImage } from '../_shared/instagramImage.ts';
 
 const corsHeaders = {
@@ -46,6 +46,14 @@ Deno.serve(async (req) => {
     const galleryItemId = body?.gallery_item_id as string | undefined;
     if (!galleryItemId) return json({ error: 'gallery_item_id is required' }, 400);
 
+    // Which networks to post to; defaults to both for older callers.
+    const requested = Array.isArray(body?.platforms) ? (body.platforms as unknown[]) : ['facebook', 'instagram'];
+    const wantFacebook = requested.includes('facebook');
+    const wantInstagram = requested.includes('instagram');
+    if (!wantFacebook && !wantInstagram) {
+      return json({ error: 'Choose Facebook, Instagram, or both.' }, 400);
+    }
+
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: item, error: itemErr } = await admin
@@ -86,37 +94,49 @@ Deno.serve(async (req) => {
     // Instagram rejects anything that isn't a JPEG inside its aspect-ratio
     // window, so it gets a reformatted copy when the original wouldn't pass.
     // Facebook is happy with the original file either way.
-    const instagramImage = await prepareInstagramImage(admin, item.id, item.src);
-    if (instagramImage.note) console.log(`publish-gallery-photo ${item.id}: ${instagramImage.note}`);
-    if (instagramImage.error) console.error(`publish-gallery-photo ${item.id}: ${instagramImage.error}`);
+    const instagramImage = wantInstagram
+      ? await prepareInstagramImage(admin, item.id, item.src)
+      : null;
+    if (instagramImage?.note) console.log(`publish-gallery-photo ${item.id}: ${instagramImage.note}`);
+    if (instagramImage?.error) console.error(`publish-gallery-photo ${item.id}: ${instagramImage.error}`);
 
+    const skipped: PlatformResult = { success: false, skipped: true };
     const [facebookResult, rawInstagramResult] = await Promise.all([
-      postToFacebook(tokens, item.src, caption, item.alt),
-      postToInstagram(tokens, instagramImage.url, caption, item.alt),
+      wantFacebook ? postToFacebook(tokens, item.src, caption, item.alt) : Promise.resolve(skipped),
+      instagramImage ? postToInstagram(tokens, instagramImage.url, caption, item.alt) : Promise.resolve(skipped),
     ]);
-    const instagramResult = annotateInstagramError(instagramImage, rawInstagramResult);
+    const instagramResult = instagramImage
+      ? annotateInstagramError(instagramImage, rawInstagramResult)
+      : rawInstagramResult;
 
-    await admin
-      .from('gallery_items')
-      .update({
+    // Only touch the columns of networks we actually attempted, so posting to
+    // one network never clears the other's record.
+    const update: Record<string, unknown> = {};
+    if (wantFacebook) {
+      Object.assign(update, {
         facebook_post_id: facebookResult.success ? facebookResult.post_id : null,
         facebook_posted_at: facebookResult.success ? new Date().toISOString() : null,
         facebook_post_error: facebookResult.success ? null : facebookResult.error,
         facebook_post_removed_at: null,
         facebook_post_removed_reason: null,
+      });
+    }
+    if (wantInstagram) {
+      Object.assign(update, {
         instagram_post_id: instagramResult.success ? instagramResult.post_id : null,
         instagram_posted_at: instagramResult.success ? new Date().toISOString() : null,
         instagram_post_error: instagramResult.success ? null : instagramResult.error,
         instagram_post_removed_at: null,
         instagram_post_removed_reason: null,
-      })
-      .eq('id', galleryItemId);
+      });
+    }
+    await admin.from('gallery_items').update(update).eq('id', galleryItemId);
 
     return json({
       facebook: facebookResult,
       instagram: instagramResult,
-      instagram_reformatted: instagramImage.reformatted,
-      instagram_reformat_note: instagramImage.note ?? null,
+      instagram_reformatted: instagramImage?.reformatted ?? false,
+      instagram_reformat_note: instagramImage?.note ?? null,
     });
   } catch (error) {
     console.error('publish-gallery-photo error:', error);

@@ -15,6 +15,8 @@ export interface PlatformResult {
   success: boolean;
   post_id?: string;
   error?: string;
+  /** True when this network wasn't requested, so nothing was attempted. */
+  skipped?: boolean;
 }
 
 export function buildCaption(title: string, description?: string | null, hashtags?: string[] | null): string {
@@ -133,16 +135,31 @@ export async function postToInstagram(
 
     await waitForContainerReady(creationId, tokens.page_access_token);
 
-    const publishRes = await fetch(`${GRAPH_URL}/${tokens.ig_user_id}/media_publish`, {
-      method: 'POST',
-      body: new URLSearchParams({
-        creation_id: creationId,
-        access_token: tokens.page_access_token,
-      }),
-    });
-    const publishBody = await publishRes.json();
-    if (!publishRes.ok) throw new Error(publishBody?.error?.message || 'Instagram rejected publishing the post');
-    return { success: true, post_id: publishBody.id };
+    // Instagram can report the container as FINISHED while media_publish still
+    // answers "Media ID is not available" (code 9007 / subcode 2207027). That is
+    // transient, so retry the publish a few times before giving up.
+    const maxPublishAttempts = 6;
+    for (let attempt = 1; ; attempt++) {
+      const publishRes = await fetch(`${GRAPH_URL}/${tokens.ig_user_id}/media_publish`, {
+        method: 'POST',
+        body: new URLSearchParams({
+          creation_id: creationId,
+          access_token: tokens.page_access_token,
+        }),
+      });
+      const publishBody = await publishRes.json();
+      if (publishRes.ok) return { success: true, post_id: publishBody.id };
+
+      const err = publishBody?.error;
+      const notReadyYet =
+        err?.code === 9007 ||
+        err?.error_subcode === 2207027 ||
+        /media id is not available/i.test(err?.message ?? '');
+      if (!notReadyYet || attempt >= maxPublishAttempts) {
+        throw new Error(err?.error_user_msg || err?.message || 'Instagram rejected publishing the post');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown Instagram error' };
   }
