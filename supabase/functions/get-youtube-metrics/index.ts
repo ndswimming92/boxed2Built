@@ -1,5 +1,24 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import {
+  DATA_API,
+  TOTAL_METRICS,
+  analyticsQuery,
+  contentTypeFilter,
+  type ContentFilter,
+  daysAgo,
+  demographicsFrom,
+  getYoutubeAccessToken,
+  googleErrorMessage,
+  googleGet,
+  hours,
+  isoDate,
+  joinFilters,
+  rowsToObjects,
+  totalsFrom,
+  youtubeConfigured,
+  type AnalyticsResult,
+} from '../_shared/youtube.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,108 +29,17 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
-const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
-const DATA_API = 'https://www.googleapis.com/youtube/v3';
-const ANALYTICS_API = 'https://youtubeanalytics.googleapis.com/v2/reports';
-const REFRESH_BUFFER_MS = 60_000;
 const ALLOWED_RANGES = [7, 28, 90];
 const DEFAULT_RANGE = 28;
-
-interface GoogleTokens {
-  access_token: string;
-  refresh_token: string | null;
-  token_type: string;
-  expires_at?: string;
-  obtained_at: string;
-}
-
-interface AnalyticsResult {
-  ok: boolean;
-  rows: (string | number)[][];
-  columns: string[];
-  error: string | null;
-}
+const CONTENT_FILTERS: ContentFilter[] = ['all', 'shorts', 'video'];
+const HISTORY_DAYS = 365;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
-}
-
-async function refreshAccessToken(refreshToken: string): Promise<{ access_token: string; expires_in: number }> {
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID!,
-      client_secret: GOOGLE_CLIENT_SECRET!,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
-  });
-  const body = await res.json();
-  if (!res.ok) {
-    throw new Error(body?.error_description || body?.error || 'Failed to refresh the Google access token');
-  }
-  return body;
-}
-
-function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-function daysAgo(n: number): Date {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - n);
-  return d;
-}
-
-function googleErrorMessage(body: unknown, fallback: string): string {
-  const err = (body as { error?: { message?: string } })?.error;
-  return err?.message || fallback;
-}
-
-async function googleGet(url: string, accessToken: string): Promise<{ ok: boolean; status: number; body: any }> {
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-  const body = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, body };
-}
-
-async function analyticsQuery(
-  accessToken: string,
-  params: Record<string, string>,
-): Promise<AnalyticsResult> {
-  const qs = new URLSearchParams({ ids: 'channel==MINE', ...params });
-  const res = await googleGet(`${ANALYTICS_API}?${qs.toString()}`, accessToken);
-  if (!res.ok) {
-    return { ok: false, rows: [], columns: [], error: googleErrorMessage(res.body, `Analytics request failed (${res.status})`) };
-  }
-  const columns = ((res.body.columnHeaders || []) as { name: string }[]).map((c) => c.name);
-  return { ok: true, rows: res.body.rows || [], columns, error: null };
-}
-
-function rowsToObjects(result: AnalyticsResult): Record<string, string | number>[] {
-  return result.rows.map((row) => {
-    const obj: Record<string, string | number> = {};
-    result.columns.forEach((c, i) => {
-      obj[c] = row[i];
-    });
-    return obj;
-  });
-}
-
-const TOTAL_METRICS = 'views,estimatedMinutesWatched,averageViewDuration,likes,comments,shares,subscribersGained,subscribersLost';
-
-function totalsFrom(result: AnalyticsResult): Record<string, number> | null {
-  if (!result.ok) return null;
-  const row = rowsToObjects(result)[0];
-  if (!row) {
-    return Object.fromEntries(TOTAL_METRICS.split(',').map((m) => [m, 0]));
-  }
-  return row as Record<string, number>;
 }
 
 Deno.serve(async (req) => {
@@ -121,12 +49,11 @@ Deno.serve(async (req) => {
     }
     if (req.method !== 'GET' && req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    if (!youtubeConfigured()) {
       return json({ error: 'YouTube stats are not configured yet on the server.' }, 501);
     }
 
-    const authHeader = req.headers.get('Authorization') || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
     if (!token) return json({ error: 'Unauthorized' }, 401);
 
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -140,51 +67,18 @@ Deno.serve(async (req) => {
       return json({ error: 'Forbidden' }, 403);
     }
 
-    const rangeParam = Number(new URL(req.url).searchParams.get('days'));
+    const url = new URL(req.url);
+    const rangeParam = Number(url.searchParams.get('days'));
     const days = ALLOWED_RANGES.includes(rangeParam) ? rangeParam : DEFAULT_RANGE;
+    const typeParam = url.searchParams.get('type') as ContentFilter;
+    const contentType: ContentFilter = CONTENT_FILTERS.includes(typeParam) ? typeParam : 'all';
 
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const { data: connection, error: connErr } = await admin
-      .from('integration_connections')
-      .select('vault_secret_name')
-      .eq('provider', 'youtube')
-      .eq('status', 'connected')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (connErr || !connection?.vault_secret_name) {
-      return json({ connected: false, fetched_at: new Date().toISOString() });
+    const auth = await getYoutubeAccessToken();
+    if (!auth.ok) {
+      if (!auth.connected) return json({ connected: false, fetched_at: new Date().toISOString() });
+      return json({ error: auth.error }, auth.status);
     }
-
-    const { data: secretJson, error: secretErr } = await admin.rpc('read_vault_secret', {
-      p_name: connection.vault_secret_name,
-    });
-    if (secretErr || !secretJson) {
-      return json({ error: 'Could not load the stored Google credentials. Try reconnecting.' }, 500);
-    }
-    const tokens = JSON.parse(secretJson) as GoogleTokens;
-
-    let accessToken = tokens.access_token;
-    const isStale = !tokens.expires_at || new Date(tokens.expires_at).getTime() - REFRESH_BUFFER_MS <= Date.now();
-    if (isStale) {
-      if (!tokens.refresh_token) {
-        return json({ error: 'The stored Google credentials have expired and cannot be refreshed. Reconnect under Admin → Connections.' }, 401);
-      }
-      const refreshed = await refreshAccessToken(tokens.refresh_token);
-      accessToken = refreshed.access_token;
-      const updated: GoogleTokens = {
-        ...tokens,
-        access_token: refreshed.access_token,
-        expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
-        obtained_at: new Date().toISOString(),
-      };
-      const { error: updateErr } = await admin.rpc('update_vault_secret', {
-        p_name: connection.vault_secret_name,
-        p_secret: JSON.stringify(updated),
-      });
-      if (updateErr) console.error('get-youtube-metrics failed to persist refreshed token:', updateErr);
-    }
+    const accessToken = auth.accessToken;
 
     // Analytics data lags ~2 days, so end the window at yesterday.
     const endDate = isoDate(daysAgo(1));
@@ -192,6 +86,9 @@ Deno.serve(async (req) => {
     const prevEnd = isoDate(daysAgo(days + 1));
     const prevStart = isoDate(daysAgo(days * 2));
     const range = { startDate, endDate };
+    const typeFilter = joinFilters(contentTypeFilter(contentType));
+
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const [
       channelRes,
@@ -202,22 +99,29 @@ Deno.serve(async (req) => {
       contentTypeRes,
       topVideosRes,
       countriesRes,
+      demographicsRes,
+      devicesRes,
+      subscribedRes,
+      historyRes,
     ] = await Promise.all([
       googleGet(`${DATA_API}/channels?part=snippet,statistics&mine=true`, accessToken),
       analyticsQuery(accessToken, {
         ...range,
+        ...typeFilter,
         dimensions: 'day',
         metrics: 'views,estimatedMinutesWatched,subscribersGained,subscribersLost',
         sort: 'day',
       }),
-      analyticsQuery(accessToken, { ...range, metrics: TOTAL_METRICS }),
-      analyticsQuery(accessToken, { startDate: prevStart, endDate: prevEnd, metrics: TOTAL_METRICS }),
+      analyticsQuery(accessToken, { ...range, ...typeFilter, metrics: TOTAL_METRICS }),
+      analyticsQuery(accessToken, { startDate: prevStart, endDate: prevEnd, ...typeFilter, metrics: TOTAL_METRICS }),
       analyticsQuery(accessToken, {
         ...range,
+        ...typeFilter,
         dimensions: 'insightTrafficSourceType',
         metrics: 'views,estimatedMinutesWatched',
         sort: '-views',
       }),
+      // Always unfiltered: this table is the Shorts vs. videos comparison itself.
       analyticsQuery(accessToken, {
         ...range,
         dimensions: 'creatorContentType',
@@ -226,6 +130,7 @@ Deno.serve(async (req) => {
       }),
       analyticsQuery(accessToken, {
         ...range,
+        ...typeFilter,
         dimensions: 'video',
         metrics: 'views,estimatedMinutesWatched,likes,comments',
         sort: '-views',
@@ -233,11 +138,40 @@ Deno.serve(async (req) => {
       }),
       analyticsQuery(accessToken, {
         ...range,
+        ...typeFilter,
         dimensions: 'country',
         metrics: 'views,estimatedMinutesWatched',
         sort: '-views',
         maxResults: '5',
       }),
+      // Demographics are withheld by YouTube below a privacy threshold, in which
+      // case the query succeeds with zero rows.
+      analyticsQuery(accessToken, {
+        ...range,
+        ...typeFilter,
+        dimensions: 'ageGroup,gender',
+        metrics: 'viewerPercentage',
+        sort: 'gender,ageGroup',
+      }),
+      analyticsQuery(accessToken, {
+        ...range,
+        ...typeFilter,
+        dimensions: 'deviceType',
+        metrics: 'views,estimatedMinutesWatched',
+        sort: '-views',
+      }),
+      analyticsQuery(accessToken, {
+        ...range,
+        ...typeFilter,
+        dimensions: 'subscribedStatus',
+        metrics: 'views,estimatedMinutesWatched',
+        sort: '-views',
+      }),
+      admin
+        .from('youtube_daily_snapshots')
+        .select('snapshot_date, subscribers_total, total_views, video_count, views, watch_minutes, subscribers_net')
+        .gte('snapshot_date', isoDate(daysAgo(HISTORY_DAYS)))
+        .order('snapshot_date', { ascending: true }),
     ]);
 
     if (!channelRes.ok && (channelRes.status === 401 || channelRes.status === 403)) {
@@ -265,7 +199,7 @@ Deno.serve(async (req) => {
       ? rowsToObjects(trendRes).map((r) => ({
           date: r.day as string,
           views: Number(r.views),
-          watch_hours: Math.round((Number(r.estimatedMinutesWatched) / 60) * 100) / 100,
+          watch_hours: hours(Number(r.estimatedMinutesWatched)),
           subscribers_net: Number(r.subscribersGained) - Number(r.subscribersLost),
         }))
       : [];
@@ -292,7 +226,7 @@ Deno.serve(async (req) => {
         title: titles.get(r.video as string)?.title ?? r.video,
         thumbnail: titles.get(r.video as string)?.thumbnail ?? null,
         views: Number(r.views),
-        watch_hours: Math.round((Number(r.estimatedMinutesWatched) / 60) * 100) / 100,
+        watch_hours: hours(Number(r.estimatedMinutesWatched)),
         likes: Number(r.likes),
         comments: Number(r.comments),
       }));
@@ -303,17 +237,20 @@ Deno.serve(async (req) => {
         ? rowsToObjects(res).map((r) => ({
             key: r[dim] as string,
             views: Number(r.views),
-            watch_hours: Math.round((Number(r.estimatedMinutesWatched) / 60) * 100) / 100,
+            watch_hours: hours(Number(r.estimatedMinutesWatched)),
           }))
         : [];
 
-    const analyticsErrors = [trendRes, totalsRes, trafficRes, contentTypeRes, topVideosRes, countriesRes]
+    const analyticsErrors = [
+      trendRes, totalsRes, trafficRes, contentTypeRes, topVideosRes, countriesRes, demographicsRes, devicesRes, subscribedRes,
+    ]
       .map((r) => r.error)
       .filter((e): e is string => !!e);
 
     return json({
       connected: true,
       days,
+      content_type: contentType,
       period: { start: startDate, end: endDate, previous_start: prevStart, previous_end: prevEnd },
       channel,
       channel_error: channelRes.ok ? null : googleErrorMessage(channelRes.body, 'Could not load channel details'),
@@ -324,6 +261,11 @@ Deno.serve(async (req) => {
       content_types: mapSimple(contentTypeRes, 'creatorContentType'),
       top_videos: topVideos,
       countries: mapSimple(countriesRes, 'country'),
+      demographics: demographicsFrom(demographicsRes),
+      demographics_available: demographicsRes.ok,
+      devices: mapSimple(devicesRes, 'deviceType'),
+      subscribed_status: mapSimple(subscribedRes, 'subscribedStatus'),
+      history: historyRes.error ? [] : historyRes.data ?? [],
       analytics_error: analyticsErrors[0] ?? null,
       fetched_at: new Date().toISOString(),
     });
