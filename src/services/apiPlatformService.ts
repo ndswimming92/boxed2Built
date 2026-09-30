@@ -310,15 +310,82 @@ export interface YoutubeMetrics {
   content_types?: YoutubeBreakdownRow[];
   top_videos?: YoutubeTopVideo[];
   countries?: YoutubeBreakdownRow[];
+  demographics?: YoutubeDemographicRow[];
+  demographics_available?: boolean;
+  devices?: YoutubeBreakdownRow[];
+  subscribed_status?: YoutubeBreakdownRow[];
+  content_type?: YoutubeContentType;
+  history?: YoutubeHistoryPoint[];
   analytics_error?: string | null;
   fetched_at: string;
 }
 
-export async function getYoutubeMetrics(days: YoutubeRangeDays = 28): Promise<YoutubeMetrics> {
+export type YoutubeContentType = 'all' | 'shorts' | 'video';
+
+export interface YoutubeDemographicRow {
+  age_group: string;
+  gender: string;
+  percentage: number;
+}
+
+export interface YoutubeHistoryPoint {
+  snapshot_date: string;
+  subscribers_total: number | null;
+  total_views: number;
+  video_count: number;
+  views: number | null;
+  watch_minutes: number | null;
+  subscribers_net: number | null;
+}
+
+export interface YoutubeVideoMetrics {
+  video: {
+    id: string;
+    title: string;
+    thumbnail: string | null;
+    published_at: string;
+    lifetime_views: number;
+    lifetime_likes: number;
+    lifetime_comments: number;
+    duration: string;
+  };
+  days: number;
+  totals: YoutubeTotals | null;
+  trend: YoutubeTrendPoint[];
+  traffic_sources: YoutubeBreakdownRow[];
+  countries: YoutubeBreakdownRow[];
+  demographics: YoutubeDemographicRow[];
+  demographics_available: boolean;
+  retention: { position: number; watch_ratio: number }[];
+  analytics_error: string | null;
+  fetched_at: string;
+}
+
+export async function getYoutubeVideoMetrics(
+  videoId: string,
+  days: YoutubeRangeDays = 28,
+): Promise<YoutubeVideoMetrics> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('Not authenticated');
 
-  const res = await fetch(`${FN_URL}/get-youtube-metrics?days=${days}`, {
+  const res = await fetch(`${FN_URL}/get-youtube-video-metrics?video_id=${encodeURIComponent(videoId)}&days=${days}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to load video stats');
+  return body as YoutubeVideoMetrics;
+}
+
+export async function getYoutubeMetrics(
+  days: YoutubeRangeDays = 28,
+  contentType: YoutubeContentType = 'all',
+): Promise<YoutubeMetrics> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/get-youtube-metrics?days=${days}&type=${contentType}`, {
     method: 'GET',
     headers: { Authorization: `Bearer ${session.access_token}` },
   });
