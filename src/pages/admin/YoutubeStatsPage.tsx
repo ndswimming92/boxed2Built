@@ -219,8 +219,8 @@ export default function YoutubeStatsPage() {
       <div className="space-y-10">
         {data.analytics_error && (
           <Notice tone="amber" title="Some analytics couldn't be loaded">
-            {data.analytics_error}. If you haven't yet, reconnect YouTube under <ConnectionsLink /> so the
-            analytics permissions take effect.
+            {data.analytics_error}. If this mentions permissions or access, reconnect YouTube under{' '}
+            <ConnectionsLink />.
           </Notice>
         )}
 

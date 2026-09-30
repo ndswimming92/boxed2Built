@@ -163,10 +163,14 @@ export function totalsFrom(result: AnalyticsResult): Record<string, number> | nu
   return row as Record<string, number>;
 }
 
-/** Analytics `filters` fragment for a Shorts/Videos toggle ('' = no filter). */
+/**
+ * Analytics `filters` fragment for a Shorts/Videos toggle ('' = no filter).
+ * The API only accepts lowercase creatorContentType values in filters —
+ * `==SHORTS` is rejected with "Invalid value (SHORTS)".
+ */
 export function contentTypeFilter(filter: ContentFilter): string {
-  if (filter === 'shorts') return 'creatorContentType==SHORTS';
-  if (filter === 'video') return 'creatorContentType==VIDEO_ON_DEMAND';
+  if (filter === 'shorts') return 'creatorContentType==shorts';
+  if (filter === 'video') return 'creatorContentType==video_on_demand';
   return '';
 }
 
