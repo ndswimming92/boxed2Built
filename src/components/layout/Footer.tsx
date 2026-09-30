@@ -3,6 +3,7 @@ import { Facebook, Mail, Phone, Instagram, Star, Youtube, Linkedin, Clock, MapPi
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import QuickContactForm from '../QuickContactForm';
+import PaymentLogo from './PaymentLogo';
 import { trackEvent, trackExternalLink } from '../../utils/analytics';
 import { getSocialUrl, getGoogleReviewUrl } from '../../utils/utm';
 import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
@@ -388,9 +389,14 @@ const Footer: React.FC = () => {
                 <CreditCard size={15} className="text-amber-300" />
                 Payment
               </h3>
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {paymentMethods.length > 0 ? paymentMethods.join(' • ') : 'Credit/Debit Cards • Cash'}
-              </p>
+              <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-300 leading-relaxed">
+                {(paymentMethods.length > 0 ? paymentMethods : ['Credit/Debit Cards', 'Cash']).map((method) => (
+                  <li key={method} className="flex items-center gap-1.5">
+                    <PaymentLogo method={method} />
+                    <span>{method}</span>
+                  </li>
+                ))}
+              </ul>
               <p className="text-[11px] text-gray-500 mt-1 italic">Payment due upon completion.</p>
             </div>
           </div>
