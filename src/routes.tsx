@@ -85,6 +85,7 @@ const ApiKeysPage = React.lazy(() => import('./pages/admin/ApiKeysPage'));
 const SecurityPage = React.lazy(() => import('./pages/admin/SecurityPage'));
 const ConnectionsPage = React.lazy(() => import('./pages/admin/ConnectionsPage'));
 const ClaudeUsagePage = React.lazy(() => import('./pages/admin/ClaudeUsagePage'));
+const YoutubeStatsPage = React.lazy(() => import('./pages/admin/YoutubeStatsPage'));
 const SocialMetricsPage = React.lazy(() => import('./pages/admin/SocialMetricsPage'));
 const SocialCommentsPage = React.lazy(() => import('./pages/admin/SocialCommentsPage'));
 const SocialMessagesPage = React.lazy(() => import('./pages/admin/SocialMessagesPage'));
@@ -235,6 +236,7 @@ export const routes: RouteRecord[] = [
           { path: 'connections', Component: ConnectionsPage },
           { path: 'claude-usage', Component: ClaudeUsagePage },
           { path: 'social-metrics', Component: SocialMetricsPage },
+          { path: 'youtube-stats', Component: YoutubeStatsPage },
           { path: 'social-comments', Component: SocialCommentsPage },
           { path: 'social-messages', Component: SocialMessagesPage },
         ],

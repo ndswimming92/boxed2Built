@@ -3,6 +3,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   Activity,
+  Youtube,
   BarChart3,
   Boxes,
   Briefcase,
@@ -157,6 +158,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
       { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },
+      { name: 'YouTube Stats', href: '/admin/youtube-stats', icon: Youtube },
       { name: 'Social Comments', href: '/admin/social-comments', icon: MessageCircle },
       { name: 'Direct Messages', href: '/admin/social-messages', icon: Send },
       { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: LinkIcon },
