@@ -154,7 +154,7 @@ export function BreakdownCard({
               const pct = totalViews > 0 ? (r.views / totalViews) * 100 : 0;
               return (
                 <tr key={r.key} className="border-b border-slate-100 last:border-0">
-                  <td className="py-2 text-slate-900">{labels[r.key] ?? r.key}</td>
+                  <td className="py-2 text-slate-900">{labels[r.key] ?? labels[String(r.key).toUpperCase()] ?? r.key}</td>
                   <td className="py-2 text-right tabular-nums">{formatNumber(r.views)}</td>
                   <td className="py-2 text-right tabular-nums">{pct.toFixed(1)}%</td>
                   <td className="py-2 text-right tabular-nums">{r.watch_hours.toLocaleString()}</td>
