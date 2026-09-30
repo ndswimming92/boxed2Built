@@ -87,6 +87,18 @@ export default function YoutubeStatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [trendMetric, setTrendMetric] = useState<TrendMetric>('views');
   const [openVideoId, setOpenVideoId] = useState<string | null>(null);
+  // The admin layout has its own sticky top bar; pin our controls just below it.
+  const [stickyTop, setStickyTop] = useState(0);
+
+  useEffect(() => {
+    const measure = () => {
+      const bar = document.querySelector('header');
+      setStickyTop(bar ? bar.getBoundingClientRect().height : 0);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   const fetchData = useCallback(async (range: YoutubeRangeDays, type: YoutubeContentType, isRefresh = false) => {
     if (isRefresh) setRefreshing(true); else setLoading(true);
@@ -106,33 +118,35 @@ export default function YoutubeStatsPage() {
 
   const scopeLabel = CONTENT_TABS.find((t) => t.value === contentType)!.label.toLowerCase();
 
+  const titleBlock = (
+    <div>
+      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">YouTube Stats</h1>
+      <p className="text-sm sm:text-base text-slate-600">
+        {data?.channel?.title ? `${data.channel.title} — ` : ''}channel performance at a glance.
+      </p>
+    </div>
+  );
+
+  const controls = (
+    <div className="flex flex-wrap items-center gap-2">
+      <Segmented label="Content type" options={CONTENT_TABS} value={contentType} onChange={setContentType} />
+      <Segmented label="Date range" options={RANGES} value={days} onChange={setDays} />
+      <button
+        onClick={() => fetchData(days, contentType, true)}
+        disabled={refreshing || loading}
+        className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50"
+      >
+        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+        Refresh
+      </button>
+    </div>
+  );
+
+  // Used by the loading-free fallback states (error / not connected / reconnect).
   const header = (
-    <div className="mb-4">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">YouTube Stats</h1>
-          <p className="text-sm sm:text-base text-slate-600">
-            {data?.channel?.title ? `${data.channel.title} — ` : ''}channel performance at a glance.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Segmented
-            label="Content type"
-            options={CONTENT_TABS}
-            value={contentType}
-            onChange={setContentType}
-          />
-          <Segmented label="Date range" options={RANGES} value={days} onChange={setDays} />
-          <button
-            onClick={() => fetchData(days, contentType, true)}
-            disabled={refreshing || loading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <div className="mb-4 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+      {titleBlock}
+      {controls}
     </div>
   );
 
@@ -194,27 +208,30 @@ export default function YoutubeStatsPage() {
 
   return (
     <div className="max-w-7xl">
-      {header}
+      <div className="mb-4">{titleBlock}</div>
 
-      {/* Jump-to navigation */}
-      <nav
-        aria-label="Sections"
-        className="sticky top-0 z-20 -mx-1 px-1 py-2 mb-6 bg-slate-50/95 backdrop-blur border-b border-slate-200 flex gap-1 overflow-x-auto"
+      {/* Pinned bar: jump-to sections + filters stay visible while scrolling */}
+      <div
+        style={{ top: stickyTop }}
+        className="sticky z-20 -mx-4 lg:-mx-8 px-4 lg:px-8 py-2 mb-6 bg-slate-50/95 backdrop-blur border-b border-slate-200 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-2"
       >
-        {SECTIONS.map((s) => (
-          <a
-            key={s.id}
-            href={`#${s.id}`}
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-            className="px-3 py-1.5 text-sm font-medium text-slate-700 rounded-full hover:bg-white hover:text-emerald-700 whitespace-nowrap"
-          >
-            {s.label}
-          </a>
-        ))}
-      </nav>
+        <nav aria-label="Sections" className="flex gap-1 overflow-x-auto">
+          {SECTIONS.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="px-3 py-1.5 text-sm font-medium text-slate-700 rounded-full hover:bg-white hover:text-emerald-700 whitespace-nowrap"
+            >
+              {s.label}
+            </a>
+          ))}
+        </nav>
+        {controls}
+      </div>
 
       <div className="space-y-10">
         {data.analytics_error && (
@@ -445,7 +462,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-16">
+    <section id={id} className="scroll-mt-40 xl:scroll-mt-36">
       <div className="mb-3">
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
         {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
