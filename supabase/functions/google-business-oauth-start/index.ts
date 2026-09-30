@@ -16,6 +16,8 @@ const PROVIDER = 'google_business';
 const OAUTH_SCOPE = [
   'https://www.googleapis.com/auth/business.manage',
   'https://www.googleapis.com/auth/youtube.upload',
+  'https://www.googleapis.com/auth/youtube.readonly',
+  'https://www.googleapis.com/auth/yt-analytics.readonly',
 ].join(' ');
 
 function json(body: unknown, status = 200) {

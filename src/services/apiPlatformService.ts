@@ -252,6 +252,82 @@ export async function getSocialMetrics(): Promise<SocialMetrics> {
   return body as SocialMetrics;
 }
 
+export type YoutubeRangeDays = 7 | 28 | 90;
+
+export interface YoutubeTotals {
+  views: number;
+  estimatedMinutesWatched: number;
+  averageViewDuration: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  subscribersGained: number;
+  subscribersLost: number;
+}
+
+export interface YoutubeTrendPoint {
+  date: string;
+  views: number;
+  watch_hours: number;
+  subscribers_net: number;
+}
+
+export interface YoutubeBreakdownRow {
+  key: string;
+  views: number;
+  watch_hours: number;
+}
+
+export interface YoutubeTopVideo {
+  video_id: string;
+  title: string;
+  thumbnail: string | null;
+  views: number;
+  watch_hours: number;
+  likes: number;
+  comments: number;
+}
+
+export interface YoutubeMetrics {
+  connected: boolean;
+  needs_reconnect?: boolean;
+  error?: string;
+  days?: number;
+  period?: { start: string; end: string; previous_start: string; previous_end: string };
+  channel?: {
+    id: string;
+    title: string;
+    thumbnail: string | null;
+    subscribers: number | null;
+    total_views: number;
+    video_count: number;
+  } | null;
+  channel_error?: string | null;
+  totals?: YoutubeTotals | null;
+  previous_totals?: YoutubeTotals | null;
+  trend?: YoutubeTrendPoint[];
+  traffic_sources?: YoutubeBreakdownRow[];
+  content_types?: YoutubeBreakdownRow[];
+  top_videos?: YoutubeTopVideo[];
+  countries?: YoutubeBreakdownRow[];
+  analytics_error?: string | null;
+  fetched_at: string;
+}
+
+export async function getYoutubeMetrics(days: YoutubeRangeDays = 28): Promise<YoutubeMetrics> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${FN_URL}/get-youtube-metrics?days=${days}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to load YouTube stats');
+  return body as YoutubeMetrics;
+}
+
 export type SocialCommentPlatform = 'facebook' | 'instagram';
 
 export interface SocialComment {
