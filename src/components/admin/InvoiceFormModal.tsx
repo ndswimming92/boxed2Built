@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download, Gift } from 'lucide-react';
-import { Invoice } from '../../lib/supabase';
+import { Invoice, supabase } from '../../lib/supabase';
 import {
   createInvoice,
   updateInvoice,
@@ -18,6 +18,8 @@ import { invoiceLabels } from '../../utils/invoiceLabels';
 import { getAppliedCoupon } from '../../services/inquiryService';
 import { couponLineDescription, discountAmount } from '../../utils/coupon';
 import { BusinessService } from '../../services/businessService';
+import type { Client } from '../../services/clientService';
+import ClientPicker, { type PickedClient } from './ClientPicker';
 
 interface InvoiceFormModalProps {
   businessId: string;
@@ -122,7 +124,10 @@ export default function InvoiceFormModal({
   // inserting a duplicate invoice (the `invoice` prop never updates mid-session).
   const [savedInvoiceId, setSavedInvoiceId] = useState<string | null>(null);
 
-  const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>('general');
+  const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>('estimate');
+  // Client profile picked from the saved-client list; null when the details are typed in.
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [pickedClient, setPickedClient] = useState<PickedClient | null>(null);
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -185,6 +190,44 @@ export default function InvoiceFormModal({
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    supabase
+      .from('business_info')
+      .select('organization_id')
+      .eq('id', businessId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.error('Error fetching business organization:', error);
+        setOrganizationId(data?.organization_id ?? null);
+      });
+  }, [businessId]);
+
+  // Picking a saved client fills in their details, which stay editable. Email is what
+  // links the invoice to the client profile when it is saved.
+  const handleClientSelected = (client: Client) => {
+    setPickedClient({
+      id: client.id,
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      address: client.address,
+    });
+    setClientName(client.name || '');
+    setClientEmail(client.email || '');
+    setClientPhone(client.phone ? formatPhoneNumber(client.phone) : '');
+    setClientAddress(client.address || '');
+    setPhoneError('');
+  };
+
+  const handleClientCleared = () => {
+    setPickedClient(null);
+    setClientName('');
+    setClientEmail('');
+    setClientPhone('');
+    setClientAddress('');
+    setPhoneError('');
+  };
 
   useEffect(() => {
     if (!invoiceTypeHasDueDate(invoiceType)) {
@@ -666,6 +709,29 @@ export default function InvoiceFormModal({
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Customer Information</h3>
 
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
+                  <ClientPicker
+                    organizationId={organizationId}
+                    selectedClientId={pickedClient?.id ?? null}
+                    selectedClientDetails={pickedClient}
+                    onSelect={handleClientSelected}
+                    onClear={handleClientCleared}
+                    newClientSeed={{
+                      name: clientName || undefined,
+                      email: clientEmail || undefined,
+                      phone: clientPhone || undefined,
+                      address: clientAddress || undefined,
+                    }}
+                    disabled={saving}
+                  />
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    {pickedClient
+                      ? 'Their details are filled in below and stay editable.'
+                      : 'Pick a saved client or add a new one, or just type the details in below.'}
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
                   <input name="clientName"
