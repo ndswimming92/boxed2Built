@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Plus, Trash2, Save, Send, AlertCircle, CheckCircle, Download, Gift } from 'lucide-react';
 import { Invoice } from '../../lib/supabase';
 import {
@@ -110,6 +110,11 @@ export default function InvoiceFormModal({
 }: InvoiceFormModalProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Which button started the save, so only that one shows the spinner.
+  const [saveAction, setSaveAction] = useState<'save' | 'send' | null>(null);
+  // Synchronous guard: state updates are async, so a fast double-click could
+  // otherwise start two saves (and send the email twice).
+  const saveInFlight = useRef(false);
   const [downloading, setDownloading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   // Tracks the invoice ID once created in this modal session, so a retry after
@@ -331,6 +336,8 @@ export default function InvoiceFormModal({
   const hasDueDate = invoiceTypeHasDueDate(invoiceType);
 
   const handleSave = async (sendEmail: boolean = false) => {
+    if (saveInFlight.current) return;
+
     if (!clientName || (hasDueDate && !dueDate)) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
       return;
@@ -347,7 +354,9 @@ export default function InvoiceFormModal({
       return;
     }
 
+    saveInFlight.current = true;
     setSaving(true);
+    setSaveAction(sendEmail ? 'send' : 'save');
     setMessage(null);
 
     try {
@@ -477,7 +486,9 @@ export default function InvoiceFormModal({
       const errorMessage = error instanceof Error ? error.message : 'Failed to save invoice. Please try again.';
       setMessage({ type: 'error', text: errorMessage });
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
+      setSaveAction(null);
     }
   };
 
@@ -1029,7 +1040,7 @@ export default function InvoiceFormModal({
               className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-slate-700 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={saving || downloading}
             >
-              {saving ? (
+              {saveAction === 'save' ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   Saving...
@@ -1047,10 +1058,10 @@ export default function InvoiceFormModal({
               className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={saving || downloading}
             >
-              {saving ? (
+              {saveAction === 'send' ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Saving...
+                  Sending...
                 </>
               ) : (
                 <>
