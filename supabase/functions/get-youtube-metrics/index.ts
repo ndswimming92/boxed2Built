@@ -35,6 +35,11 @@ const DEFAULT_RANGE = 28;
 const CONTENT_FILTERS: ContentFilter[] = ['all', 'shorts', 'video'];
 const HISTORY_DAYS = 365;
 
+// YouTube Partner Program thresholds (full tier), as shown on Studio's "Earn" page.
+// Either watch hours OR Shorts views qualifies, in addition to subscribers.
+const MONETIZATION_GOALS = { subscribers: 1000, watch_hours: 4000, shorts_views: 10_000_000 };
+const PACE_DAYS = 28;
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -103,6 +108,10 @@ Deno.serve(async (req) => {
       devicesRes,
       subscribedRes,
       historyRes,
+      yearRes,
+      shorts90Res,
+      shorts28Res,
+      all28Res,
     ] = await Promise.all([
       googleGet(`${DATA_API}/channels?part=snippet,statistics&mine=true`, accessToken),
       analyticsQuery(accessToken, {
@@ -172,6 +181,29 @@ Deno.serve(async (req) => {
         .select('snapshot_date, subscribers_total, total_views, video_count, views, watch_minutes, subscribers_net')
         .gte('snapshot_date', isoDate(daysAgo(HISTORY_DAYS)))
         .order('snapshot_date', { ascending: true }),
+      // Monetization progress: always channel-wide, independent of the page's filters.
+      analyticsQuery(accessToken, {
+        startDate: isoDate(daysAgo(365)),
+        endDate: endDate,
+        metrics: 'estimatedMinutesWatched,views',
+      }),
+      analyticsQuery(accessToken, {
+        startDate: isoDate(daysAgo(90)),
+        endDate: endDate,
+        metrics: 'views',
+        filters: contentTypeFilter('shorts'),
+      }),
+      analyticsQuery(accessToken, {
+        startDate: isoDate(daysAgo(PACE_DAYS)),
+        endDate: endDate,
+        metrics: 'views',
+        filters: contentTypeFilter('shorts'),
+      }),
+      analyticsQuery(accessToken, {
+        startDate: isoDate(daysAgo(PACE_DAYS)),
+        endDate: endDate,
+        metrics: 'estimatedMinutesWatched,subscribersGained,subscribersLost',
+      }),
     ]);
 
     if (!channelRes.ok && (channelRes.status === 401 || channelRes.status === 403)) {
@@ -241,6 +273,27 @@ Deno.serve(async (req) => {
           }))
         : [];
 
+    const first = (res: AnalyticsResult): Record<string, number> | null =>
+      res.ok ? ((rowsToObjects(res)[0] as Record<string, number> | undefined) ?? {}) : null;
+    const year = first(yearRes);
+    const shorts90 = first(shorts90Res);
+    const shorts28 = first(shorts28Res);
+    const all28 = first(all28Res);
+    const monetization = {
+      goals: MONETIZATION_GOALS,
+      subscribers: channel?.subscribers ?? null,
+      watch_hours_365: year ? hours(Number(year.estimatedMinutesWatched ?? 0)) : null,
+      shorts_views_90: shorts90 ? Number(shorts90.views ?? 0) : null,
+      // Trailing-28-day pace, used by the page to estimate when each goal is reached.
+      pace: {
+        days: PACE_DAYS,
+        subscribers_net: all28 ? Number(all28.subscribersGained ?? 0) - Number(all28.subscribersLost ?? 0) : null,
+        watch_hours: all28 ? hours(Number(all28.estimatedMinutesWatched ?? 0)) : null,
+        shorts_views: shorts28 ? Number(shorts28.views ?? 0) : null,
+      },
+      error: [yearRes, shorts90Res, shorts28Res, all28Res].map((r) => r.error).find((e) => !!e) ?? null,
+    };
+
     const analyticsErrors = [
       trendRes, totalsRes, trafficRes, contentTypeRes, topVideosRes, countriesRes, demographicsRes, devicesRes, subscribedRes,
     ]
@@ -266,6 +319,7 @@ Deno.serve(async (req) => {
       devices: mapSimple(devicesRes, 'deviceType'),
       subscribed_status: mapSimple(subscribedRes, 'subscribedStatus'),
       history: historyRes.error ? [] : historyRes.data ?? [],
+      monetization,
       analytics_error: analyticsErrors[0] ?? null,
       fetched_at: new Date().toISOString(),
     });

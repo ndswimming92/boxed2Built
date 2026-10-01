@@ -4,6 +4,10 @@ One page with a jump-to menu: **Overview · Performance · Audience · Discovery
 
 - **Content toggle** (All / Videos / Shorts) filters Performance, Audience, Discovery and Top videos.
 - **Date range** 7 / 28 / 90 days, compared against the previous period.
+- **Monetization**: progress toward the Partner Program thresholds from Studio's Earn page
+  (1,000 subscribers and either 4,000 watch hours/365 days or 10M Shorts views/90 days), with a
+  pace-based estimate of when each is reached. Always channel-wide; thresholds live in
+  `MONETIZATION_GOALS` in `get-youtube-metrics`. Figures are API estimates; Studio → Earn is official.
 - **Audience**: age & gender, subscribers vs. non-subscribers, devices, countries. YouTube hides
   age/gender until the audience is large enough; the page says so instead of showing an empty chart.
 - **Top videos**: click a row for a side panel with that video's trend, audience retention, traffic
