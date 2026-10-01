@@ -147,7 +147,10 @@ export default function InvoiceFormModal({
   const [lateFeeAmount, setLateFeeAmount] = useState(25);
   const [lateFeeGraceDays, setLateFeeGraceDays] = useState(5);
 
+  // Box removal and cleanup goes on every new invoice. An existing invoice
+  // replaces these with its saved lines when it loads.
   const [lineItems, setLineItems] = useState<LineItemForm[]>([
+    { item_type: 'labor', description: 'Box Removal & Cleanup', quantity: 1, unit_price: 30, is_taxable: false },
     { item_type: 'labor', description: '', quantity: 1, unit_price: 0, is_taxable: false },
   ]);
   // The coupon the customer was quoted with, if this invoice is being raised
