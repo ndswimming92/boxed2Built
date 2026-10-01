@@ -3,6 +3,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import MediaGallery from '../components/sections/MediaGallery';
+import YouTubeChannelCTA from '../components/sections/YouTubeChannelCTA';
 import { Camera, Video, CheckCircle, ArrowRight } from 'lucide-react';
 import CallButton from '../components/ui/CallButton';
 import { usePublicGalleryItems } from '../hooks/useGalleryItems';
@@ -91,6 +92,9 @@ const GalleryPage: React.FC = () => {
             className="bg-white"
           />
         )}
+
+        {/* YouTube Channel */}
+        <YouTubeChannelCTA />
 
         {/* Related Services */}
         <section className="py-8 bg-gray-50 border-t border-gray-200">
