@@ -4,6 +4,7 @@ import {
   Download,
   Eye,
   Link2,
+  Mail,
   MessageSquareQuote,
   MoreHorizontal,
   Send,
@@ -24,6 +25,7 @@ type InvoiceRowActionsProps = {
   onCreateJob?: () => void;
   onMarkAsSent?: () => void;
   onDownloadPdf: () => void;
+  onPreviewEmail?: () => void;
   onApprovalFollowUp?: () => void;
   onCopyPaymentLink?: () => void;
   onDelete: () => void;
@@ -75,6 +77,7 @@ export default function InvoiceRowActions({
   onCreateJob,
   onMarkAsSent,
   onDownloadPdf,
+  onPreviewEmail,
   onApprovalFollowUp,
   onCopyPaymentLink,
   onDelete,
@@ -199,6 +202,14 @@ export default function InvoiceRowActions({
                 onClick={() => handleMenuAction(onDownloadPdf)}
                 disabled={isDownloading}
               />
+
+              {onPreviewEmail && (
+                <MenuActionButton
+                  icon={<Mail className="h-4 w-4" />}
+                  label="Preview email"
+                  onClick={() => handleMenuAction(onPreviewEmail)}
+                />
+              )}
 
               {onApprovalFollowUp && (
                 <MenuActionButton

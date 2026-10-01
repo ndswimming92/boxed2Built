@@ -22,6 +22,8 @@ interface EmailPreviewActionsProps {
   sendTest: () => Promise<TestSendResult>;
   /** Nothing to preview yet — no job selected, no invoice made. */
   disabled?: boolean;
+  /** Open with the preview already loading, for hosts that exist only to show it. */
+  startExpanded?: boolean;
 }
 
 /**
@@ -43,10 +45,11 @@ export default function EmailPreviewActions({
   loadPreview,
   sendTest,
   disabled = false,
+  startExpanded = false,
 }: EmailPreviewActionsProps) {
   const [preview, setPreview] = useState<ClientEmailPreview | null>(null);
-  const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(startExpanded && !disabled);
+  const [loading, setLoading] = useState(startExpanded && !disabled);
   const [error, setError] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -92,6 +95,12 @@ export default function EmailPreviewActions({
     // An open preview follows the selection rather than closing under it.
     if (expanded) void fetchPreview();
   }, [previewKey, disabled, expanded, fetchPreview]);
+
+  useEffect(() => {
+    if (startExpanded && !disabled) void fetchPreview();
+    // Once, on mount: later changes to the selection are handled by previewKey.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Nothing in flight is worth writing into a card that is gone.
   useEffect(() => () => { generation.current += 1; }, []);
