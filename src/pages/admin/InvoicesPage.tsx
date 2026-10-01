@@ -14,6 +14,7 @@ import {
 import InvoiceFormModal from '../../components/admin/InvoiceFormModal';
 import PaymentRecordModal from '../../components/admin/PaymentRecordModal';
 import InvoiceRowActions from '../../components/admin/InvoiceRowActions';
+import InvoiceEmailPreviewModal from '../../components/admin/InvoiceEmailPreviewModal';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import ConfirmActionModal from '../../components/ui/ConfirmActionModal';
 import { useToast } from '../../contexts/ToastContext';
@@ -47,6 +48,7 @@ export default function InvoicesPage() {
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [markingSentId, setMarkingSentId] = useState<string | null>(null);
+  const [invoiceToPreview, setInvoiceToPreview] = useState<Invoice | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -557,6 +559,7 @@ ${invoice.notes}` : ''}`,
                         onCreateJob={!invoice.job_id ? () => handleCreateJobFromInvoice(invoice) : undefined}
                         onMarkAsSent={invoice.status === 'draft' ? () => handleMarkAsSent(invoice) : undefined}
                         onDownloadPdf={() => handleDownloadPDF(invoice)}
+                        onPreviewEmail={() => setInvoiceToPreview(invoice)}
                         onApprovalFollowUp={canSendApprovalFollowUp(invoice) ? () => handleApprovalFollowUp(invoice) : undefined}
                         onCopyPaymentLink={['sent', 'overdue', 'partially_paid'].includes(invoice.status) ? () => handleCopyPaymentLink(invoice) : undefined}
                         onDelete={() => setInvoiceToDelete(invoice)}
@@ -607,6 +610,13 @@ ${invoice.notes}` : ''}`,
             setSelectedInvoice(null);
             fetchData();
           }}
+        />
+      )}
+
+      {invoiceToPreview && (
+        <InvoiceEmailPreviewModal
+          invoice={invoiceToPreview}
+          onClose={() => setInvoiceToPreview(null)}
         />
       )}
 
