@@ -288,6 +288,20 @@ export interface YoutubeTopVideo {
   comments: number;
 }
 
+export interface YoutubeMonetization {
+  goals: { subscribers: number; watch_hours: number; shorts_views: number };
+  subscribers: number | null;
+  watch_hours_365: number | null;
+  shorts_views_90: number | null;
+  pace: {
+    days: number;
+    subscribers_net: number | null;
+    watch_hours: number | null;
+    shorts_views: number | null;
+  };
+  error: string | null;
+}
+
 export interface YoutubeMetrics {
   connected: boolean;
   needs_reconnect?: boolean;
@@ -316,6 +330,7 @@ export interface YoutubeMetrics {
   subscribed_status?: YoutubeBreakdownRow[];
   content_type?: YoutubeContentType;
   history?: YoutubeHistoryPoint[];
+  monetization?: YoutubeMonetization;
   analytics_error?: string | null;
   fetched_at: string;
 }

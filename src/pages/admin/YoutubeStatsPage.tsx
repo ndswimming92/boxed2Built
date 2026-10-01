@@ -33,6 +33,7 @@ import {
 import MetricCard from '../../components/analytics/MetricCard';
 import ChartCard from '../../components/analytics/ChartCard';
 import YoutubeVideoPanel from '../../components/admin/YoutubeVideoPanel';
+import YoutubeMonetizationCard from '../../components/admin/YoutubeMonetization';
 import {
   BreakdownCard,
   CONTENT_TYPE_LABELS,
@@ -63,6 +64,7 @@ const CONTENT_TABS: { value: YoutubeContentType; label: string }[] = [
 
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'monetization', label: 'Monetization' },
   { id: 'performance', label: 'Performance' },
   { id: 'audience', label: 'Audience' },
   { id: 'discovery', label: 'Discovery' },
@@ -253,6 +255,14 @@ export default function YoutubeStatsPage() {
               {data.channel_error ?? 'Could not load channel details.'}
             </Notice>
           )}
+        </Section>
+
+        <Section
+          id="monetization"
+          title="Monetization"
+          subtitle="Progress toward the YouTube Partner Program — always channel-wide, not affected by the filters above"
+        >
+          <YoutubeMonetizationCard data={data.monetization} />
         </Section>
 
         <Section
