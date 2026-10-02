@@ -36,6 +36,8 @@ const sourceOptions: Option[] = [
   { label: 'Newsletter', value: 'newsletter' },
   { label: 'Google Ads', value: 'google' },
   { label: 'Partner', value: 'partner' },
+  { label: 'ChatGPT', value: 'chatgpt' },
+  { label: 'Claude', value: 'claude' },
   { label: 'Custom...', value: customValue },
 ];
 
