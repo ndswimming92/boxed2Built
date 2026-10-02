@@ -255,14 +255,14 @@ export default function InvoicePaymentPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 min-w-0">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">Billed To</p>
-            <p className="font-semibold text-slate-900">{invoice.client_name}</p>
-            {invoice.client_email && <p className="text-sm text-slate-500 mt-0.5">{invoice.client_email}</p>}
+            <p className="font-semibold text-slate-900 break-words">{invoice.client_name}</p>
+            {invoice.client_email && <p className="text-sm text-slate-500 mt-0.5 break-all">{invoice.client_email}</p>}
             {invoice.client_phone && <p className="text-sm text-slate-500 mt-0.5">{invoice.client_phone}</p>}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 min-w-0">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">From</p>
             <div className="space-y-1 min-w-0">
               <div className="flex items-start gap-2.5 mb-2">
@@ -324,21 +324,21 @@ export default function InvoicePaymentPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-5 sm:col-span-2 lg:col-span-1">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 min-w-0 sm:col-span-2 lg:col-span-1">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">{labels.type} Details</p>
             <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500">{labels.dateLabel}</span>
-                <span className="text-slate-900 font-medium">{formatDate(invoice.invoice_date)}</span>
+              <div className="flex justify-between gap-4">
+                <span className="text-slate-500 whitespace-nowrap">{labels.dateLabel}</span>
+                <span className="text-slate-900 font-medium text-right">{formatDate(invoice.invoice_date)}</span>
               </div>
               {invoice.due_date && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Due Date</span>
+                <div className="flex justify-between gap-4">
+                  <span className="text-slate-500 whitespace-nowrap">Due Date</span>
                   <span className="text-slate-900 font-medium">{formatDate(invoice.due_date)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span className="text-slate-500">Terms</span>
+              <div className="flex justify-between gap-4">
+                <span className="text-slate-500 whitespace-nowrap">Terms</span>
                 <span className="text-slate-900 font-medium">{invoice.payment_terms}</span>
               </div>
               <div className="flex justify-between pt-1.5 border-t border-slate-100 mt-1.5">
@@ -355,6 +355,10 @@ export default function InvoicePaymentPage() {
           </div>
           {invoice.lineItems.length > 0 ? (
             <>
+              <div className="px-6 py-2.5 flex items-center justify-between gap-4 border-b border-slate-100 text-xs uppercase tracking-wide font-semibold text-slate-400">
+                <span>Description</span>
+                <span>Price</span>
+              </div>
               <div className="divide-y divide-slate-100">
                 {invoice.lineItems.map((item) => (
                   <div key={item.id} className="px-6 py-4 flex items-start justify-between gap-4">
