@@ -12,6 +12,9 @@ const CLIENT_PROFILE_COLUMNS = 'id, name, email, phone, address';
 
 type WorkLocationMode = 'same' | 'different';
 
+// Job types no longer offered in the dropdown (existing jobs keep their value).
+const RETIRED_JOB_TYPES = ['Installations', 'Table'];
+
 interface JobFormModalProps {
   job: Job | null;
   businessId: string;
@@ -258,7 +261,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           new Set(
             jobTypesRes.data
               .map(({ job_type }) => job_type?.trim())
-              .filter((jobType): jobType is string => Boolean(jobType))
+              .filter((jobType): jobType is string => Boolean(jobType) && !RETIRED_JOB_TYPES.includes(jobType!))
           )
         ).sort((a, b) => a.localeCompare(b));
 

@@ -1,7 +1,7 @@
 /**
  * "What's being built" for a job's calendar entry.
  *
- * job_type is a short, fixed category ("Furniture Assembly", "Table"); the
+ * job_type is a short, fixed category ("Furniture Assembly", "Wall Mounting"); the
  * actual piece — "Farmhouse Queen Murphy Bed With Charging Station" — gets
  * typed once as an invoice's labor line item description, not duplicated onto
  * the job as a second free-text field. The calendar feed and the per-job
