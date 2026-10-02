@@ -20,7 +20,7 @@ picture of the schedule. Neither needs Google OAuth.
 
 ## What's being built
 
-`job_type` is a short, fixed category ("Furniture Assembly", "Table"). The actual
+`job_type` is a short, fixed category ("Furniture Assembly", "Wall Mounting"). The actual
 piece — "Farmhouse Queen Murphy Bed With Charging Station" — gets typed once as
 an invoice's **labor** line item description, so the calendar entry (both the
 per-job email's `.ics` and the subscribed feed) borrows it from there rather than

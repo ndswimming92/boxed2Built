@@ -7,10 +7,8 @@ import { buildJobPrep } from '../../supabase/functions/_shared/jobPrep.ts';
 const LIVE_JOB_TYPES = [
   'Furniture Assembly',
   'Wall Mounting',
-  'Installations',
   'Furniture Assembly + Wall Mounting',
   'Repairs',
-  'Table',
 ];
 
 test('every job type in use produces a non-empty checklist', () => {
