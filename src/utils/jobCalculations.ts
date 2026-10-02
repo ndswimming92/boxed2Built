@@ -10,6 +10,8 @@ export const REFERRAL_SOURCES = [
   'Friend',
   'Google',
   'Yelp',
+  'ChatGPT',
+  'Claude',
   'Other',
 ] as const;
 

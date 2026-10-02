@@ -42,7 +42,7 @@ const EXTRACTION_SCHEMA = {
       type: ["string", "null"],
       description:
         "How this client found the business, only if the photo says so " +
-        "(Facebook, Instagram, Website, Family, Friend, Google, Yelp, Referral).",
+        "(Facebook, Instagram, Website, Family, Friend, Google, Yelp, ChatGPT, Claude, Referral).",
     },
     notes: {
       type: ["string", "null"],
