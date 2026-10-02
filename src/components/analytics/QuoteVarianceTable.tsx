@@ -124,7 +124,7 @@ export default function QuoteVarianceTable({ jobs }: QuoteVarianceTableProps) {
         <table className="w-full">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Client</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Job Type</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Completed</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Quoted</th>

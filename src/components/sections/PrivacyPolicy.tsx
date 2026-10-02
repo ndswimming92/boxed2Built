@@ -35,7 +35,7 @@ const PrivacyPolicy = () => {
           <li><strong>Analytics Data:</strong> Website usage patterns, page views, session duration, and user interactions collected through Google Analytics 4.</li>
           <li><strong>Technical Data:</strong> Device type, operating system, screen resolution, and browsing behavior for website optimization purposes.</li>
           <li><strong>Marketing Attribution Data:</strong> UTM parameters (source, medium, campaign) and referral source information collected when you submit a contact form. This data is used solely to understand how customers find our business and is never sold or shared with third parties for marketing purposes.</li>
-          <li><strong>Client Marketing Preferences:</strong> Your opt-in or opt-out status for marketing communications, along with your service history and contact history, used to ensure we only send communications you have consented to receive.</li>
+          <li><strong>Customer Marketing Preferences:</strong> Your opt-in or opt-out status for marketing communications, along with your service history and contact history, used to ensure we only send communications you have consented to receive.</li>
         </ul>
       </section>
 
@@ -180,7 +180,7 @@ const PrivacyPolicy = () => {
         <p className="mb-4">We retain your personal information only as long as necessary to provide our services and meet our legal obligations. Our general retention periods are:</p>
         <ul className="list-disc pl-6 mt-2 space-y-1">
           <li><strong>Form Inquiries:</strong> Retained for one year from the date of submission</li>
-          <li><strong>Client Records:</strong> Retained for one year from your last service or interaction</li>
+          <li><strong>Customer Records:</strong> Retained for one year from your last service or interaction</li>
           <li><strong>Job Records:</strong> Retained for one year from the job completion or cancellation date</li>
           <li><strong>Invoice Records:</strong> Retained for one year from the invoice date</li>
           <li><strong>Furniture Photos:</strong> Retained for the duration of the associated service request and for up to one year thereafter</li>

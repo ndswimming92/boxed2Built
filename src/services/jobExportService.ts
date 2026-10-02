@@ -1,10 +1,10 @@
 import { Job } from '../lib/supabase';
 
 export interface JobCSVRow {
-  'Client Name': string;
-  'Client Phone': string;
-  'Client Email': string;
-  'Client Address': string;
+  'Customer Name': string;
+  'Customer Phone': string;
+  'Customer Email': string;
+  'Customer Address': string;
   'Work Address': string;
   'Job Type': string;
   'Job Description': string;
@@ -27,16 +27,16 @@ export interface JobCSVRow {
   'Payment Date': string;
   'Reviews Received': string;
   'Google Review Link Sent': string;
-  'Repeat Client': string;
+  'Repeat Customer': string;
   'Referral Source': string;
   'Notes': string;
 }
 
 const CSV_HEADERS: (keyof JobCSVRow)[] = [
-  'Client Name',
-  'Client Phone',
-  'Client Email',
-  'Client Address',
+  'Customer Name',
+  'Customer Phone',
+  'Customer Email',
+  'Customer Address',
   'Work Address',
   'Job Type',
   'Job Description',
@@ -59,7 +59,7 @@ const CSV_HEADERS: (keyof JobCSVRow)[] = [
   'Payment Date',
   'Reviews Received',
   'Google Review Link Sent',
-  'Repeat Client',
+  'Repeat Customer',
   'Referral Source',
   'Notes',
 ];
@@ -113,10 +113,10 @@ function jobToCSVRow(job: Job): JobCSVRow {
   };
 
   return {
-    'Client Name': job.client_name || '',
-    'Client Phone': job.client_phone || '',
-    'Client Email': job.client_email || '',
-    'Client Address': job.client_address || '',
+    'Customer Name': job.client_name || '',
+    'Customer Phone': job.client_phone || '',
+    'Customer Email': job.client_email || '',
+    'Customer Address': job.client_address || '',
     // Blank means the work happened at the client's address.
     'Work Address': job.service_address || '',
     'Job Type': job.job_type || '',
@@ -140,7 +140,7 @@ function jobToCSVRow(job: Job): JobCSVRow {
     'Payment Date': formatDateForExport(job.payment_date),
     'Reviews Received': formatBooleanForExport(job.reviews_received),
     'Google Review Link Sent': formatBooleanForExport(job.google_review_link_sent),
-    'Repeat Client': formatBooleanForExport(job.repeat_client),
+    'Repeat Customer': formatBooleanForExport(job.repeat_client),
     'Referral Source': job.referral_source || '',
     'Notes': job.notes || '',
   };
@@ -149,10 +149,10 @@ function jobToCSVRow(job: Job): JobCSVRow {
 export function generateCSVTemplate(): string {
   const headers = CSV_HEADERS.join(',');
   const exampleRow: JobCSVRow = {
-    'Client Name': 'John Smith',
-    'Client Phone': '615-555-0123',
-    'Client Email': 'john.smith@example.com',
-    'Client Address': '123 Main St, Spring Hill, TN 37174',
+    'Customer Name': 'John Smith',
+    'Customer Phone': '615-555-0123',
+    'Customer Email': 'john.smith@example.com',
+    'Customer Address': '123 Main St, Spring Hill, TN 37174',
     'Work Address': '',
     'Job Type': 'Furniture Assembly',
     'Job Description': 'Assemble office desk and filing cabinet',
@@ -175,9 +175,9 @@ export function generateCSVTemplate(): string {
     'Payment Date': '1/20/2025',
     'Reviews Received': 'Yes',
     'Google Review Link Sent': 'Yes',
-    'Repeat Client': 'No',
+    'Repeat Customer': 'No',
     'Referral Source': 'Google',
-    'Notes': 'Client was very satisfied',
+    'Notes': 'Customer was very satisfied',
   };
 
   const exampleValues = CSV_HEADERS.map(header => escapeCSVValue(exampleRow[header]));

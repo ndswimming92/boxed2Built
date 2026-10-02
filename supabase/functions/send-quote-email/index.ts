@@ -26,7 +26,7 @@ import {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (clientError || !client) {
-      return new Response(JSON.stringify({ success: false, error: 'Client not found.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Customer not found.' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -376,7 +376,7 @@ Deno.serve(async (req) => {
             text,
             recipient,
             blocked: !recipient
-              ? 'This client has no email address on file.'
+              ? 'This customer has no email address on file.'
               : cooldownRemaining > 0
                 ? describeCooldown(cooldownRemaining)
                 : null,
@@ -389,7 +389,7 @@ Deno.serve(async (req) => {
     // Not waived for a test copy either: with no address on file this email is
     // wrong rather than early, and a test would only show something misleading.
     if (!recipient) {
-      return new Response(JSON.stringify({ success: false, error: 'Client has no email address.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Customer has no email address.' }), {
         status: 422,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

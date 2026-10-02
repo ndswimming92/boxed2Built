@@ -5,7 +5,7 @@ import { authorizeAdminOrService } from '../_shared/authorize.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -65,8 +65,8 @@ interface Template {
  */
 const TEMPLATES: Record<string, Template> = {
   portal_welcome_benefits: {
-    subject: 'Welcome to your Boxed2Built client portal',
-    heading: 'Your client portal is ready',
+    subject: 'Welcome to your Boxed2Built customer portal',
+    heading: 'Your customer portal is ready',
     subheading: 'Everything about your project, in one place.',
     body: [
       "Thanks for setting up your account. Your portal is where you can keep track of everything we're doing for you, whenever it suits you.",

@@ -61,7 +61,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   const introLines = doc.splitTextToSize(
-    'Give your clients a stress-free move-in. We assemble furniture so buyers enjoy their new home from day one. Partner with us to offer a closing gift that clients actually use.',
+    'Give your customers a stress-free move-in. We assemble furniture so buyers enjoy their new home from day one. Partner with us to offer a closing gift that customers actually use.',
     contentWidth
   );
   doc.text(introLines, margin, y);
@@ -75,7 +75,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   y += 8;
 
   const benefits = [
-    { title: 'Closing gift clients actually use', desc: 'Professional furniture assembly your buyers will appreciate on day one.' },
+    { title: 'Closing gift customers actually use', desc: 'Professional furniture assembly your buyers will appreciate on day one.' },
     { title: 'Fast help for move-in day', desc: 'We coordinate directly with closing timelines and buyer schedules.' },
     { title: 'Personalized discount code', desc: 'Track referrals and provide added value with a code tied to your name.' },
   ];
@@ -157,7 +157,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 65, 81);
-  doc.text('Share this code with your clients. They receive 10% off their first service,', pageWidth / 2, y, { align: 'center' });
+  doc.text('Share this code with your customers. They receive 10% off their first service,', pageWidth / 2, y, { align: 'center' });
   y += 4.5;
   doc.text('and you earn referral credit toward future services.', pageWidth / 2, y, { align: 'center' });
 

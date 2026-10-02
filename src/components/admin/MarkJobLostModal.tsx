@@ -83,7 +83,7 @@ export default function MarkJobLostModal({ job, isOpen, onClose, onSuccess }: Ma
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-amber-900">Job Details</h4>
                     <div className="mt-2 space-y-1 text-sm text-amber-800">
-                      <p><span className="font-medium">Client:</span> {job.client_name}</p>
+                      <p><span className="font-medium">Customer:</span> {job.client_name}</p>
                       {job.job_type && <p><span className="font-medium">Job Type:</span> {job.job_type}</p>}
                       {job.quoted_price && (
                         <p><span className="font-medium">Quoted Price:</span> ${job.quoted_price.toLocaleString()}</p>

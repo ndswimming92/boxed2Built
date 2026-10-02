@@ -418,7 +418,7 @@ export default function JobsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input name="searchTerm"
               type="text"
-              placeholder="Search by client name, phone, email, address, or job type..."
+              placeholder="Search by customer name, phone, email, address, or job type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -570,7 +570,7 @@ export default function JobsPage() {
                       )}
                       {job.repeat_client && (
                         <span className="px-3 py-1 text-xs font-semibold rounded-full border bg-indigo-100 text-indigo-800 border-indigo-200">
-                          Repeat Client
+                          Repeat Customer
                         </span>
                       )}
                       {job.has_signature && (
@@ -771,7 +771,7 @@ export default function JobsPage() {
                             <p className="text-sm font-semibold text-slate-400">Not on file</p>
                           )}
                           {!separateWorkAddress && workAddress && (
-                            <p className="text-[11px] text-slate-400 mt-0.5">Same as client address</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5">Same as customer address</p>
                           )}
                         </div>
                       </div>

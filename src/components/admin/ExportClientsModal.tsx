@@ -59,14 +59,14 @@ export default function ExportClientsModal({ clients, onClose }: ExportClientsMo
   }
 
   return (
-    <Modal isOpen onClose={onClose} title="Export Clients" size="medium">
+    <Modal isOpen onClose={onClose} title="Export Customers" size="medium">
       <div className="space-y-6">
         {/* Summary */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-medium text-blue-900 mb-2">Export Summary</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-blue-700">Total Clients</p>
+              <p className="text-blue-700">Total Customers</p>
               <p className="text-2xl font-bold text-blue-900">{clients.length}</p>
             </div>
             <div>

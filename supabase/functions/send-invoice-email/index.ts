@@ -35,7 +35,7 @@ import {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -509,7 +509,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (clientError || !client) {
-      return new Response(JSON.stringify({ success: false, error: 'Client not found.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Customer not found.' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -578,7 +578,7 @@ Deno.serve(async (req) => {
             blocked: settled
               ? `This invoice is already ${invoice.status} and will not be sent.`
               : !recipientEmail
-                ? 'This client has no email address on file.'
+                ? 'This customer has no email address on file.'
                 : cooldownRemaining > 0
                   ? describeCooldown(cooldownRemaining)
                   : null,

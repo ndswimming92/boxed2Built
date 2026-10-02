@@ -70,8 +70,8 @@ export const API_SCOPES: ApiScopeOption[] = [
   },
   {
     value: 'clients:read',
-    label: 'Clients — Read',
-    description: 'List and view client records and marketing opt-in status.',
+    label: 'Customers — Read',
+    description: 'List and view customer records and marketing opt-in status.',
   },
 ];
 

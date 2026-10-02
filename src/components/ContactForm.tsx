@@ -660,7 +660,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           const r = data.emailResults;
           if (r) {
             if (!r.owner) console.warn('[ContactForm] Owner notification email failed to send');
-            if (!r.client) console.warn('[ContactForm] Client confirmation email failed to send — Resend may require a paid plan to send to this address. Error:', r.clientError);
+            if (!r.client) console.warn('[ContactForm] Customer confirmation email failed to send — Resend may require a paid plan to send to this address. Error:', r.clientError);
           }
         }
       }).catch((err) => {

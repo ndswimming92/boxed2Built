@@ -150,7 +150,7 @@ export default function ClientAnalytics() {
       setSources(sourceData);
 
     } catch (error) {
-      console.error('Error loading client analytics:', error);
+      console.error('Error loading customer analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -190,7 +190,7 @@ export default function ClientAnalytics() {
     <div className="space-y-6">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Client Analytics</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Customer Analytics</h2>
         <div className="text-sm text-gray-600">
           Last updated: {new Date().toLocaleTimeString()}
         </div>
@@ -199,7 +199,7 @@ export default function ClientAnalytics() {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
-          title="Total Clients"
+          title="Total Customers"
           value={metrics.total_clients}
           icon={Users}
           color="blue"
@@ -218,7 +218,7 @@ export default function ClientAnalytics() {
           value={formatCurrency(metrics.average_clv)}
           icon={DollarSign}
           color="purple"
-          subtitle="Lifetime value per client"
+          subtitle="Lifetime value per customer"
         />
         <MetricCard
           title="Retention Rate"
@@ -233,7 +233,7 @@ export default function ClientAnalytics() {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Acquisition Trend */}
-        <ChartCard title="Client Acquisition Trend" subtitle="New clients per month">
+        <ChartCard title="Customer Acquisition Trend" subtitle="New customers per month">
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={acquisition}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -245,14 +245,14 @@ export default function ClientAnalytics() {
                 type="monotone"
                 dataKey="new_clients"
                 stroke="#3b82f6"
-                name="New Clients"
+                name="New Customers"
                 strokeWidth={2}
               />
               <Line
                 type="monotone"
                 dataKey="total_clients"
                 stroke="#10b981"
-                name="Total Clients"
+                name="Total Customers"
                 strokeWidth={2}
               />
             </LineChart>
@@ -260,7 +260,7 @@ export default function ClientAnalytics() {
         </ChartCard>
 
         {/* Client Status Distribution */}
-        <ChartCard title="Client Status Distribution" subtitle="Breakdown by engagement level">
+        <ChartCard title="Customer Status Distribution" subtitle="Breakdown by engagement level">
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -285,7 +285,7 @@ export default function ClientAnalytics() {
       </div>
 
       {/* Client Source Performance */}
-      <ChartCard title="Top Client Sources" subtitle="Revenue by acquisition source">
+      <ChartCard title="Top Customer Sources" subtitle="Revenue by acquisition source">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={sources}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -307,12 +307,12 @@ export default function ClientAnalytics() {
 
       {/* Client Health Summary */}
       <div className="p-6 bg-white border border-gray-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Client Health Summary</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Health Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 bg-green-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
-              <p className="font-medium text-green-900">High Value Clients</p>
+              <p className="font-medium text-green-900">High Value Customers</p>
             </div>
             <p className="text-3xl font-bold text-green-900">{metrics.high_value_clients}</p>
             <p className="text-sm text-green-700 mt-1">
@@ -325,7 +325,7 @@ export default function ClientAnalytics() {
           <div className="p-4 bg-orange-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <UserX className="w-5 h-5 text-orange-600" />
-              <p className="font-medium text-orange-900">Dormant Clients</p>
+              <p className="font-medium text-orange-900">Dormant Customers</p>
             </div>
             <p className="text-3xl font-bold text-orange-900">{metrics.dormant_clients}</p>
             <p className="text-sm text-orange-700 mt-1">

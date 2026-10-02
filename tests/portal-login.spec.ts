@@ -110,7 +110,7 @@ test('an invalid address never reaches the network', async ({ page }) => {
   await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
 
   await expect(page.getByRole('alert')).toContainText('valid email address');
-  await expect(page.getByRole('heading', { name: 'Client Portal', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Customer Portal', exact: true })).toBeVisible();
   expect(calls).toHaveLength(0);
 });
 

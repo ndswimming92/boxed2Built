@@ -220,7 +220,7 @@ export const LOCAL_SEO_CONTENT = {
   partners: {
     title: "Boxed2Built Partnerships | Realtors & Movers in Spring Hill",
     description:
-      "Realtors & movers—add value for clients with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts."
+      "Realtors & movers—add value for customers with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts."
   },
   gallery: {
     title: "Furniture Assembly Gallery | Boxed2Built Spring Hill",

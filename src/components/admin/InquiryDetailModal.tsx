@@ -243,7 +243,7 @@ export default function InquiryDetailModal({
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <Lock className="w-4 h-4 text-blue-600" />
-                    <h3 className="text-sm font-semibold text-slate-700">Client Confirmation Code</h3>
+                    <h3 className="text-sm font-semibold text-slate-700">Customer Confirmation Code</h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <code className="px-3 py-2 bg-white border border-blue-300 rounded text-lg font-mono font-semibold text-blue-900">
@@ -270,7 +270,7 @@ export default function InquiryDetailModal({
                 <button
                   onClick={handleOpenLookupPage}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
-                  title="Open client lookup page"
+                  title="Open customer lookup page"
                 >
                   <ExternalLink className="w-4 h-4" />
                   View as Client

@@ -82,8 +82,8 @@ export default function ClientPicker({
         if (!cancelled) setClients(rows);
       })
       .catch((err) => {
-        console.error('Error loading clients for the picker:', err);
-        if (!cancelled) setLoadError('Could not load your saved clients. Type the details in below instead.');
+        console.error('Error loading customers for the picker:', err);
+        if (!cancelled) setLoadError('Could not load your saved customers. Type the details in below instead.');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -221,8 +221,8 @@ export default function ClientPicker({
               type="button"
               onClick={onClear}
               disabled={disabled}
-              title="Unlink this client. The details already filled in stay as they are."
-              aria-label="Unlink client"
+              title="Unlink this customer. The details already filled in stay as they are."
+              aria-label="Unlink customer"
               className="p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
             >
               <X className="w-4 h-4" />
@@ -236,7 +236,7 @@ export default function ClientPicker({
             ref={inputRef}
             type="text"
             role="combobox"
-            aria-label="Search saved clients"
+            aria-label="Search saved customers"
             aria-expanded={searching}
             aria-controls="client-picker-results"
             aria-activedescendant={searching ? activeOptionId : undefined}
@@ -249,7 +249,7 @@ export default function ClientPicker({
             }}
             onFocus={() => setSearching(true)}
             onKeyDown={handleKeyDown}
-            placeholder={loading ? 'Loading your clients...' : 'Search saved clients by name, email or phone'}
+            placeholder={loading ? 'Loading your customers...' : 'Search saved customers by name, email or phone'}
             className="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-slate-50"
           />
           {loading ? (
@@ -267,7 +267,7 @@ export default function ClientPicker({
               id="client-picker-results"
               ref={listRef}
               role="listbox"
-              aria-label="Saved clients"
+              aria-label="Saved customers"
               className="max-h-64 overflow-y-auto"
             >
               {visibleResults.map((client, index) => (
@@ -307,12 +307,12 @@ export default function ClientPicker({
           ) : (
             <p id="client-picker-results" className="px-4 py-3 text-sm text-slate-500">
               {loading
-                ? 'Loading your clients...'
+                ? 'Loading your customers...'
                 : !organizationId
-                ? 'Your client list is not available right now — type the details in below instead.'
+                ? 'Your customer list is not available right now — type the details in below instead.'
                 : clients.length === 0
-                ? 'No clients saved yet.'
-                : `No saved client matches "${query.trim()}".`}
+                ? 'No customers saved yet.'
+                : `No saved customer matches "${query.trim()}".`}
             </p>
           )}
 

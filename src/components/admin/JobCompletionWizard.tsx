@@ -309,7 +309,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
           <div className="space-y-6">
             <div className="bg-slate-50 rounded-xl p-6 space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-600">Client Name</label>
+                <label className="text-sm font-medium text-slate-600">Customer Name</label>
                 <p className="text-lg font-semibold text-slate-900">{job.client_name}</p>
               </div>
               {job.client_phone && (
@@ -329,7 +329,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                   <label className="text-sm font-medium text-slate-600">Work Location</label>
                   <p className="text-lg text-slate-900">{resolveWorkAddress(job)}</p>
                   {hasSeparateWorkAddress(job) && (
-                    <p className="text-xs text-amber-700 mt-0.5">Different from the client's address</p>
+                    <p className="text-xs text-amber-700 mt-0.5">Different from the customer's address</p>
                   )}
                 </div>
               )}
@@ -689,7 +689,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
             <h3 className="font-semibold text-emerald-900 mb-3">Completion Summary</h3>
             <div className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
               <div className="flex justify-between">
-                <span className="text-emerald-700">Client:</span>
+                <span className="text-emerald-700">Customer:</span>
                 <span className="font-medium text-emerald-900">{job.client_name}</span>
               </div>
               <div className="flex justify-between">

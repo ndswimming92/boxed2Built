@@ -313,7 +313,7 @@ export async function createClientRecord(
     // The token is only used for the client's self-service preferences link, so a
     // failure here shouldn't cost the admin the whole record. Saving without one
     // matches the pre-referral rows that are already in the table.
-    console.error('Could not generate a preferences token for the new client:', error);
+    console.error('Could not generate a preferences token for the new customer:', error);
   }
 
   const now = new Date().toISOString();
@@ -589,7 +589,7 @@ export async function deleteClientNote(noteId: string): Promise<void> {
 // Add tags to client
 export async function addClientTags(clientId: string, tags: string[]): Promise<void> {
   const client = await getClientById(clientId);
-  if (!client) throw new Error('Client not found');
+  if (!client) throw new Error('Customer not found');
 
   const existingTags = client.tags || [];
   const newTags = [...new Set([...existingTags, ...tags])];
@@ -600,7 +600,7 @@ export async function addClientTags(clientId: string, tags: string[]): Promise<v
 // Remove tags from client
 export async function removeClientTags(clientId: string, tagsToRemove: string[]): Promise<void> {
   const client = await getClientById(clientId);
-  if (!client) throw new Error('Client not found');
+  if (!client) throw new Error('Customer not found');
 
   const existingTags = client.tags || [];
   const newTags = existingTags.filter(tag => !tagsToRemove.includes(tag));
@@ -645,7 +645,7 @@ export async function getClientByReferralCode(referralCode: string): Promise<Cli
 // Add referral credit to a client
 export async function addReferralCredit(clientId: string, amount: number): Promise<Client> {
   const client = await getClientById(clientId);
-  if (!client) throw new Error('Client not found');
+  if (!client) throw new Error('Customer not found');
 
   const newBalance = parseFloat((client.referral_credit_balance + amount).toFixed(2));
   return updateClient(clientId, { referral_credit_balance: newBalance });
@@ -654,7 +654,7 @@ export async function addReferralCredit(clientId: string, amount: number): Promi
 // Redeem referral credit (subtract from balance, add to used)
 export async function redeemReferralCredit(clientId: string, amount: number): Promise<Client> {
   const client = await getClientById(clientId);
-  if (!client) throw new Error('Client not found');
+  if (!client) throw new Error('Customer not found');
 
   if (amount > client.referral_credit_balance) {
     throw new Error('Insufficient referral credit balance');
@@ -722,7 +722,7 @@ export class PortalInviteCooldownError extends Error {
   readonly remainingSeconds: number;
 
   constructor(remainingSeconds: number) {
-    super('This client was invited very recently.');
+    super('This customer was invited very recently.');
     this.name = 'PortalInviteCooldownError';
     this.remainingSeconds = remainingSeconds;
   }

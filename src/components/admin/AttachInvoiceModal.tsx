@@ -82,7 +82,7 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
       !selectedInvoice.client_name.toLowerCase().includes(job.client_name.toLowerCase());
 
     if (clientMismatch) {
-      const confirmMessage = `Warning: The client information doesn't match perfectly.\n\nInvoice Client: ${selectedInvoice.client_name} (${selectedInvoice.client_email})\nJob Client: ${job.client_name} (${job.client_email || 'N/A'})\n\nAre you sure you want to attach this invoice?`;
+      const confirmMessage = `Warning: The customer information doesn't match perfectly.\n\nInvoice Customer: ${selectedInvoice.client_name} (${selectedInvoice.client_email})\nJob Customer: ${job.client_name} (${job.client_email || 'N/A'})\n\nAre you sure you want to attach this invoice?`;
 
       if (!confirm(confirmMessage)) {
         return;
@@ -173,7 +173,7 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input name="searchQuery"
               type="text"
-              placeholder="Search by invoice number, client name, or email..."
+              placeholder="Search by invoice number, customer name, or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

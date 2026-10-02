@@ -364,7 +364,7 @@ export default function AnalyticsPage() {
               iconBgColor="bg-slate-100"
             />
             <MetricCard
-              title="Repeat Clients"
+              title="Repeat Customers"
               value={formatPercent(metrics.repeatClientPercent)}
               subtitle="Customer retention"
               icon={UserCheck}
@@ -506,7 +506,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <ChartCard title="Client Type Distribution" subtitle="Repeat vs new clients">
+            <ChartCard title="Customer Type Distribution" subtitle="Repeat vs new customers">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

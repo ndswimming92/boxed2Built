@@ -143,7 +143,7 @@ export default function BalanceUpdateModal({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="e.g., After client payment, End of month reconcile"
+                placeholder="e.g., After customer payment, End of month reconcile"
               />
             </div>
           </div>

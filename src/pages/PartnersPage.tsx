@@ -89,9 +89,9 @@ const PartnersPage: React.FC = () => {
         <link rel="canonical" href="https://boxed2built.com/partners" />
         <meta property="og:url" content="https://boxed2built.com/partners" />
         <meta property="og:title" content="Boxed2Built Partnerships | Realtors & Movers in Spring Hill" />
-        <meta property="og:description" content="Partner with Boxed2Built to add furniture assembly value for your clients. Referral benefits and closing gift options in Spring Hill, TN." />
+        <meta property="og:description" content="Partner with Boxed2Built to add furniture assembly value for your customers. Referral benefits and closing gift options in Spring Hill, TN." />
         <meta name="twitter:title" content="Partner with Boxed2Built | Spring Hill, TN" />
-        <meta name="twitter:description" content="Add furniture assembly value for your clients. Referral benefits and closing gift options for realtors and movers." />
+        <meta name="twitter:description" content="Add furniture assembly value for your customers. Referral benefits and closing gift options for realtors and movers." />
       </Head>
       <Header />
 
@@ -155,7 +155,7 @@ const PartnersPage: React.FC = () => {
                   <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Gift className="text-blue-600" size={28} />
                   </div>
-                  <h3 className="font-semibold mb-2">Closing gift clients actually use</h3>
+                  <h3 className="font-semibold mb-2">Closing gift customers actually use</h3>
                   <p className="text-sm text-gray-600">
                     Professional{' '}
                     <a href="/services/furniture-assembly" className="text-blue-700 hover:text-blue-800 underline font-medium">
