@@ -175,7 +175,7 @@ const QuickContactForm: React.FC = () => {
             const r = data.emailResults;
             if (r) {
               if (!r.owner) console.warn('[QuickContactForm] Owner notification email failed to send');
-              if (!r.client) console.warn('[QuickContactForm] Client confirmation email failed to send — Resend may require a paid plan to send to this address. Error:', r.clientError);
+              if (!r.client) console.warn('[QuickContactForm] Customer confirmation email failed to send — Resend may require a paid plan to send to this address. Error:', r.clientError);
             }
           }
         }).catch((err) => {

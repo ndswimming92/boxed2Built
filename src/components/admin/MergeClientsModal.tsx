@@ -41,7 +41,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
         setCountsA(a);
         setCountsB(b);
       } catch {
-        setError('Failed to load client data.');
+        setError('Failed to load customer data.');
       } finally {
         setLoadingCounts(false);
       }
@@ -178,7 +178,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
   }
 
   return (
-    <Modal isOpen onClose={onClose} title="Merge Clients" size="large">
+    <Modal isOpen onClose={onClose} title="Merge Customers" size="large">
       <div className="space-y-6">
         {/* Explanation */}
         <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">

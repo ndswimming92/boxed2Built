@@ -491,11 +491,11 @@ export default function InvoiceFormModal({
       if (sendEmail) {
         const trimmedEmail = clientEmail.trim();
         if (!trimmedEmail) {
-          throw new Error('Add a client email before sending the invoice.');
+          throw new Error('Add a customer email before sending the invoice.');
         }
         if (!existingInvoice?.client_id || !existingInvoice?.organization_id) {
           throw new Error(
-            `This invoice isn't linked to a saved client record for ${trimmedEmail}. Add this person as a Client with a matching email first, then Save & Send again.`
+            `This invoice isn't linked to a saved customer record for ${trimmedEmail}. Add this person as a Customer with a matching email first, then Save & Send again.`
           );
         }
 
@@ -509,10 +509,10 @@ export default function InvoiceFormModal({
         if (!result.success) {
           if (result.error === 'cooldown') {
             const mins = Math.max(1, Math.ceil((result.remainingSeconds || 0) / 60));
-            throw new Error(`An invoice email was already sent to this client recently. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
+            throw new Error(`An invoice email was already sent to this customer recently. Try again in about ${mins} minute${mins === 1 ? '' : 's'}.`);
           }
           if (result.error === 'no_email') {
-            throw new Error('This client has no email on file. Add one and try again.');
+            throw new Error('This customer has no email on file. Add one and try again.');
           }
           throw new Error(result.error || 'Failed to send the invoice email.');
         }
@@ -710,7 +710,7 @@ export default function InvoiceFormModal({
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Customer</label>
                   <ClientPicker
                     organizationId={organizationId}
                     selectedClientId={pickedClient?.id ?? null}
@@ -728,7 +728,7 @@ export default function InvoiceFormModal({
                   <p className="mt-1.5 text-xs text-slate-500">
                     {pickedClient
                       ? 'Their details are filled in below and stay editable.'
-                      : 'Pick a saved client or add a new one, or just type the details in below.'}
+                      : 'Pick a saved customer or add a new one, or just type the details in below.'}
                   </p>
                 </div>
 

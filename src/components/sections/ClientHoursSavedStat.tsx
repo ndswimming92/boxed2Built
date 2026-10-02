@@ -52,7 +52,7 @@ const ClientHoursSavedStat: React.FC<ClientHoursSavedStatProps> = ({ totalHoursS
   const suffix = metricLabelMatch?.[2] ?? '';
 
   return (
-    <section ref={statRef} className="py-10 bg-white border-b border-gray-100" aria-label="Client time saved">
+    <section ref={statRef} className="py-10 bg-white border-b border-gray-100" aria-label="Customer time saved">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
           <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 md:p-8 shadow-sm">

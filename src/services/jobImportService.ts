@@ -246,7 +246,7 @@ export async function validateCSVData(
   if (rows.length === 0) {
     errors.push({
       row: 0,
-      field: 'Client Name',
+      field: 'Customer Name',
       message: 'CSV file is empty or has no data rows',
       currentValue: '',
     });
@@ -263,16 +263,16 @@ export async function validateCSVData(
     const row = rows[i];
     const rowNumber = i + 2;
 
-    const clientName = row['Client Name'];
-    if (!validateRequiredField(clientName, rowNumber, 'Client Name', errors)) {
+    const clientName = row['Customer Name'];
+    if (!validateRequiredField(clientName, rowNumber, 'Customer Name', errors)) {
       continue;
     }
 
     const jobData: Partial<Job> = {
       client_name: clientName.trim(),
-      client_phone: row['Client Phone']?.trim() || null,
-      client_email: row['Client Email']?.trim() || null,
-      client_address: row['Client Address']?.trim() || null,
+      client_phone: row['Customer Phone']?.trim() || null,
+      client_email: row['Customer Email']?.trim() || null,
+      client_address: row['Customer Address']?.trim() || null,
       // Left blank when the work happened at the client's address.
       service_address: row['Work Address']?.trim() || null,
       job_type: row['Job Type']?.trim() || null,
@@ -297,7 +297,7 @@ export async function validateCSVData(
 
     jobData.reviews_received = parseBoolean(row['Reviews Received']);
     jobData.google_review_link_sent = parseBoolean(row['Google Review Link Sent']);
-    jobData.repeat_client = parseBoolean(row['Repeat Client']);
+    jobData.repeat_client = parseBoolean(row['Repeat Customer']);
 
     validRows.push(jobData);
   }

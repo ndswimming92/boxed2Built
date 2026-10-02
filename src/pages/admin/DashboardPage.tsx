@@ -556,7 +556,7 @@ export default function DashboardPage() {
                             </span>
                           )}
                           <p className="font-semibold text-slate-900 truncate">
-                            {reminder.job?.client_name || 'Unknown Client'}
+                            {reminder.job?.client_name || 'Unknown Customer'}
                           </p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-600 mb-1">

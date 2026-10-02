@@ -5,7 +5,7 @@ import { authorizeAdminOrService } from '../_shared/authorize.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -64,7 +64,7 @@ function buildInviteEmailHtml(linkUrl: string, clientName: string): string {
           <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
             <tr>
               <td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Your Boxed2Built client portal is ready</h1>
+                <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">Your Boxed2Built customer portal is ready</h1>
                 <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Track your jobs, invoices and documents in one place.</p>
               </td>
             </tr>
@@ -74,7 +74,7 @@ function buildInviteEmailHtml(linkUrl: string, clientName: string): string {
                 <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7;">We've set up portal access for you. Your existing job history, invoices and documents are already waiting inside — there is nothing to fill in.</p>
                 <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Click below to sign in. No password needed.</p>
                 <p style="margin:0 0 24px;text-align:center;">
-                  <a href="${safeUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:8px;">Open My Client Portal</a>
+                  <a href="${safeUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:8px;">Open My Customer Portal</a>
                 </p>
                 <p style="margin:0 0 8px;color:#6b7280;font-size:13px;line-height:1.6;">This link is single-use and expires shortly. If it stops working, you can always sign in at <a href="${APP_URL}/portal/login" style="color:#2563eb;">${APP_URL}/portal/login</a> and we'll email you a fresh one.</p>
                 <p style="margin:0;color:#6b7280;font-size:13px;line-height:1.6;">If you weren't expecting this, you can safely ignore this email.</p>
@@ -141,11 +141,11 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (clientError || !client) {
-      return json({ success: false, error: 'Client not found.' }, 404);
+      return json({ success: false, error: 'Customer not found.' }, 404);
     }
 
     if (!client.email) {
-      return json({ success: false, error: 'Client has no email address.' }, 422);
+      return json({ success: false, error: 'Customer has no email address.' }, 422);
     }
 
     if (client.last_portal_invite_sent_at) {
@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
       return json({ success: false, error: 'Could not create a sign-in link for this address.' }, 500);
     }
 
-    const subject = 'Your Boxed2Built client portal is ready';
+    const subject = 'Your Boxed2Built customer portal is ready';
 
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',

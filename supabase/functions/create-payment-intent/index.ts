@@ -14,7 +14,7 @@ import { invoiceLabels } from "../_shared/invoiceLabels.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Customer-Info, Apikey",
 };
 
 // The publishable key travels back to the browser with the client secret so the

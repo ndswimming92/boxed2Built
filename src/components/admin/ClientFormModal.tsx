@@ -188,7 +188,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
         warnings: extraction.warnings,
       });
     } catch (err) {
-      console.error('Client photo scan error:', err);
+      console.error('Customer photo scan error:', err);
       setScanError(err instanceof Error ? err.message : 'Photo scan failed');
       setScanResult(null);
     } finally {
@@ -197,9 +197,9 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
   }
 
   function validate(): string | null {
-    if (!formData.name.trim()) return 'Client name is required.';
+    if (!formData.name.trim()) return 'Customer name is required.';
     if (!formData.email.trim() && !formData.phone.trim()) {
-      return 'Add an email address or a phone number — a client record needs at least one.';
+      return 'Add an email address or a phone number — a customer record needs at least one.';
     }
     if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       return 'That email address does not look valid.';
@@ -243,7 +243,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
           if (!user?.id) throw new Error('No signed-in user to attribute the note to');
           await createClientNote(client.id, organizationId, formData.note.trim(), user.id);
         } catch (noteError) {
-          console.error('Client created but the note could not be saved:', noteError);
+          console.error('Customer created but the note could not be saved:', noteError);
           warning = 'The internal note could not be saved — add it from their record.';
         }
       }
@@ -252,18 +252,18 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       onCreated(client, warning);
     } catch (err) {
-      console.error('Error creating client:', err);
+      console.error('Error creating customer:', err);
       const code = (err as { code?: string })?.code;
       const message = err instanceof Error ? err.message : '';
 
       if (code === '23505' || /unique|duplicate/i.test(message)) {
         setError(
-          'A client with this email already exists. Search for them on the Clients page, or use Merge to combine duplicate records.'
+          'A customer with this email already exists. Search for them on the Customers page, or use Merge to combine duplicate records.'
         );
       } else if (code === '23514') {
-        setError('A client record needs at least an email address or a phone number.');
+        setError('A customer record needs at least an email address or a phone number.');
       } else {
-        setError(message || 'Failed to create the client. Please try again.');
+        setError(message || 'Failed to create the customer. Please try again.');
       }
     } finally {
       setSaving(false);
@@ -340,7 +340,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
                 <div className="flex items-start gap-3">
                   <img
                     src={previewUrl}
-                    alt="Selected client photo"
+                    alt="Selected customer photo"
                     className="w-24 h-24 object-contain bg-white rounded-lg border border-slate-200 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
@@ -445,7 +445,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
 
           {/* Client details */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-slate-800">Client details</h3>
+            <h3 className="text-sm font-semibold text-slate-800">Customer details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
@@ -572,7 +572,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
                   placeholder="Job details, access instructions, anything worth remembering"
                 />
                 <p className="mt-1 text-xs text-slate-500">
-                  Saved as the first note on the client's record. Never shown to the client.
+                  Saved as the first note on the customer's record. Never shown to the customer.
                 </p>
               </div>
             </div>
@@ -621,7 +621,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
             className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Check className="w-3.5 h-3.5" />
-            {saving ? 'Creating...' : 'Create Client'}
+            {saving ? 'Creating...' : 'Create Customer'}
           </button>
         </div>
       </div>

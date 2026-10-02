@@ -223,7 +223,7 @@ export default function PricingInsightsCard({
               <ul className="list-disc list-inside space-y-0.5 text-slate-500">
                 <li>Adjust target hourly rate based on your business goals</li>
                 <li>Focus on job types with the largest pricing gaps first</li>
-                <li>Test price increases gradually with new clients</li>
+                <li>Test price increases gradually with new customers</li>
                 <li>Consider market conditions and competition in your area</li>
               </ul>
             </div>

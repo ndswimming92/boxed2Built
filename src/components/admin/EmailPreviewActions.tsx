@@ -121,7 +121,7 @@ export default function EmailPreviewActions({
     setError(null);
     try {
       const result = await sendTest();
-      setNotice(`Test copy sent to ${result.to ?? 'you'} — the client was not emailed.`);
+      setNotice(`Test copy sent to ${result.to ?? 'you'} — the customer was not emailed.`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'The test send failed.');
     } finally {

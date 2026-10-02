@@ -100,7 +100,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
       .then(({ data, error: clientError }) => {
         if (cancelled) return;
         if (clientError) {
-          console.error('Error fetching client profile for job:', clientError);
+          console.error('Error fetching customer profile for job:', clientError);
           return;
         }
         if (data) setLinkedClient(data as PickedClient);
@@ -183,7 +183,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
         if (data) return data as PickedClient;
       }
     } catch (err) {
-      console.error('Error looking up client profile:', err);
+      console.error('Error looking up customer profile:', err);
     }
 
     return null;
@@ -348,7 +348,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
     const hasValidHoursWorked = typeof formData.hours_worked === 'number' && formData.hours_worked > 0;
 
     if (!formData.client_name?.trim()) {
-      setError('Client name is required');
+      setError('Customer name is required');
       return;
     }
 
@@ -578,10 +578,10 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
           )}
 
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Client Information</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Customer Information</h3>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Client</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Customer</label>
               <ClientPicker
                 organizationId={organizationId}
                 selectedClientId={formData.client_id ?? null}
@@ -598,8 +598,8 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
               />
               <p className="mt-1.5 text-xs text-slate-500">
                 {formData.client_id
-                  ? 'This job is linked to their client profile. Their details are filled in below and stay editable.'
-                  : 'Pick one of your saved clients to fill in their details, or just type them in below.'}
+                  ? 'This job is linked to their customer profile. Their details are filled in below and stay editable.'
+                  : 'Pick one of your saved customers to fill in their details, or just type them in below.'}
               </p>
             </div>
 
@@ -635,7 +635,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 />
               </div>
               <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Client Address</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Customer Address</label>
                 <input name="client_address"
                   type="text"
                   value={formData.client_address || ''}
@@ -647,7 +647,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   {canPullProfileAddress ? (
                     <>
                       <p className="text-xs text-amber-700">
-                        {linkedClient?.name ? `${linkedClient.name}'s` : 'The'} client profile has{' '}
+                        {linkedClient?.name ? `${linkedClient.name}'s` : 'The'} customer profile has{' '}
                         <span className="font-medium">{profileAddress}</span>
                       </p>
                       <button
@@ -661,8 +661,8 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   ) : (
                     <p className="text-xs text-slate-500">
                       {linkedClient
-                        ? `Shared with ${linkedClient.name}'s client profile — saving here updates the profile too.`
-                        : 'Saved to the matching client profile when this job is linked to a client.'}
+                        ? `Shared with ${linkedClient.name}'s customer profile — saving here updates the profile too.`
+                        : 'Saved to the matching customer profile when this job is linked to a customer.'}
                     </p>
                   )}
                 </div>
@@ -781,9 +781,9 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                   className="mt-0.5 w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
                 />
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium text-slate-800">Same as client address</span>
+                  <span className="block text-sm font-medium text-slate-800">Same as customer address</span>
                   <span className="block text-xs text-slate-500 mt-0.5 break-words">
-                    {clientAddress || 'Add a client address above to use this option.'}
+                    {clientAddress || 'Add a customer address above to use this option.'}
                   </span>
                 </span>
               </label>
@@ -1036,7 +1036,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                     onChange={(e) => setFormData({ ...formData, repeat_client: e.target.checked })}
                     className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
                   />
-                  <span className="text-sm font-medium text-slate-700">Repeat Client</span>
+                  <span className="text-sm font-medium text-slate-700">Repeat Customer</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input name="google_review_link_sent"

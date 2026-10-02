@@ -88,7 +88,7 @@ export default function ClientsPage() {
       .eq('job_status', 'completed');
 
     if (error) {
-      console.error('Error loading live client revenue from jobs:', error);
+      console.error('Error loading live customer revenue from jobs:', error);
       return clientsList;
     }
 
@@ -160,7 +160,7 @@ export default function ClientsPage() {
       setClients(hydratedClients);
       setStats(statsData);
     } catch (error) {
-      console.error('Error loading clients:', error);
+      console.error('Error loading customers:', error);
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ export default function ClientsPage() {
         const hydratedResults = await hydrateClientsWithLiveRevenue(results);
         setClients(hydratedResults);
       } catch (error) {
-        console.error('Error searching clients:', error);
+        console.error('Error searching customers:', error);
       }
     } else {
       loadData();
@@ -190,7 +190,7 @@ export default function ClientsPage() {
     const totalClients = clients.length;
 
     if (totalClients === 0) {
-      setRefreshMessage({ type: 'success', text: 'No clients to refresh.' });
+      setRefreshMessage({ type: 'success', text: 'No customers to refresh.' });
       return;
     }
 
@@ -211,7 +211,7 @@ export default function ClientsPage() {
               await calculateClientMetrics(client.id);
               return true;
             } catch (error) {
-              console.error(`Error refreshing metrics for client ${client.id}:`, error);
+              console.error(`Error refreshing metrics for customer ${client.id}:`, error);
               return false;
             }
           })
@@ -252,8 +252,8 @@ export default function ClientsPage() {
       });
       setClientToDelete(null);
     } catch (error) {
-      console.error('Error deleting client:', error);
-      setDeleteError(error instanceof Error ? error.message : 'Failed to delete client. Please try again.');
+      console.error('Error deleting customer:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete customer. Please try again.');
     } finally {
       setDeleting(false);
     }
@@ -373,7 +373,7 @@ export default function ClientsPage() {
     } catch (error) {
       if (error instanceof PortalInviteCooldownError) {
         const hours = Math.ceil(error.remainingSeconds / 3600);
-        setInviteError(`This client was invited recently. You can send another in about ${hours} hour${hours === 1 ? '' : 's'}.`);
+        setInviteError(`This customer was invited recently. You can send another in about ${hours} hour${hours === 1 ? '' : 's'}.`);
       } else {
         setInviteError(error instanceof Error ? error.message : 'Failed to send the portal invite.');
       }
@@ -409,7 +409,7 @@ export default function ClientsPage() {
   if (!organizationId) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-gray-600">Select an organization to view clients.</p>
+        <p className="text-sm text-gray-600">Select an organization to view customers.</p>
       </div>
     );
   }
@@ -427,7 +427,7 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Clients</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Customers</h1>
           <p className="mt-1 text-sm text-gray-600">
             Manage your client relationships and marketing campaigns
           </p>
@@ -465,7 +465,7 @@ export default function ClientsPage() {
             <button
               onClick={() => {
                 setShowExportModal(true);
-                logAction({ actionType: 'EXPORT', tableName: 'clients', recordIdentifier: `${selectedClients.size} clients` });
+                logAction({ actionType: 'EXPORT', tableName: 'clients', recordIdentifier: `${selectedClients.size} customers` });
               }}
               className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 whitespace-nowrap"
             >
@@ -500,7 +500,7 @@ export default function ClientsPage() {
           <div className="p-3 sm:p-6 bg-white border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Clients</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Customers</p>
                 <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-gray-900">{stats.total_clients}</p>
               </div>
               <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
@@ -567,7 +567,7 @@ export default function ClientsPage() {
           {/* Segment Filters */}
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'all', label: 'All Clients', icon: Users },
+              { value: 'all', label: 'All Customers', icon: Users },
               { value: 'repeat', label: 'Repeat Customers', icon: TrendingUp },
               { value: 'high_value', label: 'High-Value', icon: Star },
               { value: 'dormant', label: 'Dormant', icon: UserX },
@@ -597,7 +597,7 @@ export default function ClientsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search clients..."
+              placeholder="Search customers..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -611,11 +611,11 @@ export default function ClientsPage() {
         {sortedClients.length === 0 ? (
           <div className="p-12 text-center">
             <Users className="w-12 h-12 mx-auto text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No clients found</h3>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">No customers found</h3>
             <p className="mt-2 text-sm text-gray-600">
               {searchTerm
                 ? 'Try adjusting your search or filter criteria'
-                : 'Clients will appear here as you add them through inquiries and jobs'}
+                : 'Customers will appear here as you add them through inquiries and jobs'}
             </p>
           </div>
         ) : (
@@ -810,8 +810,8 @@ export default function ClientsPage() {
                           }}
                           disabled={!client.email}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                          title={client.email ? `Invite ${client.name} to the client portal` : 'No email address on file'}
-                          aria-label={`Invite ${client.name} to the client portal`}
+                          title={client.email ? `Invite ${client.name} to the customer portal` : 'No email address on file'}
+                          aria-label={`Invite ${client.name} to the customer portal`}
                         >
                           <Send className="w-3.5 h-3.5" />
                           Invite
@@ -868,7 +868,7 @@ export default function ClientsPage() {
         <Modal
           isOpen
           onClose={() => { if (!deleting) { setClientToDelete(null); setDeleteError(null); } }}
-          title="Delete client"
+          title="Delete customer"
           size="small"
         >
           <div className="space-y-5">
@@ -877,14 +877,14 @@ export default function ClientsPage() {
                 <AlertCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900">Delete this client?</h2>
+                <h2 className="text-base font-semibold text-gray-900">Delete this customer?</h2>
                 <p className="mt-1 text-sm text-gray-600">
                   <span className="font-medium text-gray-900">{clientToDelete.name}</span> will be permanently removed. This action cannot be undone.
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-gray-600 list-disc list-inside">
-                  <li>The client record and all notes will be deleted</li>
+                  <li>The customer record and all notes will be deleted</li>
                   <li>Jobs and invoices will be unlinked but kept</li>
-                  <li>Referral attributions from this client will be cleared</li>
+                  <li>Referral attributions from this customer will be cleared</li>
                 </ul>
               </div>
             </div>
@@ -930,7 +930,7 @@ export default function ClientsPage() {
         <Modal
           isOpen
           onClose={() => { if (!inviting) { setClientToInvite(null); setInviteError(null); } }}
-          title="Invite to client portal"
+          title="Invite to customer portal"
           size="small"
         >
           <div className="space-y-5">
@@ -1005,8 +1005,8 @@ export default function ClientsPage() {
             setCreatedMessage({
               type: warning ? 'warning' : 'success',
               text: warning
-                ? `${client.name} was added to your clients. ${warning}`
-                : `${client.name} was added to your clients.`,
+                ? `${client.name} was added to your customers. ${warning}`
+                : `${client.name} was added to your customers.`,
             });
             setSearchTerm('');
             // A new client starts as a lead, so drop any segment filter that

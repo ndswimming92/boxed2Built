@@ -22,7 +22,7 @@ import { loadLaborDescriptionsForJob } from '../_shared/laborLineItems.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -180,7 +180,7 @@ function buildEmailHtml(
   const jobType = job.job_type?.trim() || 'Job';
   const heading = isReschedule ? 'Job rescheduled' : 'Job scheduled';
   const rows: Array<[string, string]> = [
-    ['Client', job.client_name],
+    ['Customer', job.client_name],
     ['Job type', jobType],
     ...laborDescriptions.map((description): [string, string] => ['Labor', description]),
     ['When', jobWhen(job)],

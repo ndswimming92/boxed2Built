@@ -4,7 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Customer-Info, Apikey",
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -170,7 +170,7 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;">${safeCity}</span></td>
           </tr>` : ""}
           <tr>
-            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Client Type</span></td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Customer Type</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><span style="color:#111827;font-size:14px;font-weight:600;${p.clientType === 'business' ? 'color:#0369a1;' : ''}">${p.clientType === 'business' ? '🏢 Business' : '🏠 Residential'}</span></td>
           </tr>
           <tr>
@@ -566,7 +566,7 @@ Deno.serve(async (req: Request) => {
         emailResults.client = true;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error("Client confirmation email failed:", msg);
+        console.error("Customer confirmation email failed:", msg);
         emailResults.clientError = msg;
       }
     } else if (payload.formType === "quick_contact") {
@@ -594,7 +594,7 @@ Deno.serve(async (req: Request) => {
         emailResults.client = true;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error("Client confirmation email failed:", msg);
+        console.error("Customer confirmation email failed:", msg);
         emailResults.clientError = msg;
       }
     } else {

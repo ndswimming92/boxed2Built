@@ -334,7 +334,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setNotes(notesData);
       setReferredClients(referredData);
     } catch (error) {
-      console.error('Error loading client details:', error);
+      console.error('Error loading customer details:', error);
     } finally {
       setLoading(false);
     }
@@ -389,9 +389,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       setCurrentClient(updated);
       setEditingInfo(false);
     } catch (error: any) {
-      console.error('Error saving client info:', error);
+      console.error('Error saving customer info:', error);
       if (error?.code === '23505' || error?.message?.includes('unique') || error?.message?.includes('duplicate')) {
-        setSaveInfoError('This email is already associated with another client. Use the Merge feature on the Clients page to combine duplicate records.');
+        setSaveInfoError('This email is already associated with another customer. Use the Merge feature on the Customers page to combine duplicate records.');
       } else {
         setSaveInfoError('Failed to save changes. Please try again.');
       }
@@ -450,7 +450,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     try {
       const bid = await resolveBusinessId();
       if (!bid) {
-        reportJobProblem('Could not find an active business for this client, so a job cannot be created here.');
+        reportJobProblem('Could not find an active business for this customer, so a job cannot be created here.');
         return;
       }
       setShowJobForm(true);
@@ -622,7 +622,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       onDeleted?.(currentClient.id);
       onClose();
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Failed to delete client. Please try again.');
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete customer. Please try again.');
     } finally {
       setDeleting(false);
     }
@@ -757,7 +757,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     <Modal
       isOpen
       onClose={nestedDialogOpen ? () => {} : onClose}
-      title="Client Details"
+      title="Customer Details"
       size="large"
     >
       {/* Tab nav */}
@@ -795,7 +795,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           {/* Header row */}
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-900">Client Documents</h3>
+              <h3 className="text-base font-semibold text-gray-900">Customer Documents</h3>
               <p className="text-sm text-gray-500 mt-0.5">Files stored in the secure document vault</p>
             </div>
             {customerId && (
@@ -1107,7 +1107,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                       <a
                         href={getPhoneHref(currentClient.phone)}
                         className="text-sm font-medium text-slate-800 underline decoration-cyan-200 hover:text-cyan-700 hover:decoration-cyan-400 transition-colors"
-                        title="Call client"
+                        title="Call customer"
                       >
                         {currentClient.phone}
                       </a>
@@ -1374,7 +1374,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     Recipient Email <span className="text-red-500">*</span>
-                    <span className="ml-1 text-gray-400 font-normal">(client has no email on file)</span>
+                    <span className="ml-1 text-gray-400 font-normal">(customer has no email on file)</span>
                   </label>
                   <input
                     type="email"
@@ -1513,7 +1513,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <div className="mb-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <Users className="w-4 h-4 text-gray-500" />
-                <p className="text-sm font-medium text-gray-700">Clients Referred ({referredClients.length})</p>
+                <p className="text-sm font-medium text-gray-700">Customers Referred ({referredClients.length})</p>
               </div>
               <div className="space-y-1.5 max-h-36 overflow-y-auto">
                 {referredClients.map(c => (
@@ -1725,7 +1725,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Add a note about this client..."
+              placeholder="Add a note about this customer..."
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
@@ -1807,9 +1807,9 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 <div>
                   <p className="text-sm font-semibold text-gray-900">This action is permanent and cannot be undone</p>
                   <ul className="mt-2 space-y-1 text-sm text-gray-600 list-disc list-inside">
-                    <li>The client record and all notes will be deleted</li>
-                    <li>Jobs and invoices linked to this client will be unlinked but kept</li>
-                    <li>Referral attributions from this client will be cleared</li>
+                    <li>The customer record and all notes will be deleted</li>
+                    <li>Jobs and invoices linked to this customer will be unlinked but kept</li>
+                    <li>Referral attributions from this customer will be cleared</li>
                   </ul>
                 </div>
               </div>

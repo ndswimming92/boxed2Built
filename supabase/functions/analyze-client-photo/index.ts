@@ -9,7 +9,7 @@ const corsHeaders = {
   // function through supabase.functions.invoke() send them, and a preflight that
   // does not allow them is rejected by the browser before the POST is ever sent.
   "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id",
+    "Content-Type, Authorization, X-Customer-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -41,7 +41,7 @@ const EXTRACTION_SCHEMA = {
     source: {
       type: ["string", "null"],
       description:
-        "How this client found the business, only if the photo says so " +
+        "How this customer found the business, only if the photo says so " +
         "(Facebook, Instagram, Website, Family, Friend, Google, Yelp, ChatGPT, Claude, Referral).",
     },
     notes: {
@@ -161,7 +161,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    let textPrompt = "Pull the client's contact details out of this photo.";
+    let textPrompt = "Pull the customer's contact details out of this photo.";
     if (hint && typeof hint === "string" && hint.trim()) {
       textPrompt +=
         `\n\nContext from the admin (use it to interpret the photo, but never as ` +
@@ -242,7 +242,7 @@ Deno.serve(async (req: Request) => {
     if (result.stop_reason === "refusal") {
       return new Response(
         JSON.stringify({
-          error: "The photo could not be processed. Enter the client's details manually.",
+          error: "The photo could not be processed. Enter the customer's details manually.",
         }),
         { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -311,7 +311,7 @@ Deno.serve(async (req: Request) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    console.error("analyze-client-photo error:", err);
+    console.error("analyze-customer-photo error:", err);
     return new Response(
       JSON.stringify({
         error: "Internal server error",

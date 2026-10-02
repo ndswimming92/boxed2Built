@@ -266,7 +266,7 @@ export default function PortalLoginPage() {
             <ShieldCheck className="h-4 w-4" />
             Secure Customer Access
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">Welcome to the Client Portal</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Welcome to the Customer Portal</h1>
           <p className="mt-3 max-w-xl text-slate-600">
             Sign in, or create an account in one step — we&rsquo;ll email you a secure link. No password to remember.
           </p>
@@ -307,7 +307,7 @@ export default function PortalLoginPage() {
               )}
             </div>
             <h2 className="text-2xl font-bold text-slate-900">
-              {mode === 'sent' ? 'Check your email' : 'Client Portal'}
+              {mode === 'sent' ? 'Check your email' : 'Customer Portal'}
             </h2>
             <p className="mt-2 text-slate-600">
               {mode === 'sent' ? (

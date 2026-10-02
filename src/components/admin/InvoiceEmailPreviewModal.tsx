@@ -31,7 +31,7 @@ export default function InvoiceEmailPreviewModal({ invoice, onClose }: InvoiceEm
 
     async function lookup() {
       if (!invoice.client_id) {
-        setLookupError('This invoice is not linked to a client, so its email cannot be previewed.');
+        setLookupError('This invoice is not linked to a customer, so its email cannot be previewed.');
         return;
       }
       const { data, error } = await supabase
@@ -42,7 +42,7 @@ export default function InvoiceEmailPreviewModal({ invoice, onClose }: InvoiceEm
 
       if (cancelled) return;
       if (error || !data?.organization_id) {
-        setLookupError('Could not find the client for this invoice.');
+        setLookupError('Could not find the customer for this invoice.');
         return;
       }
       setOrganizationId(data.organization_id);

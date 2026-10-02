@@ -87,8 +87,8 @@ export default function JobFollowupCard({ jobId, clientName }: JobFollowupCardPr
           : await sendJobFollowupTest(jobId);
         setNotice(
           mode === 'send'
-            ? `Sent to ${result.to ?? 'the client'}.`
-            : `Test copy sent to ${result.to ?? 'you'} — the client was not emailed.`,
+            ? `Sent to ${result.to ?? 'the customer'}.`
+            : `Test copy sent to ${result.to ?? 'you'} — the customer was not emailed.`,
         );
         // A real send moves the job's markers, so the status line is now stale.
         if (mode === 'send') setAttempt((value) => value + 1);
