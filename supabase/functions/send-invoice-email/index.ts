@@ -169,6 +169,11 @@ function buildTotalsBlock(invoice: Invoice): string {
   </table>`;
 }
 
+/** Only deposit and final invoices ask for payment; quotes and other types never do. */
+export function requestsPayment(invoiceType: string): boolean {
+  return invoiceType === 'deposit' || invoiceType === 'final';
+}
+
 export function buildHtml(
   clientName: string,
   invoice: Invoice,
@@ -180,16 +185,24 @@ export function buildHtml(
   const clientNameEsc = escapeHtml(clientName.trim() || 'there');
   const invoiceNum = escapeHtml(invoice.invoice_number);
   const labels = invoiceLabels(invoice.invoice_type);
+  const canPay = requestsPayment(invoice.invoice_type);
   const dueDateStr = invoice.due_date ? formatDate(invoice.due_date) : null;
   const invoiceDateStr = formatDate(invoice.invoice_date);
   // A bill leads with what is still owed; a quote leads with the price of the job.
   const headlineStr = formatCurrency(headlineAmount(invoice.invoice_type, invoice));
   // A quote is an offer: it invites payment rather than expecting it.
   const greeting = labels.isQuote
-    ? `Thanks for choosing ${escapeHtml(businessName)}. Your quote is ready — the details are below. Nothing is due now; if the numbers look right, reply and we'll get you on the schedule, or pay online any time you're ready.`
-    : `Thanks for choosing ${escapeHtml(businessName)}. Your ${labels.noun} is ready — the details are below, and you can pay securely online whenever you're ready. No payment is due until the job is done.`;
-  const payNote = labels.isQuote
-    ? `<div style="margin:-6px 0 16px 0;font-size:13px;color:#15803D;">Paying now locks in your spot — it's optional, and you're welcome to reply and book first.</div>`
+    ? `Thanks for choosing ${escapeHtml(businessName)}. Your quote is ready — the details are below. Nothing is due now; if the numbers look right, just reply and we'll get you on the schedule.`
+    : canPay
+      ? `Thanks for choosing ${escapeHtml(businessName)}. Your ${labels.noun} is ready — the details are below, and you can pay securely online whenever you're ready. No payment is due until the job is done.`
+      : `Thanks for choosing ${escapeHtml(businessName)}. Your ${labels.noun} is ready — the details are below. Reply to this email with any questions.`;
+  const payNote = canPay
+    ? ''
+    : `<div style="margin:-6px 0 4px 0;font-size:13px;color:#15803D;">${labels.isQuote ? 'No payment is needed now — just reply to this email to book.' : 'Reply to this email with any questions.'}</div>`;
+  const payActions = canPay
+    ? `<a href="${payUrl}" style="display:inline-block;background:#15803D;color:#FFFFFF;font-size:16px;font-weight:700;padding:15px 42px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px -4px rgba(21,128,61,0.5);">Pay Now &rarr;</a>
+                    <div style="margin-top:14px;font-size:13px;color:#374151;">Pay with Apple&nbsp;Pay, Google&nbsp;Pay, or any major card.</div>
+                    <div style="margin-top:8px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>`
     : '';
   const termsCell = (span: string) => `<td ${span} style="padding:16px 20px;">
                     <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF;">Payment Terms</div>
@@ -330,9 +343,7 @@ export function buildHtml(
                   <td align="center" style="padding:26px 24px;">
                     <div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#15803D;">${escapeHtml(amountLabel(invoice.invoice_type))}</div>
                     <div style="margin:6px 0 18px 0;font-size:42px;font-weight:800;color:#0E2748;letter-spacing:-0.02em;line-height:1;">${headlineStr}</div>${payNote}
-                    <a href="${payUrl}" style="display:inline-block;background:#15803D;color:#FFFFFF;font-size:16px;font-weight:700;padding:15px 42px;border-radius:10px;text-decoration:none;box-shadow:0 6px 14px -4px rgba(21,128,61,0.5);">Pay Now &rarr;</a>
-                    <div style="margin-top:14px;font-size:13px;color:#374151;">Pay with Apple&nbsp;Pay, Google&nbsp;Pay, or any major card.</div>
-                    <div style="margin-top:8px;font-size:12px;color:#6B7280;">Secured by Stripe &middot; Your card details are never stored on our servers.</div>
+                    ${payActions}
                   </td>
                 </tr>
               </table>
@@ -419,11 +430,12 @@ export function buildPlainText(clientName: string, invoice: Invoice, lineItems: 
   if (invoice.amount_paid > 0) lines.push(`Amount Paid: -${formatCurrency(invoice.amount_paid)}`);
   lines.push(`${totalLabel(invoice.invoice_type)}: ${formatCurrency(headlineAmount(invoice.invoice_type, invoice))}`);
   lines.push('');
-  lines.push(labels.isQuote ? '--- Pay Online (optional) ---' : '--- Pay Online ---');
-  if (labels.isQuote) {
+  if (requestsPayment(invoice.invoice_type)) {
+    lines.push('--- Pay Online ---');
+    lines.push(payUrl);
+  } else if (labels.isQuote) {
     lines.push("Nothing is due yet. Reply to this email if you'd like to go ahead and we'll get you scheduled.");
   }
-  lines.push(payUrl);
   lines.push('');
   lines.push(`Questions? Call or text us at ${CONTACT_PHONE} or email ${CONTACT_EMAIL}`);
   lines.push('');
