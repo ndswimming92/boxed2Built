@@ -335,6 +335,8 @@ test.describe('the completion wizard', () => {
   });
 
   test('a satisfied customer\'s comment becomes a verified review', async ({ page }) => {
+    // Saturday evening in Chicago, Sunday in UTC: the review is dated the same day as the job.
+    await page.clock.setFixedTime(new Date('2026-09-27T01:00:00Z'));
     const mounted = await openWizard(page);
     await fillDetails(page);
     await next(page).click();
@@ -353,6 +355,7 @@ test.describe('the completion wizard', () => {
       rating_value: 5,
       is_verified: true,
       source: 'job_completion',
+      date_published: '2026-09-26',
     });
   });
 

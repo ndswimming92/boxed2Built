@@ -170,7 +170,11 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       ]);
       const user = session?.user ?? null;
 
-      const completedAt = new Date().toISOString();
+      const completedMoment = new Date();
+      const completedAt = completedMoment.toISOString();
+      // One instant, one calendar day: reading the clock again for each date
+      // could split a submission that straddles local midnight across two days.
+      const completedOn = toLocalDateString(completedMoment);
       const parsedFinalPrice = parseFloat(finalPrice);
       const finalPriceValue = Number.isNaN(parsedFinalPrice) ? null : parsedFinalPrice;
       const hoursWorkedValue = parseFloat(hoursWorked);
@@ -224,7 +228,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
           .from('jobs')
           .update({
             job_status: 'completed',
-            date_completed: toLocalDateString(),
+            date_completed: completedOn,
             completion_id: completion.id,
             has_signature: signatureData.length > 0,
             signed_off_at: signatureData ? completedAt : null,
@@ -259,7 +263,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
               author_name: job.client_name,
               review_body: satisfactionComment,
               rating_value: satisfactionRating,
-              date_published: toLocalDateString(),
+              date_published: completedOn,
               is_featured: satisfactionRating >= 4,
               is_verified: true,
               is_active: true,
