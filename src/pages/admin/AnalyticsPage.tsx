@@ -441,7 +441,7 @@ export default function AnalyticsPage() {
                       border: '1px solid #e2e8f0',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value) => formatCurrency(Number(value))}
                   />
                   <Bar dataKey="netProfit" fill="#3b82f6" radius={[0, 8, 8, 0]} />
                 </BarChart>
@@ -460,7 +460,7 @@ export default function AnalyticsPage() {
                       border: '1px solid #e2e8f0',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value) => formatCurrency(Number(value))}
                   />
                   <Bar dataKey="revenue" fill="#14b8a6" radius={[8, 8, 0, 0]} />
                 </BarChart>
@@ -481,7 +481,7 @@ export default function AnalyticsPage() {
                       border: '1px solid #e2e8f0',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value) => formatCurrency(Number(value))}
                   />
                   <Legend />
                   <Line

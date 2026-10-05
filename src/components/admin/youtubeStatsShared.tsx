@@ -208,7 +208,7 @@ export function DemographicsChart({
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="age" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} unit="%" />
-          <Tooltip formatter={(v: number) => `${v}%`} />
+          <Tooltip formatter={(v) => `${Number(v)}%`} />
           <Legend />
           {present.map((g) => (
             <Bar key={g.key} dataKey={g.key} name={g.label} stackId="a" fill={g.color} />

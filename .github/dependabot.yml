@@ -19,10 +19,6 @@ updates:
       # widens the range.
       - dependency-name: "beasties"
         versions: [">=0.2.0"]
-      # recharts 3.10 tightened Tooltip formatter/labelFormatter typings, which
-      # breaks typecheck at ~18 call sites. Lift once those are updated.
-      - dependency-name: "recharts"
-        versions: [">=3.10.0"]
     groups:
       # Packages whose peerDependencies pin each other's major version. Bumped
       # separately, every PR fails `npm ci` with ERESOLVE (e.g. react-stripe-js@7

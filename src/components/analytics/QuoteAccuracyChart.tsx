@@ -74,7 +74,7 @@ export default function QuoteAccuracyChart({ data }: QuoteAccuracyChartProps) {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                 }}
-                formatter={(value: number) => [formatPercent(value), 'Avg Variance']}
+                formatter={(value) => [formatPercent(Number(value)), 'Avg Variance']}
                 labelFormatter={(label) => label}
               />
               <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="4 4" strokeWidth={2} />

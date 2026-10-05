@@ -144,7 +144,7 @@ export default function SocialMetricsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                     <XAxis dataKey="date" tickFormatter={formatTrendDate} tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip labelFormatter={formatTrendDate} />
+                    <Tooltip labelFormatter={(label) => formatTrendDate(String(label))} />
                     <Legend />
                     {facebook.metrics.map((m, i) => (
                       <Line
@@ -215,7 +215,7 @@ export default function SocialMetricsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                     <XAxis dataKey="date" tickFormatter={formatTrendDate} tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip labelFormatter={formatTrendDate} />
+                    <Tooltip labelFormatter={(label) => formatTrendDate(String(label))} />
                     <Legend />
                     {(instagram.metrics ?? []).map((m, i) => (
                       <Line

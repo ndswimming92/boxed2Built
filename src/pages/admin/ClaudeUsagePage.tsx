@@ -238,7 +238,7 @@ export default function ClaudeUsagePage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="date" tickFormatter={formatTrendDate} tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
-                <Tooltip labelFormatter={formatTrendDate} formatter={(v: number) => formatUsd(v)} />
+                <Tooltip labelFormatter={(label) => formatTrendDate(String(label))} formatter={(v) => formatUsd(Number(v))} />
                 <Area type="monotone" dataKey="cost_usd" stroke="#2563eb" fill="#2563eb" fillOpacity={0.15} />
               </AreaChart>
             </ResponsiveContainer>
