@@ -49,7 +49,7 @@ const corsHeaders = {
   // anything mentioning CORS. Only functions the browser calls need these, which
   // is why the server-only send-job-schedule-email next door does without them.
   'Access-Control-Allow-Headers':
-    'Content-Type, Authorization, X-Customer-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
+    'Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
