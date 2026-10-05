@@ -74,7 +74,7 @@ const StorePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <Head>
-        <title>3D Print Shop | Custom Prints from Spring Hill, TN | Boxed2Built</title>
+        <title>3D Print Shop | Custom Prints | Boxed2Built</title>
         <meta
           name="description"
           content="Shop 3D printed organizers, gadgets, and gifts printed in Spring Hill, TN by Boxed2Built. Ship to your door or pick up locally."
