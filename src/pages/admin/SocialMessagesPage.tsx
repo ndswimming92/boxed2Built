@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, RefreshCw, AlertCircle, CheckCircle2, Send, Archive, ArchiveRestore } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle2, Send, Archive, ArchiveRestore } from 'lucide-react';
+import { Facebook, Instagram } from '../../components/ui/BrandIcons';
 import {
   getSocialConversations,
   sendSocialMessage,

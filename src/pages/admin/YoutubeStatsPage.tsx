@@ -1,19 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Youtube,
-  Eye,
-  Clock,
-  UserPlus,
-  ThumbsUp,
-  MessageCircle,
-  Share2,
-  Timer,
-  Users,
-  Video,
-  RefreshCw,
-  Plug,
-  ChevronRight,
-} from 'lucide-react';
+import { Eye, Clock, UserPlus, ThumbsUp, MessageCircle, Share2, Timer, Users, Video, RefreshCw, Plug, ChevronRight } from 'lucide-react';
+import { Youtube } from '../../components/ui/BrandIcons';
 import {
   LineChart,
   Line,

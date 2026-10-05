@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import {
-  Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon,
-  Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Facebook, Clock, Mail,
-  Users, FlaskConical,
-} from 'lucide-react';
+import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical } from 'lucide-react';
+import { Facebook } from '../../components/ui/BrandIcons';
 import {
   getCoupons, getCouponRedemptions, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
   draftCouponPromo, publishCouponPromo, sendCouponPromoReminder,

@@ -14,6 +14,18 @@ updates:
       timezone: "America/Chicago"
     open-pull-requests-limit: 10
     groups:
+      # Packages whose peerDependencies pin each other's major version. Bumped
+      # separately, every PR fails `npm ci` with ERESOLVE (e.g. react-stripe-js@7
+      # needs stripe-js@10, while 6.x needs stripe-js@9). Group order matters:
+      # a dependency lands in the first group it matches, so these come first.
+      stripe:
+        patterns:
+          - "@stripe/*"
+      vite-toolchain:
+        patterns:
+          - "vite"
+          - "vite-react-ssg"
+          - "@vitejs/*"
       # Batch all patch + minor bumps into ONE weekly PR.
       # These are the ones your auto-merge workflow lets through.
       npm-minor-and-patch:
