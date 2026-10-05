@@ -357,7 +357,7 @@ export default function JobsPage() {
             <div className="flex items-start gap-2">
               <Info className="mt-0.5 h-5 w-5 text-amber-700" />
               <p className="text-sm text-amber-900">
-                <span className="font-semibold">Data quality warning:</span> {missingCompletedHoursCount} completed job{missingCompletedHoursCount === 1 ? '' : 's'} are missing hours worked. Backfill these to keep all-time hourly metrics accurate.
+                <span className="font-semibold">Data quality warning:</span> {missingCompletedHoursCount} completed job{missingCompletedHoursCount === 1 ? ' is' : 's are'} missing hours worked. Backfill these to keep all-time hourly metrics accurate.
               </p>
             </div>
             <button
