@@ -389,7 +389,7 @@ export default function BurnRatePage() {
                 />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  formatter={(value: number) => [formatCurrency(value, { decimals: true }), 'Balance']}
+                  formatter={(value) => [formatCurrency(Number(value), { decimals: true }), 'Balance']}
                 />
                 <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 4" />
                 <Area
@@ -446,7 +446,7 @@ export default function BurnRatePage() {
                   <Tooltip
                     cursor={{ fill: '#f1f5f9' }}
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    formatter={(value: number) => [formatCurrency(value, { decimals: true }), 'Due']}
+                    formatter={(value) => [formatCurrency(Number(value), { decimals: true }), 'Due']}
                   />
                   <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Amount due" />
                 </BarChart>
@@ -488,12 +488,15 @@ export default function BurnRatePage() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    formatter={(value: number, _n, entry: { payload?: { billing_cycle?: string } }) => [
-                      `${formatCurrency(value, { decimals: true })}/mo`,
-                      entry?.payload?.billing_cycle
-                        ? cycleLabel(entry.payload.billing_cycle as Subscription['billing_cycle'])
-                        : 'Monthly',
-                    ]}
+                    formatter={(value, _n, item) => {
+                      const entry = item as { payload?: { billing_cycle?: string } };
+                      return [
+                        `${formatCurrency(Number(value), { decimals: true })}/mo`,
+                        entry?.payload?.billing_cycle
+                          ? cycleLabel(entry.payload.billing_cycle as Subscription['billing_cycle'])
+                          : 'Monthly',
+                      ];
+                    }}
                   />
                   <Legend
                     verticalAlign="bottom"

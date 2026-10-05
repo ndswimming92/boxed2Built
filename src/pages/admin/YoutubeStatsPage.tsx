@@ -304,7 +304,7 @@ export default function YoutubeStatsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                     <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} allowDecimals={trendMetric === 'watch_hours'} />
-                    <Tooltip labelFormatter={formatShortDate} />
+                    <Tooltip labelFormatter={(label) => formatShortDate(String(label))} />
                     <Line type="monotone" dataKey={trendMetric} name={activeTab.label} stroke={activeTab.color} strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -398,7 +398,7 @@ export default function YoutubeStatsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                     <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} allowDecimals={false} domain={['dataMin', 'dataMax']} />
-                    <Tooltip labelFormatter={formatShortDate} />
+                    <Tooltip labelFormatter={(label) => formatShortDate(String(label))} />
                     <Line type="monotone" dataKey="subscribers_total" name="Subscribers" stroke="#10b981" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
@@ -410,7 +410,7 @@ export default function YoutubeStatsPage() {
                     <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 12 }} />
                     <YAxis yAxisId="views" tick={{ fontSize: 12 }} domain={['dataMin', 'dataMax']} />
                     <YAxis yAxisId="videos" orientation="right" tick={{ fontSize: 12 }} allowDecimals={false} domain={['dataMin', 'dataMax']} />
-                    <Tooltip labelFormatter={formatShortDate} />
+                    <Tooltip labelFormatter={(label) => formatShortDate(String(label))} />
                     <Legend />
                     <Line yAxisId="views" type="monotone" dataKey="total_views" name="Total views" stroke="#dc2626" strokeWidth={2} dot={false} />
                     <Line yAxisId="videos" type="monotone" dataKey="video_count" name="Videos" stroke="#2563eb" strokeWidth={2} dot={false} />

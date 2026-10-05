@@ -293,8 +293,8 @@ export default function ClientAnalytics() {
             <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
             <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
             <Tooltip
-              formatter={(value: any, name: string) => {
-                if (name === 'Revenue') return formatCurrency(value);
+              formatter={(value, name) => {
+                if (name === 'Revenue') return formatCurrency(Number(value));
                 return value;
               }}
             />

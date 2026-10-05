@@ -128,7 +128,7 @@ export default function YoutubeVideoPanel({ videoId, days, onClose }: Props) {
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="date" tickFormatter={formatShortDate} tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-                      <Tooltip labelFormatter={formatShortDate} />
+                      <Tooltip labelFormatter={(label) => formatShortDate(String(label))} />
                       <Line type="monotone" dataKey="views" name="Views" stroke="#dc2626" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -146,7 +146,7 @@ export default function YoutubeVideoPanel({ videoId, days, onClose }: Props) {
                       <XAxis dataKey="position" unit="%" tick={{ fontSize: 12 }} />
                       <YAxis unit="%" tick={{ fontSize: 12 }} />
                       <Tooltip
-                        formatter={(v: number) => `${v}%`}
+                        formatter={(v) => `${Number(v)}%`}
                         labelFormatter={(v) => `${v}% through the video`}
                       />
                       <Area type="monotone" dataKey="watch_ratio" name="Still watching" stroke="#2563eb" fill="#bfdbfe" />
