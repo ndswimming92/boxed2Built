@@ -24,7 +24,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@stripe/react-stripe-js": "^6.11.0",
+    "@stripe/react-stripe-js": "^7.0.0",
     "@stripe/stripe-js": "^9.17.0",
     "@supabase/supabase-js": "^2.116.0",
     "@types/qrcode": "^1.5.6",
