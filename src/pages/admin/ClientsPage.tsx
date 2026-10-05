@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Users, Search, Download, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode, MailCheck } from 'lucide-react';
+import { Users, Search, Upload, Mail, Phone, TrendingUp, UserX, Star, Filter, Gift, Copy, Check, Send, GitMerge, Trash2, AlertCircle, UserPlus, QrCode, MailCheck } from 'lucide-react';
 import {
   getAllClientsIncludingTest,
   getClientSegment,
@@ -469,7 +469,7 @@ export default function ClientsPage() {
               }}
               className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 whitespace-nowrap"
             >
-              <Download className="w-4 h-4" />
+              <Upload className="w-4 h-4" />
               Export ({selectedClients.size})
             </button>
           )}

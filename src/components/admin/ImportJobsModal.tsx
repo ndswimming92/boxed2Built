@@ -397,7 +397,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
                   </>
                 ) : (
                   <>
-                    <Upload className="w-5 h-5" />
+                    <Download className="w-5 h-5" />
                     Confirm Import
                   </>
                 )}
