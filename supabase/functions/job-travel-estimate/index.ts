@@ -19,7 +19,7 @@ const corsHeaders = {
   // Supabase client's fetch wrapper in src/lib/supabase.ts. A preflight that does
   // not allow them is rejected by the browser before the POST is ever sent.
   "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Customer-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id",
+    "Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

@@ -34,7 +34,7 @@ const corsHeaders = {
   // ever sent, which surfaces as "Failed to send a request to the Edge
   // Function" rather than as anything mentioning CORS.
   'Access-Control-Allow-Headers':
-    'Content-Type, Authorization, X-Customer-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
+    'Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');

@@ -22,7 +22,7 @@ import { loadLaborDescriptionsForJob } from '../_shared/laborLineItems.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Customer-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Correlation-Id, X-Session-Correlation-Id',
 };
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
