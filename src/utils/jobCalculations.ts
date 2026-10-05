@@ -1,4 +1,4 @@
-import { Job } from '../lib/supabase';
+import type { Job } from '../lib/supabase';
 
 export type JobStatus = 'Quoted' | 'Scheduled' | 'Completed';
 
@@ -70,7 +70,18 @@ export function formatCurrency(amount: number | null): string {
 
 export function formatDate(dateString: string | null): string {
   if (!dateString) return 'Not set';
-  return new Date(dateString).toLocaleDateString('en-US', {
+
+  // Date columns (date_completed, date_scheduled) arrive as 'YYYY-MM-DD'. The
+  // Date constructor reads that as UTC midnight, which is still the evening of
+  // the day before anywhere in the Americas — so a job finished on Sep 26 was
+  // shown as Sep 25. A date with no time of day belongs to no zone: read its
+  // parts as the calendar day they name.
+  const calendarDay = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  const date = calendarDay
+    ? new Date(Number(calendarDay[1]), Number(calendarDay[2]) - 1, Number(calendarDay[3]))
+    : new Date(dateString);
+
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
