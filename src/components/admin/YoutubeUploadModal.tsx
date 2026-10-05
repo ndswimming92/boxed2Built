@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, Upload, CheckCircle, AlertCircle, Youtube } from 'lucide-react';
+import { X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { Youtube } from '../ui/BrandIcons';
 import { uploadVideoToYoutube, YoutubePrivacyStatus, YoutubeUploadResult } from '../../services/socialPublishService';
 
 interface YoutubeUploadModalProps {

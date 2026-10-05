@@ -1,5 +1,6 @@
 import React from 'react';
-import { Facebook, Mail, Phone, Instagram, Star, Youtube, Linkedin, Clock, MapPin, CreditCard, ArrowRight } from 'lucide-react';
+import { Mail, Phone, Star, Clock, MapPin, CreditCard, ArrowRight } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Linkedin } from '../ui/BrandIcons';
 import NAPConsistency from '../seo/NAPConsistency';
 import InternalLink from '../ui/InternalLink';
 import QuickContactForm from '../QuickContactForm';

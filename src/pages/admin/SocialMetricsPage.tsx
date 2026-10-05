@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Facebook,
-  Instagram,
-  Users,
-  Eye,
-  Image as ImageIcon,
-  RefreshCw,
-  AlertCircle,
-  Plug,
-} from 'lucide-react';
+import { Users, Eye, Image as ImageIcon, RefreshCw, AlertCircle, Plug } from 'lucide-react';
+import { Facebook, Instagram } from '../../components/ui/BrandIcons';
 import {
   LineChart,
   Line,

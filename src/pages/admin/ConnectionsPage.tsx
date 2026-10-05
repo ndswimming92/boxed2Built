@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Plug,
-  Instagram,
-  Facebook,
-  MapPin,
-  Music2,
-  Youtube,
-  CheckCircle,
-  AlertCircle,
-  Unplug,
-  Info,
-  RefreshCw,
-} from 'lucide-react';
+import { Plug, MapPin, Music2, CheckCircle, AlertCircle, Unplug, Info, RefreshCw } from 'lucide-react';
+import { Instagram, Facebook, Youtube } from '../../components/ui/BrandIcons';
 import {
   IntegrationConnection,
   listConnections,

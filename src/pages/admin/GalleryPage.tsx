@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, Facebook, Instagram, Youtube, CheckCircle2, AlertCircle, ShieldAlert, Clock, X } from 'lucide-react';
+import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, CheckCircle2, AlertCircle, ShieldAlert, Clock, X } from 'lucide-react';
+import { Facebook, Instagram, Youtube } from '../../components/ui/BrandIcons';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';

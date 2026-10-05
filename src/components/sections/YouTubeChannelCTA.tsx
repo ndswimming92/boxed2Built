@@ -1,5 +1,6 @@
 import React from 'react';
-import { Youtube, Play, Clock, Sparkles, Wrench, Camera, ArrowRight, Quote } from 'lucide-react';
+import { Play, Clock, Sparkles, Wrench, Camera, ArrowRight, Quote } from 'lucide-react';
+import { Youtube } from '../ui/BrandIcons';
 import { getSocialUrl } from '../../utils/utm';
 import { trackEvent } from '../../utils/analytics';
 
