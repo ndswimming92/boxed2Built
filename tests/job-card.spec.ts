@@ -1,5 +1,18 @@
-import { test, expect, type Page, type Request } from '@playwright/test';
-import { existsSync, readFileSync } from 'node:fs';
+import { test, expect } from '@playwright/test';
+import {
+  FUNCTION_NAMES,
+  allowedHeadersFor,
+  expandCard,
+  followupPreview,
+  header,
+  job,
+  mountFollowup,
+  mountJobs,
+  reminderPreview,
+  sentHeaders,
+  tile,
+  travelOk,
+} from './support/jobCardStubs';
 
 /**
  * The admin job card is what Nick opens to run a day: who the customer is, where
@@ -27,219 +40,6 @@ import { existsSync, readFileSync } from 'node:fs';
 // as UTC midnight shows the previous day to anyone west of Greenwich, which is
 // where the business is.
 test.use({ timezoneId: 'America/Chicago' });
-
-type Row = Record<string, unknown>;
-
-/** A 1x1 PNG, standing in for the Mapbox route image the edge function returns. */
-const MAP_PNG =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-
-const FUNCTION_NAMES = {
-  travel: 'job-travel-estimate',
-  reminder: 'send-customer-job-reminders',
-  followup: 'send-followup-email',
-} as const;
-
-function job(overrides: Row = {}): Row {
-  return {
-    id: 'job-1',
-    business_id: 'biz-1',
-    client_id: 'client-1',
-    client_name: 'Kurt Zollner',
-    client_phone: '(423) 368-3950',
-    client_email: 'kjzollner21@yahoo.com',
-    client_address: '2014 Beamon Drive Franklin, TN 37064',
-    service_address: null,
-    client_type: 'residential',
-    job_type: 'Furniture Assembly',
-    job_description: null,
-    location_city: 'Franklin',
-    job_status: 'completed',
-    date_quoted: '2026-09-11',
-    date_scheduled: '2026-09-26',
-    date_completed: '2026-09-26',
-    hours_worked: 4.5,
-    quoted_price: 300,
-    final_price: 300,
-    materials_cost: 45.5,
-    has_signature: true,
-    is_free: false,
-    is_active: true,
-    repeat_client: false,
-    created_at: '2026-09-11T12:00:00Z',
-    updated_at: '2026-09-26T12:00:00Z',
-    ...overrides,
-  };
-}
-
-function travelOk(overrides: Row = {}): Row {
-  return {
-    status: 'ok',
-    originAddress: '10 Home Base Ln, Spring Hill, TN',
-    destinationAddress: '2014 Beamon Drive Franklin, TN 37064',
-    durationSeconds: 24 * 60,
-    distanceMeters: 12.8 * 1609.344,
-    departureBufferMinutes: 10,
-    leaveBy: {
-      time: '10:56',
-      daysEarlier: 0,
-      driveMinutes: 24,
-      bufferMinutes: 10,
-      leadMinutes: 34,
-      label: '10:56 AM (24 min drive + 10 min buffer)',
-    },
-    mapImage: MAP_PNG,
-    cached: false,
-    refreshedAt: '2026-09-25T12:00:00Z',
-    ...overrides,
-  };
-}
-
-function reminderPreview(overrides: Row = {}): Row {
-  return {
-    subject: 'Reminder: your appointment tomorrow',
-    html: '<p>See you tomorrow at 11 AM.</p>',
-    text: 'See you tomorrow at 11 AM.',
-    recipient: 'kjzollner21@yahoo.com',
-    status: 'scheduled',
-    reason: null,
-    // 5:00 PM on the business's clock (CDT, UTC-5).
-    sendAt: '2026-09-25T22:00:00Z',
-    sentAt: null,
-    timeZone: 'America/Chicago',
-    ...overrides,
-  };
-}
-
-function followupPreview(overrides: Row = {}): Row {
-  return {
-    subject: 'Thanks, Kurt — how did we do?',
-    html: '<p>Leave us a Google review.</p>',
-    text: 'Leave us a Google review.',
-    recipient: 'kjzollner21@yahoo.com',
-    status: 'scheduled',
-    reason: null,
-    sendAt: '2026-09-26T22:00:00Z',
-    sentAt: null,
-    timeZone: 'America/Chicago',
-    ...overrides,
-  };
-}
-
-interface Call {
-  headers: Record<string, string>;
-  body: Record<string, unknown>;
-}
-
-interface Stubs {
-  jobs?: Row[];
-  /** Per-call answers; a function returns what the edge function would. */
-  travel?: (call: Call) => { status?: number; json: unknown };
-  reminder?: (call: Call) => { status?: number; json: unknown };
-  followup?: (call: Call) => { status?: number; json: unknown };
-  jobContractors?: Row[];
-}
-
-interface Mounted {
-  calls: Record<keyof typeof FUNCTION_NAMES, Call[]>;
-  deletes: string[];
-}
-
-function readCall(request: Request): Call {
-  let body: Record<string, unknown> = {};
-  try {
-    body = JSON.parse(request.postData() || '{}');
-  } catch {
-    // an unreadable body is recorded as empty
-  }
-  return { headers: request.headers(), body };
-}
-
-async function stubNetwork(page: Page, stubs: Stubs): Promise<Mounted> {
-  const mounted: Mounted = {
-    calls: { travel: [], reminder: [], followup: [] },
-    deletes: [],
-  };
-
-  // Everything not named below is an empty table, so an unrelated query never
-  // takes the page down.
-  await page.route('**/rest/v1/**', (route) => route.fulfill({ json: [] }));
-
-  await page.route('**/rest/v1/business_info*', (route) =>
-    route.fulfill({
-      json: [{ id: 'biz-1', name: 'Boxed2Built', street_address: '10 Home Base Ln', phone: '', email: '' }],
-    }),
-  );
-
-  await page.route('**/rest/v1/jobs*', async (route) => {
-    const request = route.request();
-    if (request.method() === 'DELETE') {
-      mounted.deletes.push(request.url());
-      return route.fulfill({ status: 204, body: '' });
-    }
-    return route.fulfill({ json: stubs.jobs ?? [job()] });
-  });
-
-  await page.route('**/rest/v1/job_contractors*', (route) =>
-    route.fulfill({ json: stubs.jobContractors ?? [] }),
-  );
-
-  for (const [key, name] of Object.entries(FUNCTION_NAMES) as [keyof typeof FUNCTION_NAMES, string][]) {
-    await page.route(`**/functions/v1/${name}`, async (route) => {
-      const call = readCall(route.request());
-      mounted.calls[key].push(call);
-
-      const answer = stubs[key]?.(call) ?? defaultAnswer(key, call);
-      return route.fulfill({ status: answer.status ?? 200, json: answer.json as object });
-    });
-  }
-
-  return mounted;
-}
-
-/** What each function says when a spec does not care. */
-function defaultAnswer(key: keyof typeof FUNCTION_NAMES, call: Call): { json: unknown } {
-  if (key === 'travel') return { json: travelOk() };
-
-  const preview = key === 'reminder' ? reminderPreview() : followupPreview();
-  if (call.body.preview) return { json: { preview } };
-
-  // A send: the shape both send paths read their result from.
-  return { json: { sent: 1, results: [{ sent: true, to: call.body.test ? 'nick@boxed2built.com' : 'kjzollner21@yahoo.com' }] } };
-}
-
-async function mountJobs(page: Page, stubs: Stubs = {}): Promise<Mounted> {
-  const mounted = await stubNetwork(page, stubs);
-  await page.goto('/tests/harness/job-card.html');
-  await expect(page.getByRole('heading', { name: 'Jobs', level: 1 })).toBeVisible();
-  return mounted;
-}
-
-async function mountFollowup(page: Page, stubs: Stubs = {}): Promise<Mounted> {
-  const mounted = await stubNetwork(page, stubs);
-  await page.goto('/tests/harness/job-card.html?view=followup');
-  await expect(page.getByText('Post-Job Follow-Up', { exact: false }).first()).toBeVisible();
-  return mounted;
-}
-
-function header(page: Page, name: string) {
-  return page.getByRole('button', { name: new RegExp(name) });
-}
-
-/** Opens a card. Cards start collapsed and only mount their panels once open. */
-async function expandCard(page: Page, name = 'Kurt Zollner') {
-  const toggle = header(page, name);
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-}
-
-/** One of the small labelled tiles inside an open card, found by its label. */
-function tile(page: Page, label: string) {
-  // Starts-with rather than exact: the Work Location label carries a badge
-  // ("Different address") inside the same paragraph.
-  return page.locator('p', { hasText: new RegExp(`^${label}`) }).locator('xpath=..').first();
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The card at a glance
@@ -400,7 +200,11 @@ test.describe('the money', () => {
   });
 
   test('takes contractor pay out of the profit', async ({ page }) => {
-    await mountJobs(page, { jobContractors: [{ job_id: 'job-1', amount_paid: 54.5 }] });
+    await mountJobs(page, {
+      jobContractors: [
+        { id: 'jc-1', business_id: 'biz-1', job_id: 'job-1', contractor_id: 'c-1', amount_paid: 54.5, is_active: true },
+      ],
+    });
     await expandCard(page);
 
     await expect(tile(page, 'Contractor Pay')).toContainText('$54.50');
@@ -909,25 +713,6 @@ test.describe('post-job follow-up email', () => {
  * authorization and two correlation headers. So: capture what the card really
  * sends, and hold it against what the function's source says it will accept.
  */
-const CORS_RELEVANT = /^(x-|authorization$|apikey$|content-type$|prefer$)/;
-
-function allowedHeadersFor(functionName: string): string[] {
-  const file = new URL(`../supabase/functions/${functionName}/index.ts`, import.meta.url);
-  expect(existsSync(file), `supabase/functions/${functionName}/index.ts should exist`).toBe(true);
-
-  const source = readFileSync(file, 'utf8');
-  const match = source.match(/Access-Control-Allow-Headers['"]?\s*:\s*(['"`])([^'"`]*)\1/i);
-  expect(match, `${functionName} should declare Access-Control-Allow-Headers`).not.toBeNull();
-
-  return match![2].split(',').map((h) => h.trim().toLowerCase());
-}
-
-function sentHeaders(call: Call): string[] {
-  return Object.keys(call.headers)
-    .map((h) => h.toLowerCase())
-    .filter((h) => CORS_RELEVANT.test(h));
-}
-
 test.describe('what the browser sends is what each function allows', () => {
   test('drive time and the reminder email', async ({ page }) => {
     const mounted = await mountJobs(page, {

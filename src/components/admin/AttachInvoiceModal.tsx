@@ -3,6 +3,7 @@ import { X, Search, FileText, AlertCircle, Link as LinkIcon } from 'lucide-react
 import { Invoice, Job } from '../../lib/supabase';
 import { getUnattachedInvoices, attachInvoiceToJob } from '../../services/invoiceService';
 import { invoiceLabels } from '../../utils/invoiceLabels';
+import { formatDate } from '../../utils/jobCalculations';
 
 interface AttachInvoiceModalProps {
   job: Job;
@@ -126,10 +127,6 @@ export default function AttachInvoiceModal({ job, businessId, onClose, onAttache
     return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
 
   const isMatchingClient = (invoice: Invoice) => {
     const jobClientEmail = job.client_email?.toLowerCase();

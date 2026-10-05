@@ -4,9 +4,10 @@ name: Browser smoke tests
 # pipeline - the OpenSCAD worker, the mesh analysis, the 3MF writer and the
 # three.js canvas - admin popover geometry at phone widths, which submissions
 # the inquiry working list keeps, the money a coupon code takes off a
-# quote, and the admin job card — its facts, its money, its buttons, and the
-# drive-time, reminder and follow-up panels that go blank when an edge function
-# refuses the browser's CORS preflight. Every bug they assert against passed
+# quote, and the admin job card — its facts, its money, its buttons and
+# workflows, the drive-time, reminder and follow-up panels that go blank when an
+# edge function refuses the browser's CORS preflight — and the customer
+# portal's view of a job. Every bug they assert against passed
 # typecheck, lint and build before reaching production.
 #
 # `smoke` is a REQUIRED status check, and that is why the path filter no longer
@@ -61,12 +62,15 @@ jobs:
           COVERED="$COVERED"'|src/components/admin/(ModelViewer|AdminLayout|NotificationBell|OrganizationSwitcher|InvoiceRowActions|InquiryDetailModal)\.tsx$'
           COVERED="$COVERED"'|src/components/ui/AnchoredPanel\.tsx$'
           COVERED="$COVERED"'|src/components/ContactForm\.tsx$'
-          COVERED="$COVERED"'|src/pages/admin/(InquiriesPage|CouponsPage|JobsPage)\.tsx$'
-          COVERED="$COVERED"'|src/components/admin/(JobFollowupCard|JobReminderCard|JobTravelCard|TravelEstimateCard|JobInvoicesList|JobContractorsList)\.tsx$'
-          COVERED="$COVERED"'|src/services/(jobTravelService|jobReminderService|jobReminderLabels|jobFollowupService|jobFollowupLabels)\.ts$'
+          COVERED="$COVERED"'|src/pages/admin/(InquiriesPage|CouponsPage|JobsPage|BookingsPage)\.tsx$'
+          COVERED="$COVERED"'|src/pages/portal/(JobsPage|JobDetailPage)\.tsx$'
+          COVERED="$COVERED"'|src/components/portal/PortalLayout\.tsx$'
+          COVERED="$COVERED"'|src/components/admin/(JobFollowupCard|JobReminderCard|JobTravelCard|TravelEstimateCard|JobInvoicesList|JobContractorsList|JobContractorModal|JobFormModal|JobCompletionWizard|SatisfactionRating|SignatureCapture|MarkJobLostModal|CancelJobModal|AttachInvoiceModal|InvoiceFormModal|ImportJobsModal|JobCalendarFeedModal|ClientDetailModal)\.tsx$'
+          COVERED="$COVERED"'|src/services/(jobTravelService|jobReminderService|jobReminderLabels|jobFollowupService|jobFollowupLabels|jobStatusService|jobExportService|jobImportService|jobScheduleCalendarService|contractorService|invoiceService|bookingService|customerPortalService)\.ts$'
           COVERED="$COVERED"'|src/utils/(jobCalculations|jobAddress)\.ts$'
+          COVERED="$COVERED"'|src/contexts/(AuthContext|PrivacyModeContext)\.tsx$'
           COVERED="$COVERED"'|src/lib/supabase\.ts$'
-          COVERED="$COVERED"'|supabase/functions/(job-travel-estimate|send-customer-job-reminders|send-followup-email)/'
+          COVERED="$COVERED"'|supabase/functions/(job-travel-estimate|send-customer-job-reminders|send-followup-email|send-job-schedule-email)/'
           COVERED="$COVERED"'|src/pages/ReferralRedirectPage\.tsx$'
           COVERED="$COVERED"'|src/services/(inquiryService|referralQRService|couponService)\.ts$'
           COVERED="$COVERED"'|src/utils/(inquiryWorkflow|utmAttribution|coupon)\.ts$'

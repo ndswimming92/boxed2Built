@@ -9,6 +9,7 @@ import {
   formatCurrency,
   formatDate,
   formatHours,
+  toLocalDateString,
 } from '../../src/utils/jobCalculations.ts';
 
 test('net profit is the price less materials and contractor pay', () => {
@@ -77,4 +78,32 @@ test('a timestamp still formats as the moment it names', () => {
 test('no date reads as not set', () => {
   assert.equal(formatDate(null), 'Not set');
   assert.equal(formatDate(''), 'Not set');
+});
+
+test('today is the viewer\'s calendar day, not the UTC one', () => {
+  // 8pm on Saturday Sep 26 in Chicago is already 01:00 UTC on Sunday the 27th.
+  // Taking the UTC date recorded a job finished on Saturday evening as finished
+  // on Sunday. Zone is fixed per process, so each one gets its own.
+  const modulePath = fileURLToPath(new URL('../../src/utils/jobCalculations.ts', import.meta.url));
+  const script = `
+    import { toLocalDateString } from ${JSON.stringify(modulePath)};
+    console.log(toLocalDateString(new Date('2026-09-27T01:00:00Z')));
+  `;
+
+  const expected: Record<string, string> = {
+    'America/Chicago': '2026-09-26',
+    'America/Los_Angeles': '2026-09-26',
+    UTC: '2026-09-27',
+    'Pacific/Auckland': '2026-09-27',
+  };
+
+  for (const [timeZone, day] of Object.entries(expected)) {
+    const out = execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      env: { ...process.env, TZ: timeZone },
+      encoding: 'utf8',
+    });
+    assert.equal(out.trim(), day, `in ${timeZone}`);
+  }
+
+  assert.match(toLocalDateString(), /^\d{4}-\d{2}-\d{2}$/);
 });

@@ -1,4 +1,5 @@
-import { Job } from '../lib/supabase';
+import type { Job } from '../lib/supabase';
+import { parseCalendarDay } from '../utils/jobCalculations';
 
 export interface JobCSVRow {
   'Customer Name': string;
@@ -67,7 +68,9 @@ const CSV_HEADERS: (keyof JobCSVRow)[] = [
 function formatDateForExport(dateStr: string | null): string {
   if (!dateStr) return '';
   try {
-    const date = new Date(dateStr);
+    // A date column names a calendar day; read as UTC midnight, every exported
+    // date came out one day early.
+    const date = parseCalendarDay(dateStr);
     if (isNaN(date.getTime())) return '';
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');

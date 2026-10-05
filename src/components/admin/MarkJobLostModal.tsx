@@ -3,6 +3,7 @@ import { X, AlertCircle } from 'lucide-react';
 import type { Job, LostReasonCategory } from '../../lib/supabase';
 import { jobStatusService, LOST_REASON_CATEGORIES } from '../../services/jobStatusService';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatDate } from '../../utils/jobCalculations';
 
 interface MarkJobLostModalProps {
   job: Job;
@@ -89,7 +90,7 @@ export default function MarkJobLostModal({ job, isOpen, onClose, onSuccess }: Ma
                         <p><span className="font-medium">Quoted Price:</span> ${job.quoted_price.toLocaleString()}</p>
                       )}
                       {job.date_quoted && (
-                        <p><span className="font-medium">Date Quoted:</span> {new Date(job.date_quoted).toLocaleDateString()}</p>
+                        <p><span className="font-medium">Date Quoted:</span> {formatDate(job.date_quoted)}</p>
                       )}
                     </div>
                   </div>
