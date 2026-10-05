@@ -304,7 +304,7 @@ export default function JobsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Jobs</h1>
           <p className="text-sm sm:text-base text-slate-600">Track and manage all your completed jobs</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleExportJobs}
             className="px-3 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center gap-1.5 text-sm"

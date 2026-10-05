@@ -5,6 +5,7 @@ import { getInvoicesByJob, detachInvoiceFromJob, getInvoice } from '../../servic
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { invoiceLabels } from '../../utils/invoiceLabels';
+import { formatDate } from '../../utils/jobCalculations';
 
 interface JobInvoicesListProps {
   jobId: string;
@@ -89,10 +90,6 @@ export default function JobInvoicesList({ jobId, businessInfo, onInvoiceDetached
     return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
 
   const formatCurrency = (amount: number) => {
     const formatted = new Intl.NumberFormat('en-US', {

@@ -8,8 +8,9 @@ import {
   type CustomerPortalJob,
   type JobActionRequestType,
 } from '../../services/customerPortalService';
+import { parseCalendarDay } from '../../utils/jobCalculations';
 
-const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : 'N/A');
+const formatDate = (value: string | null) => (value ? parseCalendarDay(value).toLocaleDateString() : 'N/A');
 const formatDateTime = (value: string | null) => (value ? new Date(value).toLocaleString() : 'N/A');
 const formatCurrency = (value: number | null) => (typeof value === 'number' ? `$${value.toFixed(2)}` : 'N/A');
 

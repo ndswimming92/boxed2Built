@@ -68,20 +68,37 @@ export function formatCurrency(amount: number | null): string {
   }).format(amount);
 }
 
+/**
+ * Today's date (or the given moment's) as 'YYYY-MM-DD' on the viewer's own
+ * calendar. `toISOString().split('T')[0]` is the UTC date, which from a US
+ * evening is already tomorrow — a job finished at 8pm on Saturday was recorded
+ * as finished on Sunday.
+ */
+export function toLocalDateString(moment: Date = new Date()): string {
+  const month = String(moment.getMonth() + 1).padStart(2, '0');
+  const day = String(moment.getDate()).padStart(2, '0');
+  return `${moment.getFullYear()}-${month}-${day}`;
+}
+
+/**
+ * A date as the calendar day it names. Date columns (date_completed,
+ * date_scheduled, invoice_date…) arrive as 'YYYY-MM-DD', which the Date
+ * constructor reads as UTC midnight — still the evening of the day before
+ * anywhere in the Americas, so a job finished on Sep 26 was shown as Sep 25.
+ * A date with no time of day belongs to no zone: read its parts as written.
+ * Anything with a time of day is a real moment and parses as one.
+ */
+export function parseCalendarDay(value: string): Date {
+  const calendarDay = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return calendarDay
+    ? new Date(Number(calendarDay[1]), Number(calendarDay[2]) - 1, Number(calendarDay[3]))
+    : new Date(value);
+}
+
 export function formatDate(dateString: string | null): string {
   if (!dateString) return 'Not set';
 
-  // Date columns (date_completed, date_scheduled) arrive as 'YYYY-MM-DD'. The
-  // Date constructor reads that as UTC midnight, which is still the evening of
-  // the day before anywhere in the Americas — so a job finished on Sep 26 was
-  // shown as Sep 25. A date with no time of day belongs to no zone: read its
-  // parts as the calendar day they name.
-  const calendarDay = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
-  const date = calendarDay
-    ? new Date(Number(calendarDay[1]), Number(calendarDay[2]) - 1, Number(calendarDay[3]))
-    : new Date(dateString);
-
-  return date.toLocaleDateString('en-US', {
+  return parseCalendarDay(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

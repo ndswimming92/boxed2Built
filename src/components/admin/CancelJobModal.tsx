@@ -3,6 +3,7 @@ import { X, AlertTriangle } from 'lucide-react';
 import type { Job } from '../../lib/supabase';
 import { jobStatusService } from '../../services/jobStatusService';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatDate } from '../../utils/jobCalculations';
 
 interface CancelJobModalProps {
   job: Job;
@@ -86,7 +87,7 @@ export default function CancelJobModal({ job, isOpen, onClose, onSuccess }: Canc
                         <p><span className="font-medium">Quoted Price:</span> ${job.quoted_price.toLocaleString()}</p>
                       )}
                       {job.date_scheduled && (
-                        <p><span className="font-medium">Scheduled Date:</span> {new Date(job.date_scheduled).toLocaleDateString()}</p>
+                        <p><span className="font-medium">Scheduled Date:</span> {formatDate(job.date_scheduled)}</p>
                       )}
                     </div>
                   </div>

@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/portal/PortalLayout';
 import { customerPortalService, PortalServiceError, type CustomerPortalJob } from '../../services/customerPortalService';
 import { getOfflineFriendlyErrorMessage } from '../../utils/retry';
+import { parseCalendarDay } from '../../utils/jobCalculations';
 
-const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : 'N/A');
+const formatDate = (value: string | null) => (value ? parseCalendarDay(value).toLocaleDateString() : 'N/A');
 const PAGE_SIZE = 20;
 
 export default function PortalJobsPage() {
