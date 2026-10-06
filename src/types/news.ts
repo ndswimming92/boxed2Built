@@ -1,6 +1,7 @@
 /**
  * flat_pack, furniture_assembly — news stories.
- * deals — a current sale at a furniture store in or near Spring Hill, TN.
+ * deals — a current furniture sale (shown to visitors as "Sales"). The stored
+ * value stays 'deals'; only the label changed.
  *
  * Adding one means three changes: the `topic` check constraint on
  * `news_items`, this type, and `NEWS_TOPIC_LABELS`.

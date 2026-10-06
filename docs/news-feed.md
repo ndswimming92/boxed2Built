@@ -1,8 +1,8 @@
 # News feed
 
 A public page of furniture assembly and flat pack furniture news at `/news`,
-plus a **Deals** tab of current sales at furniture stores in and around Spring
-Hill, TN. Both are filled by a daily automated check and gated by manual
+plus a **Sales** tab of current furniture sales, including stores in and around
+Spring Hill, TN. Both are filled by a daily automated check and gated by manual
 approval.
 
 ## How a story gets on the site
@@ -50,11 +50,13 @@ daily check from saving the same story again the next morning.
 - **`published_at` is set once.** Unpublishing and republishing keeps the
   original date, so the item returns to its old position.
 
-## Deals
+## Sales
 
-A deal is a `news_items` row with `topic = 'deals'`. It goes through the same
+The tab is called **Sales**, but the stored topic value is still `deals` (only the
+label in `NEWS_TOPIC_LABELS` changed), so the database and the daily check's
+prompt are unchanged. A sale is a `news_items` row with `topic = 'deals'`. It goes through the same
 draft, approve, publish flow and shows on the public page under **All news** and
-on its own **Deals** tab.
+on its own **Sales** tab.
 
 - **Deals expire on their own.** `news_items.ends_on` is the last day the deal
   is valid. It shows through that whole day and drops off `/news` the next day,
@@ -74,8 +76,11 @@ on its own **Deals** tab.
   When a new sale lives at an address already stored for an older one, the daily
   check adds a `#name-of-sale` ending to the link so both can be kept. The link
   opens the same page.
-- **Which stores count** (the area, and what makes a sale worth listing) is set
-  in the scheduled task's prompt, like the news search terms.
+- **Which sales count** is set in the scheduled task's prompt, like the news
+  search terms. Any furniture sale belongs here, local stores and online
+  retailers (Wayfair, IKEA, Amazon) alike. An item that is mainly a sale or a
+  discount event should be saved with `topic = 'deals'`, not as news under
+  `flat_pack` or `furniture_assembly`. Put that wording in the task's prompt.
 
 ## Changing what the daily check looks for
 

@@ -206,9 +206,9 @@ const NewsPage: React.FC = () => {
         <link rel="canonical" href="https://boxed2built.com/news" />
         <meta property="og:url" content="https://boxed2built.com/news" />
         <meta property="og:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta property="og:description" content="Flat pack furniture and furniture assembly news, plus current furniture store deals near Spring Hill, TN, with links to the sources." />
+        <meta property="og:description" content="Flat pack furniture and furniture assembly news, plus current furniture sales near Spring Hill, TN, with links to the sources." />
         <meta name="twitter:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta name="twitter:description" content="Flat pack furniture and furniture assembly news, plus current furniture store deals near Spring Hill, TN, with links to the sources." />
+        <meta name="twitter:description" content="Flat pack furniture and furniture assembly news, plus current furniture sales near Spring Hill, TN, with links to the sources." />
       </Head>
       <Header />
       <main className="pt-20">
@@ -230,8 +230,8 @@ const NewsPage: React.FC = () => {
               <p className="text-xl text-gray-600">
                 Recent news on flat pack furniture and furniture assembly, from retailer
                 updates and new product lines to recalls and safety notices. Each item is a
-                short summary with a link to the original source. The Deals tab lists current
-                sales at furniture stores in and around Spring Hill, TN.
+                short summary with a link to the original source. The Sales tab lists current
+                furniture sales, including stores in and around Spring Hill, TN.
               </p>
             </div>
           </div>
@@ -316,7 +316,7 @@ const NewsPage: React.FC = () => {
                       {topic === 'all'
                         ? 'No news posted yet. Check back soon.'
                         : topic === 'deals'
-                          ? 'No local furniture deals posted right now. Check back soon.'
+                          ? 'No furniture sales posted right now. Check back soon.'
                           : 'Nothing posted on this topic yet.'}
                     </p>
                     {topic !== 'all' && (
@@ -361,7 +361,7 @@ const NewsPage: React.FC = () => {
 
               <p className="mt-10 pt-6 border-t border-gray-200 text-sm text-gray-500">
                 Summaries are prepared with AI assistance and reviewed before posting. They are
-                brief by design, so follow the source link for the full story. Deals are set by
+                brief by design, so follow the source link for the full story. Sales are set by
                 the stores, not by Boxed2Built, and can change or end without notice, so confirm
                 the details with the store before you buy.
               </p>
