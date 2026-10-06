@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
+import type { NewsCursor } from '../utils/news';
 
 export const NEWS_PAGE_SIZE = 25;
 
@@ -18,7 +19,8 @@ function notifyDraftsChanged() {
  * ────────────────────────────────────────────────────────────────────────── */
 
 /**
- * One page of the public feed, newest first.
+ * One page of the public feed, newest first. Pass the cursor from
+ * `newsCursor(itemsAlreadyShown)` to get the page after it.
  *
  * The `status = 'published'` filter is not redundant with RLS. Anonymous
  * visitors can only read published rows anyway, but a signed-in admin can read
@@ -27,21 +29,30 @@ function notifyDraftsChanged() {
  */
 export async function getPublishedNews(options: {
   topic?: NewsTopic | null;
-  offset?: number;
+  cursor?: NewsCursor | null;
 } = {}): Promise<{ items: NewsItem[]; hasMore: boolean }> {
-  const offset = options.offset ?? 0;
+  const cursor = options.cursor ?? null;
+  const alreadyShown = new Set(cursor?.idsAtCursor ?? []);
+
+  // One extra row tells us whether there is another page without a count
+  // query. The stories sharing the cursor's timestamp come back again (the
+  // filter is "at or before", so a tie cannot hide one) and are dropped below,
+  // so they are asked for on top of the page rather than out of it.
+  const limit = NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
   let query = supabase
     .from('news_items')
     .select('*')
     .eq('status', 'published')
-    .order('published_at', { ascending: false })
+    .order('published_at', { ascending: false, nullsFirst: false })
     .order('id', { ascending: false })
-    // One extra row tells us whether there is another page without a count query.
-    .range(offset, offset + NEWS_PAGE_SIZE);
+    .limit(limit);
 
   if (options.topic) {
     query = query.eq('topic', options.topic);
+  }
+  if (cursor) {
+    query = query.lte('published_at', cursor.publishedAt);
   }
 
   const { data, error } = await query;
@@ -51,7 +62,7 @@ export async function getPublishedNews(options: {
     throw new Error(`Failed to load news: ${error.message}`);
   }
 
-  const rows = (data || []) as NewsItem[];
+  const rows = ((data || []) as NewsItem[]).filter((row) => !alreadyShown.has(row.id));
   return {
     items: rows.slice(0, NEWS_PAGE_SIZE),
     hasMore: rows.length > NEWS_PAGE_SIZE,
@@ -62,20 +73,44 @@ export async function getPublishedNews(options: {
  * Admin review queue
  * ────────────────────────────────────────────────────────────────────────── */
 
-/** Every item the signed-in admin's organization owns, newest first. */
-export async function getAdminNewsItems(): Promise<NewsItem[]> {
-  const { data, error } = await supabase
-    .from('news_items')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500);
+const ADMIN_FETCH_SIZE = 1000;
+/** A runaway guard, not a real limit: 200 requests is 200,000 stories. */
+const ADMIN_FETCH_MAX_REQUESTS = 200;
 
-  if (error) {
-    console.error('Error fetching news items:', error);
-    throw new Error(`Failed to load news items: ${error.message}`);
+/**
+ * Every item the signed-in admin's organization owns, newest first.
+ *
+ * Read in pages until one comes back empty rather than with a single capped
+ * query. Rejected items are kept on purpose, so the table only grows, and a
+ * fixed cap would one day drop the oldest stories from the screen without a
+ * word: the tab counts would be wrong and an old published story could no
+ * longer be found to unpublish. Stopping on an empty page, not a short one,
+ * also holds if the API is configured to return fewer rows than asked for.
+ */
+export async function getAdminNewsItems(): Promise<NewsItem[]> {
+  const rows: NewsItem[] = [];
+
+  for (let request = 0; request < ADMIN_FETCH_MAX_REQUESTS; request += 1) {
+    const { data, error } = await supabase
+      .from('news_items')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(rows.length, rows.length + ADMIN_FETCH_SIZE - 1);
+
+    if (error) {
+      console.error('Error fetching news items:', error);
+      throw new Error(`Failed to load news items: ${error.message}`);
+    }
+
+    const page = (data || []) as NewsItem[];
+    if (page.length === 0) break;
+    rows.push(...page);
   }
 
-  return (data || []) as NewsItem[];
+  // Rows can shift between requests if something is added mid-read.
+  const seen = new Set<string>();
+  return rows.filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)));
 }
 
 export async function getDraftNewsCount(): Promise<number> {

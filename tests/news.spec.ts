@@ -51,9 +51,11 @@ const BAD_LINK: Row = {
 };
 
 /**
- * One news table. Reads return it; a PATCH applies the change to the matching
- * row and answers with that row, the way PostgREST does for `.select().single()`.
- * Every write is recorded so a test can assert on exactly what was sent.
+ * One news table. Reads return the slice the request asked for (the page reads
+ * the table in pages until one comes back empty); a PATCH applies the change to
+ * the matching row and answers with that row, the way PostgREST does for
+ * `.select().single()`. Every write is recorded so a test can assert on exactly
+ * what was sent.
  */
 async function stubNews(page: Page, rows: Row[]) {
   const table = rows.map((row) => ({ ...row }));
@@ -65,7 +67,10 @@ async function stubNews(page: Page, rows: Row[]) {
     const id = /id=eq\.([\w-]+)/.exec(request.url())?.[1] ?? null;
 
     if (method === 'GET' || method === 'HEAD') {
-      return route.fulfill({ json: table });
+      const params = new URL(request.url()).searchParams;
+      const offset = Number(params.get('offset') ?? 0);
+      const limit = Number(params.get('limit') ?? table.length);
+      return route.fulfill({ json: table.slice(offset, offset + limit) });
     }
 
     const body = (request.postDataJSON() ?? {}) as Row;
@@ -178,4 +183,23 @@ test('an item whose source is not a web link cannot be approved', async ({ page 
   // And the bad value is never rendered as something clickable.
   await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0);
   expect(writes).toEqual([]);
+});
+
+test('a long history is read in full rather than cut off at the first page', async ({ page }) => {
+  // Rejected items are kept forever, so the table only grows. A single capped
+  // query would drop the oldest rows and undercount every tab without a word.
+  const rejected: Row[] = Array.from({ length: 1001 }, (_, index) => ({
+    ...base,
+    id: `old-${index}`,
+    title: `Old story ${index}`,
+    summary: 'Turned down a while ago.',
+    source_name: 'Example',
+    source_url: `https://example.com/old-${index}`,
+    status: 'rejected',
+  }));
+  await stubNews(page, [DRAFT, ...rejected]);
+  await open(page);
+
+  await expect(page.getByRole('tab', { name: /Drafts/ })).toContainText('1');
+  await expect(page.getByRole('tab', { name: /Rejected/ })).toContainText('1001');
 });

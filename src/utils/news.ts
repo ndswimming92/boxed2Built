@@ -60,3 +60,35 @@ export function safeExternalUrl(url: string | null | undefined): string | null {
     return null;
   }
 }
+
+/** Where the next page of the public feed starts. */
+export interface NewsCursor {
+  /** `published_at` of the last story already on screen. */
+  publishedAt: string;
+  /** Stories on screen that share that exact timestamp. */
+  idsAtCursor: string[];
+}
+
+/**
+ * The feed is paged by "older than the last story shown", not by row offset.
+ *
+ * An offset counts rows from the top of a list that changes underneath the
+ * visitor: a story approved between two pages pushes everything down one and
+ * repeats a story, and one unpublished pulls everything up one and silently
+ * skips a story. Anchoring on the last timestamp shown is immune to both.
+ *
+ * Stories that share that timestamp are asked for again and dropped by id, so
+ * a tie can never hide one.
+ */
+export function newsCursor(
+  items: Array<Pick<NewsItem, 'id' | 'published_at'>>,
+): NewsCursor | null {
+  const last = items[items.length - 1];
+  if (!last?.published_at) return null;
+  return {
+    publishedAt: last.published_at,
+    idsAtCursor: items
+      .filter((item) => item.published_at === last.published_at)
+      .map((item) => item.id),
+  };
+}

@@ -8,7 +8,7 @@ import CallButton from '../components/ui/CallButton';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
-import { NEWS_TOPIC_LABELS, formatNewsDate, safeExternalUrl } from '../utils/news';
+import { NEWS_TOPIC_LABELS, formatNewsDate, newsCursor, safeExternalUrl } from '../utils/news';
 import type { NewsItem, NewsTopic } from '../types/news';
 
 type TopicFilter = NewsTopic | 'all';
@@ -88,7 +88,7 @@ const NewsPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
 
-    getPublishedNews({ topic: topic === 'all' ? null : topic, offset: 0 })
+    getPublishedNews({ topic: topic === 'all' ? null : topic })
       .then((result) => {
         if (cancelled) return;
         setItems(result.items);
@@ -133,16 +133,22 @@ const NewsPage: React.FC = () => {
 
   const handleLoadMore = async () => {
     const requestedTopic = topic;
+    // Paged by "older than the last story shown", so a story approved or
+    // unpublished since the first page loaded cannot repeat or skip one.
+    const cursor = newsCursor(items);
+    if (!cursor) {
+      // Nothing to anchor on, so there is no next page to ask for.
+      setHasMore(false);
+      return;
+    }
     setLoadingMore(true);
     setError(false);
     try {
       const result = await getPublishedNews({
         topic: requestedTopic === 'all' ? null : requestedTopic,
-        offset: items.length,
+        cursor,
       });
       if (currentTopic.current !== requestedTopic) return;
-      // A story approved between two pages shifts the offset by one, which
-      // would repeat the last story of the previous page. Skip repeats.
       setItems((previous) => {
         const seen = new Set(previous.map((item) => item.id));
         return [...previous, ...result.items.filter((item) => !seen.has(item.id))];
