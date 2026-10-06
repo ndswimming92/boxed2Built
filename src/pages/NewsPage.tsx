@@ -9,7 +9,7 @@ import NewsScrollBar from '../components/ui/NewsScrollBar';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
-import { NEWS_TOPIC_LABELS, formatNewsDate, newsCursor, safeExternalUrl, type NewsOrder } from '../utils/news';
+import { NEWS_TOPIC_LABELS, formatEndsOn, formatNewsDate, newsCursor, safeExternalUrl, type NewsOrder } from '../utils/news';
 import type { NewsItem, NewsTopic } from '../types/news';
 
 type TopicFilter = NewsTopic | 'all';
@@ -28,6 +28,7 @@ const ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
 
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
+  const endsOn = formatEndsOn(item.ends_on);
   const sourceUrl = safeExternalUrl(item.source_url);
 
   return (
@@ -47,6 +48,9 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
           >
             {date}
           </time>
+        )}
+        {endsOn && (
+          <span className="text-sm font-medium text-emerald-800">Ends {endsOn}</span>
         )}
       </div>
 

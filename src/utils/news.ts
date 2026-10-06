@@ -28,6 +28,35 @@ function formatDateOnly(value: string): string | null {
   return date.toLocaleDateString('en-US', DATE_FORMAT);
 }
 
+/** Deals are local to Spring Hill, TN, so "the end date" means Central time. */
+const DEAL_TIME_ZONE = 'America/Chicago';
+
+/** Today's date (YYYY-MM-DD) in Central time. */
+export function centralToday(now: Date = new Date()): string {
+  // The en-CA locale formats dates as YYYY-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: DEAL_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
+/**
+ * True once the day after `ends_on` has begun (Central time). An item with no
+ * end date never expires. The database applies the same rule to anonymous
+ * visitors; this is for signed-in admins, who can read everything.
+ */
+export function isNewsExpired(item: Pick<NewsItem, 'ends_on'>, now: Date = new Date()): boolean {
+  if (!item.ends_on) return false;
+  return item.ends_on < centralToday(now);
+}
+
+/** "October 12, 2026", or null when there is no valid end date. */
+export function formatEndsOn(value: string | null): string | null {
+  return value ? formatDateOnly(value) : null;
+}
+
 /**
  * The date shown beside a story: when the source published it if we know,
  * otherwise when it was posted here.

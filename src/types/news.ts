@@ -25,6 +25,11 @@ export interface NewsItem {
   topic: NewsTopic;
   /** Date the source published the story (YYYY-MM-DD). Null when unconfirmed. */
   source_published_on: string | null;
+  /**
+   * Last day the deal is valid (YYYY-MM-DD, Central time). Null means no end
+   * date. The public feed hides the item from the day after.
+   */
+  ends_on: string | null;
   status: NewsStatus;
   /** Set by the database the first time the item is published. */
   published_at: string | null;
@@ -42,4 +47,6 @@ export interface NewsItemEdits {
   title: string;
   summary: string;
   topic: NewsTopic;
+  /** YYYY-MM-DD, or null to clear it. */
+  ends_on: string | null;
 }
