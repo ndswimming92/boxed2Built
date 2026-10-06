@@ -1,15 +1,18 @@
 # News feed
 
 A public page of furniture assembly and flat pack furniture news at `/news`,
-filled by a daily automated check and gated by manual approval.
+plus a **Deals** tab of current sales at furniture stores in and around Spring
+Hill, TN. Both are filled by a daily automated check and gated by manual
+approval.
 
 ## How a story gets on the site
 
 1. **Daily check.** A Claude scheduled task ("Furniture assembly and flat pack
    daily news") runs each morning. It searches for news from roughly the last
-   48 hours, writes a short summary of each item in its own words, and inserts
-   them into `news_items` with `status = 'draft'`. It only ever inserts drafts;
-   it cannot publish.
+   48 hours and for furniture sales running now at stores in the area, writes a
+   short summary of each item in its own words, and inserts them into
+   `news_items` with `status = 'draft'`. It only ever inserts drafts; it cannot
+   publish.
 2. **Review.** Drafts show up under **Admin > News Feed** (`/admin/news`), with
    a red count on the sidebar item. Open the source link, edit the title or
    summary if needed, then **Approve** or **Reject**.
@@ -26,6 +29,7 @@ daily check from saving the same story again the next morning.
 | Piece | Where |
 | --- | --- |
 | Table, RLS, trigger | `supabase/migrations/20261006153825_create_news_items_feed.sql` |
+| `deals` topic | `supabase/migrations/20261006200000_add_deals_news_topic.sql` |
 | Public page | `src/pages/NewsPage.tsx` |
 | Admin review screen | `src/pages/admin/NewsPage.tsx` |
 | Queries and audit logging | `src/services/newsService.ts` |
@@ -44,6 +48,24 @@ daily check from saving the same story again the next morning.
   would see their own drafts on the public page.
 - **`published_at` is set once.** Unpublishing and republishing keeps the
   original date, so the item returns to its old position.
+
+## Deals
+
+A deal is a `news_items` row with `topic = 'deals'`. It goes through the same
+draft, approve, publish flow and shows on the public page under **All news** and
+on its own **Deals** tab.
+
+- **Deals do not expire on their own.** The table has no end date. The daily
+  check writes the end date into the summary when the store states one, and its
+  report lists published deals that look finished. Take those down with
+  **Unpublish** (or reject them) in Admin > News Feed.
+- **One store page, many sales.** A store's sale page usually keeps the same web
+  address from one sale to the next, and a source link can only be stored once.
+  When a new sale lives at an address already stored for an older one, the daily
+  check adds a `#name-of-sale` ending to the link so both can be kept. The link
+  opens the same page.
+- **Which stores count** (the area, and what makes a sale worth listing) is set
+  in the scheduled task's prompt, like the news search terms.
 
 ## Changing what the daily check looks for
 

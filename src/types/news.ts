@@ -1,4 +1,11 @@
-export type NewsTopic = 'flat_pack' | 'furniture_assembly';
+/**
+ * flat_pack, furniture_assembly — news stories.
+ * deals — a current sale at a furniture store in or near Spring Hill, TN.
+ *
+ * Adding one means three changes: the `topic` check constraint on
+ * `news_items`, this type, and `NEWS_TOPIC_LABELS`.
+ */
+export type NewsTopic = 'flat_pack' | 'furniture_assembly' | 'deals';
 
 /**
  * draft     — saved by the daily news check, waiting for review. Never public.
