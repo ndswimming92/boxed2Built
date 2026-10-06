@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const { data: item, error: itemErr } = await admin
       .from('news_items')
-      .select('id, title, summary, source_name, source_url, status')
+      .select('id, organization_id, title, summary, source_name, source_url, status')
       .eq('id', newsItemId)
       .maybeSingle();
     if (itemErr || !item) return json({ error: 'News item not found' }, 404);
@@ -74,15 +74,38 @@ Deno.serve(async (req) => {
     const message = `${item.title}\n\n${item.summary}\n\nSource: ${item.source_name}`;
     const result = await postTextToFacebook(tokens, message, item.source_url);
 
+    // A failed retry must only record the error: an earlier successful post
+    // still exists on the Page, and its id and date drive the "post again?"
+    // confirmation. Upsert only writes the columns it is given.
+    const record = result.success
+      ? {
+          post_id: result.post_id,
+          posted_at: new Date().toISOString(),
+          last_error: null,
+        }
+      : { last_error: result.error };
     const { error: saveErr } = await admin
-      .from('news_items')
-      .update({
-        facebook_post_id: result.success ? result.post_id : null,
-        facebook_posted_at: result.success ? new Date().toISOString() : null,
-        facebook_post_error: result.success ? null : result.error,
-      })
-      .eq('id', newsItemId);
-    if (saveErr) console.error('publish-news-to-facebook: failed to record the result', saveErr);
+      .from('news_facebook_posts')
+      .upsert(
+        {
+          news_item_id: newsItemId,
+          organization_id: item.organization_id,
+          updated_at: new Date().toISOString(),
+          ...record,
+        },
+        { onConflict: 'news_item_id' },
+      );
+    if (saveErr) {
+      console.error('publish-news-to-facebook: failed to record the result', saveErr);
+      if (result.success) {
+        // The post is live but untracked, so the admin could post it twice.
+        return json({
+          facebook: result,
+          tracking_error:
+            'The story was posted to Facebook, but saving a record of it failed. Do not post it again; check the Page.',
+        });
+      }
+    }
 
     return json({ facebook: result });
   } catch (error) {
