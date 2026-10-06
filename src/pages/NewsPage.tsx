@@ -18,6 +18,7 @@ const TOPIC_FILTERS: Array<{ value: TopicFilter; label: string }> = [
   { value: 'all', label: 'All news' },
   { value: 'flat_pack', label: NEWS_TOPIC_LABELS.flat_pack },
   { value: 'furniture_assembly', label: NEWS_TOPIC_LABELS.furniture_assembly },
+  { value: 'deals', label: NEWS_TOPIC_LABELS.deals },
 ];
 
 const ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
@@ -32,7 +33,11 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   return (
     <article data-news-card className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
-        <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+        <span
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+            item.topic === 'deals' ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
+          }`}
+        >
           {NEWS_TOPIC_LABELS[item.topic] ?? 'News'}
         </span>
         {date && (
@@ -197,9 +202,9 @@ const NewsPage: React.FC = () => {
         <link rel="canonical" href="https://boxed2built.com/news" />
         <meta property="og:url" content="https://boxed2built.com/news" />
         <meta property="og:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta property="og:description" content="Recent news on flat pack furniture and furniture assembly, summarized with links to the original sources." />
+        <meta property="og:description" content="Flat pack furniture and furniture assembly news, plus current furniture store deals near Spring Hill, TN, with links to the sources." />
         <meta name="twitter:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta name="twitter:description" content="Recent news on flat pack furniture and furniture assembly, summarized with links to the original sources." />
+        <meta name="twitter:description" content="Flat pack furniture and furniture assembly news, plus current furniture store deals near Spring Hill, TN, with links to the sources." />
       </Head>
       <Header />
       <main className="pt-20">
@@ -221,7 +226,8 @@ const NewsPage: React.FC = () => {
               <p className="text-xl text-gray-600">
                 Recent news on flat pack furniture and furniture assembly, from retailer
                 updates and new product lines to recalls and safety notices. Each item is a
-                short summary with a link to the original source.
+                short summary with a link to the original source. The Deals tab lists current
+                sales at furniture stores in and around Spring Hill, TN.
               </p>
             </div>
           </div>
@@ -305,7 +311,9 @@ const NewsPage: React.FC = () => {
                     <p className="text-gray-700 font-medium">
                       {topic === 'all'
                         ? 'No news posted yet. Check back soon.'
-                        : 'Nothing posted on this topic yet.'}
+                        : topic === 'deals'
+                          ? 'No local furniture deals posted right now. Check back soon.'
+                          : 'Nothing posted on this topic yet.'}
                     </p>
                     {topic !== 'all' && (
                       <button
@@ -349,7 +357,9 @@ const NewsPage: React.FC = () => {
 
               <p className="mt-10 pt-6 border-t border-gray-200 text-sm text-gray-500">
                 Summaries are prepared with AI assistance and reviewed before posting. They are
-                brief by design, so follow the source link for the full story.
+                brief by design, so follow the source link for the full story. Deals are set by
+                the stores, not by Boxed2Built, and can change or end without notice, so confirm
+                the details with the store before you buy.
               </p>
             </div>
           </div>

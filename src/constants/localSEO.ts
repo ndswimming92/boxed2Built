@@ -230,7 +230,7 @@ export const LOCAL_SEO_CONTENT = {
   news: {
     title: "Furniture Assembly & Flat Pack News | Boxed2Built",
     description:
-      "Recent news on flat pack furniture and furniture assembly: retailer updates, recalls and industry trends, summarized with links to the original sources."
+      "Flat pack furniture and furniture assembly news, plus current furniture store deals near Spring Hill, TN. Short summaries with links to the sources."
   },
   privacyPolicy: {
     title: "Privacy Policy - Boxed2Built Furniture Assembly Service",

@@ -3,6 +3,7 @@ import type { NewsItem, NewsTopic } from '../types/news';
 export const NEWS_TOPIC_LABELS: Record<NewsTopic, string> = {
   flat_pack: 'Flat pack furniture',
   furniture_assembly: 'Furniture assembly',
+  deals: 'Deals',
 };
 
 /** Mirrors the length checks on public.news_items. */
