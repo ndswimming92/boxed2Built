@@ -68,10 +68,11 @@ on its own **Sales** tab.
 - **Sorting sales by expiry.** On the Sales tab the Sort menu adds **Ending
   soonest** and **Ending latest** (the Sales tab opens on Ending soonest). Sales
   with no end date always sit at the bottom, newest first, in both directions.
-  Those two options are not offered on the other tabs, since news stories have no
-  end date. They read the whole (small) list of sales and skip what is already on
-  screen when "Load more" is pressed, because a timestamp cannot say where the
-  next page starts once some rows have no end date.
+  Those two options are not offered on the other tabs, since news stories have
+  no end date. "Load more" continues from the position of the last sale shown
+  (end date, then posted date, then id, in `endingAfterCondition`), so there is
+  no cap on how many sales can be paged through, and a sale approved or re-dated
+  mid-visit cannot repeat, skip or reorder a row.
 - **No end date means no expiry.** A deal with `ends_on` empty stays up until
   you **Unpublish** it.
 - **Expired deals stay `published`.** They are only hidden, so they remain in
