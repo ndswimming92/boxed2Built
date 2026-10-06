@@ -66,6 +66,8 @@ Optional, per story, from **Admin > News Feed**:
 The post is the title, summary and source name, with the source article attached
 as the link. It uses the Facebook connection under Admin > Connections, through
 the `publish-news-to-facebook` edge function, which refuses anything not
-published. The outcome is stored on the row (`facebook_post_id`,
-`facebook_posted_at`, `facebook_post_error`). Needs migration
-`20261006180000_add_news_facebook_posting.sql` applied and the function deployed.
+published. The outcome is stored in the admin-only `news_facebook_posts` table, not on
+`news_items`, because published rows are publicly readable and the error text
+can contain raw Facebook API messages. A failed retry only updates the error. Needs migrations
+`20261006180000_add_news_facebook_posting.sql` and
+`20261006190000_move_news_facebook_status_to_admin_table.sql` applied and the function deployed.

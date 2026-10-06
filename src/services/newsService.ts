@@ -110,7 +110,62 @@ export async function getAdminNewsItems(): Promise<NewsItem[]> {
 
   // Rows can shift between requests if something is added mid-read.
   const seen = new Set<string>();
-  return rows.filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)));
+  const unique = rows.filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)));
+
+  const facebook = await getFacebookPostResults();
+  return unique.map((row) => withFacebookResult(row, facebook.get(row.id)));
+}
+
+interface FacebookPostResult {
+  news_item_id: string;
+  post_id: string | null;
+  posted_at: string | null;
+  last_error: string | null;
+}
+
+/** Admin-only table, so Graph API errors never ride along on public rows. */
+async function getFacebookPostResults(newsItemId?: string): Promise<Map<string, FacebookPostResult>> {
+  const results = new Map<string, FacebookPostResult>();
+
+  for (let request = 0; request < ADMIN_FETCH_MAX_REQUESTS; request += 1) {
+    let query = supabase
+      .from('news_facebook_posts')
+      .select('news_item_id, post_id, posted_at, last_error')
+      .order('news_item_id')
+      .range(results.size, results.size + ADMIN_FETCH_SIZE - 1);
+    if (newsItemId) query = query.eq('news_item_id', newsItemId);
+
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error fetching Facebook post results:', error);
+      throw new Error(`Failed to load Facebook post results: ${error.message}`);
+    }
+
+    const page = (data || []) as FacebookPostResult[];
+    if (page.length === 0) break;
+    for (const row of page) results.set(row.news_item_id, row);
+  }
+
+  return results;
+}
+
+/** Updates return the bare news_items row, which carries no Facebook result. */
+function keepFacebookResult(previous: NewsItem, updated: NewsItem): NewsItem {
+  return {
+    ...updated,
+    facebook_post_id: previous.facebook_post_id,
+    facebook_posted_at: previous.facebook_posted_at,
+    facebook_post_error: previous.facebook_post_error,
+  };
+}
+
+function withFacebookResult(item: NewsItem, result: FacebookPostResult | undefined): NewsItem {
+  return {
+    ...item,
+    facebook_post_id: result?.post_id ?? null,
+    facebook_posted_at: result?.posted_at ?? null,
+    facebook_post_error: result?.last_error ?? null,
+  };
 }
 
 export async function getDraftNewsCount(): Promise<number> {
@@ -153,7 +208,7 @@ export async function setNewsStatus(item: NewsItem, status: NewsStatus): Promise
   });
 
   notifyDraftsChanged();
-  return data as NewsItem;
+  return keepFacebookResult(item, data as NewsItem);
 }
 
 export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Promise<NewsItem> {
@@ -184,7 +239,7 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     newValues: { ...changes },
   });
 
-  return data as NewsItem;
+  return keepFacebookResult(item, data as NewsItem);
 }
 
 export async function setNewsPostToFacebook(item: NewsItem, postToFacebook: boolean): Promise<NewsItem> {
@@ -200,7 +255,7 @@ export async function setNewsPostToFacebook(item: NewsItem, postToFacebook: bool
     throw new Error(`Failed to update news item: ${error.message}`);
   }
 
-  return data as NewsItem;
+  return keepFacebookResult(item, data as NewsItem);
 }
 
 /**
@@ -229,8 +284,10 @@ export async function publishNewsToFacebook(
 
   const { data, error } = await supabase.from('news_items').select('*').eq('id', item.id).single();
   if (error) throw new Error(`Posted, but failed to reload the item: ${error.message}`);
+  const facebook = await getFacebookPostResults(item.id);
+  const reloaded = withFacebookResult(data as NewsItem, facebook.get(item.id));
 
-  if (failure) return { item: data as NewsItem, error: failure || 'Unknown Facebook error' };
+  if (failure) return { item: reloaded, error: failure || 'Unknown Facebook error' };
 
   await logAction({
     actionType: 'UPDATE',
@@ -240,7 +297,7 @@ export async function publishNewsToFacebook(
     newValues: { facebook_post_id: body?.facebook?.post_id ?? null },
   });
 
-  return { item: data as NewsItem, error: null };
+  return { item: reloaded, error: body?.tracking_error ?? null };
 }
 
 export async function deleteNewsItem(item: NewsItem): Promise<void> {

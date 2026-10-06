@@ -405,11 +405,14 @@ export default function NewsPage() {
                   </label>
                 )}
 
-                {item.status === 'published' && (item.facebook_posted_at || item.facebook_post_error) && (
-                  <p className={`mt-4 text-sm ${item.facebook_posted_at ? 'text-emerald-700' : 'text-red-700'}`}>
-                    {item.facebook_posted_at
-                      ? `Posted to Facebook on ${formatAddedOn(item.facebook_posted_at)}`
-                      : `Last Facebook post failed: ${item.facebook_post_error}`}
+                {item.status === 'published' && item.facebook_posted_at && (
+                  <p className="mt-4 text-sm text-emerald-700">
+                    Posted to Facebook on {formatAddedOn(item.facebook_posted_at)}
+                  </p>
+                )}
+                {item.status === 'published' && item.facebook_post_error && (
+                  <p className="mt-2 text-sm text-red-700">
+                    Last Facebook post attempt failed: {item.facebook_post_error}
                   </p>
                 )}
 
