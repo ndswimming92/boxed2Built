@@ -61,6 +61,11 @@ async function stubNews(page: Page, rows: Row[]) {
   const table = rows.map((row) => ({ ...row }));
   const writes: Array<{ method: string; id: string | null; body: Row }> = [];
 
+  // The page also reads the admin-only Facebook post results. None of these
+  // tests post to Facebook, so the table is empty; without a stub the request
+  // is never answered and the page sits on its loading spinner.
+  await page.route('**/rest/v1/news_facebook_posts*', (route) => route.fulfill({ json: [] }));
+
   await page.route('**/rest/v1/news_items*', async (route) => {
     const request = route.request();
     const method = request.method();

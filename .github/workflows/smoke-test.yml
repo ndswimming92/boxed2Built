@@ -67,6 +67,8 @@ jobs:
           COVERED="$COVERED"'|src/components/ui/AnchoredPanel\.tsx$'
           COVERED="$COVERED"'|src/components/ContactForm\.tsx$'
           COVERED="$COVERED"'|src/pages/admin/(InquiriesPage|CouponsPage|JobsPage|BookingsPage)\.tsx$'
+          COVERED="$COVERED"'|src/pages/admin/NewsPage\.tsx$'
+          COVERED="$COVERED"'|src/services/newsService\.ts$'
           COVERED="$COVERED"'|src/pages/portal/(JobsPage|JobDetailPage)\.tsx$'
           COVERED="$COVERED"'|src/components/portal/PortalLayout\.tsx$'
           COVERED="$COVERED"'|src/components/admin/(JobFollowupCard|JobReminderCard|JobTravelCard|TravelEstimateCard|JobInvoicesList|JobContractorsList|JobContractorModal|JobFormModal|JobCompletionWizard|SatisfactionRating|SignatureCapture|MarkJobLostModal|CancelJobModal|AttachInvoiceModal|InvoiceFormModal|ImportJobsModal|JobCalendarFeedModal|ClientDetailModal)\.tsx$'
