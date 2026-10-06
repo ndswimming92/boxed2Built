@@ -227,6 +227,11 @@ export const LOCAL_SEO_CONTENT = {
     description:
       "View our furniture assembly gallery—real IKEA, Target, Walmart builds for families in Spring Hill, Franklin & surrounding TN areas."
   },
+  news: {
+    title: "Furniture Assembly & Flat Pack News | Boxed2Built",
+    description:
+      "Recent news on flat pack furniture and furniture assembly: retailer updates, recalls and industry trends, summarized with links to the original sources."
+  },
   privacyPolicy: {
     title: "Privacy Policy - Boxed2Built Furniture Assembly Service",
     description:

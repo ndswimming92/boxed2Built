@@ -297,6 +297,7 @@ const Header: React.FC = () => {
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Gift Cards', href: '/gift-cards' },
                 { label: 'FAQ', href: '/faq' },
+                { label: 'News', href: '/news' },
                 { label: 'Contact', href: '/contact' },
               ].map((item) => (
                 <li key={item.href}>
@@ -463,6 +464,7 @@ const Header: React.FC = () => {
                 { label: 'Gallery', href: '/gallery' },
                 { label: 'Gift Cards', href: '/gift-cards' },
                 { label: 'FAQ', href: '/faq' },
+                { label: 'News', href: '/news' },
                 { label: 'Contact', href: '/contact' },
               ].map((item) => (
                 <a

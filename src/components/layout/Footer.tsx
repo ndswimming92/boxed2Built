@@ -82,7 +82,10 @@ const footerLinkSections = [
   },
   {
     title: 'Support',
-    links: [{ href: '/faq', label: 'FAQ' }],
+    links: [
+      { href: '/faq', label: 'FAQ' },
+      { href: '/news', label: 'News' },
+    ],
   },
 ];
 
@@ -111,6 +114,7 @@ const sitemapLinks = [
   { href: '/contact', label: 'Contact' },
   { href: '/book', label: 'Book a Time' },
   { href: '/faq', label: 'FAQ' },
+  { href: '/news', label: 'News' },
   { href: '/gift-cards', label: 'Gift Cards' },
   { href: '/redeem-gift-card', label: 'Redeem Gift Card' },
   { href: '/portal/login', label: 'Customer Login' },

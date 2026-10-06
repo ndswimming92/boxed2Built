@@ -24,6 +24,7 @@ const TermsOfServicePage = React.lazy(() => import('./pages/TermsOfServicePage')
 const PartnersPage = React.lazy(() => import('./pages/PartnersPage'));
 const RequestLookupPage = React.lazy(() => import('./pages/RequestLookupPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+const NewsPage = React.lazy(() => import('./pages/NewsPage'));
 const QRRedirectPage = React.lazy(() => import('./pages/QRRedirectPage'));
 const ReferralRedirectPage = React.lazy(() => import('./pages/ReferralRedirectPage'));
 const InvoicePaymentPage = React.lazy(() => import('./pages/InvoicePaymentPage'));
@@ -77,6 +78,7 @@ const AdminDocumentsPage = React.lazy(() => import('./pages/admin/AdminDocuments
 const BrandingPage = React.lazy(() => import('./pages/admin/BrandingPage'));
 const AdminGiftCardsPage = React.lazy(() => import('./pages/admin/GiftCardsPage'));
 const AdminCouponsPage = React.lazy(() => import('./pages/admin/CouponsPage'));
+const AdminNewsPage = React.lazy(() => import('./pages/admin/NewsPage'));
 const StoreProductsPage = React.lazy(() => import('./pages/admin/StoreProductsPage'));
 const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage'));
 const ModelStudioPage = React.lazy(() => import('./pages/admin/ModelStudioPage'));
@@ -139,6 +141,9 @@ export const routes: RouteRecord[] = [
       { path: 'partners', Component: PartnersPage, loader: businessDataLoader },
       { path: 'gallery', Component: GalleryPage, loader: businessDataLoader },
       { path: 'faq', Component: FAQPage, loader: businessDataLoader },
+      // The page shell is pre-rendered; the stories themselves load in the
+      // browser so an approval shows up without waiting on a rebuild.
+      { path: 'news', Component: NewsPage, loader: businessDataLoader },
       { path: 'privacy-policy', Component: PrivacyPolicyPage },
       { path: 'terms-of-service', Component: TermsOfServicePage },
       { path: 'gift-cards', Component: GiftCardsPage },
@@ -203,6 +208,7 @@ export const routes: RouteRecord[] = [
           { path: 'service-areas', Component: ServiceAreasPage },
           { path: 'clients', Component: ClientsPage },
           { path: 'reviews', Component: ReviewsPage },
+          { path: 'news', Component: AdminNewsPage },
           { path: 'gallery', Component: GalleryAdminPage },
           { path: 'qr-codes', Component: QRCodesPage },
           { path: 'qr-codes/:id', Component: QRCodeDetailPage },
