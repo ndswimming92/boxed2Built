@@ -61,6 +61,12 @@ async function stubNews(page: Page, rows: Row[]) {
   const table = rows.map((row) => ({ ...row }));
   const writes: Array<{ method: string; id: string | null; body: Row }> = [];
 
+  // Facebook post results live in their own admin-only table and are read
+  // alongside the news items. None of these stories has been posted, so the
+  // table is empty. Without this the request falls through to the dev server,
+  // which answers with the app's HTML, and the screen never finishes loading.
+  await page.route('**/rest/v1/news_facebook_posts*', (route) => route.fulfill({ json: [] }));
+
   await page.route('**/rest/v1/news_items*', async (route) => {
     const request = route.request();
     const method = request.method();
