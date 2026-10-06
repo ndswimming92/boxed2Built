@@ -187,6 +187,62 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
   return data as NewsItem;
 }
 
+export async function setNewsPostToFacebook(item: NewsItem, postToFacebook: boolean): Promise<NewsItem> {
+  const { data, error } = await supabase
+    .from('news_items')
+    .update({ post_to_facebook: postToFacebook })
+    .eq('id', item.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating Facebook toggle:', error);
+    throw new Error(`Failed to update news item: ${error.message}`);
+  }
+
+  return data as NewsItem;
+}
+
+/**
+ * Posts a published item to the Facebook Page. The edge function records the
+ * outcome on the row, so the caller should refetch it afterwards.
+ */
+export async function publishNewsToFacebook(
+  item: NewsItem,
+): Promise<{ item: NewsItem; error: string | null }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Not authenticated');
+
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/publish-news-to-facebook`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ news_item_id: item.id }),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body?.error || 'Failed to post to Facebook');
+
+  const failure = body?.facebook?.success === false ? body.facebook.error : null;
+
+  const { data, error } = await supabase.from('news_items').select('*').eq('id', item.id).single();
+  if (error) throw new Error(`Posted, but failed to reload the item: ${error.message}`);
+
+  if (failure) return { item: data as NewsItem, error: failure || 'Unknown Facebook error' };
+
+  await logAction({
+    actionType: 'UPDATE',
+    tableName: 'news_items',
+    recordId: item.id,
+    recordIdentifier: item.title,
+    newValues: { facebook_post_id: body?.facebook?.post_id ?? null },
+  });
+
+  return { item: data as NewsItem, error: null };
+}
+
 export async function deleteNewsItem(item: NewsItem): Promise<void> {
   const { error } = await supabase.from('news_items').delete().eq('id', item.id);
 

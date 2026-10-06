@@ -51,3 +51,21 @@ The search terms, the 48-hour window and the writing rules live in the scheduled
 task's prompt, not in this repo. Edit the task from Claude's scheduled tasks
 list. If a new topic is added there, also add it to the `topic` check constraint
 on `news_items`, the `NewsTopic` type and `NEWS_TOPIC_LABELS`.
+
+## Posting to Facebook
+
+Optional, per story, from **Admin > News Feed**:
+
+- **Drafts tab:** the "Also post to the Boxed2Built Facebook page when approved"
+  switch (off by default). If it is on when you click Approve (or Save and
+  approve), the story is published and then posted. If the Facebook post fails
+  the story still goes live and the error is shown.
+- **Published tab:** **Post to Facebook** posts the story on demand. A story that
+  was already posted shows its date and asks before posting again.
+
+The post is the title, summary and source name, with the source article attached
+as the link. It uses the Facebook connection under Admin > Connections, through
+the `publish-news-to-facebook` edge function, which refuses anything not
+published. The outcome is stored on the row (`facebook_post_id`,
+`facebook_posted_at`, `facebook_post_error`). Needs migration
+`20261006180000_add_news_facebook_posting.sql` applied and the function deployed.

@@ -6,6 +6,7 @@ import {
   ExternalLink,
   EyeOff,
   Newspaper,
+  Send,
   Pencil,
   RotateCcw,
   Save,
@@ -15,6 +16,8 @@ import {
 import {
   deleteNewsItem,
   getAdminNewsItems,
+  publishNewsToFacebook,
+  setNewsPostToFacebook,
   setNewsStatus,
   updateNewsItem,
 } from '../../services/newsService';
@@ -91,11 +94,31 @@ export default function NewsPage() {
   const replaceItem = (updated: NewsItem) =>
     setItems((previous) => previous.map((item) => (item.id === updated.id ? updated : item)));
 
+  const postToFacebook = async (item: NewsItem): Promise<string | null> => {
+    try {
+      const result = await publishNewsToFacebook(item);
+      replaceItem(result.item);
+      return result.error;
+    } catch (error) {
+      return error instanceof Error ? error.message : 'Failed to post to Facebook';
+    }
+  };
+
   const changeStatus = async (item: NewsItem, status: NewsStatus, successText: string) => {
     setBusyId(item.id);
     try {
-      replaceItem(await setNewsStatus(item, status));
+      const updated = await setNewsStatus(item, status);
+      replaceItem(updated);
       if (editingId === item.id) setEditingId(null);
+      if (status === 'published' && updated.post_to_facebook) {
+        const facebookError = await postToFacebook(updated);
+        if (facebookError) {
+          showMessage('error', `Published to the News page, but the Facebook post failed: ${facebookError}`);
+        } else {
+          showMessage('success', `${successText} Also posted to Facebook.`);
+        }
+        return;
+      }
       showMessage('success', successText);
     } catch (error) {
       showMessage('error', error instanceof Error ? error.message : 'Failed to update news item');
@@ -127,6 +150,28 @@ export default function NewsPage() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const toggleFacebook = async (item: NewsItem, value: boolean) => {
+    setBusyId(item.id);
+    try {
+      replaceItem(await setNewsPostToFacebook(item, value));
+    } catch (error) {
+      showMessage('error', error instanceof Error ? error.message : 'Failed to update news item');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleFacebookPost = async (item: NewsItem) => {
+    if (item.facebook_posted_at && !confirm('This story was already posted to Facebook. Post it again?')) {
+      return;
+    }
+    setBusyId(item.id);
+    const facebookError = await postToFacebook(item);
+    setBusyId(null);
+    if (facebookError) showMessage('error', `Facebook post failed: ${facebookError}`);
+    else showMessage('success', 'Posted to Facebook.');
   };
 
   const handleDelete = async (item: NewsItem) => {
@@ -344,6 +389,30 @@ export default function NewsPage() {
                   )}
                 </p>
 
+                {item.status === 'draft' && (
+                  <label className="mt-4 flex items-center gap-3 cursor-pointer select-none w-fit">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={item.post_to_facebook}
+                      disabled={isBusy}
+                      onChange={(event) => toggleFacebook(item, event.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm text-slate-700">
+                      Also post to the Boxed2Built Facebook page when approved
+                    </span>
+                  </label>
+                )}
+
+                {item.status === 'published' && (item.facebook_posted_at || item.facebook_post_error) && (
+                  <p className={`mt-4 text-sm ${item.facebook_posted_at ? 'text-emerald-700' : 'text-red-700'}`}>
+                    {item.facebook_posted_at
+                      ? `Posted to Facebook on ${formatAddedOn(item.facebook_posted_at)}`
+                      : `Last Facebook post failed: ${item.facebook_post_error}`}
+                  </p>
+                )}
+
                 <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-2">
                   {isEditing ? (
                     <>
@@ -393,6 +462,15 @@ export default function NewsPage() {
                             <X className="w-4 h-4" /> Reject
                           </button>
                         </>
+                      )}
+                      {item.status === 'published' && (
+                        <button
+                          onClick={() => handleFacebookPost(item)}
+                          disabled={isBusy || !sourceUrl}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-60"
+                        >
+                          <Send className="w-4 h-4" /> {item.facebook_posted_at ? 'Post to Facebook again' : 'Post to Facebook'}
+                        </button>
                       )}
                       {item.status === 'published' && (
                         <button
