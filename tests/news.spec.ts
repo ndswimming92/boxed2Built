@@ -160,6 +160,7 @@ test('an edit saves the trimmed text without changing the status', async ({ page
         title: 'Assembly can now be added at checkout',
         summary: DRAFT.summary,
         topic: 'furniture_assembly',
+        ends_on: null,
       },
     },
   ]);
@@ -207,4 +208,17 @@ test('a long history is read in full rather than cut off at the first page', asy
 
   await expect(page.getByRole('tab', { name: /Drafts/ })).toContainText('1');
   await expect(page.getByRole('tab', { name: /Rejected/ })).toContainText('1001');
+});
+
+test('an end date set while editing is saved with the item', async ({ page }) => {
+  const writes = await stubNews(page, [DRAFT]);
+  await open(page);
+
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.getByLabel('Deal ends on (optional)').fill('2026-10-12');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+  await expect(page.getByText('Changes saved.')).toBeVisible();
+  expect(writes).toHaveLength(1);
+  expect(writes[0].body).toMatchObject({ ends_on: '2026-10-12' });
 });
