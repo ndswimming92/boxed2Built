@@ -50,7 +50,7 @@ test('only http and https source links are rendered', () => {
 });
 
 test('every topic the database allows has a label', () => {
-  assert.deepEqual(Object.keys(NEWS_TOPIC_LABELS).sort(), ['flat_pack', 'furniture_assembly']);
+  assert.deepEqual(Object.keys(NEWS_TOPIC_LABELS).sort(), ['deals', 'flat_pack', 'furniture_assembly']);
 });
 
 test('the next page starts from the last story shown', () => {
