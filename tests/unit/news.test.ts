@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   centralToday,
+  endingAfterCondition,
   formatEndsOn,
   formatNewsDate,
   isEndingOrder,
@@ -85,19 +86,46 @@ test('there is no next page to ask for without a story to start from', () => {
   assert.equal(newsCursor([{ id: 'a', published_at: null }]), null);
 });
 
-test('an end-date order skips every story already shown instead of anchoring on a date', () => {
-  // Sales with no end date sort after every dated one, so a timestamp cannot
-  // say where the next page starts. The next request drops these ids instead.
+test('an end-date order starts after the last sale shown, by its end date and id', () => {
   assert.deepEqual(
     newsCursor(
       [
-        { id: 'a', published_at: '2026-10-06T12:00:00+00:00' },
-        { id: 'b', published_at: '2026-10-01T12:00:00+00:00' },
-        { id: 'c', published_at: '2026-10-05T12:00:00+00:00' },
+        { id: 'a', published_at: '2026-10-06T12:00:00+00:00', ends_on: '2026-10-08' },
+        { id: 'b', published_at: '2026-10-05T12:00:00+00:00', ends_on: '2026-10-09' },
       ],
       'ending_soonest',
     ),
-    { publishedAt: '2026-10-05T12:00:00+00:00', idsAtCursor: ['a', 'b', 'c'] },
+    { publishedAt: '2026-10-05T12:00:00+00:00', idsAtCursor: ['b'], endsOn: '2026-10-09' },
+  );
+  // A sale with no end date is a cursor too, so paging can continue past the dated ones.
+  assert.deepEqual(
+    newsCursor([{ id: 'c', published_at: '2026-10-04T12:00:00+00:00', ends_on: null }], 'ending_latest'),
+    { publishedAt: '2026-10-04T12:00:00+00:00', idsAtCursor: ['c'], endsOn: null },
+  );
+});
+
+test('after a dated sale: a later end date, a same-day tie broken by posted date and id, or no end date', () => {
+  const cursor = { publishedAt: '2026-10-05T12:00:00+00:00', idsAtCursor: ['b'], endsOn: '2026-10-09' };
+  assert.equal(
+    endingAfterCondition('ending_soonest', cursor),
+    'ends_on.gt.2026-10-09,' +
+      'and(ends_on.eq.2026-10-09,published_at.lt.2026-10-05T12:00:00+00:00),' +
+      'and(ends_on.eq.2026-10-09,published_at.eq.2026-10-05T12:00:00+00:00,id.lt.b),' +
+      'ends_on.is.null',
+  );
+});
+
+test('ending latest looks for earlier end dates after a dated sale', () => {
+  const cursor = { publishedAt: '2026-10-05T12:00:00+00:00', idsAtCursor: ['b'], endsOn: '2026-10-09' };
+  assert.ok(endingAfterCondition('ending_latest', cursor).startsWith('ends_on.lt.2026-10-09,'));
+});
+
+test('after a sale with no end date only other undated sales can follow', () => {
+  const cursor = { publishedAt: '2026-10-04T12:00:00+00:00', idsAtCursor: ['c'], endsOn: null };
+  assert.equal(
+    endingAfterCondition('ending_soonest', cursor),
+    'and(ends_on.is.null,published_at.lt.2026-10-04T12:00:00+00:00),' +
+      'and(ends_on.is.null,published_at.eq.2026-10-04T12:00:00+00:00,id.lt.c)',
   );
 });
 

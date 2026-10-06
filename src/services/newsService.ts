@@ -1,12 +1,15 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
-import { centralToday, isEndingOrder, type NewsCursor, type NewsOrder } from '../utils/news';
+import {
+  centralToday,
+  endingAfterCondition,
+  isEndingOrder,
+  type NewsCursor,
+  type NewsOrder,
+} from '../utils/news';
 
 export const NEWS_PAGE_SIZE = 25;
-
-/** Sales are few, so the end-date orders read them all (PostgREST's usual cap). */
-const ENDING_ORDER_FETCH_SIZE = 1000;
 
 /** Fired after an admin changes an item so the sidebar badge can refresh. */
 export const NEWS_DRAFTS_CHANGED_EVENT = 'news-drafts-changed';
@@ -44,21 +47,26 @@ export async function getPublishedNews(options: {
   // One extra row tells us whether there is another page without a count
   // query. The stories sharing the cursor's timestamp come back again (the
   // filter is "at or before", so a tie cannot hide one) and are dropped below,
-  // so they are asked for on top of the page rather than out of it.
-  // An end-date order asks for the whole (small) list of sales instead and
-  // drops what is already on screen, since a date cursor cannot rank sales
-  // that have no end date.
-  const limit = byEndDate ? ENDING_ORDER_FETCH_SIZE : NEWS_PAGE_SIZE + alreadyShown.size + 1;
+  // so they are asked for on top of the page rather than out of it. An end-date
+  // page starts strictly after the last sale shown, so it has no ties to ask for.
+  const limit = byEndDate ? NEWS_PAGE_SIZE + 1 : NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
   // The total is only asked for on the first page; later pages keep it.
   let query = supabase
     .from('news_items')
     .select('*', cursor ? undefined : { count: 'exact' })
     .eq('status', 'published')
-    // Expired deals stay published but drop off the feed the day after ends_on.
-    // RLS enforces this for visitors; this covers signed-in admins.
-    .or(`ends_on.is.null,ends_on.gte.${centralToday()}`)
     .limit(limit);
+
+  // Expired deals stay published but drop off the feed the day after ends_on.
+  // RLS enforces this for visitors; this covers signed-in admins. An end-date
+  // page carries its "after the last sale shown" condition in the same filter,
+  // so there is one `or` and no doubt about how two of them would combine.
+  const notExpired = `or(ends_on.is.null,ends_on.gte.${centralToday()})`;
+  query =
+    byEndDate && cursor
+      ? query.or(`and(${notExpired},or(${endingAfterCondition(order, cursor)}))`)
+      : query.or(`ends_on.is.null,ends_on.gte.${centralToday()}`);
 
   if (byEndDate) {
     // Nulls last in both directions; ties and open-ended sales newest first.

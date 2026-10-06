@@ -108,6 +108,11 @@ export interface NewsCursor {
   publishedAt: string;
   /** Stories on screen that share that exact timestamp. */
   idsAtCursor: string[];
+  /**
+   * End-date orders only: the last sale's end date (null = none), which is
+   * where the next page starts. Absent for the date orders.
+   */
+  endsOn?: string | null;
 }
 
 /**
@@ -122,16 +127,19 @@ export interface NewsCursor {
  * a tie can never hide one.
  */
 export function newsCursor(
-  items: Array<Pick<NewsItem, 'id' | 'published_at'>>,
+  items: Array<Pick<NewsItem, 'id' | 'published_at'> & Partial<Pick<NewsItem, 'ends_on'>>>,
   order: NewsOrder = 'newest',
 ): NewsCursor | null {
   const last = items[items.length - 1];
   if (!last?.published_at) return null;
-  // An end-date order cannot anchor on a timestamp, because sales without an
-  // end date sort after every dated one. There are only a handful of sales, so
-  // that page asks for the whole list and drops every id already on screen.
+  // An end-date order is keyed on (end date, posted date, id) of the last sale
+  // shown; the id settles any remaining tie, so it is the only id to name.
   if (isEndingOrder(order)) {
-    return { publishedAt: last.published_at, idsAtCursor: items.map((item) => item.id) };
+    return {
+      publishedAt: last.published_at,
+      idsAtCursor: [last.id],
+      endsOn: last.ends_on ?? null,
+    };
   }
   return {
     publishedAt: last.published_at,
@@ -139,4 +147,34 @@ export function newsCursor(
       .filter((item) => item.published_at === last.published_at)
       .map((item) => item.id),
   };
+}
+
+/**
+ * The PostgREST condition for "comes after this sale" in an end-date order:
+ * end date (nulls last), then posted date newest first, then id newest first.
+ *
+ * - After a dated sale: a later date (an earlier one for ending_latest), the
+ *   same date but posted earlier (or the same instant with a lower id), or any
+ *   sale with no end date.
+ * - After a sale with no end date: only other undated sales, posted earlier
+ *   (or the same instant with a lower id).
+ *
+ * Written as a position rather than a page offset, so a sale approved or
+ * re-dated while a visitor is reading cannot repeat, skip or reorder a row.
+ */
+export function endingAfterCondition(order: NewsOrder, cursor: NewsCursor): string {
+  const [id] = cursor.idsAtCursor;
+  const posted = cursor.publishedAt;
+  const afterInPostedOrder = (datePart: string) =>
+    `and(${datePart},published_at.lt.${posted}),and(${datePart},published_at.eq.${posted},id.lt.${id})`;
+
+  if (cursor.endsOn == null) {
+    return afterInPostedOrder('ends_on.is.null');
+  }
+  const later = order === 'ending_soonest' ? 'gt' : 'lt';
+  return [
+    `ends_on.${later}.${cursor.endsOn}`,
+    afterInPostedOrder(`ends_on.eq.${cursor.endsOn}`),
+    'ends_on.is.null',
+  ].join(',');
 }
