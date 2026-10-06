@@ -99,6 +99,15 @@ test('the code survives browsing away from the form and back', async ({ page }) 
   // re-navigation (`page.goto: net::ERR_ABORTED; maybe frame was detached?`).
   // The assertions below already wait for the DOM to settle, so nothing this
   // test checks depends on the 'load' event itself firing.
+  //
+  // The underlying race is the first page still loading. The dev server serves
+  // lucide-react unbundled (see optimizeDeps.exclude in vite.config.ts), so
+  // that page keeps fetching icon modules long after the form has rendered, and
+  // going straight to the next URL queues it behind them until the test times
+  // out. So the test really does browse away first, which cancels those
+  // requests, and then comes back. sessionStorage is per tab, so the remembered
+  // referral is still there on the way back.
+  await page.goto('about:blank');
   await page.goto('/tests/harness/coupons.html', { waitUntil: 'domcontentloaded' });
 
   await expect(codeField(page)).toHaveValue(REFERRAL);

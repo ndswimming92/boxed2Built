@@ -11,7 +11,8 @@ name: Browser smoke tests
 # typecheck, lint and build before reaching production.
 #
 # `smoke` is a REQUIRED status check, and that is why the path filter no longer
-# lives on the trigger.
+# lives on the trigger. (It is now the last of three stages — `scope`, the
+# `browser-tests` shards, then `smoke` itself; see the notes above each job.)
 #
 # A filtered-out workflow reports nothing at all — it does not report "skipped".
 # Branch protection then waits forever for a status that is never coming, and
@@ -40,14 +41,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  smoke:
+  # Stage 1: decide whether the browser suite needs to run at all.
+  scope:
     runs-on: ubuntu-latest
-    # The suite runs on one worker and has grown to roughly fourteen minutes.
-    # At the old limit of 15 it was being cancelled on time alone, with every
-    # test passing: three runs on 2026-10-05 and both runs on #416. A cancelled
-    # required check blocks the merge exactly like a failed one, so the limit
-    # needs real headroom over the suite, not a minute of it.
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.scope.outputs.run }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -68,6 +67,8 @@ jobs:
           COVERED="$COVERED"'|src/components/ui/AnchoredPanel\.tsx$'
           COVERED="$COVERED"'|src/components/ContactForm\.tsx$'
           COVERED="$COVERED"'|src/pages/admin/(InquiriesPage|CouponsPage|JobsPage|BookingsPage)\.tsx$'
+          COVERED="$COVERED"'|src/pages/admin/NewsPage\.tsx$'
+          COVERED="$COVERED"'|src/services/newsService\.ts$'
           COVERED="$COVERED"'|src/pages/portal/(JobsPage|JobDetailPage)\.tsx$'
           COVERED="$COVERED"'|src/components/portal/PortalLayout\.tsx$'
           COVERED="$COVERED"'|src/components/admin/(JobFollowupCard|JobReminderCard|JobTravelCard|TravelEstimateCard|JobInvoicesList|JobContractorsList|JobContractorModal|JobFormModal|JobCompletionWizard|SatisfactionRating|SignatureCapture|MarkJobLostModal|CancelJobModal|AttachInvoiceModal|InvoiceFormModal|ImportJobsModal|JobCalendarFeedModal|ClientDetailModal)\.tsx$'
@@ -81,6 +82,7 @@ jobs:
           COVERED="$COVERED"'|src/utils/(inquiryWorkflow|utmAttribution|coupon)\.ts$'
           COVERED="$COVERED"'|tests/'
           COVERED="$COVERED"'|playwright\.config\.ts$'
+          COVERED="$COVERED"'|\.github/workflows/smoke-test\.yml$'
           COVERED="$COVERED"'|package-lock\.json$)'
 
           # Every bail-out below runs the suite rather than skipping it. A scope
@@ -117,31 +119,93 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
+  # Stage 2: the suite, split by feature area so the groups run side by side
+  # on separate runners instead of one after another on a single worker. Each
+  # group is a short list of spec files, named for what it proves. The suite
+  # used to take about fourteen minutes serially; now it is as slow as its
+  # slowest group (Model Studio, which compiles OpenSCAD to WASM).
+  #
+  # A new spec file under tests/ must be added to a group below, or it will
+  # not run in CI. `npm run test:smoke` still runs everything locally.
+  browser-tests:
+    name: ${{ matrix.name }}
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # One failing group must not hide the results of the others.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Model Studio (OpenSCAD, mesh, 3MF, 3D canvas)
+            files: tests/model-studio.spec.ts
+          - name: Admin layout on a phone
+            files: tests/mobile-layout.spec.ts
+          - name: Inquiries, coupons and referral QR codes
+            files: tests/inquiries-workflow.spec.ts tests/coupons.spec.ts tests/referral-qr.spec.ts
+          - name: Job card - what it shows and its email panels
+            files: tests/job-card.spec.ts
+          - name: Job card - workflows (lost, cancel, complete, edit, invoices)
+            files: tests/job-card-workflows.spec.ts
+          - name: Job lists, import/export and customer portal job pages
+            files: tests/job-card-surfaces.spec.ts
+          - name: Contact form, news and portal sign-in
+            files: tests/contact-form.spec.ts tests/news.spec.ts tests/portal-login.spec.ts tests/portal-callback.spec.ts
+    steps:
+      - uses: actions/checkout@v7
+
       - uses: actions/setup-node@v7
-        if: steps.scope.outputs.run == 'true'
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci --include=dev
-        if: steps.scope.outputs.run == 'true'
 
       - name: Install Chromium
-        if: steps.scope.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run smoke tests
-        if: steps.scope.outputs.run == 'true'
-        run: npm run test:smoke
+      - name: Run ${{ matrix.name }}
+        run: npx playwright test ${{ matrix.files }}
         env:
           CI: 'true'
 
       - name: Upload failure artifacts
-        if: failure() && steps.scope.outputs.run == 'true'
+        if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          # Artifact names must be unique per matrix leg.
+          name: playwright-report-${{ strategy.job-index }}
           path: |
             test-results/
             playwright-report/
           retention-days: 7
+
+  # Stage 3: the one check branch protection waits for. It keeps the name
+  # `smoke` so the required status does not change, and it reports a single
+  # pass/fail for all the groups above. It runs even when a group fails
+  # (`always()`), because a skipped required check would leave the pull
+  # request waiting forever instead of failing.
+  smoke:
+    needs: [scope, browser-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Did every browser test group pass?
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          TESTS_RESULT: ${{ needs.browser-tests.result }}
+        run: |
+          echo "scope:         $SCOPE_RESULT"
+          echo "browser-tests: $TESTS_RESULT"
+          # `skipped` is the normal result when the change touches nothing the
+          # browser tests cover.
+          if [ "$SCOPE_RESULT" != "success" ]; then
+            echo "The scope check did not finish."
+            exit 1
+          fi
+          if [ "$TESTS_RESULT" != "success" ] && [ "$TESTS_RESULT" != "skipped" ]; then
+            echo "At least one browser test group failed or was cancelled."
+            exit 1
+          fi
