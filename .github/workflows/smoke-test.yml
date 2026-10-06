@@ -42,7 +42,12 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The suite runs on one worker and has grown to roughly fourteen minutes.
+    # At the old limit of 15 it was being cancelled on time alone, with every
+    # test passing: three runs on 2026-10-05 and both runs on #416. A cancelled
+    # required check blocks the merge exactly like a failed one, so the limit
+    # needs real headroom over the suite, not a minute of it.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
