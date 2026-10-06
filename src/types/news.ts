@@ -21,6 +21,11 @@ export interface NewsItem {
   status: NewsStatus;
   /** Set by the database the first time the item is published. */
   published_at: string | null;
+  /** Admin's toggle: post to the Facebook Page when the draft is approved. */
+  post_to_facebook: boolean;
+  facebook_post_id: string | null;
+  facebook_posted_at: string | null;
+  facebook_post_error: string | null;
   created_at: string;
   updated_at: string;
 }
