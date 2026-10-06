@@ -65,6 +65,13 @@ on its own **Sales** tab.
   change the date with **Edit** in Admin > News Feed. The daily check should
   fill `ends_on` (YYYY-MM-DD) whenever the store states an end date; update the
   scheduled task's prompt to do so.
+- **Sorting sales by expiry.** On the Sales tab the Sort menu adds **Ending
+  soonest** and **Ending latest** (the Sales tab opens on Ending soonest). Sales
+  with no end date always sit at the bottom, newest first, in both directions.
+  Those two options are not offered on the other tabs, since news stories have no
+  end date. They read the whole (small) list of sales and skip what is already on
+  screen when "Load more" is pressed, because a timestamp cannot say where the
+  next page starts once some rows have no end date.
 - **No end date means no expiry.** A deal with `ends_on` empty stays up until
   you **Unpublish** it.
 - **Expired deals stay `published`.** They are only hidden, so they remain in
