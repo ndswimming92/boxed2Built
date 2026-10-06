@@ -5,10 +5,11 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import CallButton from '../components/ui/CallButton';
+import NewsScrollBar from '../components/ui/NewsScrollBar';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
-import { NEWS_TOPIC_LABELS, formatNewsDate, newsCursor, safeExternalUrl } from '../utils/news';
+import { NEWS_TOPIC_LABELS, formatNewsDate, newsCursor, safeExternalUrl, type NewsOrder } from '../utils/news';
 import type { NewsItem, NewsTopic } from '../types/news';
 
 type TopicFilter = NewsTopic | 'all';
@@ -19,12 +20,17 @@ const TOPIC_FILTERS: Array<{ value: TopicFilter; label: string }> = [
   { value: 'furniture_assembly', label: NEWS_TOPIC_LABELS.furniture_assembly },
 ];
 
+const ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+];
+
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
   const sourceUrl = safeExternalUrl(item.source_url);
 
   return (
-    <article className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
+    <article data-news-card className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
         <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
           {NEWS_TOPIC_LABELS[item.topic] ?? 'News'}
@@ -73,6 +79,9 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
 
 const NewsPage: React.FC = () => {
   const [topic, setTopic] = useState<TopicFilter>('all');
+  const [order, setOrder] = useState<NewsOrder>('newest');
+  const [total, setTotal] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<NewsItem[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,25 +89,27 @@ const NewsPage: React.FC = () => {
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Which filter the visitor is looking at right now, so a slow "load more"
-  // for a filter they have already left cannot append to the wrong list.
-  const currentTopic = useRef<TopicFilter>('all');
+  // Which filter and order the visitor is looking at right now, so a slow
+  // "load more" for a view they have already left cannot append to the wrong list.
+  const currentView = useRef('all|newest');
 
   // First page, on load and whenever the filter changes or a retry is asked for.
   useEffect(() => {
     let cancelled = false;
 
-    getPublishedNews({ topic: topic === 'all' ? null : topic })
+    getPublishedNews({ topic: topic === 'all' ? null : topic, order })
       .then((result) => {
         if (cancelled) return;
         setItems(result.items);
         setHasMore(result.hasMore);
+        setTotal(result.total);
         setError(false);
       })
       .catch(() => {
         if (cancelled) return;
         setItems([]);
         setHasMore(false);
+        setTotal(null);
         setError(true);
       })
       .finally(() => {
@@ -108,11 +119,11 @@ const NewsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [topic, reloadKey]);
+  }, [topic, order, reloadKey]);
 
   const handleTopicChange = (nextTopic: TopicFilter) => {
     if (nextTopic === topic) return;
-    currentTopic.current = nextTopic;
+    currentView.current = `${nextTopic}|${order}`;
     setLoading(true);
     setLoadingMore(false);
     setError(false);
@@ -125,6 +136,21 @@ const NewsPage: React.FC = () => {
     });
   };
 
+  const handleOrderChange = (nextOrder: NewsOrder) => {
+    if (nextOrder === order) return;
+    currentView.current = `${topic}|${nextOrder}`;
+    setLoading(true);
+    setLoadingMore(false);
+    setError(false);
+    setOrder(nextOrder);
+    trackEvent('news_sort', 'news_feed', {
+      event_category: 'engagement',
+      event_label: nextOrder,
+      element_type: 'button',
+      action_type: 'sort',
+    });
+  };
+
   const handleRetry = () => {
     setLoading(true);
     setError(false);
@@ -133,6 +159,7 @@ const NewsPage: React.FC = () => {
 
   const handleLoadMore = async () => {
     const requestedTopic = topic;
+    const requestedView = `${topic}|${order}`;
     // Paged by "older than the last story shown", so a story approved or
     // unpublished since the first page loaded cannot repeat or skip one.
     const cursor = newsCursor(items);
@@ -147,17 +174,18 @@ const NewsPage: React.FC = () => {
       const result = await getPublishedNews({
         topic: requestedTopic === 'all' ? null : requestedTopic,
         cursor,
+        order,
       });
-      if (currentTopic.current !== requestedTopic) return;
+      if (currentView.current !== requestedView) return;
       setItems((previous) => {
         const seen = new Set(previous.map((item) => item.id));
         return [...previous, ...result.items.filter((item) => !seen.has(item.id))];
       });
       setHasMore(result.hasMore);
     } catch {
-      if (currentTopic.current === requestedTopic) setError(true);
+      if (currentView.current === requestedView) setError(true);
     } finally {
-      if (currentTopic.current === requestedTopic) setLoadingMore(false);
+      if (currentView.current === requestedView) setLoadingMore(false);
     }
   };
 
@@ -207,8 +235,9 @@ const NewsPage: React.FC = () => {
                 Latest news
               </h2>
 
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
               <div
-                className="flex flex-wrap gap-2 mb-8"
+                className="flex flex-wrap gap-2"
                 role="group"
                 aria-label="Filter news by topic"
               >
@@ -230,6 +259,22 @@ const NewsPage: React.FC = () => {
                     </button>
                   );
                 })}
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <span className="font-medium">Sort</span>
+                <select
+                  value={order}
+                  onChange={(event) => handleOrderChange(event.target.value as NewsOrder)}
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {ORDER_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               </div>
 
               <div aria-live="polite" aria-busy={loading}>
@@ -274,7 +319,7 @@ const NewsPage: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="space-y-6">
+                    <div ref={listRef} className="space-y-6">
                       {items.map((item) => (
                         <NewsCard key={item.id} item={item} />
                       ))}
@@ -361,6 +406,7 @@ const NewsPage: React.FC = () => {
           </div>
         </section>
       </main>
+      <NewsScrollBar listRef={listRef} total={total} loaded={items.length} />
       <Footer />
     </>
   );
