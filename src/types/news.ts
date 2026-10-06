@@ -1,0 +1,33 @@
+export type NewsTopic = 'flat_pack' | 'furniture_assembly';
+
+/**
+ * draft     — saved by the daily news check, waiting for review. Never public.
+ * published — approved; the only status anonymous visitors can read (RLS).
+ * rejected  — reviewed and turned down. Kept so the daily check does not save
+ *             the same story again.
+ */
+export type NewsStatus = 'draft' | 'published' | 'rejected';
+
+export interface NewsItem {
+  id: string;
+  organization_id: string;
+  title: string;
+  summary: string;
+  source_name: string;
+  source_url: string;
+  topic: NewsTopic;
+  /** Date the source published the story (YYYY-MM-DD). Null when unconfirmed. */
+  source_published_on: string | null;
+  status: NewsStatus;
+  /** Set by the database the first time the item is published. */
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** The fields an admin can change before or after approving an item. */
+export interface NewsItemEdits {
+  title: string;
+  summary: string;
+  topic: NewsTopic;
+}

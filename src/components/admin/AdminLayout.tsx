@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
 import { Youtube } from '../ui/BrandIcons';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import { useSocialCommentsBadge } from '../../hooks/useSocialCommentsBadge';
 import { useSocialMessagesBadge } from '../../hooks/useSocialMessagesBadge';
+import { useNewsDraftsBadge } from '../../hooks/useNewsDraftsBadge';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
 import NotificationBell from './NotificationBell';
@@ -93,6 +94,7 @@ const navigationGroups: NavigationGroup[] = [
     items: [
       { name: 'Customers', href: '/admin/clients', icon: Users },
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
+      { name: 'News Feed', href: '/admin/news', icon: Newspaper },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
       { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },
@@ -156,6 +158,7 @@ function AdminLayoutContent() {
   });
   const unrepliedCommentCount = useSocialCommentsBadge();
   const needsReplyMessageCount = useSocialMessagesBadge();
+  const newsDraftCount = useNewsDraftsBadge();
 
   const getInitialExpandedState = (): Record<string, boolean> => {
     const stored = localStorage.getItem('admin-nav-expanded');
@@ -385,6 +388,8 @@ function AdminLayoutContent() {
                               ? unrepliedCommentCount
                               : item.name === 'Direct Messages'
                               ? needsReplyMessageCount
+                              : item.name === 'News Feed'
+                              ? newsDraftCount
                               : 0;
                           const showBadge = badgeCount > 0;
 

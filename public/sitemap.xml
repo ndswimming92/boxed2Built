@@ -154,6 +154,13 @@
   </url>
 
   <url>
+    <loc>https://boxed2built.com/news</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
     <loc>https://boxed2built.com/partners</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>monthly</changefreq>
