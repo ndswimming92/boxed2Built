@@ -26,6 +26,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://boxed2built.com';
 const SITEMAP_PATH = join(ROOT, 'public', 'sitemap.xml');
 const IMAGE_SITEMAP_PATH = join(ROOT, 'public', 'sitemap-images.xml');
+const LLMS_TXT_PATH = join(ROOT, 'public', 'llms.txt');
 
 /**
  * Bundle a TypeScript module to a temp .mjs and import it, so this plain-Node
@@ -152,13 +153,108 @@ ${blocks.join('\n\n')}
 `;
 }
 
+function formatHours(structured) {
+  const time = (hhmm) => {
+    const [h, m] = hhmm.split(':').map(Number);
+    const suffix = h >= 12 ? 'pm' : 'am';
+    const hour = h % 12 || 12;
+    return m ? `${hour}:${String(m).padStart(2, '0')}${suffix}` : `${hour}${suffix}`;
+  };
+  return structured
+    .map(({ dayOfWeek, opens, closes }) => {
+      const days = Array.isArray(dayOfWeek)
+        ? `${dayOfWeek[0]}–${dayOfWeek[dayOfWeek.length - 1]}`
+        : dayOfWeek;
+      return `${days} ${time(opens)}–${time(closes)}`;
+    })
+    .join('; ');
+}
+
+/**
+ * llms.txt (llmstxt.org): a plain-Markdown brief that AI assistants read to
+ * describe and cite the business. Built from the same constants as the pages.
+ */
+function buildLlmsTxt({ business, address, hours, services, landingPages, locations, socials }) {
+  const link = (title, path, description) =>
+    `- [${title}](${SITE_URL}${path})${description ? `: ${description}` : ''}`;
+
+  const homeBase = locations.find((location) => location.isHomeBase) ?? locations[0];
+  const cityList = locations.map((location) => `${location.city}, ${location.region}`);
+
+  const faqs = landingPages
+    .flatMap((page) => page.faqs.slice(0, 2))
+    .map(({ question, answer }) => `### ${question}\n\n${answer}`);
+
+  return `# ${business.name}
+
+> ${business.name} is a professional furniture assembly and TV mounting service based in ${address.addressLocality}, ${address.addressRegion}, serving ${locations.map((location) => location.city).join(', ')} and the greater Nashville area of Middle Tennessee. Founded in ${business.yearEstablished} by ${business.founder}.
+
+## Key facts
+
+- Services: furniture assembly (IKEA, Wayfair, Amazon, Target, Walmart, Costco and other flat-pack brands), TV mounting, nursery and crib setup, garage organization
+- Home base: ${homeBase.city}, ${homeBase.region} (${homeBase.county})
+- Service area: ${cityList.join('; ')}
+- Hours: ${formatHours(hours)}
+- Pricing: flat per-item starting prices, free quotes; overall range ${business.priceRange}
+- Phone: ${business.phoneFormatted}
+- Email: ${business.email}
+- Website: ${business.website}
+
+## Starting prices
+
+${services.map((service) => `- ${service.name}: from $${service.price} (${service.description.toLowerCase()})`).join('\n')}
+
+## Services
+
+${[
+  link('All services and pricing', '/services', 'Every service with per-item starting prices'),
+  link('Furniture assembly', '/services/furniture-assembly', 'Flat-pack and boxed furniture assembled, anchored and cleaned up'),
+  link('TV mounting', '/services/tv-mounting', 'Wall-mounted TVs with stud finding and cable management'),
+  ...landingPages.map((page) => link(page.navLabel, `/services/${page.slug}`, page.metaDescription)),
+].join('\n')}
+
+## Service areas
+
+${[
+  link('All service areas', '/service-areas'),
+  ...locations.map((location) =>
+    link(`${location.city}, ${location.region}`, `/service-areas/${location.slug}`, `${location.county}. ${location.driveTime}`),
+  ),
+].join('\n')}
+
+## Book or contact
+
+${[
+  link('Request a free quote', '/contact'),
+  link('Book online', '/book'),
+  link('Frequently asked questions', '/faq'),
+  link('About the founder', '/about'),
+  link('Project gallery', '/gallery'),
+  link('Gift cards', '/gift-cards'),
+].join('\n')}
+
+## Common questions
+
+${faqs.join('\n\n')}
+
+## Elsewhere
+
+${socials.map((url) => `- ${url}`).join('\n')}
+`;
+}
+
 async function main() {
-  const [{ SERVICE_LOCATIONS }, { SERVICE_LANDING_PAGES }, { PAGE_IMAGES, MARKETING_IMAGES }] =
-    await Promise.all([
-      importTypeScript('src/constants/serviceLocations.ts'),
-      importTypeScript('src/constants/serviceLandingPages.ts'),
-      importTypeScript('src/constants/marketingImages.ts'),
-    ]);
+  const [
+    { SERVICE_LOCATIONS },
+    { SERVICE_LANDING_PAGES },
+    { PAGE_IMAGES, MARKETING_IMAGES },
+    { BUSINESS_INFO, ADDRESS_INFO, BUSINESS_HOURS, PRIMARY_SERVICES, SOCIAL_MEDIA_URLS },
+  ] = await Promise.all([
+    importTypeScript('src/constants/serviceLocations.ts'),
+    importTypeScript('src/constants/serviceLandingPages.ts'),
+    importTypeScript('src/constants/marketingImages.ts'),
+    importTypeScript('src/constants/localSEO.ts'),
+  ]);
 
   const today = new Date().toISOString().slice(0, 10);
   const existing = await readExistingLastmods();
@@ -218,6 +314,18 @@ ${body}
   console.log(
     `[sitemap] wrote ${imageCount} images across ${PAGE_IMAGES.length} pages to public/sitemap-images.xml`,
   );
+
+  const llmsTxt = buildLlmsTxt({
+    business: BUSINESS_INFO,
+    address: ADDRESS_INFO,
+    hours: BUSINESS_HOURS.structured,
+    services: PRIMARY_SERVICES,
+    landingPages: SERVICE_LANDING_PAGES,
+    locations: SERVICE_LOCATIONS,
+    socials: SOCIAL_MEDIA_URLS,
+  });
+  await writeFile(LLMS_TXT_PATH, llmsTxt, 'utf-8');
+  console.log('[sitemap] wrote public/llms.txt');
 }
 
 main().catch((error) => {
