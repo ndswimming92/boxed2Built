@@ -61,6 +61,8 @@ export function safeExternalUrl(url: string | null | undefined): string | null {
   }
 }
 
+export type NewsOrder = 'newest' | 'oldest';
+
 /** Where the next page of the public feed starts. */
 export interface NewsCursor {
   /** `published_at` of the last story already on screen. */

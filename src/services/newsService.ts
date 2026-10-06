@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
-import type { NewsCursor } from '../utils/news';
+import type { NewsCursor, NewsOrder } from '../utils/news';
 
 export const NEWS_PAGE_SIZE = 25;
 
@@ -19,7 +19,7 @@ function notifyDraftsChanged() {
  * ────────────────────────────────────────────────────────────────────────── */
 
 /**
- * One page of the public feed, newest first. Pass the cursor from
+ * One page of the public feed, newest first unless `order` is 'oldest'. Pass the cursor from
  * `newsCursor(itemsAlreadyShown)` to get the page after it.
  *
  * The `status = 'published'` filter is not redundant with RLS. Anonymous
@@ -30,7 +30,9 @@ function notifyDraftsChanged() {
 export async function getPublishedNews(options: {
   topic?: NewsTopic | null;
   cursor?: NewsCursor | null;
-} = {}): Promise<{ items: NewsItem[]; hasMore: boolean }> {
+  order?: NewsOrder;
+} = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null }> {
+  const ascending = options.order === 'oldest';
   const cursor = options.cursor ?? null;
   const alreadyShown = new Set(cursor?.idsAtCursor ?? []);
 
@@ -40,22 +42,25 @@ export async function getPublishedNews(options: {
   // so they are asked for on top of the page rather than out of it.
   const limit = NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
+  // The total is only asked for on the first page; later pages keep it.
   let query = supabase
     .from('news_items')
-    .select('*')
+    .select('*', cursor ? undefined : { count: 'exact' })
     .eq('status', 'published')
-    .order('published_at', { ascending: false, nullsFirst: false })
-    .order('id', { ascending: false })
+    .order('published_at', { ascending, nullsFirst: false })
+    .order('id', { ascending })
     .limit(limit);
 
   if (options.topic) {
     query = query.eq('topic', options.topic);
   }
   if (cursor) {
-    query = query.lte('published_at', cursor.publishedAt);
+    query = ascending
+      ? query.gte('published_at', cursor.publishedAt)
+      : query.lte('published_at', cursor.publishedAt);
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching news:', error);
@@ -66,6 +71,7 @@ export async function getPublishedNews(options: {
   return {
     items: rows.slice(0, NEWS_PAGE_SIZE),
     hasMore: rows.length > NEWS_PAGE_SIZE,
+    total: count ?? null,
   };
 }
 
