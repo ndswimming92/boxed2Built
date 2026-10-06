@@ -80,6 +80,7 @@ jobs:
           COVERED="$COVERED"'|src/utils/(inquiryWorkflow|utmAttribution|coupon)\.ts$'
           COVERED="$COVERED"'|tests/'
           COVERED="$COVERED"'|playwright\.config\.ts$'
+          COVERED="$COVERED"'|\.github/workflows/smoke-test\.yml$'
           COVERED="$COVERED"'|package-lock\.json$)'
 
           # Every bail-out below runs the suite rather than skipping it. A scope
