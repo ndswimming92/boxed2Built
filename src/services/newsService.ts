@@ -1,9 +1,12 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
-import { centralToday, type NewsCursor, type NewsOrder } from '../utils/news';
+import { centralToday, isEndingOrder, type NewsCursor, type NewsOrder } from '../utils/news';
 
 export const NEWS_PAGE_SIZE = 25;
+
+/** Sales are few, so the end-date orders read them all (PostgREST's usual cap). */
+const ENDING_ORDER_FETCH_SIZE = 1000;
 
 /** Fired after an admin changes an item so the sidebar badge can refresh. */
 export const NEWS_DRAFTS_CHANGED_EVENT = 'news-drafts-changed';
@@ -32,7 +35,9 @@ export async function getPublishedNews(options: {
   cursor?: NewsCursor | null;
   order?: NewsOrder;
 } = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null }> {
-  const ascending = options.order === 'oldest';
+  const order = options.order ?? 'newest';
+  const ascending = order === 'oldest';
+  const byEndDate = isEndingOrder(order);
   const cursor = options.cursor ?? null;
   const alreadyShown = new Set(cursor?.idsAtCursor ?? []);
 
@@ -40,7 +45,10 @@ export async function getPublishedNews(options: {
   // query. The stories sharing the cursor's timestamp come back again (the
   // filter is "at or before", so a tie cannot hide one) and are dropped below,
   // so they are asked for on top of the page rather than out of it.
-  const limit = NEWS_PAGE_SIZE + alreadyShown.size + 1;
+  // An end-date order asks for the whole (small) list of sales instead and
+  // drops what is already on screen, since a date cursor cannot rank sales
+  // that have no end date.
+  const limit = byEndDate ? ENDING_ORDER_FETCH_SIZE : NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
   // The total is only asked for on the first page; later pages keep it.
   let query = supabase
@@ -50,14 +58,24 @@ export async function getPublishedNews(options: {
     // Expired deals stay published but drop off the feed the day after ends_on.
     // RLS enforces this for visitors; this covers signed-in admins.
     .or(`ends_on.is.null,ends_on.gte.${centralToday()}`)
-    .order('published_at', { ascending, nullsFirst: false })
-    .order('id', { ascending })
     .limit(limit);
+
+  if (byEndDate) {
+    // Nulls last in both directions; ties and open-ended sales newest first.
+    query = query
+      .order('ends_on', { ascending: order === 'ending_soonest', nullsFirst: false })
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: false });
+  } else {
+    query = query
+      .order('published_at', { ascending, nullsFirst: false })
+      .order('id', { ascending });
+  }
 
   if (options.topic) {
     query = query.eq('topic', options.topic);
   }
-  if (cursor) {
+  if (cursor && !byEndDate) {
     query = ascending
       ? query.gte('published_at', cursor.publishedAt)
       : query.lte('published_at', cursor.publishedAt);

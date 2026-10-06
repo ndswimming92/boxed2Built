@@ -91,7 +91,16 @@ export function safeExternalUrl(url: string | null | undefined): string | null {
   }
 }
 
-export type NewsOrder = 'newest' | 'oldest';
+/**
+ * newest / oldest — by the date the story went live.
+ * ending_soonest / ending_latest — by the end date, for the Sales tab only.
+ * Sales with no end date always come last, newest first, in both directions.
+ */
+export type NewsOrder = 'newest' | 'oldest' | 'ending_soonest' | 'ending_latest';
+
+export function isEndingOrder(order: NewsOrder): boolean {
+  return order === 'ending_soonest' || order === 'ending_latest';
+}
 
 /** Where the next page of the public feed starts. */
 export interface NewsCursor {
@@ -114,9 +123,16 @@ export interface NewsCursor {
  */
 export function newsCursor(
   items: Array<Pick<NewsItem, 'id' | 'published_at'>>,
+  order: NewsOrder = 'newest',
 ): NewsCursor | null {
   const last = items[items.length - 1];
   if (!last?.published_at) return null;
+  // An end-date order cannot anchor on a timestamp, because sales without an
+  // end date sort after every dated one. There are only a handful of sales, so
+  // that page asks for the whole list and drops every id already on screen.
+  if (isEndingOrder(order)) {
+    return { publishedAt: last.published_at, idsAtCursor: items.map((item) => item.id) };
+  }
   return {
     publishedAt: last.published_at,
     idsAtCursor: items

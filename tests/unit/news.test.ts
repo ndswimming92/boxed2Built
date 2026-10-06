@@ -5,6 +5,7 @@ import {
   centralToday,
   formatEndsOn,
   formatNewsDate,
+  isEndingOrder,
   isNewsExpired,
   newsCursor,
   safeExternalUrl,
@@ -82,6 +83,29 @@ test('stories sharing the last timestamp are all named, so a tie cannot hide one
 test('there is no next page to ask for without a story to start from', () => {
   assert.equal(newsCursor([]), null);
   assert.equal(newsCursor([{ id: 'a', published_at: null }]), null);
+});
+
+test('an end-date order skips every story already shown instead of anchoring on a date', () => {
+  // Sales with no end date sort after every dated one, so a timestamp cannot
+  // say where the next page starts. The next request drops these ids instead.
+  assert.deepEqual(
+    newsCursor(
+      [
+        { id: 'a', published_at: '2026-10-06T12:00:00+00:00' },
+        { id: 'b', published_at: '2026-10-01T12:00:00+00:00' },
+        { id: 'c', published_at: '2026-10-05T12:00:00+00:00' },
+      ],
+      'ending_soonest',
+    ),
+    { publishedAt: '2026-10-05T12:00:00+00:00', idsAtCursor: ['a', 'b', 'c'] },
+  );
+});
+
+test('only the end-date orders count as end-date orders', () => {
+  assert.equal(isEndingOrder('ending_soonest'), true);
+  assert.equal(isEndingOrder('ending_latest'), true);
+  assert.equal(isEndingOrder('newest'), false);
+  assert.equal(isEndingOrder('oldest'), false);
 });
 
 test('a deal shows through its end date and expires the next day (Central time)', () => {

@@ -9,7 +9,15 @@ import NewsScrollBar from '../components/ui/NewsScrollBar';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
-import { NEWS_TOPIC_LABELS, formatEndsOn, formatNewsDate, newsCursor, safeExternalUrl, type NewsOrder } from '../utils/news';
+import {
+  NEWS_TOPIC_LABELS,
+  formatEndsOn,
+  formatNewsDate,
+  isEndingOrder,
+  newsCursor,
+  safeExternalUrl,
+  type NewsOrder,
+} from '../utils/news';
 import type { NewsItem, NewsTopic } from '../types/news';
 
 type TopicFilter = NewsTopic | 'all';
@@ -25,6 +33,16 @@ const ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
   { value: 'newest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
 ];
+
+/** Only sales have an end date, so these are offered on the Sales tab alone. */
+const SALES_ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
+  { value: 'ending_soonest', label: 'Ending soonest' },
+  { value: 'ending_latest', label: 'Ending latest' },
+  ...ORDER_OPTIONS,
+];
+
+/** Visitors who open the Sales tab see the sales about to end first. */
+const SALES_DEFAULT_ORDER: NewsOrder = 'ending_soonest';
 
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
@@ -132,11 +150,17 @@ const NewsPage: React.FC = () => {
 
   const handleTopicChange = (nextTopic: TopicFilter) => {
     if (nextTopic === topic) return;
-    currentView.current = `${nextTopic}|${order}`;
+    // Entering Sales starts on "Ending soonest"; leaving it drops an end-date
+    // order, which means nothing on the other tabs.
+    let nextOrder = order;
+    if (nextTopic === 'deals') nextOrder = SALES_DEFAULT_ORDER;
+    else if (isEndingOrder(order)) nextOrder = 'newest';
+    currentView.current = `${nextTopic}|${nextOrder}`;
     setLoading(true);
     setLoadingMore(false);
     setError(false);
     setTopic(nextTopic);
+    setOrder(nextOrder);
     trackEvent('news_filter', 'news_feed', {
       event_category: 'engagement',
       event_label: nextTopic,
@@ -171,7 +195,7 @@ const NewsPage: React.FC = () => {
     const requestedView = `${topic}|${order}`;
     // Paged by "older than the last story shown", so a story approved or
     // unpublished since the first page loaded cannot repeat or skip one.
-    const cursor = newsCursor(items);
+    const cursor = newsCursor(items, order);
     if (!cursor) {
       // Nothing to anchor on, so there is no next page to ask for.
       setHasMore(false);
@@ -278,7 +302,7 @@ const NewsPage: React.FC = () => {
                   onChange={(event) => handleOrderChange(event.target.value as NewsOrder)}
                   className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {ORDER_OPTIONS.map((option) => (
+                  {(topic === 'deals' ? SALES_ORDER_OPTIONS : ORDER_OPTIONS).map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
