@@ -381,7 +381,7 @@ export default function NewsPage() {
                     {edits.topic === 'deals' && (
                       <div>
                         <label htmlFor={`news-ends-on-${item.id}`} className="block text-sm font-medium text-slate-700 mb-2">
-                          Deal ends on (optional)
+                          Sale ends on (optional)
                         </label>
                         <input
                           id={`news-ends-on-${item.id}`}
@@ -391,7 +391,7 @@ export default function NewsPage() {
                           className="w-full sm:w-auto px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
                         />
                         <p className="mt-1 text-xs text-slate-500">
-                          The deal shows through this date and drops off the News page the next day (Central time).
+                          The sale shows through this date and drops off the News page the next day (Central time).
                           Leave blank to keep it up until you unpublish it.
                         </p>
                       </div>

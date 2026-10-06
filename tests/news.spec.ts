@@ -215,9 +215,9 @@ test('an end date set while editing is saved with the item', async ({ page }) =>
   await open(page);
 
   await page.getByRole('button', { name: 'Edit' }).click();
-  await expect(page.getByLabel('Deal ends on (optional)')).toHaveCount(0);
+  await expect(page.getByLabel('Sale ends on (optional)')).toHaveCount(0);
   await page.getByLabel('Topic').selectOption('deals');
-  await page.getByLabel('Deal ends on (optional)').fill('2026-10-12');
+  await page.getByLabel('Sale ends on (optional)').fill('2026-10-12');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
 
   await expect(page.getByText('Changes saved.')).toBeVisible();
