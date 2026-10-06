@@ -17,6 +17,7 @@ interface NewsScrollBarProps {
 const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded }) => {
   const [progress, setProgress] = useState(0);
   const [current, setCurrent] = useState(1);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     let frame = 0;
@@ -39,6 +40,10 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
         if (card.getBoundingClientRect().top <= viewport * 0.5) index = i + 1;
       });
       setCurrent(index);
+
+      // Hide once the last card is fully on screen; it returns on scroll up.
+      const last = cards[cards.length - 1];
+      setVisible(!last || last.getBoundingClientRect().bottom > viewport);
     };
 
     const onScroll = () => {
@@ -62,7 +67,10 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
 
   return (
     <div
-      className="hidden md:flex fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 h-[50vh] flex-col items-center gap-2 text-xs text-gray-600"
+      aria-hidden={!visible}
+      className={`hidden md:flex fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 h-[50vh] flex-col items-center gap-2 text-xs text-gray-600 transition-opacity duration-300 ${
+        visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
       role="progressbar"
       aria-label="Scroll progress through news"
       aria-valuemin={0}
