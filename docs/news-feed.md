@@ -30,6 +30,7 @@ daily check from saving the same story again the next morning.
 | --- | --- |
 | Table, RLS, trigger | `supabase/migrations/20261006153825_create_news_items_feed.sql` |
 | `deals` topic | `supabase/migrations/20261006200000_add_deals_news_topic.sql` |
+| `ends_on` column and expiry rule | `supabase/migrations/20261006210000_add_news_items_ends_on.sql` |
 | Public page | `src/pages/NewsPage.tsx` |
 | Admin review screen | `src/pages/admin/NewsPage.tsx` |
 | Queries and audit logging | `src/services/newsService.ts` |
@@ -55,10 +56,19 @@ A deal is a `news_items` row with `topic = 'deals'`. It goes through the same
 draft, approve, publish flow and shows on the public page under **All news** and
 on its own **Deals** tab.
 
-- **Deals do not expire on their own.** The table has no end date. The daily
-  check writes the end date into the summary when the store states one, and its
-  report lists published deals that look finished. Take those down with
-  **Unpublish** (or reject them) in Admin > News Feed.
+- **Deals expire on their own.** `news_items.ends_on` is the last day the deal
+  is valid. It shows through that whole day and drops off `/news` the next day,
+  judged in Central time. This is enforced twice: the anonymous RLS policy hides
+  ended rows, and the public query filters them for signed-in admins. Set or
+  change the date with **Edit** in Admin > News Feed. The daily check should
+  fill `ends_on` (YYYY-MM-DD) whenever the store states an end date; update the
+  scheduled task's prompt to do so.
+- **No end date means no expiry.** A deal with `ends_on` empty stays up until
+  you **Unpublish** it.
+- **Expired deals stay `published`.** They are only hidden, so they remain in
+  the Published tab with an "Expired" label and their source link stays
+  reserved, which stops the daily check re-adding the same sale. Unpublish or
+  reject them when you want them out of the list.
 - **One store page, many sales.** A store's sale page usually keeps the same web
   address from one sale to the next, and a source link can only be stored once.
   When a new sale lives at an address already stored for an older one, the daily

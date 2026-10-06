@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  centralToday,
+  formatEndsOn,
   formatNewsDate,
+  isNewsExpired,
   newsCursor,
   safeExternalUrl,
   NEWS_TOPIC_LABELS,
@@ -79,4 +82,25 @@ test('stories sharing the last timestamp are all named, so a tie cannot hide one
 test('there is no next page to ask for without a story to start from', () => {
   assert.equal(newsCursor([]), null);
   assert.equal(newsCursor([{ id: 'a', published_at: null }]), null);
+});
+
+test('a deal shows through its end date and expires the next day (Central time)', () => {
+  const deal = { ends_on: '2026-10-12' };
+  // Oct 12, 11:30pm Central (CDT, UTC-5) is still the end date.
+  assert.equal(isNewsExpired(deal, new Date('2026-10-13T04:30:00Z')), false);
+  // Oct 13, 12:30am Central is the day after.
+  assert.equal(isNewsExpired(deal, new Date('2026-10-13T05:30:00Z')), true);
+});
+
+test('a deal with no end date never expires', () => {
+  assert.equal(isNewsExpired({ ends_on: null }, new Date('2030-01-01T00:00:00Z')), false);
+});
+
+test('centralToday uses Central time, not UTC', () => {
+  assert.equal(centralToday(new Date('2026-10-13T03:00:00Z')), '2026-10-12');
+});
+
+test('formatEndsOn prints the named day', () => {
+  assert.equal(formatEndsOn('2026-10-12'), 'October 12, 2026');
+  assert.equal(formatEndsOn(null), null);
 });

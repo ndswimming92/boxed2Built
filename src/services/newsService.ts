@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
-import type { NewsCursor, NewsOrder } from '../utils/news';
+import { centralToday, type NewsCursor, type NewsOrder } from '../utils/news';
 
 export const NEWS_PAGE_SIZE = 25;
 
@@ -47,6 +47,9 @@ export async function getPublishedNews(options: {
     .from('news_items')
     .select('*', cursor ? undefined : { count: 'exact' })
     .eq('status', 'published')
+    // Expired deals stay published but drop off the feed the day after ends_on.
+    // RLS enforces this for visitors; this covers signed-in admins.
+    .or(`ends_on.is.null,ends_on.gte.${centralToday()}`)
     .order('published_at', { ascending, nullsFirst: false })
     .order('id', { ascending })
     .limit(limit);
@@ -222,6 +225,8 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     title: edits.title.trim(),
     summary: edits.summary.trim(),
     topic: edits.topic,
+    // Only deals expire; an end date on any other topic would hide a news story.
+    ends_on: edits.topic === 'deals' ? edits.ends_on || null : null,
   };
 
   const { data, error } = await supabase
@@ -241,7 +246,7 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     tableName: 'news_items',
     recordId: item.id,
     recordIdentifier: changes.title,
-    oldValues: { title: item.title, summary: item.summary, topic: item.topic },
+    oldValues: { title: item.title, summary: item.summary, topic: item.topic, ends_on: item.ends_on },
     newValues: { ...changes },
   });
 

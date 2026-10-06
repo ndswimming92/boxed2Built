@@ -25,7 +25,9 @@ import {
   NEWS_SUMMARY_MAX,
   NEWS_TITLE_MAX,
   NEWS_TOPIC_LABELS,
+  formatEndsOn,
   formatNewsDate,
+  isNewsExpired,
   safeExternalUrl,
 } from '../../utils/news';
 import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../../types/news';
@@ -57,7 +59,7 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<NewsStatus>('draft');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [edits, setEdits] = useState<NewsItemEdits>({ title: '', summary: '', topic: 'flat_pack' });
+  const [edits, setEdits] = useState<NewsItemEdits>({ title: '', summary: '', topic: 'flat_pack', ends_on: null });
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -129,7 +131,7 @@ export default function NewsPage() {
 
   const startEditing = (item: NewsItem) => {
     setEditingId(item.id);
-    setEdits({ title: item.title, summary: item.summary, topic: item.topic });
+    setEdits({ title: item.title, summary: item.summary, topic: item.topic, ends_on: item.ends_on });
   };
 
   const saveEdits = async (item: NewsItem): Promise<NewsItem | null> => {
@@ -313,6 +315,19 @@ export default function NewsPage() {
                   </span>
                   <span className="text-slate-400" aria-hidden="true">·</span>
                   <span className="text-slate-500">Added {formatAddedOn(item.created_at)}</span>
+                  {item.topic === 'deals' && (
+                    <>
+                      <span className="text-slate-400" aria-hidden="true">·</span>
+                      <span className="text-slate-500">
+                        {formatEndsOn(item.ends_on) ? `Ends ${formatEndsOn(item.ends_on)}` : 'No end date'}
+                      </span>
+                    </>
+                  )}
+                  {item.status === 'published' && isNewsExpired(item) && (
+                    <span className="px-2 py-1 bg-amber-100 text-amber-800 font-semibold rounded">
+                      Expired, hidden from the News page
+                    </span>
+                  )}
                 </div>
 
                 {isEditing ? (
@@ -363,6 +378,24 @@ export default function NewsPage() {
                         ))}
                       </select>
                     </div>
+                    {edits.topic === 'deals' && (
+                      <div>
+                        <label htmlFor={`news-ends-on-${item.id}`} className="block text-sm font-medium text-slate-700 mb-2">
+                          Deal ends on (optional)
+                        </label>
+                        <input
+                          id={`news-ends-on-${item.id}`}
+                          type="date"
+                          value={edits.ends_on ?? ''}
+                          onChange={(event) => setEdits({ ...edits, ends_on: event.target.value || null })}
+                          className="w-full sm:w-auto px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
+                        />
+                        <p className="mt-1 text-xs text-slate-500">
+                          The deal shows through this date and drops off the News page the next day (Central time).
+                          Leave blank to keep it up until you unpublish it.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <>
