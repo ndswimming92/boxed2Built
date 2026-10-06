@@ -225,7 +225,8 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     title: edits.title.trim(),
     summary: edits.summary.trim(),
     topic: edits.topic,
-    ends_on: edits.ends_on || null,
+    // Only deals expire; an end date on any other topic would hide a news story.
+    ends_on: edits.topic === 'deals' ? edits.ends_on || null : null,
   };
 
   const { data, error } = await supabase
