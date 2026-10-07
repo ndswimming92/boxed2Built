@@ -105,8 +105,8 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
 };
 
 const NewsPage: React.FC = () => {
-  const [topic, setTopic] = useState<TopicFilter>('all');
-  const [order, setOrder] = useState<NewsOrder>('newest');
+  const [topic, setTopic] = useState<TopicFilter>('deals');
+  const [order, setOrder] = useState<NewsOrder>(SALES_DEFAULT_ORDER);
   const [total, setTotal] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -118,7 +118,7 @@ const NewsPage: React.FC = () => {
 
   // Which filter and order the visitor is looking at right now, so a slow
   // "load more" for a view they have already left cannot append to the wrong list.
-  const currentView = useRef('all|newest');
+  const currentView = useRef(`deals|${SALES_DEFAULT_ORDER}`);
 
   // First page, on load and whenever the filter changes or a retry is asked for.
   useEffect(() => {
