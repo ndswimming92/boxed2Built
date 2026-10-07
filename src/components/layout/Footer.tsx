@@ -12,6 +12,7 @@ import { useBookingEnabled } from '../../hooks/useBookingPublicInfo';
 import { calculateRatingStats, getWrittenReviews } from '../../utils/ratingCalculations';
 import { SERVICE_LOCATIONS, locationPath } from '../../constants/serviceLocations';
 import { SERVICE_LANDING_PAGES } from '../../constants/serviceLandingPages';
+import { LEGAL_NOTICE } from '../../constants/legalEntity';
 
 const currentYear = new Date().getFullYear();
 
@@ -622,7 +623,7 @@ const Footer: React.FC = () => {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs text-gray-500 mb-5">
-            <p>&copy; {currentYear} {businessName}. All rights reserved.</p>
+            <p>&copy; {currentYear} {LEGAL_NOTICE}. All rights reserved.</p>
             <p className="text-center md:text-right">
               Local furniture assembly near you — serving {locality}, {region} and nearby areas.{' '}
               <InternalLink

@@ -1,5 +1,6 @@
 import { Invoice, InvoiceLineItem, InvoicePayment } from '../lib/supabase';
 import { invoiceLabels, amountLabel, headlineAmount } from './invoiceLabels';
+import { LEGAL_NOTICE } from '../constants/legalEntity';
 
 interface InvoiceWithDetails extends Invoice {
   lineItems: InvoiceLineItem[];
@@ -427,7 +428,7 @@ export async function generateInvoicePDF(
 
   // ---- Footer (navy) ----
   const pageHeight = doc.internal.pageSize.getHeight();
-  const footerHeight = 32;
+  const footerHeight = 37;
   doc.setFillColor(...NAVY);
   doc.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
 
@@ -460,6 +461,10 @@ export async function generateInvoicePDF(
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(92, 116, 154);
   doc.text('Turning boxes into comfort, one home at a time.', footCx, footBadgeCy + 20, { align: 'center' });
+
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text(LEGAL_NOTICE, footCx, footBadgeCy + 24.5, { align: 'center' });
 
   return doc.output('blob');
 }

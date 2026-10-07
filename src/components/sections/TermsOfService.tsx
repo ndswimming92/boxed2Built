@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { LOCAL_SEO_CONTENT } from '../../constants/localSEO';
+import { LEGAL_NAME, DBA_NAME } from '../../constants/legalEntity';
 
 const TermsOfService = () => {
   useEffect(() => {
@@ -19,6 +20,9 @@ const TermsOfService = () => {
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
+        <p className="mb-2">
+          These Terms of Service are provided by {LEGAL_NAME}, doing business as {DBA_NAME} ("{DBA_NAME}," "we," "us," or "our").
+        </p>
         <p>
           By using Boxed2Built furniture assembly services in Spring Hill, TN and surrounding Tennessee areas, you agree to be bound by these Terms of Service. If you do not agree, please do not use our furniture assembly services.
         </p>
