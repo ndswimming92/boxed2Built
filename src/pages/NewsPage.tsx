@@ -105,8 +105,8 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
 };
 
 const NewsPage: React.FC = () => {
-  const [topic, setTopic] = useState<TopicFilter>('all');
-  const [order, setOrder] = useState<NewsOrder>('newest');
+  const [topic, setTopic] = useState<TopicFilter>('deals');
+  const [order, setOrder] = useState<NewsOrder>(SALES_DEFAULT_ORDER);
   const [total, setTotal] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -118,15 +118,31 @@ const NewsPage: React.FC = () => {
 
   // Which filter and order the visitor is looking at right now, so a slow
   // "load more" for a view they have already left cannot append to the wrong list.
-  const currentView = useRef('all|newest');
+  const currentView = useRef(`deals|${SALES_DEFAULT_ORDER}`);
+
+  // The page opens on Sales. If that first load finds no sales, fall back to
+  // All news once; after that the visitor's own tab choices are never overridden.
+  const awaitingFirstLoad = useRef(true);
 
   // First page, on load and whenever the filter changes or a retry is asked for.
   useEffect(() => {
     let cancelled = false;
+    let fellBack = false;
 
     getPublishedNews({ topic: topic === 'all' ? null : topic, order })
       .then((result) => {
         if (cancelled) return;
+        if (awaitingFirstLoad.current) {
+          awaitingFirstLoad.current = false;
+          if (topic === 'deals' && result.items.length === 0) {
+            // Stay in the loading state; changing the filter reruns this effect.
+            fellBack = true;
+            currentView.current = 'all|newest';
+            setTopic('all');
+            setOrder('newest');
+            return;
+          }
+        }
         setItems(result.items);
         setHasMore(result.hasMore);
         setTotal(result.total);
@@ -140,7 +156,7 @@ const NewsPage: React.FC = () => {
         setError(true);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !fellBack) setLoading(false);
       });
 
     return () => {
