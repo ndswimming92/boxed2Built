@@ -6,6 +6,7 @@ import { getInvoiceExternalUrl, getInvoiceInternalSearch, trackInvoiceClick } fr
 import { usePageMeta } from '../hooks/usePageMeta';
 import { invoiceLabels, invoiceNoun, amountLabel, totalLabel, headlineAmount } from '../utils/invoiceLabels';
 import ExpressCheckout from '../components/payments/ExpressCheckout';
+import { LEGAL_NOTICE } from '../constants/legalEntity';
 
 interface BusinessBranding {
   name: string;
@@ -500,7 +501,7 @@ export default function InvoicePaymentPage() {
                   {address.address_locality}, {address.address_region}{address.postal_code ? ` ${address.postal_code}` : ''}
                 </p>
               )}
-              <p className="text-xs text-slate-400 mt-1">&copy; {new Date().getFullYear()} All rights reserved.</p>
+              <p className="text-xs text-slate-400 mt-1">&copy; {new Date().getFullYear()} {LEGAL_NOTICE}. All rights reserved.</p>
             </div>
             <div className="flex flex-col items-start sm:items-end gap-1.5 text-xs text-slate-400">
               {branding?.phone && (

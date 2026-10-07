@@ -4,6 +4,7 @@ import { CheckCircle, Phone, Mail, Package, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getInvoiceInternalSearch, trackInvoiceClick } from '../utils/utm';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { LEGAL_NOTICE } from '../constants/legalEntity';
 
 interface BusinessBranding {
   business_name: string;
@@ -190,7 +191,7 @@ export default function InvoiceThankYouPage() {
 
       <footer className="border-t border-slate-200 bg-white py-5">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center text-xs text-slate-400">
-          {branding?.business_name || 'Boxed2Built'} &copy; {new Date().getFullYear()} &mdash; All rights reserved.
+          &copy; {new Date().getFullYear()} {LEGAL_NOTICE} &mdash; All rights reserved.
         </div>
       </footer>
     </div>
