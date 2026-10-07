@@ -16,7 +16,7 @@ const TermsOfService = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2">Terms of Service - Boxed2Built Furniture Assembly</h1>
       <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
-      <p className="text-sm text-gray-500 mb-8">Last Updated: March 3, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: October 7, 2026</p>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
