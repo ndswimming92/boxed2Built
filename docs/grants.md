@@ -2,7 +2,8 @@
 
 An admin-only list of grants Boxed2Built could apply for, at **Admin > Grants**
 (`/admin/grants`, under Financial Management). It is filled by a daily automated
-search. Nothing on it is public, and nothing needs approving.
+search. Nothing on it is public, only the business's owners and admins can read
+it, and nothing needs approving.
 
 ## How a grant gets on the list
 
@@ -50,6 +51,7 @@ across cycles, so its history is not lost and it is not saved twice.
 | Piece | Where |
 | --- | --- |
 | Table, RLS, trigger | `supabase/migrations/20261008181155_create_business_grants.sql` |
+| Owners and admins only | `supabase/migrations/20261008182942_restrict_business_grants_to_org_admins.sql` |
 | Admin page | `src/pages/admin/GrantsPage.tsx` |
 | Query | `src/services/grantsService.ts` |
 | Tabs, labels, sorting, dates | `src/utils/grants.ts` (tests in `tests/unit/grants.test.ts`) |
@@ -62,6 +64,15 @@ across cycles, so its history is not lost and it is not saved twice.
   granted `SELECT` on `business_grants` and nothing else, and there is no
   anonymous access at all, so the list cannot leak onto the public site or be
   changed from it.
+- **Owners and admins only.** The read policy uses `can_manage_org_settings`,
+  so the `viewer` and `member` roles cannot read the table even by calling the
+  API directly. The admin route guard protects the page; the policy protects
+  the data.
+- **One organization at a time.** The query filters on the selected
+  organization as well as relying on RLS. RLS alone would hand an admin of two
+  organizations, or a platform admin, both lists merged into one.
+- **A failed load shows only the error.** No tabs, counts or "no grants yet"
+  message appear beside it, because what is saved is unknown at that point.
 - **Everything renders as plain text.** The details are written by an automated
   process from web pages, so they are never treated as HTML.
 - **Links are checked twice.** The table only accepts `http(s)` URLs, and

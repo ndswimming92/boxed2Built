@@ -110,9 +110,12 @@ const BAD_LINK: Row = {
 };
 
 /**
- * Reads return the slice the request asked for (the page reads the table in
- * pages until one comes back empty). Anything that is not a read is recorded,
- * so a test can assert that the page never writes.
+ * Reads answer the way PostgREST would: only the rows of the organization the
+ * request filtered on, and of those the slice it asked for (the page reads the
+ * table in pages until one comes back empty). A request with no organization
+ * filter gets every row, which is exactly what the page must never ask for.
+ * Anything that is not a read is recorded, so a test can assert that the page
+ * never writes.
  */
 async function stubGrants(page: Page, rows: Row[]) {
   const writes: string[] = [];
@@ -124,9 +127,11 @@ async function stubGrants(page: Page, rows: Row[]) {
       return route.fulfill({ status: 403, json: { message: 'read-only' } });
     }
     const params = new URL(request.url()).searchParams;
+    const organization = /^eq\.(.+)$/.exec(params.get('organization_id') ?? '')?.[1] ?? null;
+    const visible = organization ? rows.filter((row) => row.organization_id === organization) : rows;
     const offset = Number(params.get('offset') ?? 0);
-    const limit = Number(params.get('limit') ?? rows.length);
-    return route.fulfill({ json: rows.slice(offset, offset + limit) });
+    const limit = Number(params.get('limit') ?? visible.length);
+    return route.fulfill({ json: visible.slice(offset, offset + limit) });
   });
 
   return writes;
@@ -251,11 +256,58 @@ test('an empty list explains where grants come from', async ({ page }) => {
   await expect(page.getByText(/Grant finder last ran/)).toHaveCount(0);
 });
 
-test('a failed load says so instead of showing an empty list as if nothing were found', async ({ page }) => {
+test('a failed load shows the error and nothing that reads like an empty list', async ({ page }) => {
   await page.route('**/rest/v1/business_grants*', (route) =>
     route.fulfill({ status: 500, json: { message: 'boom' } }),
   );
   await open(page);
 
   await expect(page.getByRole('alert')).toContainText('Failed to load grants');
+  // What is saved is unknown, so the page must not claim there is nothing:
+  // no "no grants yet" message, no tab counts of zero, nothing to search.
+  await expect(page.getByText(/No open grants saved yet/)).toHaveCount(0);
+  await expect(page.getByRole('tab')).toHaveCount(0);
+  await expect(page.getByLabel('Search grants')).toHaveCount(0);
+  await expect(page.getByRole('article')).toHaveCount(0);
+});
+
+test('only the selected organization\'s grants are listed', async ({ page }) => {
+  // RLS lets an admin of two organizations, or a platform admin, read both.
+  // Without a filter the other organization's grants would be listed here as
+  // if they were Boxed2Built's.
+  const OTHER_ORG: Row = {
+    ...OPEN_SOON,
+    id: 'grant-other',
+    organization_id: 'org-2',
+    name: 'Another Business Grant',
+  };
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/rest/v1/business_grants')) requests.push(request.url());
+  });
+  await stubGrants(page, [OPEN_LATER, OTHER_ORG]);
+  await open(page);
+
+  await expect(card(page, OPEN_LATER)).toBeVisible();
+  await expect(card(page, OTHER_ORG)).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: /Open now/ })).toContainText('1');
+  expect(requests.length).toBeGreaterThan(0);
+  for (const url of requests) {
+    expect(new URL(url).searchParams.get('organization_id')).toBe('eq.org-1');
+  }
+});
+
+test('with no organization selected it asks for nothing and says why the list is empty', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/rest/v1/business_grants')) requests.push(request.url());
+  });
+  await stubGrants(page, [OPEN_LATER]);
+  await page.clock.setFixedTime(NOW);
+  await page.goto('/tests/harness/grants.html?org=none');
+
+  await expect(page.getByRole('alert')).toContainText('No organization is selected');
+  await expect(page.getByRole('article')).toHaveCount(0);
+  await expect(page.getByRole('tab')).toHaveCount(0);
+  expect(requests).toEqual([]);
 });
