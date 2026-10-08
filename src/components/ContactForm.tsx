@@ -13,7 +13,7 @@ import {
   forgetReferralCode
 } from '../services/referralQRService';
 import type { CouponLookupResult } from '../types/coupon';
-import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
+import { trackEvent, trackFormInteraction, trackConversion, trackLead } from '../utils/analytics';
 import FormField from './ui/FormField';
 import ValidationMessage from './ui/ValidationMessage';
 import ProgressBar from './ui/ProgressBar';
@@ -667,6 +667,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         console.error('[ContactForm] Email send error:', err);
       });
 
+
+      // The request is saved, so this is a real lead.
+      trackLead({
+        service_type: values.furnitureType,
+        zip_code: values.serviceZip,
+        form_location: sideRail ? 'home_hero' : 'contact_page',
+      });
 
       // Log successful form submission
       await logPublicAction({

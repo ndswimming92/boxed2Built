@@ -31,6 +31,7 @@ import {
   toDateKey,
   uploadBookingPhotos,
 } from '../services/bookingService';
+import { trackLead } from '../utils/analytics';
 
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // Matches the furniture-photos bucket limit.
@@ -260,6 +261,11 @@ export default function BookingPage() {
         serviceAddress: address.trim() || null,
         notes: notes.trim() || null,
         photoPaths,
+      });
+
+      trackLead({
+        service_type: selectedService?.name,
+        form_location: 'booking',
       });
 
       setResult(booking);

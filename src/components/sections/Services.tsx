@@ -35,10 +35,6 @@ const Services: React.FC = () => {
     };
   }) || [];
 
-  const handlePhoneClick = () => {
-    trackEvent('phone-click-services');
-  };
-
   const handleEmailClick = () => {
     trackEvent('email-click-services');
     window.location.href = 'mailto:nicholas.davidson@boxed2built.com?subject=Quote%20Request%20-%20Services%20Section&body=I%20would%20like%20to%20request%20a%20quote%20for%20furniture%20assembly.%0A%0ABy%20submitting%20this%20request,%20I%20agree%20to%20the%20Terms%20of%20Service.%0A%0ASource:%20Website%20Services%20Section';
@@ -171,7 +167,6 @@ const Services: React.FC = () => {
             <a
               href={`tel:${phoneRaw}`}
               className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-colors flex items-center justify-center"
-              onClick={handlePhoneClick}
             >
               <Phone size={20} className="mr-2" />
               Call {phoneDisplay}

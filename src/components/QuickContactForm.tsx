@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { trackEvent, trackFormInteraction, trackConversion } from '../utils/analytics';
+import { trackEvent, trackFormInteraction, trackConversion, trackLead } from '../utils/analytics';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
 import { logPublicAction } from '../services/auditLogService';
@@ -189,6 +189,8 @@ const QuickContactForm: React.FC = () => {
           page_section: 'footer',
           supabase_success: supabaseSuccess,
         });
+
+        trackLead({ form_location: 'footer' });
 
         trackConversion('quick_contact_submission', 1, 'USD', {
           page_section: 'footer',
