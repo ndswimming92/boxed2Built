@@ -5,7 +5,7 @@ import { getGrants } from '../../services/grantsService';
 import {
   GRANT_SCOPE_LABELS,
   closingSoonLabel,
-  formatGrantDeadline,
+  deadlineParts,
   formatGrantOpens,
   grantBucket,
   isNewGrant,
@@ -13,6 +13,8 @@ import {
   lastCheckedOn,
   matchesGrantSearch,
   sortGrants,
+  splitAmount,
+  toPoints,
   type GrantBucket,
 } from '../../utils/grants';
 import { centralToday, formatEndsOn, safeExternalUrl } from '../../utils/news';
@@ -36,14 +38,65 @@ const TABS: Array<{ bucket: GrantBucket; label: string; empty: string }> = [
   },
 ];
 
-function Detail({ label, value }: { label: string; value: string | null }) {
-  if (!value?.trim()) return null;
+/**
+ * A block of grant text as a short list, one point per line, or as a plain
+ * paragraph when there is only one point.
+ *
+ * Plain text on purpose: this is written by an automated check from web pages,
+ * so it is never treated as HTML and a web address in it is not made a link.
+ */
+function Points({ text, className = 'text-slate-700' }: { text: string | null; className?: string }) {
+  const points = toPoints(text);
+  if (points.length === 0) return null;
+  if (points.length === 1) {
+    return <p className={`text-sm leading-relaxed break-words ${className}`}>{points[0]}</p>;
+  }
   return (
-    <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">{label}</dt>
-      {/* Plain text on purpose: this is written by an automated check from web pages. */}
-      <dd className="text-sm text-slate-700 whitespace-pre-line break-words">{value}</dd>
+    <ul className={`list-disc pl-5 space-y-1.5 text-sm leading-relaxed marker:text-slate-400 ${className}`}>
+      {points.map((point, index) => (
+        <li key={index} className="break-words pl-0.5">
+          {point}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** One of the three facts read first: a label, the answer in bold, and its small print. */
+function Fact({
+  label,
+  headline,
+  detail,
+  tone = 'default',
+}: {
+  label: string;
+  headline: string;
+  detail?: string | null;
+  tone?: 'default' | 'money' | 'warning';
+}) {
+  const color =
+    tone === 'money' ? 'text-emerald-700' : tone === 'warning' ? 'text-amber-800' : 'text-slate-900';
+  return (
+    <div className="px-5 sm:px-6 py-4 min-w-0">
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1">
+        <span className={`block text-base font-bold leading-snug break-words ${color}`}>{headline}</span>
+        {detail && <span className="mt-1 block text-xs leading-relaxed text-slate-600 break-words">{detail}</span>}
+      </dd>
     </div>
+  );
+}
+
+/** A titled part of the card: the heading in a narrow left column, its points beside it. */
+function Section({ title, text }: { title: string; text: string | null }) {
+  if (toPoints(text).length === 0) return null;
+  return (
+    <section className="py-4 first:pt-0 last:pb-0 md:grid md:grid-cols-[14rem_minmax(0,1fr)] md:gap-6">
+      <h3 className="text-sm font-semibold text-slate-900 mb-2 md:mb-0">{title}</h3>
+      <div className="max-w-prose">
+        <Points text={text} />
+      </div>
+    </section>
   );
 }
 
@@ -51,59 +104,82 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
   const applyUrl = safeExternalUrl(grant.apply_url);
   const closingSoon = closingSoonLabel(grant, today);
   const lastChecked = formatEndsOn(grant.last_verified_on);
+  const amount = splitAmount(grant.amount);
+  const deadline = deadlineParts(grant);
+  const stale = bucket !== 'closed' && isStale(grant, today);
 
   return (
-    <article className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6" aria-labelledby={`grant-${grant.id}`}>
-      <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
-        {bucket !== 'closed' && isNewGrant(grant, today) && (
-          <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">New</span>
-        )}
-        {closingSoon && (
-          <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">{closingSoon}</span>
-        )}
-        {bucket === 'closed' && (
-          <span className="px-2 py-1 bg-slate-200 text-slate-700 font-semibold rounded">Closed</span>
-        )}
-        <span className="px-2 py-1 bg-blue-100 text-blue-700 font-semibold rounded">
-          {GRANT_SCOPE_LABELS[grant.funder_scope] ?? grant.funder_scope}
-        </span>
-        {grant.entry_fee && (
-          <span className="px-2 py-1 bg-amber-100 text-amber-800 font-semibold rounded">
-            Costs money to enter: {grant.entry_fee}
+    <article
+      className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+      aria-labelledby={`grant-${grant.id}`}
+    >
+      <header className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
+          {bucket !== 'closed' && isNewGrant(grant, today) && (
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">New</span>
+          )}
+          {closingSoon && (
+            <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">{closingSoon}</span>
+          )}
+          {bucket === 'closed' && (
+            <span className="px-2 py-1 bg-slate-200 text-slate-700 font-semibold rounded">Closed</span>
+          )}
+          <span className="px-2 py-1 bg-blue-100 text-blue-700 font-semibold rounded">
+            {GRANT_SCOPE_LABELS[grant.funder_scope] ?? grant.funder_scope}
           </span>
-        )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-        <div className="min-w-0">
-          <h2 id={`grant-${grant.id}`} className="text-lg font-semibold text-slate-900 break-words">
-            {grant.name}
-          </h2>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-            <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
-            <span className="break-words">{grant.funder}</span>
-          </p>
         </div>
-        <div className="sm:text-right sm:max-w-xs flex-shrink-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</p>
-          <p className="text-base font-bold text-emerald-700 break-words">{grant.amount}</p>
-        </div>
-      </div>
+        <h2 id={`grant-${grant.id}`} className="text-xl font-bold text-slate-900 break-words">
+          {grant.name}
+        </h2>
+        <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+          <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
+          <span className="break-words">{grant.funder}</span>
+        </p>
+      </header>
 
-      <p className="text-slate-700 whitespace-pre-line break-words mb-5">{grant.description}</p>
-
-      <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+      {/* The three things decided on first, side by side, so two grants can be compared at a glance. */}
+      <dl className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-y border-slate-200 bg-slate-50">
+        <Fact label="Amount" headline={amount.headline} detail={amount.detail} tone="money" />
         {bucket === 'upcoming' ? (
-          <Detail label="Applications open" value={formatGrantOpens(grant)} />
-        ) : null}
-        <Detail label="Deadline" value={formatGrantDeadline(grant)} />
-        <Detail label="Who can apply" value={grant.eligibility} />
-        <Detail label="Fit for Boxed2Built" value={grant.fit_notes} />
-        <Detail label="What the application asks for" value={grant.application_requirements} />
-        <Detail label="Good to know" value={grant.other_notes} />
+          <Fact
+            label="Applications open"
+            headline={formatGrantOpens(grant)}
+            detail={grant.deadline ? `Deadline ${deadline.headline}` : null}
+          />
+        ) : (
+          <Fact label="Deadline" headline={deadline.headline} detail={deadline.detail} />
+        )}
+        <Fact
+          label="Cost to apply"
+          headline={grant.entry_fee ?? 'Free'}
+          detail={grant.entry_fee ? 'This one costs money to enter.' : null}
+          tone={grant.entry_fee ? 'warning' : 'default'}
+        />
       </dl>
 
-      <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-5 sm:px-6 py-5 sm:py-6">
+        {/* A summary reads as a paragraph; the rules and steps below read as lists. */}
+        <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line break-words">
+          {grant.description}
+        </p>
+
+        {toPoints(grant.fit_notes).length > 0 && (
+          <section className="mb-5 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3.5">
+            <h3 className="text-sm font-semibold text-emerald-900 mb-2">Fit for Boxed2Built</h3>
+            <div className="max-w-prose">
+              <Points text={grant.fit_notes} className="text-slate-800" />
+            </div>
+          </section>
+        )}
+
+        <div className="divide-y divide-slate-100">
+          <Section title="Who can apply" text={grant.eligibility} />
+          <Section title="What the application asks for" text={grant.application_requirements} />
+          <Section title="Good to know" text={grant.other_notes} />
+        </div>
+      </div>
+
+      <footer className="px-5 sm:px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
         {applyUrl ? (
           <a
             href={applyUrl}
@@ -117,11 +193,11 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
         ) : (
           <span className="text-sm text-red-700">The saved link is not a valid web address.</span>
         )}
-        <p className={`text-xs ${bucket !== 'closed' && isStale(grant, today) ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+        <p className={`text-xs ${stale ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
           {lastChecked ? `Last checked ${lastChecked}` : 'Not checked yet'}
-          {bucket !== 'closed' && isStale(grant, today) ? '. Confirm the details with the funder.' : ''}
+          {stale ? '. Confirm the details with the funder.' : ''}
         </p>
-      </div>
+      </footer>
     </article>
   );
 }
