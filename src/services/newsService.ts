@@ -1,6 +1,14 @@
 import { supabase } from '../lib/supabase';
 import { logAction, type ActionType } from './auditLogService';
-import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../types/news';
+import type {
+  FurnitureType,
+  NewsItem,
+  NewsItemEdits,
+  NewsStatus,
+  NewsTopic,
+  SaleFilterRow,
+  SaleScope,
+} from '../types/news';
 import {
   centralToday,
   endingAfterCondition,
@@ -37,6 +45,10 @@ export async function getPublishedNews(options: {
   topic?: NewsTopic | null;
   cursor?: NewsCursor | null;
   order?: NewsOrder;
+  /** Sales only: `store_slug`, local or online, and a furniture type. Ignored on other topics. */
+  store?: string | null;
+  scope?: SaleScope | null;
+  type?: FurnitureType | null;
 } = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null }> {
   const order = options.order ?? 'newest';
   const ascending = order === 'oldest';
@@ -83,6 +95,11 @@ export async function getPublishedNews(options: {
   if (options.topic) {
     query = query.eq('topic', options.topic);
   }
+  if (options.topic === 'deals') {
+    if (options.store) query = query.eq('store_slug', options.store);
+    if (options.scope) query = query.eq('sale_scope', options.scope);
+    if (options.type) query = query.contains('furniture_types', [options.type]);
+  }
   if (cursor && !byEndDate) {
     query = ascending
       ? query.gte('published_at', cursor.publishedAt)
@@ -102,6 +119,24 @@ export async function getPublishedNews(options: {
     hasMore: rows.length > NEWS_PAGE_SIZE,
     total: count ?? null,
   };
+}
+
+/**
+ * The stores, local/online choices and furniture types among the live sales,
+ * with counts, for the Sales tab's filters. Returns an empty list if the
+ * database function is not there yet, so the page just shows no filters.
+ */
+export async function getSaleFilterOptions(): Promise<SaleFilterRow[]> {
+  const { data, error } = await supabase.rpc('news_sale_filter_options');
+  if (error) {
+    console.error('Error fetching sale filter options:', error);
+    return [];
+  }
+  return ((data || []) as SaleFilterRow[]).map((row) => ({
+    ...row,
+    furniture_types: row.furniture_types ?? [],
+    sale_count: Number(row.sale_count),
+  }));
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -253,6 +288,10 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     topic: edits.topic,
     // Only deals expire; an end date on any other topic would hide a news story.
     ends_on: edits.topic === 'deals' ? edits.ends_on || null : null,
+    // Store details only mean something on a sale.
+    store_name: edits.topic === 'deals' ? edits.store_name?.trim() || null : null,
+    sale_scope: edits.topic === 'deals' ? edits.sale_scope || null : null,
+    furniture_types: edits.topic === 'deals' ? edits.furniture_types : [],
   };
 
   const { data, error } = await supabase
@@ -272,7 +311,15 @@ export async function updateNewsItem(item: NewsItem, edits: NewsItemEdits): Prom
     tableName: 'news_items',
     recordId: item.id,
     recordIdentifier: changes.title,
-    oldValues: { title: item.title, summary: item.summary, topic: item.topic, ends_on: item.ends_on },
+    oldValues: {
+      title: item.title,
+      summary: item.summary,
+      topic: item.topic,
+      ends_on: item.ends_on,
+      store_name: item.store_name,
+      sale_scope: item.sale_scope,
+      furniture_types: item.furniture_types,
+    },
     newValues: { ...changes },
   });
 

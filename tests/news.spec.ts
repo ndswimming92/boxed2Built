@@ -161,6 +161,9 @@ test('an edit saves the trimmed text without changing the status', async ({ page
         summary: DRAFT.summary,
         topic: 'furniture_assembly',
         ends_on: null,
+        store_name: null,
+        sale_scope: null,
+        furniture_types: [],
       },
     },
   ]);

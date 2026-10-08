@@ -11,6 +11,14 @@ import {
   newsCursor,
   safeExternalUrl,
   NEWS_TOPIC_LABELS,
+  DEFAULT_NEWS_VIEW,
+  countSales,
+  newsViewToSearch,
+  parseNewsView,
+  scopeCounts,
+  storeOptions,
+  storeSlug,
+  typeOptions,
 } from '../../src/utils/news.ts';
 
 test('a source date prints as the day it names, not the day before', () => {
@@ -155,4 +163,69 @@ test('centralToday uses Central time, not UTC', () => {
 test('formatEndsOn prints the named day', () => {
   assert.equal(formatEndsOn('2026-10-12'), 'October 12, 2026');
   assert.equal(formatEndsOn(null), null);
+});
+
+/* ── Sales filters ─────────────────────────────────────────────────────── */
+
+const SALE_ROWS = [
+  { store_name: 'Wayfair', store_slug: 'wayfair', sale_scope: 'online', furniture_types: ['living_room', 'bedroom'], sale_count: 2 },
+  { store_name: 'Wayfair', store_slug: 'wayfair', sale_scope: 'online', furniture_types: ['outdoor'], sale_count: 1 },
+  { store_name: 'Bassett Home Furnishings', store_slug: 'bassett-home-furnishings', sale_scope: 'local', furniture_types: ['living_room'], sale_count: 1 },
+  { store_name: 'IKEA', store_slug: 'ikea', sale_scope: 'online', furniture_types: [], sale_count: 4 },
+  { store_name: null, store_slug: null, sale_scope: null, furniture_types: [], sale_count: 1 },
+] as Parameters<typeof storeOptions>[0];
+
+test('a store name becomes the same slug the database generates', () => {
+  assert.equal(storeSlug('Bassett Home Furnishings'), 'bassett-home-furnishings');
+  assert.equal(storeSlug("  Lowe's & Co.  "), 'lowe-s-co');
+  assert.equal(storeSlug('IKEA'), 'ikea');
+  assert.equal(storeSlug('---'), null);
+  assert.equal(storeSlug(null), null);
+});
+
+test('the default page link is empty, and a filtered one round-trips', () => {
+  assert.equal(newsViewToSearch(DEFAULT_NEWS_VIEW), '');
+  assert.deepEqual(parseNewsView(''), { view: DEFAULT_NEWS_VIEW, explicit: false });
+
+  const view = { topic: 'deals', order: 'newest', store: 'wayfair', scope: 'online', type: 'bedroom' } as const;
+  const search = newsViewToSearch(view);
+  assert.equal(search, '?sort=newest&store=wayfair&where=online&type=bedroom');
+  assert.deepEqual(parseNewsView(search), { view, explicit: true });
+});
+
+test('news tabs use their own tab name and default order', () => {
+  const view = { topic: 'flat_pack', order: 'newest', store: null, scope: null, type: null } as const;
+  assert.equal(newsViewToSearch(view), '?tab=flat-pack');
+  assert.deepEqual(parseNewsView('?tab=flat-pack').view, view);
+  assert.equal(parseNewsView('?tab=all').explicit, true);
+});
+
+test('page links that make no sense are ignored, not trusted', () => {
+  // Store filters and end-date orders belong to the Sales tab.
+  assert.deepEqual(parseNewsView('?tab=all&store=wayfair&sort=ending-soonest').view, {
+    topic: 'all', order: 'newest', store: null, scope: null, type: null,
+  });
+  assert.deepEqual(parseNewsView('?store=Not%20A%20Slug&where=moon&type=castle&tab=nope').view, DEFAULT_NEWS_VIEW);
+  assert.equal(parseNewsView('?store=%3Cscript%3E').view.store, null);
+});
+
+test('filter options count the live sales that match the other filters', () => {
+  assert.equal(countSales(SALE_ROWS), 9);
+  assert.equal(countSales(SALE_ROWS, { store: 'wayfair' }), 3);
+  assert.equal(countSales(SALE_ROWS, { type: 'living_room' }), 3);
+
+  assert.deepEqual(
+    storeOptions(SALE_ROWS).map((store) => [store.slug, store.count]),
+    [['ikea', 4], ['wayfair', 3], ['bassett-home-furnishings', 1]],
+  );
+  // Choosing a type narrows the counts but a chosen store never hides the others.
+  assert.deepEqual(
+    storeOptions(SALE_ROWS, { type: 'living_room', store: 'wayfair' }).map((store) => [store.slug, store.count]),
+    [['wayfair', 2], ['bassett-home-furnishings', 1]],
+  );
+  assert.deepEqual(scopeCounts(SALE_ROWS, { store: 'wayfair' }), { all: 3, local: 0, online: 3 });
+  assert.deepEqual(
+    typeOptions(SALE_ROWS, { scope: 'local' }).map((option) => [option.value, option.count]),
+    [['living_room', 1]],
+  );
 });

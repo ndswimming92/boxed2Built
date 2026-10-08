@@ -22,15 +22,19 @@ import {
   updateNewsItem,
 } from '../../services/newsService';
 import {
+  FURNITURE_TYPES,
+  FURNITURE_TYPE_LABELS,
+  NEWS_STORE_NAME_MAX,
   NEWS_SUMMARY_MAX,
   NEWS_TITLE_MAX,
   NEWS_TOPIC_LABELS,
+  SALE_SCOPE_LABELS,
   formatEndsOn,
   formatNewsDate,
   isNewsExpired,
   safeExternalUrl,
 } from '../../utils/news';
-import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic } from '../../types/news';
+import type { NewsItem, NewsItemEdits, NewsStatus, NewsTopic, SaleScope } from '../../types/news';
 
 const TABS: Array<{ status: NewsStatus; label: string; empty: string }> = [
   {
@@ -59,9 +63,23 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<NewsStatus>('draft');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [edits, setEdits] = useState<NewsItemEdits>({ title: '', summary: '', topic: 'flat_pack', ends_on: null });
+  const [edits, setEdits] = useState<NewsItemEdits>({
+    title: '',
+    summary: '',
+    topic: 'flat_pack',
+    ends_on: null,
+    store_name: null,
+    sale_scope: null,
+    furniture_types: [],
+  });
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Store names already in use, offered as suggestions so one store does not end
+  // up filed under two spellings.
+  const storeNames = [
+    ...new Set(items.map((item) => item.store_name).filter((name): name is string => Boolean(name))),
+  ].sort((a, b) => a.localeCompare(b));
 
   const showMessage = useCallback((type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
@@ -131,7 +149,15 @@ export default function NewsPage() {
 
   const startEditing = (item: NewsItem) => {
     setEditingId(item.id);
-    setEdits({ title: item.title, summary: item.summary, topic: item.topic, ends_on: item.ends_on });
+    setEdits({
+      title: item.title,
+      summary: item.summary,
+      topic: item.topic,
+      ends_on: item.ends_on,
+      store_name: item.store_name,
+      sale_scope: item.sale_scope,
+      furniture_types: item.furniture_types ?? [],
+    });
   };
 
   const saveEdits = async (item: NewsItem): Promise<NewsItem | null> => {
@@ -321,6 +347,20 @@ export default function NewsPage() {
                       <span className="text-slate-500">
                         {formatEndsOn(item.ends_on) ? `Ends ${formatEndsOn(item.ends_on)}` : 'No end date'}
                       </span>
+                      <span className="text-slate-400" aria-hidden="true">·</span>
+                      <span className={item.store_name ? 'text-slate-500' : 'text-amber-700 font-medium'}>
+                        {item.store_name
+                          ? [
+                              item.store_name,
+                              item.sale_scope && SALE_SCOPE_LABELS[item.sale_scope],
+                              item.furniture_types?.length
+                                ? item.furniture_types.map((type) => FURNITURE_TYPE_LABELS[type]).join(', ')
+                                : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')
+                          : 'No store set (hidden when visitors filter by store)'}
+                      </span>
                     </>
                   )}
                   {item.status === 'published' && isNewsExpired(item) && (
@@ -394,6 +434,76 @@ export default function NewsPage() {
                           The sale shows through this date and drops off the News page the next day (Central time).
                           Leave blank to keep it up until you unpublish it.
                         </p>
+                      </div>
+                    )}
+                    {edits.topic === 'deals' && (
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor={`news-store-${item.id}`} className="block text-sm font-medium text-slate-700 mb-2">
+                            Store running the sale
+                          </label>
+                          <input
+                            id={`news-store-${item.id}`}
+                            type="text"
+                            list="news-store-names"
+                            value={edits.store_name ?? ''}
+                            maxLength={NEWS_STORE_NAME_MAX}
+                            onChange={(event) => setEdits({ ...edits, store_name: event.target.value || null })}
+                            className="w-full sm:w-80 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                          />
+                          <datalist id="news-store-names">
+                            {storeNames.map((name) => (
+                              <option key={name} value={name} />
+                            ))}
+                          </datalist>
+                          <p className="mt-1 text-xs text-slate-500">
+                            The store itself (Wayfair, Bassett), not the site that reported it. Pick an existing
+                            name where one fits so a store's sales stay under one filter.
+                          </p>
+                        </div>
+                        <div>
+                          <label htmlFor={`news-scope-${item.id}`} className="block text-sm font-medium text-slate-700 mb-2">
+                            Local or online
+                          </label>
+                          <select
+                            id={`news-scope-${item.id}`}
+                            value={edits.sale_scope ?? ''}
+                            onChange={(event) =>
+                              setEdits({ ...edits, sale_scope: (event.target.value || null) as SaleScope | null })
+                            }
+                            className="w-full sm:w-auto px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white"
+                          >
+                            <option value="">Not set</option>
+                            {(Object.keys(SALE_SCOPE_LABELS) as SaleScope[]).map((scope) => (
+                              <option key={scope} value={scope}>
+                                {scope === 'local' ? 'Local store near Spring Hill' : 'Online only'}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <fieldset>
+                          <legend className="block text-sm font-medium text-slate-700 mb-2">Furniture covered</legend>
+                          <div className="flex flex-wrap gap-x-5 gap-y-2">
+                            {FURNITURE_TYPES.map((type) => (
+                              <label key={type} className="inline-flex items-center gap-2 text-sm text-slate-700">
+                                <input
+                                  type="checkbox"
+                                  checked={edits.furniture_types.includes(type)}
+                                  onChange={(event) =>
+                                    setEdits({
+                                      ...edits,
+                                      furniture_types: event.target.checked
+                                        ? [...edits.furniture_types, type]
+                                        : edits.furniture_types.filter((value) => value !== type),
+                                    })
+                                  }
+                                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                {FURNITURE_TYPE_LABELS[type]}
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
                       </div>
                     )}
                   </div>
