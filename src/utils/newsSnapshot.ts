@@ -47,10 +47,13 @@ export function saveSnapshot(
   now: number = Date.now(),
   storage: Pick<Storage, 'getItem' | 'setItem'> | null = defaultStorage(),
 ): void {
-  if (!storage || items.length === 0) return;
+  if (!storage) return;
   try {
     const all = readAll(storage);
-    all[viewKey] = { items, total, savedAt: now };
+    // A successful but empty answer is the truth now (the last sale was
+    // unpublished or ended), so the old copy must not come back later.
+    if (items.length === 0) delete all[viewKey];
+    else all[viewKey] = { items, total, savedAt: now };
     const newest = Object.entries(all)
       .sort(([, a], [, b]) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
       .slice(0, MAX_VIEWS);

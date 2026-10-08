@@ -46,11 +46,14 @@ test('only the six most recent views are kept', () => {
   assert.notEqual(loadSnapshot('view-7', NOW + 8, storage), null);
 });
 
-test('an empty list is never saved over a good one, and bad storage is ignored', () => {
+test('an empty answer clears that view\'s saved copy, and bad storage is ignored', () => {
   const storage = memory();
   saveSnapshot('deals|', [item('a')], 1, NOW, storage);
   saveSnapshot('deals|', [], 0, NOW + 1, storage);
-  assert.equal(loadSnapshot('deals|', NOW + 2, storage)?.items.length, 1);
+  assert.equal(loadSnapshot('deals|', NOW + 2, storage), null);
+  saveSnapshot('other|', [item('b')], 1, NOW, storage);
+  saveSnapshot('deals|', [], 0, NOW + 3, storage);
+  assert.equal(loadSnapshot('other|', NOW + 4, storage)?.items.length, 1);
 
   const broken = { getItem: () => '{not json', setItem: () => { throw new Error('full'); } };
   assert.equal(loadSnapshot('deals|', NOW, broken), null);

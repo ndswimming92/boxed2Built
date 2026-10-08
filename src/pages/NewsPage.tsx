@@ -243,6 +243,8 @@ const NewsPage: React.FC = () => {
           awaitingFirstLoad.current = false;
           if (topic === 'deals' && result.items.length === 0) {
             // Stay in the loading state; the view changing reruns this effect.
+            // No sales is a real answer, so a saved copy of them must go.
+            saveSnapshot(key, [], null);
             fellBack = true;
             setFellBackToAll(true);
             return;

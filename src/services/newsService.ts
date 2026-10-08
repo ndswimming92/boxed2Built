@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { getNewsCacheClient } from '../lib/newsCacheClient';
-import { readWithFallback } from '../utils/publicRead';
+import { readWithRetry } from '../utils/publicRead';
 import { logAction, type ActionType } from './auditLogService';
 import type {
   FurnitureType,
@@ -66,8 +65,7 @@ export async function getPublishedNews(options: {
   // page starts strictly after the last sale shown, so it has no ties to ask for.
   const limit = byEndDate ? NEWS_PAGE_SIZE + 1 : NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
-  // Built once per client, so the same query can be sent through the cached
-  // route and, if that is not working, straight to Supabase.
+  // Rebuilt for each attempt, because a query can only be sent once.
   const buildQuery = (client: SupabaseClient) => {
     // The total is only asked for on the first page; later pages keep it.
     let query = client
@@ -112,17 +110,13 @@ export async function getPublishedNews(options: {
         : query.lte('published_at', cursor.publishedAt);
     }
     // The client would otherwise retry 503s and dropped connections on its own,
-    // three times over seven seconds. readWithFallback owns the retry policy,
-    // and stacked retries from a crowd of visitors are what hurts a struggling
+    // three times over seven seconds. readWithRetry owns the retry policy, and
+    // stacked retries from a crowd of visitors are what hurts a struggling
     // database most.
     return query.retry(false);
   };
 
-  const cacheClient = getNewsCacheClient();
-  const { data, error, count } = await readWithFallback(
-    cacheClient ? () => buildQuery(cacheClient) : null,
-    () => buildQuery(supabase),
-  );
+  const { data, error, count } = await readWithRetry(() => buildQuery(supabase));
 
   if (error) {
     console.error('Error fetching news:', error);
@@ -143,13 +137,8 @@ export async function getPublishedNews(options: {
  * database function is not there yet, so the page just shows no filters.
  */
 export async function getSaleFilterOptions(): Promise<SaleFilterRow[]> {
-  // A GET (not the default POST) so the cached route can answer it.
-  const buildQuery = (client: SupabaseClient) =>
-    client.rpc('news_sale_filter_options', undefined, { get: true }).retry(false);
-  const cacheClient = getNewsCacheClient();
-  const { data, error } = await readWithFallback(
-    cacheClient ? () => buildQuery(cacheClient) : null,
-    () => buildQuery(supabase),
+  const { data, error } = await readWithRetry(() =>
+    supabase.rpc('news_sale_filter_options').retry(false),
   );
   if (error) {
     console.error('Error fetching sale filter options:', error);

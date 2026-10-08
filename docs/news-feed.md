@@ -37,8 +37,7 @@ daily check from saving the same story again the next morning.
 | Admin review screen | `src/pages/admin/NewsPage.tsx` |
 | Queries and audit logging | `src/services/newsService.ts` |
 | Date and link helpers | `src/utils/news.ts` (tests in `tests/unit/news.test.ts`) |
-| Cached read route | `netlify/functions/news-cache.ts`, `src/lib/newsCacheClient.ts` |
-| Fallback, retry and last-good list | `src/utils/publicRead.ts`, `src/utils/newsSnapshot.ts` |
+| Retry and last-good list | `src/utils/publicRead.ts`, `src/utils/newsSnapshot.ts` |
 | Sidebar draft count | `src/hooks/useNewsDraftsBadge.ts` |
 
 ## Things that are deliberate
@@ -135,37 +134,28 @@ Wayfair sale read on Yahoo Shopping has `source_name = 'Yahoo Shopping'` and
 
 ## Handling a rush of visitors
 
-The page shell is pre-rendered and served from Netlify's CDN, but the stories are
-read from Supabase in the visitor's browser. On the Supabase free plan that
-database is shared with the quote form, the admin area and the customer portal,
-so a rush on `/news` is cushioned in three ways:
+The page shell is pre-rendered, but the stories are read from Supabase in the
+visitor's browser. On the Supabase free plan that database is shared with the
+quote form, the admin area and the customer portal, so the page is built not to
+make a struggling database worse:
 
-- **A short-lived shared cache.** The page asks `/api/news-cache/...` first
-  (`netlify/functions/news-cache.ts`), which forwards the same read-only request
-  with the anonymous key and returns it with cache headers. Netlify's CDN then
-  answers repeat requests itself: fresh for 60 seconds, then served stale for up
-  to 5 minutes while it refreshes, and up to an hour old if Supabase is down. **A
-  newly approved or unpublished sale can therefore take about a minute to show.**
-  The function only serves the two reads the page makes, with the parameters the
-  page uses, and never forwards a visitor's login.
-- **Fallbacks and spaced retries** (`src/utils/publicRead.ts`). If the cached route
-  is missing or broken, the page reads from Supabase directly, so the cache can
-  only help. If the cached route reports Supabase itself is failing (503) the
-  page does not also go direct. A failed load is retried twice, after about 1 and
-  2.5 seconds with some jitter, before an error is shown. The Supabase client's
-  own automatic retries are switched off for these reads so retries do not stack.
+- **Spaced retries** (`src/utils/publicRead.ts`). A failed load is retried twice,
+  after about 1 and 2.5 seconds with some jitter, before an error is shown. The
+  Supabase client's own automatic retries are switched off for these reads so
+  retries do not stack.
 - **The last good list.** Each successful first page is kept in the visitor's
   browser (`src/utils/newsSnapshot.ts`, last 6 views, at most 3 days old). If a
   later load still fails, they see that list, minus any sales that have ended since,
-  under a note that it may be out of date, instead of an error.
+  under a note that it may be out of date, instead of an error. A successful but
+  empty answer clears that view's saved copy.
+- **Monitoring.** `npm run monitor:synthetic` checks `/news` every 15 minutes once
+  the `SYNTHETIC_BASE_URL` secret is set.
 
-Function settings come from the same environment variables as the site build
-(`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`); they need to be available to
-Netlify Functions, which is the default scope. `npm run monitor:synthetic` checks
-`/news` and `/api/news-cache/...` every 15 minutes once the `SYNTHETIC_BASE_URL`
-secret is set; a 503 from the cache route means Supabase is failing. The cache
-route is bypassed in local development and in tests (no function runs there), so
-the page reads Supabase directly.
+**What is not here: a shared cache.** A Netlify Function that cached the two reads
+at the CDN was tried and removed. The site is published through Bolt.new, and the
+function was never deployed (the route answered 404), so it only added a wasted
+request. Putting a cache in front of Supabase needs a host that runs Netlify
+Functions, or a static snapshot of the feed rebuilt on a schedule.
 
 ## Changing what the daily check looks for
 
