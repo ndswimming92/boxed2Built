@@ -82,20 +82,6 @@ const HomeHero: React.FC = () => {
     });
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'hero', {
-      event_category: 'contact',
-      event_label: 'phone_click_hero',
-      value: 1,
-      user_engagement: 'phone_click',
-      element_type: 'link',
-      element_location: 'hero',
-      page_section: 'hero',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead',
-    });
-  };
-
   if (loading) {
     return (
       <section className="relative pt-20 pb-6 md:pt-24 md:pb-12 bg-gradient-to-br from-blue-50 via-white to-gray-50">
@@ -172,7 +158,6 @@ const HomeHero: React.FC = () => {
 
                 <a
                   href={`tel:${phoneRaw}`}
-                  onClick={handlePhoneClick}
                   className="inline-flex w-full sm:w-auto min-h-[52px] items-center justify-center whitespace-nowrap text-sm md:text-base px-5 py-3 md:px-6 md:py-4 rounded-lg bg-green-700 hover:bg-green-800 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                   aria-label={`Call Boxed2Built at ${phoneDisplay}`}
                 >

@@ -158,14 +158,32 @@ export const trackExternalLink = (url: string, linkText?: string) => {
   });
 };
 
-// Track phone link clicks
-export const trackPhoneLinkClick = (phoneNumber: string, linkText?: string) => {
-  trackGAEvent('phone_link_click', {
-    event_category: 'contact',
-    event_label: phoneNumber,
-    action_type: 'phone_click',
-    action_value: phoneNumber,
-    element_text: linkText,
+// Track phone link clicks. Fired once per tap by the site-wide tel: listener in
+// AppShell, so individual call buttons must not fire their own phone_click.
+export const trackPhoneLinkClick = (_phoneNumber?: string, linkText?: string) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'phone_click', {
+    ...(linkText ? { element_text: linkText } : {}),
+  });
+};
+
+export interface LeadParams {
+  /** The service the visitor picked, e.g. 'nursery_setup'. */
+  service_type?: string;
+  /** Their ZIP code, when the form collects one. */
+  zip_code?: string;
+  /** Which form on the site: 'home_hero', 'contact_page', 'footer', 'booking'. */
+  form_location: string;
+}
+
+// GA4 recommended event for a submitted quote request. Call it from the success
+// handler only. Never pass name, email or phone: GA policy forbids PII.
+export const trackLead = ({ service_type, zip_code, form_location }: LeadParams) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  window.gtag('event', 'generate_lead', {
+    ...(service_type ? { service_type } : {}),
+    ...(zip_code ? { zip_code } : {}),
+    form_location,
   });
 };
 
