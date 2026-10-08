@@ -10,6 +10,7 @@ import SaleFilters from '../components/ui/SaleFilters';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews, getSaleFilterOptions } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
+import { loadSnapshot, saveSnapshot } from '../utils/newsSnapshot';
 import {
   NEWS_TOPIC_LABELS,
   NO_SALES_FILTERS,
@@ -189,9 +190,13 @@ const NewsPage: React.FC = () => {
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [loadingMoreKey, setLoadingMoreKey] = useState<string | null>(null);
+  // Set when the list on screen is the visitor's last good copy because a
+  // fresh load failed.
+  const [staleKey, setStaleKey] = useState<string | null>(null);
   const loading = loadedKey !== key;
   const error = failedKey === key;
   const loadingMore = loadingMoreKey === key;
+  const showingSaved = staleKey === key;
 
   // The view the visitor is on right now, so a slow "load more" for one they
   // have already left cannot append to the wrong list.
@@ -246,11 +251,22 @@ const NewsPage: React.FC = () => {
         setItems(result.items);
         setHasMore(result.hasMore);
         setTotal(result.total);
+        saveSnapshot(key, result.items, result.total);
         // A failure recorded for this view earlier no longer applies.
         setFailedKey((failed) => (failed === key ? null : failed));
+        setStaleKey((stale) => (stale === key ? null : stale));
       })
       .catch(() => {
         if (cancelled) return;
+        // Better a list that may be slightly out of date than an error page.
+        const saved = loadSnapshot(key);
+        if (saved) {
+          setItems(saved.items);
+          setHasMore(false);
+          setTotal(null);
+          setStaleKey(key);
+          return;
+        }
         setItems([]);
         setHasMore(false);
         setTotal(null);
@@ -306,6 +322,7 @@ const NewsPage: React.FC = () => {
 
   const handleRetry = () => {
     setFailedKey(null);
+    setStaleKey(null);
     setLoadedKey(null);
     setReloadKey((n) => n + 1);
   };
@@ -523,6 +540,24 @@ const NewsPage: React.FC = () => {
                   </div>
                 ) : (
                   <>
+                    {showingSaved && (
+                      <div
+                        role="status"
+                        className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                      >
+                        <span>
+                          We could not load the latest list, so this is the one you saw last. Some
+                          sales may have changed or ended.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleRetry}
+                          className="font-medium text-amber-900 underline underline-offset-2 hover:text-amber-950"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
                     <div ref={listRef} className="space-y-6">
                       {items.map((item) => (
                         <NewsCard key={item.id} item={item} />

@@ -36,6 +36,17 @@ const checks = [
   await timedCheck('portal_login', '/portal/login', [200]),
   await timedCheck('portal_dashboard_load', '/portal/dashboard', [200, 302]),
   await timedCheck('invoice_open', `/pay/${invoiceId}`, [200, 404]),
+  // The Deals & News page itself, and the cached route its sales come from
+  // (netlify/functions/news-cache.ts). That route answers 503 when Supabase is
+  // failing, which is what this is here to catch. A 404 only means the function
+  // is not deployed to this site yet; the page falls back to Supabase then, so
+  // it is not an outage.
+  await timedCheck('news_page', '/news', [200]),
+  await timedCheck(
+    'news_feed_cache',
+    '/api/news-cache/rest/v1/news_items?select=id&status=eq.published&limit=1',
+    [200, 404],
+  ),
 ];
 
 const summary = {

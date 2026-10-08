@@ -8,6 +8,11 @@ NPM_FLAGS = "--include=dev"
 VITE_AUTHORIZED_ADMIN_EMAILS = "boxed2builtco@gmail.com"
 VITE_AUTHORIZED_ADMIN_DOMAINS = "boxed2built.com"
 
+# Serverless functions. news-cache.ts is a short-lived cache in front of the
+# public /news reads; see docs/news-feed.md.
+[functions]
+directory = "netlify/functions"
+
 [[redirects]]
 from = "http://*"
 to = "https://:splat"
