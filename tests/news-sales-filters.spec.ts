@@ -218,7 +218,7 @@ test('a view that failed once loads normally when the visitor comes back after t
   await page.getByRole('button', { name: 'All news' }).click();
   await expect(cards(page)).toHaveCount(6);
   await page.getByRole('button', { name: 'Sales', exact: true }).click();
-  await page.getByRole('group', { name: 'Store' }).getByRole('button', { name: /Wayfair/ }).click();
+  await (await storeMenu(page)).getByRole('button', { name: /Wayfair/ }).click();
 
   await expect(cards(page)).toHaveText(['Wayfair sale 1', 'Wayfair sale 3']);
   await expect(page.getByText('could not be loaded')).toHaveCount(0);
