@@ -328,11 +328,11 @@ const NewsPage: React.FC = () => {
   // Sits at the end of the Sales filter row, or on its own on the other tabs.
   const sortControl = (
     <label className="relative flex items-center gap-2 text-[15px]">
-      <span className="whitespace-nowrap text-gray-600">Sort by</span>
+      <span className="whitespace-nowrap text-gray-700">Sort by</span>
       <select
         value={order}
         onChange={(event) => handleOrderChange(event.target.value as NewsOrder)}
-        className="h-11 cursor-pointer appearance-none rounded-lg bg-transparent pl-1 pr-8 font-semibold text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+        className="h-11 cursor-pointer appearance-none rounded-lg bg-transparent pl-1 pr-8 font-bold text-brand-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
       >
         {(topic === 'deals' ? SALES_ORDER_OPTIONS : ORDER_OPTIONS).map((option) => (
           <option key={option.value} value={option.value}>
@@ -341,7 +341,7 @@ const NewsPage: React.FC = () => {
         ))}
       </select>
       <ChevronDown
-        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-900"
+        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-navy"
         aria-hidden="true"
       />
     </label>
@@ -407,10 +407,10 @@ const NewsPage: React.FC = () => {
                       type="button"
                       aria-pressed={isActive}
                       onClick={() => handleTopicChange(filter.value)}
-                      className={`-mb-px h-12 flex-none whitespace-nowrap border-b-2 px-0.5 text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                      className={`-mb-px h-12 flex-none whitespace-nowrap border-b-[3px] px-0.5 text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                         isActive
-                          ? 'border-blue-700 font-semibold text-gray-900'
-                          : 'border-transparent font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900'
+                          ? 'border-brand-gold font-bold text-brand-navy'
+                          : 'border-transparent font-medium text-gray-600 hover:border-blue-200 hover:text-brand-navy'
                       }`}
                     >
                       {filter.label}

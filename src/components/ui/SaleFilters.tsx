@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Check, ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown, MapPin, Sofa, Store, X } from 'lucide-react';
 import type { SaleFilterRow, SaleScope } from '../../types/news';
 import {
   FURNITURE_TYPE_LABELS,
@@ -26,12 +26,12 @@ interface SaleFiltersProps {
 
 const focusRing = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2';
 
-/** A filter control looks the same whether it is a button or a select; an applied one turns blue. */
+/** A filter control looks the same whether it is a button or a select; an applied one fills with brand navy. */
 const controlClass = (applied: boolean) =>
-  `inline-flex h-11 items-center gap-2 rounded-lg border text-[15px] font-medium transition-colors ${focusRing} ${
+  `inline-flex h-11 items-center gap-2 rounded-lg border text-[15px] font-semibold shadow-sm transition-colors ${focusRing} ${
     applied
-      ? 'border-blue-700 bg-blue-50 text-blue-800'
-      : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400'
+      ? 'border-brand-navy bg-brand-navy text-white hover:bg-brand-navy-dark'
+      : 'border-blue-200 bg-white text-brand-navy hover:border-brand-navy hover:bg-blue-50'
   }`;
 
 const typeLabel = (type: string) =>
@@ -92,8 +92,9 @@ const StoreMenu: React.FC<{
         aria-controls={menuId}
         aria-label={`Store: ${selectedName ?? 'All stores'}`}
         onClick={() => setOpen((value) => !value)}
-        className={`${controlClass(Boolean(selected) || open)} max-w-[16rem] pl-4 pr-3.5`}
+        className={`${controlClass(Boolean(selected) || open)} max-w-[16rem] pl-3.5 pr-3.5`}
       >
+        <Store className={`h-4 w-4 flex-none ${selected || open ? 'text-brand-gold' : ''}`} aria-hidden="true" />
         <span className="truncate">{selectedName ?? 'Store'}</span>
         <ChevronDown
           className={`h-4 w-4 flex-none transition-transform ${open ? 'rotate-180' : ''}`}
@@ -106,7 +107,7 @@ const StoreMenu: React.FC<{
           id={menuId}
           role="group"
           aria-label="Store"
-          className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white p-2 shadow-xl"
+          className="absolute left-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-blue-100 border-t-4 border-t-brand-gold bg-white p-2 shadow-xl"
         >
           <div className="max-h-80 overflow-y-auto">
             {options.map((option) => {
@@ -118,12 +119,18 @@ const StoreMenu: React.FC<{
                   aria-pressed={isActive}
                   onClick={() => choose(option.slug)}
                   className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-[15px] transition-colors ${focusRing} ${
-                    isActive ? 'bg-blue-50 font-semibold text-blue-800' : 'text-gray-900 hover:bg-gray-100'
+                    isActive ? 'bg-brand-navy font-semibold text-white' : 'text-gray-900 hover:bg-blue-50'
                   }`}
                 >
                   <span className="flex-1">{option.name}</span>
-                  <span className={`text-sm ${isActive ? 'text-blue-800' : 'text-gray-600'}`}>{option.count}</span>
-                  <Check className={`h-4 w-4 flex-none ${isActive ? '' : 'invisible'}`} aria-hidden="true" />
+                  <span
+                    className={`min-w-7 rounded-full px-2 py-0.5 text-center text-sm font-semibold ${
+                      isActive ? 'bg-brand-gold text-gray-900' : 'bg-blue-50 text-brand-navy'
+                    }`}
+                  >
+                    {option.count}
+                  </span>
+                  <Check className={`h-4 w-4 flex-none text-brand-gold ${isActive ? '' : 'invisible'}`} aria-hidden="true" />
                 </button>
               );
             })}
@@ -182,7 +189,10 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
   if (filters.type) tags.push({ key: 'type', label: typeLabel(filters.type), clear: () => set({ type: null }) });
 
   return (
-    <section aria-label="Filter sales" className="mb-8">
+    <section
+      aria-label="Filter sales"
+      className="mb-8 rounded-2xl border border-blue-100 border-t-4 border-t-brand-gold bg-blue-50 p-4 shadow-sm sm:p-5"
+    >
       <div className="flex flex-wrap items-center gap-3">
         {(stores.length > 0 || filters.store) && (
           <StoreMenu
@@ -195,7 +205,12 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
         )}
 
         {showWhere && (
-          <div role="group" aria-label="Where" className="flex h-11 items-center gap-0.5 rounded-lg bg-gray-100 p-1">
+          <div
+            role="group"
+            aria-label="Where"
+            className="flex h-11 items-center gap-0.5 rounded-lg border border-blue-200 bg-white p-1 shadow-sm"
+          >
+            <MapPin className="ml-1.5 mr-0.5 hidden h-4 w-4 flex-none text-brand-navy sm:block" aria-hidden="true" />
             {whereOptions.map((option) => {
               const isActive = filters.scope === option.value;
               const count = option.value ? scopes[option.value] : null;
@@ -205,12 +220,16 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => set({ scope: option.value })}
-                  className={`h-9 whitespace-nowrap rounded-md px-3.5 text-[15px] transition-colors ${focusRing} ${
-                    isActive ? 'bg-white font-semibold text-gray-900 shadow-sm' : 'font-medium text-gray-600 hover:text-gray-900'
+                  className={`h-9 whitespace-nowrap rounded-md px-2.5 text-[15px] transition-colors sm:px-3.5 ${focusRing} ${
+                    isActive
+                      ? 'bg-brand-navy font-semibold text-white shadow'
+                      : 'font-medium text-gray-700 hover:bg-blue-50 hover:text-brand-navy'
                   }`}
                 >
                   {option.label}
-                  {count !== null && <span className="ml-1.5 text-sm font-normal text-gray-500">{count}</span>}
+                  {count !== null && (
+                    <span className={`ml-1.5 text-sm ${isActive ? 'text-brand-gold' : 'text-gray-500'}`}>{count}</span>
+                  )}
                 </button>
               );
             })}
@@ -226,7 +245,7 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
               id={typeId}
               value={filters.type ?? ''}
               onChange={(event) => set({ type: (event.target.value || null) as SalesFilters['type'] })}
-              className={`${controlClass(Boolean(filters.type))} cursor-pointer appearance-none pl-4 pr-10`}
+              className={`${controlClass(Boolean(filters.type))} cursor-pointer appearance-none pl-10 pr-10`}
             >
               <option value="">All furniture</option>
               {types.map((option) => (
@@ -238,9 +257,15 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
                 <option value={filters.type}>{typeLabel(filters.type)} (0)</option>
               )}
             </select>
+            <Sofa
+              className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${
+                filters.type ? 'text-brand-gold' : 'text-brand-navy'
+              }`}
+              aria-hidden="true"
+            />
             <ChevronDown
               className={`pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${
-                filters.type ? 'text-blue-800' : 'text-gray-900'
+                filters.type ? 'text-white' : 'text-brand-navy'
               }`}
               aria-hidden="true"
             />
@@ -249,8 +274,12 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
       </div>
 
       <div className="mt-4 flex min-h-11 flex-wrap items-center gap-2">
-        <p className="mr-2 text-[15px] font-semibold text-gray-900" aria-live="polite">
-          {resultCount === null ? '' : `${resultCount} ${resultCount === 1 ? 'sale' : 'sales'}`}
+        <p className="mr-1" aria-live="polite">
+          {resultCount !== null && (
+            <span className="inline-flex h-9 items-center rounded-full bg-brand-gold px-4 text-[15px] font-bold text-gray-900 shadow-sm">
+              {`${resultCount} ${resultCount === 1 ? 'sale' : 'sales'}`}
+            </span>
+          )}
         </p>
         {tags.map((tag) => (
           <button
@@ -258,7 +287,7 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
             type="button"
             onClick={tag.clear}
             aria-label={`Remove filter: ${tag.label}`}
-            className={`inline-flex h-9 items-center gap-1.5 rounded-full bg-blue-50 pl-3.5 pr-2.5 text-sm font-medium text-blue-800 transition-colors hover:bg-blue-100 ${focusRing}`}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-full border border-brand-gold bg-brand-gold-light pl-3.5 pr-2.5 text-sm font-semibold text-brand-gold-dark transition-colors hover:bg-brand-gold hover:text-gray-900 ${focusRing}`}
           >
             {tag.label}
             <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -268,7 +297,7 @@ const SaleFilters: React.FC<SaleFiltersProps> = ({ rows, filters, resultCount, o
           <button
             type="button"
             onClick={() => onChange({ store: null, scope: null, type: null })}
-            className={`h-9 rounded px-1.5 text-sm font-medium text-gray-700 underline underline-offset-4 hover:text-gray-900 ${focusRing}`}
+            className={`h-9 rounded px-1.5 text-sm font-semibold text-brand-navy underline underline-offset-4 hover:text-brand-navy-dark ${focusRing}`}
           >
             Clear all
           </button>
