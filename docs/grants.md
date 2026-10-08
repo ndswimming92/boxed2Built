@@ -21,18 +21,32 @@ it, and nothing needs approving.
 
 ## What each grant shows
 
-Name, the company or organization giving it, the amount, a description, the
-deadline, who can apply, how it fits Boxed2Built (including anything the owner
-has to confirm himself), what the application asks for, anything else worth
-knowing, a link to the funder's application page, and the date the details were
-last checked.
+Each card is laid out to be scanned, top to bottom:
 
-Labels on a grant:
+1. **Name and company**, with labels above them: **New** for a week after the
+   grant is first saved, **Closes in N days** when the deadline is within 14
+   days, and **National / Tennessee / Local / Federal** for who is giving the
+   money.
+2. **Three facts side by side:** the amount, the deadline (or the date
+   applications open, for an upcoming grant) and the cost to apply. Each is a
+   short headline with the funder's small print under it. "Cost to apply" reads
+   **Free**, or the fee in amber when a contest charges one.
+3. **A one-paragraph description.**
+4. **Fit for Boxed2Built**, in a highlighted box: why it fits, and anything the
+   owner has to confirm himself.
+5. **Who can apply**, **What the application asks for** and **Good to know**,
+   each as a short list of points.
+6. **The link to apply**, and the date the details were last checked.
 
-- **New** for a week after it is first saved.
-- **Closes in N days** when the deadline is within 14 days.
-- **National / Tennessee / Local / Federal** for who is giving the money.
-- **Costs money to enter** when a contest charges an entry fee, with the fee.
+**How the text becomes lists.** The grant finder writes one point per line, and
+the card shows each line as a bullet. Text saved as a paragraph is split into
+its sentences instead (`toPoints` in `src/utils/grants.ts`); it never splits
+inside "U.S." or "Inc.", and one sentence alone is shown without a bullet.
+
+**How the amount gets a headline.** The grant finder writes the award first and
+the detail after a semicolon. `splitAmount` cuts at the first natural break, so
+"$500 to one business each month; monthly recipients are also considered..."
+shows "$500 to one business each month" in bold with the rest in small text.
 
 ## Tabs
 

@@ -157,10 +157,8 @@ test('a grant shows its name, company, description, criteria and how to apply', 
   await expect(grant.getByText('$5,000 each to 20 businesses')).toBeVisible();
   await expect(grant.getByText(OPEN_LATER.description as string)).toBeVisible();
   await expect(grant.getByText(OPEN_LATER.eligibility as string)).toBeVisible();
-  await expect(grant.getByText(OPEN_LATER.fit_notes as string)).toBeVisible();
   await expect(grant.getByText('A 500-word essay and a one-minute video.')).toBeVisible();
   await expect(grant.getByText('Funds must be spent on equipment within 12 months.')).toBeVisible();
-  await expect(grant.getByText('November 30, 2026 (5:00 PM ET)')).toBeVisible();
   await expect(grant.getByText('Last checked October 8, 2026')).toBeVisible();
 
   const apply = grant.getByRole('link', { name: /Go to the application/ });
@@ -171,13 +169,63 @@ test('a grant shows its name, company, description, criteria and how to apply', 
   await expect(page.getByText('Grant finder last ran October 8, 2026')).toBeVisible();
 });
 
+test('the amount, deadline and cost are set apart as the facts to read first', async ({ page }) => {
+  // A whole sentence set in large type was the hardest part of the card to
+  // read. Each fact is a short headline, with the funder's small print under it.
+  const WORDY: Row = {
+    ...OPEN_LATER,
+    amount: '$500 to one business each month; monthly recipients are also considered for a $2,500 year-end grant',
+  };
+  await stubGrants(page, [WORDY]);
+  await open(page);
+
+  const facts = card(page, WORDY).getByRole('definition');
+  await expect(facts).toHaveCount(3);
+  await expect(facts.nth(0)).toContainText('$500 to one business each month');
+  await expect(facts.nth(0)).toContainText('Monthly recipients are also considered for a $2,500 year-end grant');
+  await expect(facts.nth(1).getByText('November 30, 2026', { exact: true })).toBeVisible();
+  await expect(facts.nth(1).getByText('5:00 PM ET', { exact: true })).toBeVisible();
+  await expect(facts.nth(2).getByText('Free', { exact: true })).toBeVisible();
+});
+
+test('long text is broken into a list of points, and a single point stays a sentence', async ({ page }) => {
+  const BY_LINE: Row = {
+    ...OPEN_LATER,
+    eligibility: 'For-profit U.S. businesses only.\nFewer than 10 employees.\nOperating for at least one year.',
+  };
+  await stubGrants(page, [BY_LINE]);
+  await open(page);
+
+  const grant = card(page, BY_LINE);
+  // Saved as a paragraph of two sentences: shown as two points.
+  await expect(grant.getByRole('listitem').filter({ hasText: 'Home services qualify.' })).toHaveText(
+    'Home services qualify.',
+  );
+  await expect(
+    grant.getByRole('listitem').filter({ hasText: 'the one-year rule counts time before the LLC was formed' }),
+  ).toHaveCount(1);
+  // Saved one point per line: one point per line, and "U.S." does not start a new one.
+  const who = grant.locator('section').filter({ has: page.getByRole('heading', { name: 'Who can apply' }) });
+  await expect(who.getByRole('listitem')).toHaveText([
+    'For-profit U.S. businesses only.',
+    'Fewer than 10 employees.',
+    'Operating for at least one year.',
+  ]);
+  // One sentence is not worth a bullet.
+  const asks = grant
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'What the application asks for' }) });
+  await expect(asks.getByRole('listitem')).toHaveCount(0);
+  await expect(asks.getByText('A 500-word essay and a one-minute video.')).toBeVisible();
+});
+
 test('open grants need no approval and are listed nearest deadline first', async ({ page }) => {
   await stubGrants(page, [OPEN_ROLLING, OPEN_LATER, OPEN_SOON]);
   await open(page);
 
   await expect(page.getByRole('tab', { name: /Open now/ })).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tab', { name: /Open now/ })).toContainText('3');
-  await expect(page.getByRole('article').getByRole('heading')).toHaveText([
+  await expect(page.getByRole('article').getByRole('heading', { level: 2 })).toHaveText([
     'Tennessee Trades Award',
     'Main Street Boost Grant',
     'Rolling Microgrant',
@@ -195,8 +243,13 @@ test('a grant that costs money to enter says so', async ({ page }) => {
   await stubGrants(page, [OPEN_ROLLING, OPEN_LATER]);
   await open(page);
 
-  await expect(card(page, OPEN_ROLLING).getByText('Costs money to enter: $15 per entry')).toBeVisible();
-  await expect(card(page, OPEN_LATER).getByText(/Costs money to enter/)).toHaveCount(0);
+  const paid = card(page, OPEN_ROLLING).getByRole('definition').nth(2);
+  await expect(paid.getByText('$15 per entry', { exact: true })).toBeVisible();
+  await expect(paid.getByText('This one costs money to enter.')).toBeVisible();
+
+  const free = card(page, OPEN_LATER).getByRole('definition').nth(2);
+  await expect(free.getByText('Free', { exact: true })).toBeVisible();
+  await expect(card(page, OPEN_LATER).getByText(/costs money to enter/)).toHaveCount(0);
 });
 
 test('upcoming and closed grants are kept apart from the open ones', async ({ page }) => {

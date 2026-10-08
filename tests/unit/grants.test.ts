@@ -5,7 +5,7 @@ import {
   closingSoonLabel,
   daysBetween,
   daysUntilDeadline,
-  formatGrantDeadline,
+  deadlineParts,
   formatGrantOpens,
   grantBucket,
   isClosingSoon,
@@ -14,6 +14,8 @@ import {
   lastCheckedOn,
   matchesGrantSearch,
   sortGrants,
+  splitAmount,
+  toPoints,
 } from '../../src/utils/grants.ts';
 
 const TODAY = '2026-10-08';
@@ -70,18 +72,104 @@ test('a grant is new for a week, judged by the Central-time day it was saved', (
   assert.equal(isNewGrant({ created_at: 'not a date' }, TODAY), false);
 });
 
-test('the deadline prints as the day it names, with the funder wording when there is no date', () => {
+test('the deadline prints as the day it names, with the funder wording kept apart from it', () => {
   // The unit-test job pins TZ to a negative-offset zone, where parsing a
   // date-only string as UTC would print October 30.
-  assert.equal(formatGrantDeadline({ deadline: '2026-10-31', deadline_note: null }), 'October 31, 2026');
-  assert.equal(
-    formatGrantDeadline({ deadline: '2026-10-31', deadline_note: '11:59 PM ET' }),
-    'October 31, 2026 (11:59 PM ET)',
-  );
-  assert.equal(formatGrantDeadline({ deadline: null, deadline_note: 'Rolling' }), 'Rolling');
-  assert.equal(formatGrantDeadline({ deadline: null, deadline_note: null }), 'Not stated');
+  assert.deepEqual(deadlineParts({ deadline: '2026-10-31', deadline_note: null }), {
+    headline: 'October 31, 2026',
+    detail: null,
+  });
+  assert.deepEqual(deadlineParts({ deadline: '2026-10-31', deadline_note: '11:59 PM ET' }), {
+    headline: 'October 31, 2026',
+    detail: '11:59 PM ET',
+  });
   assert.equal(formatGrantOpens({ opens_on: '2027-01-15' }), 'January 15, 2027');
   assert.equal(formatGrantOpens({ opens_on: null }), 'Date not announced');
+});
+
+test('with no date, a short note is the deadline and a long one sits under it', () => {
+  assert.deepEqual(deadlineParts({ deadline: null, deadline_note: 'Rolling' }), {
+    headline: 'Rolling',
+    detail: null,
+  });
+  assert.deepEqual(deadlineParts({ deadline: null, deadline_note: null }), {
+    headline: 'Not stated',
+    detail: null,
+  });
+  const long = 'The page says applications open monthly but gives no closing dates';
+  assert.deepEqual(deadlineParts({ deadline: null, deadline_note: long }), {
+    headline: 'No set date',
+    detail: long,
+  });
+});
+
+test('the amount is split into the figure to read at a glance and its small print', () => {
+  assert.deepEqual(
+    splitAmount('$500 to one business each month; monthly recipients are also considered for a $2,500 year-end grant'),
+    {
+      headline: '$500 to one business each month',
+      detail: 'Monthly recipients are also considered for a $2,500 year-end grant',
+    },
+  );
+  assert.deepEqual(splitAmount('$2,500, one grant per quarter'), {
+    headline: '$2,500',
+    detail: 'One grant per quarter',
+  });
+  assert.deepEqual(splitAmount('$2,500 cash plus $2,500 in services (stated total value $5,000). Two rounds a year.'), {
+    headline: '$2,500 cash plus $2,500 in services',
+    detail: '(stated total value $5,000). Two rounds a year.',
+  });
+  assert.deepEqual(splitAmount('Next cycle not announced. The 2026 cycle awarded up to $250,000.'), {
+    headline: 'Next cycle not announced',
+    detail: 'The 2026 cycle awarded up to $250,000.',
+  });
+});
+
+test('an amount with nothing to split off is left whole', () => {
+  // The comma in a number is not a break, and neither is the stop in "U.S.".
+  assert.deepEqual(splitAmount('$10,000'), { headline: '$10,000', detail: null });
+  assert.deepEqual(splitAmount('$5,000 each to 20 businesses'), {
+    headline: '$5,000 each to 20 businesses',
+    detail: null,
+  });
+  assert.deepEqual(splitAmount('Up to $1,000,000 for U.S. small businesses'), {
+    headline: 'Up to $1,000,000 for U.S. small businesses',
+    detail: null,
+  });
+  assert.deepEqual(splitAmount('Not stated'), { headline: 'Not stated', detail: null });
+});
+
+test('text written one point per line becomes one point per line', () => {
+  assert.deepEqual(toPoints('For-profit U.S. businesses only.\n- Fewer than 50 employees\n\n\u2022 Under $5 million in revenue'), [
+    'For-profit U.S. businesses only.',
+    'Fewer than 50 employees',
+    'Under $5 million in revenue',
+  ]);
+});
+
+test('a paragraph is split into its sentences, never inside an abbreviation', () => {
+  assert.deepEqual(
+    toPoints(
+      'For-profit businesses only; nonprofits cannot apply. The business must have its primary address in the United States, Puerto Rico or the U.S. Virgin Islands. The owner must be 18 or older.',
+    ),
+    [
+      'For-profit businesses only; nonprofits cannot apply.',
+      'The business must have its primary address in the United States, Puerto Rico or the U.S. Virgin Islands.',
+      'The owner must be 18 or older.',
+    ],
+  );
+  assert.deepEqual(toPoints('Run by Example Inc. No purchase is necessary. 2026 rules: https://example.org/grants/terms'), [
+    'Run by Example Inc. No purchase is necessary.',
+    '2026 rules: https://example.org/grants/terms',
+  ]);
+  assert.deepEqual(toPoints('Only $2,500 of the award is cash; the rest is services.'), [
+    'Only $2,500 of the award is cash; the rest is services.',
+  ]);
+});
+
+test('empty text gives no points', () => {
+  assert.deepEqual(toPoints(null), []);
+  assert.deepEqual(toPoints('   '), []);
 });
 
 test('details go stale after a few days without a re-check', () => {
