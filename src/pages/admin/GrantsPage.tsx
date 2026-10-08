@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Building2, CalendarClock, ExternalLink, HandCoins, Search, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { getGrants } from '../../services/grantsService';
 import {
   GRANT_SCOPE_LABELS,
@@ -125,31 +126,48 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
   );
 }
 
-export default function GrantsPage() {
-  const [grants, setGrants] = useState<BusinessGrant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * The list for one organization. Kept apart from the default export below so
+ * the browser tests can mount it with an organization id and no sign-in.
+ */
+export function GrantsView({ organizationId }: { organizationId: string | null }) {
+  // What was loaded, and for which organization. Keeping the two together means
+  // a switch of organization can never show the last one's grants, or its
+  // error, while the new list is on its way.
+  const [loaded, setLoaded] = useState<{
+    organizationId: string;
+    grants: BusinessGrant[];
+    error: string | null;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState<GrantBucket>('open');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    if (!organizationId) return;
     let cancelled = false;
 
-    getGrants()
+    getGrants(organizationId)
       .then((data) => {
-        if (!cancelled) setGrants(data);
+        if (!cancelled) setLoaded({ organizationId, grants: data, error: null });
       })
       .catch((cause) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to load grants');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (cancelled) return;
+        setLoaded({
+          organizationId,
+          grants: [],
+          error: cause instanceof Error ? cause.message : 'Failed to load grants',
+        });
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [organizationId]);
+
+  const current = loaded && loaded.organizationId === organizationId ? loaded : null;
+  const loading = organizationId !== null && current === null;
+  const error = current?.error ?? null;
+  const grants = useMemo(() => current?.grants ?? [], [current]);
 
   const today = centralToday();
 
@@ -184,9 +202,9 @@ export default function GrantsPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Grants</h1>
         <p className="text-sm sm:text-base text-slate-600">
           Grants Boxed2Built could apply for, found and checked by the daily grant finder. This is money that
-          never has to be paid back. Only signed-in admins can see this list.
+          never has to be paid back. Only the business’s owners and admins can see this list.
         </p>
-        {lastChecked && (
+        {lastChecked && !error && (
           <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500">
             <CalendarClock className="w-4 h-4" aria-hidden="true" />
             Grant finder last ran {lastChecked}
@@ -197,80 +215,100 @@ export default function GrantsPage() {
       {error && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <p className="text-sm flex-1 text-red-800">{error}</p>
+          <p className="text-sm flex-1 text-red-800">{error}. Reload the page to try again.</p>
         </div>
       )}
 
-      <div className="mb-4 relative max-w-md">
-        <label htmlFor="grant-search" className="sr-only">
-          Search grants
-        </label>
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
-        <input
-          id="grant-search"
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by grant, company or criteria"
-          className="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 bg-white"
-        />
-        {searching && (
-          <button
-            onClick={() => setSearch('')}
-            aria-label="Clear search"
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-      </div>
+      {!organizationId && (
+        <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-amber-50 border border-amber-200">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <p className="text-sm flex-1 text-amber-900">
+            No organization is selected, so there are no grants to show. Sign out and back in, then try again.
+          </p>
+        </div>
+      )}
 
-      <div
-        className="mb-6 flex gap-1 sm:gap-2 overflow-x-auto border-b border-slate-200"
-        role="tablist"
-        aria-label="Grants by status"
-      >
-        {TABS.map((candidate) => {
-          const isActive = candidate.bucket === activeTab;
-          return (
-            <button
-              key={candidate.bucket}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setActiveTab(candidate.bucket)}
-              className={`px-3 sm:px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
-                isActive
-                  ? 'border-emerald-600 text-emerald-700'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {candidate.label}
-              <span className="inline-flex items-center justify-center min-w-[22px] px-1.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
-                {counts[candidate.bucket]}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="space-y-4">
-        {visible.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-            <HandCoins className="w-12 h-12 text-slate-300 mx-auto mb-4" aria-hidden="true" />
-            <p className="text-slate-600">
-              {searching ? `No grants on this tab match "${search.trim()}".` : tab.empty}
-            </p>
+      {/* A failed load says nothing about what is saved, so no tabs, counts or
+          "no grants yet" message are shown beside the error. */}
+      {organizationId && !error && (
+        <>
+          <div className="mb-4 relative max-w-md">
+            <label htmlFor="grant-search" className="sr-only">
+              Search grants
+            </label>
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <input
+              id="grant-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by grant, company or criteria"
+              className="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 bg-white"
+            />
+            {searching && (
+              <button
+                onClick={() => setSearch('')}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
-        ) : (
-          visible.map((grant) => <GrantCard key={grant.id} grant={grant} bucket={activeTab} today={today} />)
-        )}
-      </div>
 
-      <p className="mt-8 text-xs text-slate-500">
-        Each grant is checked against the funder’s own website, but programs change. Confirm the amount,
-        deadline and rules with the funder before you apply. This is information, not legal, tax or financial
-        advice.
-      </p>
+          <div
+            className="mb-6 flex gap-1 sm:gap-2 overflow-x-auto border-b border-slate-200"
+            role="tablist"
+            aria-label="Grants by status"
+          >
+            {TABS.map((candidate) => {
+              const isActive = candidate.bucket === activeTab;
+              return (
+                <button
+                  key={candidate.bucket}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(candidate.bucket)}
+                  className={`px-3 sm:px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+                    isActive
+                      ? 'border-emerald-600 text-emerald-700'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {candidate.label}
+                  <span className="inline-flex items-center justify-center min-w-[22px] px-1.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                    {counts[candidate.bucket]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="space-y-4">
+            {visible.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <HandCoins className="w-12 h-12 text-slate-300 mx-auto mb-4" aria-hidden="true" />
+                <p className="text-slate-600">
+                  {searching ? `No grants on this tab match "${search.trim()}".` : tab.empty}
+                </p>
+              </div>
+            ) : (
+              visible.map((grant) => <GrantCard key={grant.id} grant={grant} bucket={activeTab} today={today} />)
+            )}
+          </div>
+
+          <p className="mt-8 text-xs text-slate-500">
+            Each grant is checked against the funder’s own website, but programs change. Confirm the amount,
+            deadline and rules with the funder before you apply. This is information, not legal, tax or financial
+            advice.
+          </p>
+        </>
+      )}
     </div>
   );
+}
+
+export default function GrantsPage() {
+  const { currentOrganization } = useAuth();
+  return <GrantsView organizationId={currentOrganization?.id ?? null} />;
 }
