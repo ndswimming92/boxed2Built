@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
 import { Youtube } from '../ui/BrandIcons';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -53,6 +53,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Invoices', href: '/admin/invoices', icon: FileText },
       { name: 'Burn Rate', href: '/admin/burn-rate', icon: Flame },
       { name: 'Forecasting', href: '/admin/forecasting', icon: TrendingUp },
+      { name: 'Grants', href: '/admin/grants', icon: HandCoins },
       { name: 'Gift Cards', href: '/admin/gift-cards', icon: Gift },
       { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
       { name: 'Tax Settings', href: '/admin/tax-settings', icon: Receipt },
