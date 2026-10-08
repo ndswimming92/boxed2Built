@@ -669,11 +669,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
 
       // The request is saved, so this is a real lead.
-      trackLead({
-        service_type: values.furnitureType,
-        zip_code: values.serviceZip,
-        form_location: sideRail ? 'home_hero' : 'contact_page',
-      });
+      // Flagged test submissions stay out of GA, as they do out of the admin metrics.
+      if (!isTest) {
+        trackLead({
+          service_type: values.furnitureType,
+          zip_code: values.serviceZip,
+          form_location: sideRail ? 'home_hero' : 'contact_page',
+        });
+      }
 
       // Log successful form submission
       await logPublicAction({

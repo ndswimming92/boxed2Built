@@ -41,19 +41,6 @@ const Booking: React.FC = () => {
     });
   };
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'booking_section', {
-      event_category: 'contact',
-      event_label: 'phone_click_booking_section',
-      value: 1,
-      element_type: 'link',
-      element_location: 'booking_section',
-      page_section: 'booking_section',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
-
   return (
     <section id="booking" className="py-16 bg-gradient-to-br from-blue-600 to-blue-800">
       <div className="container mx-auto px-4">
@@ -186,7 +173,6 @@ const Booking: React.FC = () => {
 
               <a
                 href={`tel:${phoneRaw}`}
-                onClick={handlePhoneClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
                 <Phone size={24} className="mr-3" />
