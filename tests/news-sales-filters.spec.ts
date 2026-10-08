@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * The Sales tab's filters: store chips, local or online, furniture type, and
+ * The Sales tab's filters: the store menu, local or online, furniture type, and
  * the page link that carries them. The real page runs against stubbed REST
  * responses; the stub applies the same filters the database would, so what is
  * checked is which requests the page makes and what it does with the answers.
@@ -93,12 +93,19 @@ const open = async (page: Page, search = '') => {
 
 const cards = (page: Page) => page.locator('[data-news-card] h2');
 
-test('store chips list the stores with live sales, busiest first, with counts', async ({ page }) => {
+/** Opens the store drop-down and returns its list of stores. */
+const storeMenu = async (page: Page) => {
+  await page.getByRole('button', { name: /^Store:/ }).click();
+  return page.getByRole('group', { name: 'Store' });
+};
+
+test('the store menu lists the stores with live sales, busiest first, with counts', async ({ page }) => {
   await stub(page);
   await open(page);
   await expect(cards(page)).toHaveCount(5);
+  await expect(page.getByRole('group', { name: 'Store' })).toHaveCount(0);
 
-  const stores = page.getByRole('group', { name: 'Store' });
+  const stores = await storeMenu(page);
   await expect(stores.getByRole('button')).toHaveText([/All stores\s*5/, /Wayfair\s*2/, /Bassett Home Furnishings\s*1/, /IKEA\s*1/]);
 });
 
@@ -106,12 +113,17 @@ test('choosing a store narrows the list and puts the store in the page link', as
   const requests = await stub(page);
   await open(page);
 
-  await page.getByRole('group', { name: 'Store' }).getByRole('button', { name: /Wayfair/ }).click();
+  await (await storeMenu(page)).getByRole('button', { name: /Wayfair/ }).click();
 
   await expect(cards(page)).toHaveText(['Wayfair sale 1', 'Wayfair sale 3']);
   await expect(page).toHaveURL(/\?store=wayfair$/);
   expect(requests.at(-1)?.get('store_slug')).toBe('eq.wayfair');
-  await expect(page.getByText('2 sales match your filters')).toBeVisible();
+  // The menu closes, the button names the store, and a tag can undo it.
+  await expect(page.getByRole('group', { name: 'Store' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Store: Wayfair' })).toBeVisible();
+  await expect(page.getByText('2 sales', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Remove filter: Wayfair' }).click();
+  await expect(cards(page)).toHaveCount(5);
 });
 
 test('a shared page link opens already filtered, and the back button undoes a filter', async ({ page }) => {
@@ -119,11 +131,11 @@ test('a shared page link opens already filtered, and the back button undoes a fi
   await open(page, '?store=wayfair&where=online&type=bedroom');
 
   await expect(cards(page)).toHaveText(['Wayfair sale 1']);
-  await expect(page.getByRole('button', { name: /Wayfair/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Store: Wayfair' })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Online/ })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByLabel('Furniture type')).toHaveValue('bedroom');
 
-  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await page.getByRole('button', { name: 'Clear all' }).click();
   await expect(cards(page)).toHaveCount(5);
   await expect(page).not.toHaveURL(/store=/);
 
@@ -139,7 +151,7 @@ test('local and online narrow the list, and the counts follow the other filters'
   await page.getByRole('button', { name: /^Local stores/ }).click();
   await expect(cards(page)).toHaveText(['Bassett Home Furnishings sale 2']);
   // With Local chosen, only stores with local sales are offered.
-  await expect(page.getByRole('group', { name: 'Store' }).getByRole('button')).toHaveText([
+  await expect((await storeMenu(page)).getByRole('button')).toHaveText([
     /All stores\s*1/,
     /Bassett Home Furnishings\s*1/,
   ]);
@@ -158,7 +170,7 @@ test('the filters belong to Sales: other tabs have none and a stray link is igno
   const requests = await stub(page);
   await open(page, '?tab=all&store=wayfair');
 
-  await expect(page.getByRole('group', { name: 'Store' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Store:/ })).toHaveCount(0);
   await expect(cards(page)).toHaveCount(6);
   expect(requests.every((params) => !params.has('store_slug'))).toBe(true);
 });
@@ -170,6 +182,20 @@ test('a sale shows its store and whether it is local or online', async ({ page }
   const card = page.locator('[data-news-card]').first();
   await expect(card).toContainText('Bassett Home Furnishings');
   await expect(card).toContainText('Local stores');
+});
+
+test('the store menu closes on Escape and on a click outside it', async ({ page }) => {
+  await stub(page);
+  await open(page);
+
+  await storeMenu(page);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('group', { name: 'Store' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Store:/ })).toBeFocused();
+
+  await storeMenu(page);
+  await page.getByRole('heading', { level: 1 }).click();
+  await expect(page.getByRole('group', { name: 'Store' })).toHaveCount(0);
 });
 
 test('with no sales at all the page still falls back to All news', async ({ page }) => {
@@ -192,7 +218,7 @@ test('a view that failed once loads normally when the visitor comes back after t
   await page.getByRole('button', { name: 'All news' }).click();
   await expect(cards(page)).toHaveCount(6);
   await page.getByRole('button', { name: 'Sales', exact: true }).click();
-  await page.getByRole('group', { name: 'Store' }).getByRole('button', { name: /Wayfair/ }).click();
+  await (await storeMenu(page)).getByRole('button', { name: /Wayfair/ }).click();
 
   await expect(cards(page)).toHaveText(['Wayfair sale 1', 'Wayfair sale 3']);
   await expect(page.getByText('could not be loaded')).toHaveCount(0);
