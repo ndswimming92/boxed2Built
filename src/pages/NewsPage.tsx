@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Head } from 'vite-react-ssg';
 import { ArrowRight, ExternalLink, Newspaper } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
@@ -6,21 +6,29 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import CallButton from '../components/ui/CallButton';
 import NewsScrollBar from '../components/ui/NewsScrollBar';
+import SaleFilters from '../components/ui/SaleFilters';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
-import { getPublishedNews } from '../services/newsService';
+import { getPublishedNews, getSaleFilterOptions } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
 import {
   NEWS_TOPIC_LABELS,
+  NO_SALES_FILTERS,
+  SALE_SCOPE_LABELS,
+  defaultOrderFor,
   formatEndsOn,
   formatNewsDate,
+  hasSalesFilters,
   isEndingOrder,
   newsCursor,
+  newsViewToSearch,
+  parseNewsView,
   safeExternalUrl,
   type NewsOrder,
+  type NewsView,
+  type SalesFilters,
+  type TopicFilter,
 } from '../utils/news';
-import type { NewsItem, NewsTopic } from '../types/news';
-
-type TopicFilter = NewsTopic | 'all';
+import type { NewsItem, SaleFilterRow } from '../types/news';
 
 const TOPIC_FILTERS: Array<{ value: TopicFilter; label: string }> = [
   { value: 'all', label: 'All news' },
@@ -41,8 +49,29 @@ const SALES_ORDER_OPTIONS: Array<{ value: NewsOrder; label: string }> = [
   ...ORDER_OPTIONS,
 ];
 
-/** Visitors who open the Sales tab see the sales about to end first. */
-const SALES_DEFAULT_ORDER: NewsOrder = 'ending_soonest';
+/** Identifies a view, so a slow response for one the visitor has left can be dropped. */
+const viewKey = (view: NewsView) => `${view.topic}|${newsViewToSearch(view)}`;
+
+const ALL_NEWS_VIEW: NewsView = { topic: 'all', order: 'newest', ...NO_SALES_FILTERS };
+
+/**
+ * The page link is the source of truth for what is on screen, so a filtered
+ * view can be shared, bookmarked and stepped through with the back button. It
+ * is read through useSyncExternalStore: the pre-rendered page has no link, so
+ * hydration uses the empty one and React then switches to the real one.
+ */
+const LOCATION_CHANGE_EVENT = 'news-view-change';
+const subscribeToLocation = (notify: () => void) => {
+  window.addEventListener('popstate', notify);
+  window.addEventListener(LOCATION_CHANGE_EVENT, notify);
+  return () => {
+    window.removeEventListener('popstate', notify);
+    window.removeEventListener(LOCATION_CHANGE_EVENT, notify);
+  };
+};
+const getSearch = () => window.location.search;
+const getServerSearch = () => '';
+const subscribeNever = () => () => {};
 
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
@@ -59,6 +88,14 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
         >
           {NEWS_TOPIC_LABELS[item.topic] ?? 'News'}
         </span>
+        {item.store_name && (
+          <span className="text-sm font-semibold text-gray-900">
+            {item.store_name}
+            {item.sale_scope && (
+              <span className="ml-2 font-normal text-gray-500">{SALE_SCOPE_LABELS[item.sale_scope]}</span>
+            )}
+          </span>
+        )}
         {date && (
           <time
             dateTime={item.source_published_on ?? item.published_at ?? undefined}
@@ -105,78 +142,116 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
 };
 
 const NewsPage: React.FC = () => {
-  const [topic, setTopic] = useState<TopicFilter>('deals');
-  const [order, setOrder] = useState<NewsOrder>(SALES_DEFAULT_ORDER);
+  const search = useSyncExternalStore(subscribeToLocation, getSearch, getServerSearch);
+  // False while hydrating, so the first load waits for the real page link.
+  const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false);
+  const parsed = useMemo(() => parseNewsView(search), [search]);
+
+  // The page opens on Sales. If that first load finds no sales, fall back to
+  // All news once; after that the visitor's own choices (or a page link that
+  // asked for something specific) are never overridden.
+  const awaitingFirstLoad = useRef<boolean | null>(null);
+  const [fellBackToAll, setFellBackToAll] = useState(false);
+
+  const view = fellBackToAll ? ALL_NEWS_VIEW : parsed.view;
+  const { topic, order, store, scope, type } = view;
+  const filters: SalesFilters = { store, scope, type };
+  const key = viewKey(view);
+
+  const [saleOptions, setSaleOptions] = useState<SaleFilterRow[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<NewsItem[]>([]);
   const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // Each of these remembers which view it is about, so changing the view
+  // clears them without anything having to reset them.
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [failedKey, setFailedKey] = useState<string | null>(null);
+  const [loadingMoreKey, setLoadingMoreKey] = useState<string | null>(null);
+  const loading = loadedKey !== key;
+  const error = failedKey === key;
+  const loadingMore = loadingMoreKey === key;
 
-  // Which filter and order the visitor is looking at right now, so a slow
-  // "load more" for a view they have already left cannot append to the wrong list.
-  const currentView = useRef(`deals|${SALES_DEFAULT_ORDER}`);
-
-  // The page opens on Sales. If that first load finds no sales, fall back to
-  // All news once; after that the visitor's own tab choices are never overridden.
-  const awaitingFirstLoad = useRef(true);
-
-  // First page, on load and whenever the filter changes or a retry is asked for.
+  // The view the visitor is on right now, so a slow "load more" for one they
+  // have already left cannot append to the wrong list.
+  const currentView = useRef(key);
   useEffect(() => {
+    currentView.current = key;
+  }, [key]);
+
+  // The back button leaves the fallback behind along with the view it replaced.
+  useEffect(() => {
+    const leaveFallback = () => setFellBackToAll(false);
+    window.addEventListener('popstate', leaveFallback);
+    return () => window.removeEventListener('popstate', leaveFallback);
+  }, []);
+
+  const showView = (next: NewsView) => {
+    setFellBackToAll(false);
+    window.history.pushState(null, '', `${window.location.pathname}${newsViewToSearch(next)}`);
+    window.dispatchEvent(new Event(LOCATION_CHANGE_EVENT));
+  };
+
+  // The stores, local/online split and furniture types among the live sales.
+  useEffect(() => {
+    let cancelled = false;
+    getSaleFilterOptions().then((rows) => {
+      if (!cancelled) setSaleOptions(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  // First page, on load and whenever the view changes or a retry is asked for.
+  useEffect(() => {
+    if (!hydrated) return undefined;
+    if (awaitingFirstLoad.current === null) awaitingFirstLoad.current = !parsed.explicit;
     let cancelled = false;
     let fellBack = false;
 
-    getPublishedNews({ topic: topic === 'all' ? null : topic, order })
+    getPublishedNews({ topic: topic === 'all' ? null : topic, order, store, scope, type })
       .then((result) => {
         if (cancelled) return;
         if (awaitingFirstLoad.current) {
           awaitingFirstLoad.current = false;
           if (topic === 'deals' && result.items.length === 0) {
-            // Stay in the loading state; changing the filter reruns this effect.
+            // Stay in the loading state; the view changing reruns this effect.
             fellBack = true;
-            currentView.current = 'all|newest';
-            setTopic('all');
-            setOrder('newest');
+            setFellBackToAll(true);
             return;
           }
         }
         setItems(result.items);
         setHasMore(result.hasMore);
         setTotal(result.total);
-        setError(false);
       })
       .catch(() => {
         if (cancelled) return;
         setItems([]);
         setHasMore(false);
         setTotal(null);
-        setError(true);
+        setFailedKey(key);
       })
       .finally(() => {
-        if (!cancelled && !fellBack) setLoading(false);
+        if (!cancelled && !fellBack) setLoadedKey(key);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [topic, order, reloadKey]);
+    // `key` and `parsed` follow the view's own fields, listed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, topic, order, store, scope, type, reloadKey]);
 
   const handleTopicChange = (nextTopic: TopicFilter) => {
     if (nextTopic === topic) return;
     // Entering Sales starts on "Ending soonest"; leaving it drops an end-date
-    // order, which means nothing on the other tabs.
-    let nextOrder = order;
-    if (nextTopic === 'deals') nextOrder = SALES_DEFAULT_ORDER;
-    else if (isEndingOrder(order)) nextOrder = 'newest';
-    currentView.current = `${nextTopic}|${nextOrder}`;
-    setLoading(true);
-    setLoadingMore(false);
-    setError(false);
-    setTopic(nextTopic);
-    setOrder(nextOrder);
+    // order, which means nothing on the other tabs. Store filters belong to Sales.
+    const nextOrder =
+      nextTopic === 'deals' ? defaultOrderFor('deals') : isEndingOrder(order) ? 'newest' : order;
+    showView({ topic: nextTopic, order: nextOrder, ...NO_SALES_FILTERS });
     trackEvent('news_filter', 'news_feed', {
       event_category: 'engagement',
       event_label: nextTopic,
@@ -187,11 +262,7 @@ const NewsPage: React.FC = () => {
 
   const handleOrderChange = (nextOrder: NewsOrder) => {
     if (nextOrder === order) return;
-    currentView.current = `${topic}|${nextOrder}`;
-    setLoading(true);
-    setLoadingMore(false);
-    setError(false);
-    setOrder(nextOrder);
+    showView({ ...view, order: nextOrder });
     trackEvent('news_sort', 'news_feed', {
       event_category: 'engagement',
       event_label: nextOrder,
@@ -200,15 +271,26 @@ const NewsPage: React.FC = () => {
     });
   };
 
+  const handleSaleFiltersChange = (next: SalesFilters) => {
+    showView({ ...view, ...next });
+    const changed = (['store', 'scope', 'type'] as const).find((field) => next[field] !== filters[field]);
+    trackEvent('news_sale_filter', 'news_feed', {
+      event_category: 'engagement',
+      event_label: changed ? `${changed}:${next[changed] ?? 'all'}` : 'none',
+      element_type: 'button',
+      action_type: 'filter',
+    });
+  };
+
   const handleRetry = () => {
-    setLoading(true);
-    setError(false);
-    setReloadKey((key) => key + 1);
+    setFailedKey(null);
+    setLoadedKey(null);
+    setReloadKey((n) => n + 1);
   };
 
   const handleLoadMore = async () => {
     const requestedTopic = topic;
-    const requestedView = `${topic}|${order}`;
+    const requestedView = key;
     // Paged by "older than the last story shown", so a story approved or
     // unpublished since the first page loaded cannot repeat or skip one.
     const cursor = newsCursor(items, order);
@@ -217,13 +299,16 @@ const NewsPage: React.FC = () => {
       setHasMore(false);
       return;
     }
-    setLoadingMore(true);
-    setError(false);
+    setLoadingMoreKey(requestedView);
+    setFailedKey(null);
     try {
       const result = await getPublishedNews({
         topic: requestedTopic === 'all' ? null : requestedTopic,
         cursor,
         order,
+        store,
+        scope,
+        type,
       });
       if (currentView.current !== requestedView) return;
       setItems((previous) => {
@@ -232,9 +317,9 @@ const NewsPage: React.FC = () => {
       });
       setHasMore(result.hasMore);
     } catch {
-      if (currentView.current === requestedView) setError(true);
+      if (currentView.current === requestedView) setFailedKey(requestedView);
     } finally {
-      if (currentView.current === requestedView) setLoadingMore(false);
+      setLoadingMoreKey((current) => (current === requestedView ? null : current));
     }
   };
 
@@ -327,6 +412,15 @@ const NewsPage: React.FC = () => {
               </label>
               </div>
 
+              {topic === 'deals' && (
+                <SaleFilters
+                  rows={saleOptions}
+                  filters={filters}
+                  resultCount={loading ? null : total}
+                  onChange={handleSaleFiltersChange}
+                />
+              )}
+
               <div aria-live="polite" aria-busy={loading}>
                 {loading ? (
                   <div className="flex items-center justify-center py-20">
@@ -356,9 +450,20 @@ const NewsPage: React.FC = () => {
                       {topic === 'all'
                         ? 'No news posted yet. Check back soon.'
                         : topic === 'deals'
-                          ? 'No furniture sales posted right now. Check back soon.'
+                          ? hasSalesFilters(filters)
+                            ? 'No sales match those filters.'
+                            : 'No furniture sales posted right now. Check back soon.'
                           : 'Nothing posted on this topic yet.'}
                     </p>
+                    {topic === 'deals' && hasSalesFilters(filters) && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaleFiltersChange(NO_SALES_FILTERS)}
+                        className="mt-3 mr-4 text-blue-700 hover:text-blue-800 font-medium underline"
+                      >
+                        Clear filters
+                      </button>
+                    )}
                     {topic !== 'all' && (
                       <button
                         type="button"

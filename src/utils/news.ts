@@ -1,4 +1,4 @@
-import type { NewsItem, NewsTopic } from '../types/news';
+import type { FurnitureType, NewsItem, NewsTopic, SaleFilterRow, SaleScope } from '../types/news';
 
 export const NEWS_TOPIC_LABELS: Record<NewsTopic, string> = {
   flat_pack: 'Flat pack furniture',
@@ -177,4 +177,205 @@ export function endingAfterCondition(order: NewsOrder, cursor: NewsCursor): stri
     afterInPostedOrder(`ends_on.eq.${cursor.endsOn}`),
     'ends_on.is.null',
   ].join(',');
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Sales filters: store, local or online, furniture type
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export const SALE_SCOPE_LABELS: Record<SaleScope, string> = {
+  local: 'Local stores',
+  online: 'Online',
+};
+
+/** In the order they are offered. Mirrors the check constraint on `furniture_types`. */
+export const FURNITURE_TYPE_LABELS: Record<FurnitureType, string> = {
+  living_room: 'Living room',
+  bedroom: 'Bedroom',
+  dining: 'Dining',
+  office: 'Office',
+  outdoor: 'Outdoor',
+  mattresses: 'Mattresses',
+  storage: 'Storage and organization',
+  rugs_decor: 'Rugs and decor',
+};
+
+export const FURNITURE_TYPES = Object.keys(FURNITURE_TYPE_LABELS) as FurnitureType[];
+
+export const NEWS_STORE_NAME_MAX = 80;
+
+/**
+ * The page-link form of a store name ("Bassett Home Furnishings" becomes
+ * "bassett-home-furnishings"). `news_items.store_slug` is generated with the
+ * same rule, so keep the two in step.
+ */
+export function storeSlug(name: string | null | undefined): string | null {
+  if (!name) return null;
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug || null;
+}
+
+export type TopicFilter = NewsTopic | 'all';
+
+export interface SalesFilters {
+  /** `store_slug` of the chosen store. */
+  store: string | null;
+  scope: SaleScope | null;
+  type: FurnitureType | null;
+}
+
+export const NO_SALES_FILTERS: SalesFilters = { store: null, scope: null, type: null };
+
+export function hasSalesFilters(filters: SalesFilters): boolean {
+  return Boolean(filters.store || filters.scope || filters.type);
+}
+
+/** Everything a visitor can change on the page, and everything the page link carries. */
+export interface NewsView extends SalesFilters {
+  topic: TopicFilter;
+  order: NewsOrder;
+}
+
+/** Visitors who open the Sales tab see the sales about to end first. */
+export const SALES_DEFAULT_ORDER: NewsOrder = 'ending_soonest';
+
+export const DEFAULT_NEWS_VIEW: NewsView = {
+  topic: 'deals',
+  order: SALES_DEFAULT_ORDER,
+  ...NO_SALES_FILTERS,
+};
+
+export function defaultOrderFor(topic: TopicFilter): NewsOrder {
+  return topic === 'deals' ? SALES_DEFAULT_ORDER : 'newest';
+}
+
+const TAB_PARAM: Record<TopicFilter, string> = {
+  all: 'all',
+  flat_pack: 'flat-pack',
+  furniture_assembly: 'assembly',
+  deals: 'sales',
+};
+
+const SORT_PARAM: Record<NewsOrder, string> = {
+  newest: 'newest',
+  oldest: 'oldest',
+  ending_soonest: 'ending-soonest',
+  ending_latest: 'ending-latest',
+};
+
+function reverseLookup<T extends string>(table: Record<T, string>, value: string | null): T | null {
+  if (value === null) return null;
+  return (Object.keys(table) as T[]).find((key) => table[key] === value) ?? null;
+}
+
+/**
+ * Reads the page link, e.g. `?tab=sales&store=wayfair&where=online&type=bedroom`.
+ * Anything unrecognised is ignored rather than trusted, and a filter that does
+ * not apply to the tab (store on a news tab) or an order that does not exist
+ * there (end dates on a news tab) falls back to the tab's default.
+ *
+ * `explicit` is true when the link chose something, which stops the page from
+ * overriding it with the "no sales, show all news" fallback.
+ */
+export function parseNewsView(search: string): { view: NewsView; explicit: boolean } {
+  const params = new URLSearchParams(search);
+  const topic = reverseLookup(TAB_PARAM, params.get('tab')) ?? 'deals';
+  const requestedOrder = reverseLookup(SORT_PARAM, params.get('sort'));
+  const order =
+    requestedOrder && (topic === 'deals' || !isEndingOrder(requestedOrder))
+      ? requestedOrder
+      : defaultOrderFor(topic);
+
+  let filters = NO_SALES_FILTERS;
+  if (topic === 'deals') {
+    const store = params.get('store');
+    const scope = params.get('where');
+    const type = params.get('type');
+    filters = {
+      store: store && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(store) && store.length <= 100 ? store : null,
+      scope: scope === 'local' || scope === 'online' ? scope : null,
+      type: FURNITURE_TYPES.find((value) => value === type) ?? null,
+    };
+  }
+
+  const explicit = ['tab', 'sort', 'store', 'where', 'type'].some((key) => params.has(key));
+  return { view: { topic, order, ...filters }, explicit };
+}
+
+/** The query string for a view, leaving out anything that is the default. */
+export function newsViewToSearch(view: NewsView): string {
+  const params = new URLSearchParams();
+  if (view.topic !== 'deals') params.set('tab', TAB_PARAM[view.topic]);
+  if (view.order !== defaultOrderFor(view.topic)) params.set('sort', SORT_PARAM[view.order]);
+  if (view.topic === 'deals') {
+    if (view.store) params.set('store', view.store);
+    if (view.scope) params.set('where', view.scope);
+    if (view.type) params.set('type', view.type);
+  }
+  const query = params.toString();
+  return query ? `?${query}` : '';
+}
+
+function rowMatches(row: SaleFilterRow, filters: Partial<SalesFilters>): boolean {
+  if (filters.store && row.store_slug !== filters.store) return false;
+  if (filters.scope && row.sale_scope !== filters.scope) return false;
+  if (filters.type && !row.furniture_types.includes(filters.type)) return false;
+  return true;
+}
+
+/** How many live sales match the filters. */
+export function countSales(rows: SaleFilterRow[], filters: Partial<SalesFilters> = {}): number {
+  return rows.reduce((sum, row) => (rowMatches(row, filters) ? sum + Number(row.sale_count) : sum), 0);
+}
+
+export interface StoreOption {
+  slug: string;
+  name: string;
+  count: number;
+}
+
+/**
+ * Stores that have live sales under the chosen local/online and type filters,
+ * busiest first. The store filter itself is not applied, so choosing a store
+ * does not make the other stores vanish from the chips.
+ */
+export function storeOptions(rows: SaleFilterRow[], filters: Partial<SalesFilters> = {}): StoreOption[] {
+  const byStore = new Map<string, StoreOption>();
+  for (const row of rows) {
+    if (!row.store_slug || !row.store_name) continue;
+    if (!rowMatches(row, { scope: filters.scope, type: filters.type })) continue;
+    const existing = byStore.get(row.store_slug);
+    if (existing) existing.count += Number(row.sale_count);
+    else byStore.set(row.store_slug, { slug: row.store_slug, name: row.store_name, count: Number(row.sale_count) });
+  }
+  return [...byStore.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/** Sales per local/online choice under the chosen store and type. */
+export function scopeCounts(
+  rows: SaleFilterRow[],
+  filters: Partial<SalesFilters> = {},
+): Record<SaleScope, number> & { all: number } {
+  const narrowed = { store: filters.store, type: filters.type };
+  return {
+    all: countSales(rows, narrowed),
+    local: countSales(rows, { ...narrowed, scope: 'local' }),
+    online: countSales(rows, { ...narrowed, scope: 'online' }),
+  };
+}
+
+export interface TypeOption {
+  value: FurnitureType;
+  label: string;
+  count: number;
+}
+
+/** Furniture types with live sales under the chosen store and local/online filters. */
+export function typeOptions(rows: SaleFilterRow[], filters: Partial<SalesFilters> = {}): TypeOption[] {
+  const narrowed = { store: filters.store, scope: filters.scope };
+  return FURNITURE_TYPES.map((value) => ({
+    value,
+    label: FURNITURE_TYPE_LABELS[value],
+    count: countSales(rows, { ...narrowed, type: value }),
+  })).filter((option) => option.count > 0);
 }
