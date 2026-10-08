@@ -104,6 +104,23 @@ export function deadlineParts(grant: Pick<BusinessGrant, 'deadline' | 'deadline_
   return { headline: 'No set date', detail: note };
 }
 
+/**
+ * For a grant that is not open yet, the opening date is the headline, so the
+ * deadline goes in the small print under it, whole: the date, the funder's note
+ * (a cut-off time, say), or both. A note with no date is kept too ("Rolling",
+ * "Not stated"), so nothing known about the deadline is dropped from the card.
+ */
+export function upcomingDeadlineDetail(
+  grant: Pick<BusinessGrant, 'deadline' | 'deadline_note'>,
+): string | null {
+  const date = formatEndsOn(grant.deadline);
+  const note = grant.deadline_note?.trim() || null;
+  if (date && note) return `Deadline ${date} (${note})`;
+  if (date) return `Deadline ${date}`;
+  if (note) return `Deadline: ${note}`;
+  return null;
+}
+
 /** "U.S." and "D.C." end in a full stop without ending a sentence. */
 const INITIALS_BEFORE = /(?:^|[\s(])(?:[A-Za-z]\.)+$/;
 /** Common short forms that do the same. Compared without the final full stop. */
