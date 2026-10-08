@@ -16,6 +16,7 @@ import {
   sortGrants,
   splitAmount,
   toPoints,
+  upcomingDeadlineDetail,
 } from '../../src/utils/grants.ts';
 
 const TODAY = '2026-10-08';
@@ -101,6 +102,19 @@ test('with no date, a short note is the deadline and a long one sits under it', 
     headline: 'No set date',
     detail: long,
   });
+});
+
+test('an upcoming grant keeps everything known about its deadline', () => {
+  // The opening date takes the headline, so the deadline moves to the small
+  // print. It must arrive there whole: a cut-off time is needed to apply.
+  assert.equal(
+    upcomingDeadlineDetail({ deadline: '2027-03-31', deadline_note: '5:00 PM ET' }),
+    'Deadline March 31, 2027 (5:00 PM ET)',
+  );
+  assert.equal(upcomingDeadlineDetail({ deadline: '2027-03-31', deadline_note: null }), 'Deadline March 31, 2027');
+  assert.equal(upcomingDeadlineDetail({ deadline: null, deadline_note: 'Rolling' }), 'Deadline: Rolling');
+  assert.equal(upcomingDeadlineDetail({ deadline: null, deadline_note: 'Not stated' }), 'Deadline: Not stated');
+  assert.equal(upcomingDeadlineDetail({ deadline: null, deadline_note: null }), null);
 });
 
 test('the amount is split into the figure to read at a glance and its small print', () => {
