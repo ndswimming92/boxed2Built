@@ -79,6 +79,7 @@ const BrandingPage = React.lazy(() => import('./pages/admin/BrandingPage'));
 const AdminGiftCardsPage = React.lazy(() => import('./pages/admin/GiftCardsPage'));
 const AdminCouponsPage = React.lazy(() => import('./pages/admin/CouponsPage'));
 const AdminNewsPage = React.lazy(() => import('./pages/admin/NewsPage'));
+const GrantsPage = React.lazy(() => import('./pages/admin/GrantsPage'));
 const StoreProductsPage = React.lazy(() => import('./pages/admin/StoreProductsPage'));
 const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage'));
 const ModelStudioPage = React.lazy(() => import('./pages/admin/ModelStudioPage'));
@@ -198,6 +199,7 @@ export const routes: RouteRecord[] = [
           { path: 'analytics', Component: AnalyticsPage },
           { path: 'forecasting', Component: ForecastingPage },
           { path: 'burn-rate', Component: BurnRatePage },
+          { path: 'grants', Component: GrantsPage },
           { path: 'tax-settings', Component: TaxSettingsPage },
           { path: 'mileage-settings', Component: MileageSettingsPage },
           { path: 'notification-bar', Component: NotificationBarPage },
