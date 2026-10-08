@@ -25,19 +25,6 @@ const ContactPage: React.FC = () => {
   const phoneDisplay = formatPhoneForDisplay(phoneMachine);
   const localSeoContent = getLocalSeoContentWithPhone({ phone: phoneMachine, phoneDisplay });
 
-  const handlePhoneClick = () => {
-    trackEvent('phone_click', 'contact_page_info', {
-      event_category: 'contact',
-      event_label: 'phone_click_contact_info',
-      value: 1,
-      element_type: 'link',
-      element_location: 'contact_page_info',
-      page_section: 'contact_page_info',
-      action_type: 'phone_click',
-      conversion_type: 'phone_lead'
-    });
-  };
-
   const handleEmailClick = () => {
     trackEvent('email_click', 'contact_page_header', {
       event_category: 'contact',
@@ -118,7 +105,6 @@ const ContactPage: React.FC = () => {
                         <a 
                           href={`tel:${phoneMachine}`} 
                           className="text-blue-700 hover:text-blue-800 text-lg"
-                          onClick={handlePhoneClick}
                         >
                           {phoneDisplay}
                         </a>

@@ -106,6 +106,7 @@ const QuickContactForm: React.FC = () => {
     setErrorMessage('');
 
     let supabaseSuccess = false;
+    let isTestLead = false;
     const errors: string[] = [];
 
     try {
@@ -123,6 +124,8 @@ const QuickContactForm: React.FC = () => {
             .maybeSingle(),
           isTestSubmission(formData.name, formData.email),
         ]);
+
+        isTestLead = isTest;
 
         if (businessError) {
           console.error('Error fetching business info:', businessError);
@@ -190,7 +193,8 @@ const QuickContactForm: React.FC = () => {
           supabase_success: supabaseSuccess,
         });
 
-        trackLead({ form_location: 'footer' });
+        // Flagged test submissions stay out of GA, as they do out of the admin metrics.
+        if (!isTestLead) trackLead({ form_location: 'footer' });
 
         trackConversion('quick_contact_submission', 1, 'USD', {
           page_section: 'footer',
