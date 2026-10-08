@@ -15,6 +15,7 @@ import {
   sortGrants,
   splitAmount,
   toPoints,
+  upcomingDeadlineDetail,
   type GrantBucket,
 } from '../../utils/grants';
 import { centralToday, formatEndsOn, safeExternalUrl } from '../../utils/news';
@@ -144,7 +145,7 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
           <Fact
             label="Applications open"
             headline={formatGrantOpens(grant)}
-            detail={grant.deadline ? `Deadline ${deadline.headline}` : null}
+            detail={upcomingDeadlineDetail(grant)}
           />
         ) : (
           <Fact label="Deadline" headline={deadline.headline} detail={deadline.detail} />

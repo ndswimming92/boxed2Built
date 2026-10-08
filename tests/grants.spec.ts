@@ -273,6 +273,36 @@ test('upcoming and closed grants are kept apart from the open ones', async ({ pa
   await expect(card(page, DEADLINE_PASSED).getByRole('link', { name: /View on the funder/ })).toBeVisible();
 });
 
+test('an upcoming grant shows its whole deadline under the opening date', async ({ page }) => {
+  // The opening date is the headline on this tab, so the deadline sits under
+  // it. Its cut-off time, or a note with no date, must not be dropped.
+  const WITH_DEADLINE: Row = {
+    ...UPCOMING,
+    id: 'grant-up-1',
+    name: 'Spring Cycle Grant',
+    deadline: '2027-03-31',
+    deadline_note: '5:00 PM ET',
+  };
+  const NOTE_ONLY: Row = {
+    ...UPCOMING,
+    id: 'grant-up-2',
+    name: 'Rolling Cycle Grant',
+    opens_on: null,
+    deadline_note: 'Rolling once it opens',
+  };
+  await stubGrants(page, [WITH_DEADLINE, NOTE_ONLY]);
+  await open(page);
+  await page.getByRole('tab', { name: /Opening soon/ }).click();
+
+  const dated = card(page, WITH_DEADLINE).getByRole('definition').nth(1);
+  await expect(dated.getByText('February 1, 2027', { exact: true })).toBeVisible();
+  await expect(dated.getByText('Deadline March 31, 2027 (5:00 PM ET)')).toBeVisible();
+
+  const noteOnly = card(page, NOTE_ONLY).getByRole('definition').nth(1);
+  await expect(noteOnly.getByText('Date not announced', { exact: true })).toBeVisible();
+  await expect(noteOnly.getByText('Deadline: Rolling once it opens')).toBeVisible();
+});
+
 test('search narrows the list by grant, company or criteria', async ({ page }) => {
   await stubGrants(page, [OPEN_LATER, OPEN_SOON, OPEN_ROLLING]);
   await open(page);
