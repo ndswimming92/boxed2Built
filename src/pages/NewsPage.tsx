@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Head } from 'vite-react-ssg';
-import { ArrowRight, ExternalLink, Newspaper } from 'lucide-react';
+import { ArrowRight, ChevronDown, ExternalLink, Newspaper } from 'lucide-react';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -325,6 +325,28 @@ const NewsPage: React.FC = () => {
     }
   };
 
+  // Sits at the end of the Sales filter row, or on its own on the other tabs.
+  const sortControl = (
+    <label className="relative flex items-center gap-2 text-[15px]">
+      <span className="whitespace-nowrap text-gray-600">Sort by</span>
+      <select
+        value={order}
+        onChange={(event) => handleOrderChange(event.target.value as NewsOrder)}
+        className="h-11 cursor-pointer appearance-none rounded-lg bg-transparent pl-1 pr-8 font-semibold text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+      >
+        {(topic === 'deals' ? SALES_ORDER_OPTIONS : ORDER_OPTIONS).map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-900"
+        aria-hidden="true"
+      />
+    </label>
+  );
+
   return (
     <>
       <Head>
@@ -372,9 +394,8 @@ const NewsPage: React.FC = () => {
                 Latest news
               </h2>
 
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
               <div
-                className="flex flex-wrap gap-2"
+                className="mb-6 flex gap-7 overflow-x-auto border-b border-gray-200"
                 role="group"
                 aria-label="Filter news by topic"
               >
@@ -386,10 +407,10 @@ const NewsPage: React.FC = () => {
                       type="button"
                       aria-pressed={isActive}
                       onClick={() => handleTopicChange(filter.value)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      className={`-mb-px h-12 flex-none whitespace-nowrap border-b-2 px-0.5 text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                         isActive
-                          ? 'bg-blue-700 text-white border-blue-700'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:text-blue-700'
+                          ? 'border-blue-700 font-semibold text-gray-900'
+                          : 'border-transparent font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900'
                       }`}
                     >
                       {filter.label}
@@ -398,29 +419,16 @@ const NewsPage: React.FC = () => {
                 })}
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="font-medium">Sort</span>
-                <select
-                  value={order}
-                  onChange={(event) => handleOrderChange(event.target.value as NewsOrder)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {(topic === 'deals' ? SALES_ORDER_OPTIONS : ORDER_OPTIONS).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              </div>
-
-              {topic === 'deals' && (
+              {topic === 'deals' ? (
                 <SaleFilters
                   rows={saleOptions}
                   filters={filters}
                   resultCount={loading ? null : total}
                   onChange={handleSaleFiltersChange}
+                  sort={sortControl}
                 />
+              ) : (
+                <div className="mb-8 flex justify-end">{sortControl}</div>
               )}
 
               <div aria-live="polite" aria-busy={loading}>
