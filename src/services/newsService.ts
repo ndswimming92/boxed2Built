@@ -1,4 +1,7 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { getNewsCacheClient } from '../lib/newsCacheClient';
+import { readWithFallback } from '../utils/publicRead';
 import { logAction, type ActionType } from './auditLogService';
 import type {
   FurnitureType,
@@ -63,50 +66,63 @@ export async function getPublishedNews(options: {
   // page starts strictly after the last sale shown, so it has no ties to ask for.
   const limit = byEndDate ? NEWS_PAGE_SIZE + 1 : NEWS_PAGE_SIZE + alreadyShown.size + 1;
 
-  // The total is only asked for on the first page; later pages keep it.
-  let query = supabase
-    .from('news_items')
-    .select('*', cursor ? undefined : { count: 'exact' })
-    .eq('status', 'published')
-    .limit(limit);
+  // Built once per client, so the same query can be sent through the cached
+  // route and, if that is not working, straight to Supabase.
+  const buildQuery = (client: SupabaseClient) => {
+    // The total is only asked for on the first page; later pages keep it.
+    let query = client
+      .from('news_items')
+      .select('*', cursor ? undefined : { count: 'exact' })
+      .eq('status', 'published')
+      .limit(limit);
 
-  // Expired deals stay published but drop off the feed the day after ends_on.
-  // RLS enforces this for visitors; this covers signed-in admins. An end-date
-  // page carries its "after the last sale shown" condition in the same filter,
-  // so there is one `or` and no doubt about how two of them would combine.
-  const notExpired = `or(ends_on.is.null,ends_on.gte.${centralToday()})`;
-  query =
-    byEndDate && cursor
-      ? query.or(`and(${notExpired},or(${endingAfterCondition(order, cursor)}))`)
-      : query.or(`ends_on.is.null,ends_on.gte.${centralToday()}`);
+    // Expired deals stay published but drop off the feed the day after ends_on.
+    // RLS enforces this for visitors; this covers signed-in admins. An end-date
+    // page carries its "after the last sale shown" condition in the same filter,
+    // so there is one `or` and no doubt about how two of them would combine.
+    const notExpired = `or(ends_on.is.null,ends_on.gte.${centralToday()})`;
+    query =
+      byEndDate && cursor
+        ? query.or(`and(${notExpired},or(${endingAfterCondition(order, cursor)}))`)
+        : query.or(`ends_on.is.null,ends_on.gte.${centralToday()}`);
 
-  if (byEndDate) {
-    // Nulls last in both directions; ties and open-ended sales newest first.
-    query = query
-      .order('ends_on', { ascending: order === 'ending_soonest', nullsFirst: false })
-      .order('published_at', { ascending: false, nullsFirst: false })
-      .order('id', { ascending: false });
-  } else {
-    query = query
-      .order('published_at', { ascending, nullsFirst: false })
-      .order('id', { ascending });
-  }
+    if (byEndDate) {
+      // Nulls last in both directions; ties and open-ended sales newest first.
+      query = query
+        .order('ends_on', { ascending: order === 'ending_soonest', nullsFirst: false })
+        .order('published_at', { ascending: false, nullsFirst: false })
+        .order('id', { ascending: false });
+    } else {
+      query = query
+        .order('published_at', { ascending, nullsFirst: false })
+        .order('id', { ascending });
+    }
 
-  if (options.topic) {
-    query = query.eq('topic', options.topic);
-  }
-  if (options.topic === 'deals') {
-    if (options.store) query = query.eq('store_slug', options.store);
-    if (options.scope) query = query.eq('sale_scope', options.scope);
-    if (options.type) query = query.contains('furniture_types', [options.type]);
-  }
-  if (cursor && !byEndDate) {
-    query = ascending
-      ? query.gte('published_at', cursor.publishedAt)
-      : query.lte('published_at', cursor.publishedAt);
-  }
+    if (options.topic) {
+      query = query.eq('topic', options.topic);
+    }
+    if (options.topic === 'deals') {
+      if (options.store) query = query.eq('store_slug', options.store);
+      if (options.scope) query = query.eq('sale_scope', options.scope);
+      if (options.type) query = query.contains('furniture_types', [options.type]);
+    }
+    if (cursor && !byEndDate) {
+      query = ascending
+        ? query.gte('published_at', cursor.publishedAt)
+        : query.lte('published_at', cursor.publishedAt);
+    }
+    // The client would otherwise retry 503s and dropped connections on its own,
+    // three times over seven seconds. readWithFallback owns the retry policy,
+    // and stacked retries from a crowd of visitors are what hurts a struggling
+    // database most.
+    return query.retry(false);
+  };
 
-  const { data, error, count } = await query;
+  const cacheClient = getNewsCacheClient();
+  const { data, error, count } = await readWithFallback(
+    cacheClient ? () => buildQuery(cacheClient) : null,
+    () => buildQuery(supabase),
+  );
 
   if (error) {
     console.error('Error fetching news:', error);
@@ -127,7 +143,14 @@ export async function getPublishedNews(options: {
  * database function is not there yet, so the page just shows no filters.
  */
 export async function getSaleFilterOptions(): Promise<SaleFilterRow[]> {
-  const { data, error } = await supabase.rpc('news_sale_filter_options');
+  // A GET (not the default POST) so the cached route can answer it.
+  const buildQuery = (client: SupabaseClient) =>
+    client.rpc('news_sale_filter_options', undefined, { get: true }).retry(false);
+  const cacheClient = getNewsCacheClient();
+  const { data, error } = await readWithFallback(
+    cacheClient ? () => buildQuery(cacheClient) : null,
+    () => buildQuery(supabase),
+  );
   if (error) {
     console.error('Error fetching sale filter options:', error);
     return [];
