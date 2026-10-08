@@ -30,6 +30,26 @@ import {
 } from '../utils/news';
 import type { NewsItem, SaleFilterRow } from '../types/news';
 
+const NEWS_PAGE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://boxed2built.com/news#page',
+  url: 'https://boxed2built.com/news',
+  name: 'Furniture Deals & Sales Near Spring Hill, TN',
+  description: LOCAL_SEO_CONTENT.news.description,
+  inLanguage: 'en-US',
+  isPartOf: { '@type': 'WebSite', name: 'Boxed2Built', url: 'https://boxed2built.com' },
+  about: ['Furniture sales', 'Furniture deals', 'Flat pack furniture', 'Furniture assembly'],
+  spatialCoverage: { '@type': 'City', name: 'Spring Hill, TN' },
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boxed2built.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Deals & News', item: 'https://boxed2built.com/news' },
+    ],
+  },
+};
+
 const TOPIC_FILTERS: Array<{ value: TopicFilter; label: string }> = [
   { value: 'all', label: 'All news' },
   { value: 'flat_pack', label: NEWS_TOPIC_LABELS.flat_pack },
@@ -354,10 +374,12 @@ const NewsPage: React.FC = () => {
         <meta name="description" content={LOCAL_SEO_CONTENT.news.description} />
         <link rel="canonical" href="https://boxed2built.com/news" />
         <meta property="og:url" content="https://boxed2built.com/news" />
-        <meta property="og:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta property="og:description" content="Flat pack furniture and furniture assembly news, plus current furniture sales near Spring Hill, TN, with links to the sources." />
-        <meta name="twitter:title" content="Furniture Assembly & Flat Pack News | Boxed2Built" />
-        <meta name="twitter:description" content="Flat pack furniture and furniture assembly news, plus current furniture sales near Spring Hill, TN, with links to the sources." />
+        <meta name="keywords" content="furniture deals, furniture sales, furniture sales Spring Hill TN, furniture deals near me, flat pack furniture news, furniture assembly news, Franklin TN furniture sales" />
+        <meta property="og:title" content={LOCAL_SEO_CONTENT.news.title} />
+        <meta property="og:description" content={LOCAL_SEO_CONTENT.news.description} />
+        <meta name="twitter:title" content={LOCAL_SEO_CONTENT.news.title} />
+        <meta name="twitter:description" content={LOCAL_SEO_CONTENT.news.description} />
+        <script type="application/ld+json">{JSON.stringify(NEWS_PAGE_SCHEMA)}</script>
       </Head>
       <Header />
       <main className="pt-20">
@@ -368,20 +390,35 @@ const NewsPage: React.FC = () => {
               <Breadcrumbs
                 items={[
                   { label: 'Home', href: '/' },
-                  { label: 'News', href: '/news', current: true },
+                  { label: 'Deals & News', href: '/news', current: true },
                 ]}
                 className="mb-6"
               />
 
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Furniture Assembly and Flat Pack News
-              </h1>
-              <p className="text-xl text-gray-600">
-                Recent news on flat pack furniture and furniture assembly, from retailer
-                updates and new product lines to recalls and safety notices. Each item is a
-                short summary with a link to the original source. The Sales tab lists current
-                furniture sales, including stores in and around Spring Hill, TN.
+              <p className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-semibold text-emerald-900 mb-5">
+                <span className="h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true" />
+                Updated daily
               </p>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Furniture Deals &amp; Sales Near Spring Hill, TN
+              </h1>
+              <p className="text-xl text-gray-600 mb-4">
+                The best place to find furniture deals and sales, checked and updated every
+                day. See what is on sale now at stores in and around Spring Hill, TN, and
+                online, before you buy.
+              </p>
+              <p className="text-lg text-gray-600 mb-8">
+                You will also find the latest flat pack furniture and furniture assembly news,
+                from retailer updates and new product lines to recalls and safety notices. Each
+                item is a short summary with a link to the original source.
+              </p>
+              <a
+                href="#news-feed-heading"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-navy px-7 py-3.5 text-lg font-semibold text-white shadow-md hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
+                See today&apos;s furniture sales
+                <ArrowRight className="w-5 h-5" aria-hidden="true" />
+              </a>
             </div>
           </div>
         </section>
@@ -391,7 +428,7 @@ const NewsPage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <h2 id="news-feed-heading" className="sr-only">
-                Latest news
+                Furniture deals, sales and news
               </h2>
 
               <div
