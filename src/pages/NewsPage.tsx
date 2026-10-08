@@ -226,6 +226,8 @@ const NewsPage: React.FC = () => {
         setItems(result.items);
         setHasMore(result.hasMore);
         setTotal(result.total);
+        // A failure recorded for this view earlier no longer applies.
+        setFailedKey((failed) => (failed === key ? null : failed));
       })
       .catch(() => {
         if (cancelled) return;

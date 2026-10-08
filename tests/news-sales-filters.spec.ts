@@ -177,3 +177,23 @@ test('with no sales at all the page still falls back to All news', async ({ page
   await page.goto('/tests/harness/news-public.html');
   await expect(cards(page)).toHaveText(['A flat pack story']);
 });
+
+test('a view that failed once loads normally when the visitor comes back after the feed recovers', async ({ page }) => {
+  await stub(page);
+  let failing = true;
+  // Registered after the stub, so it answers first while the feed is "down".
+  await page.route('**/rest/v1/news_items*', (route) =>
+    failing ? route.fulfill({ status: 500, json: { message: 'down' } }) : route.fallback(),
+  );
+  await page.goto('/tests/harness/news-public.html?store=wayfair');
+  await expect(page.getByText('The news feed could not be loaded. Please try again.')).toBeVisible();
+
+  failing = false;
+  await page.getByRole('button', { name: 'All news' }).click();
+  await expect(cards(page)).toHaveCount(6);
+  await page.getByRole('button', { name: 'Sales', exact: true }).click();
+  await page.getByRole('group', { name: 'Store' }).getByRole('button', { name: /Wayfair/ }).click();
+
+  await expect(cards(page)).toHaveText(['Wayfair sale 1', 'Wayfair sale 3']);
+  await expect(page.getByText('could not be loaded')).toHaveCount(0);
+});
