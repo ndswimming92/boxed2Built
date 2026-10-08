@@ -110,8 +110,10 @@ export default async function handler(request: Request): Promise<Response> {
     'Content-Type': upstream.headers.get('content-type') ?? 'application/json',
     'Cache-Control': BROWSER_CACHE,
     'Netlify-CDN-Cache-Control': CDN_CACHE,
-    // The total only comes back when it was asked for, so the two are kept apart.
-    'Netlify-Vary': 'header=prefer',
+    // Naming a header here replaces Netlify's default of varying by query
+    // string, so both are listed: every distinct view (topic, sort, store,
+    // filters, page) is its own cache entry, and so is the total-or-not request.
+    'Netlify-Vary': 'query,header=prefer',
     'X-Robots-Tag': 'noindex',
   });
   const contentRange = upstream.headers.get('content-range');

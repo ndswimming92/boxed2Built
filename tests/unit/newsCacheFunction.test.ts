@@ -38,6 +38,8 @@ test('forwards the read with the anonymous key and makes the answer cacheable', 
   assert.equal(response.headers.get('content-range'), '0-0/7');
   assert.match(response.headers.get('netlify-cdn-cache-control') ?? '', /s-maxage=60/);
   assert.match(response.headers.get('netlify-cdn-cache-control') ?? '', /stale-if-error/);
+  // Each view must be its own cache entry, and the total-or-not request too.
+  assert.equal(response.headers.get('netlify-vary'), 'query,header=prefer');
 
   assert.equal(upstream[0].url, 'https://example.supabase.co/rest/v1/news_items?select=*&status=eq.published&limit=26');
   assert.equal(upstream[0].headers.get('authorization'), 'Bearer anon-key');
