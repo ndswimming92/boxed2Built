@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
 import { Youtube } from '../ui/BrandIcons';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -96,6 +96,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Customers', href: '/admin/clients', icon: Users },
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'News Feed', href: '/admin/news', icon: Newspaper },
+      { name: 'Competitor Watch', href: '/admin/competitors', icon: Binoculars },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
       { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },

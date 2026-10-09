@@ -72,6 +72,9 @@ jobs:
           COVERED="$COVERED"'|src/pages/admin/GrantsPage\.tsx$'
           COVERED="$COVERED"'|src/services/grantsService\.ts$'
           COVERED="$COVERED"'|src/utils/grants\.ts$'
+          COVERED="$COVERED"'|src/pages/admin/CompetitorsPage\.tsx$'
+          COVERED="$COVERED"'|src/services/competitorService\.ts$'
+          COVERED="$COVERED"'|src/utils/competitors\.ts$'
           COVERED="$COVERED"'|src/pages/portal/(JobsPage|JobDetailPage)\.tsx$'
           COVERED="$COVERED"'|src/components/portal/PortalLayout\.tsx$'
           COVERED="$COVERED"'|src/components/admin/(JobFollowupCard|JobReminderCard|JobTravelCard|TravelEstimateCard|JobInvoicesList|JobContractorsList|JobContractorModal|JobFormModal|JobCompletionWizard|SatisfactionRating|SignatureCapture|MarkJobLostModal|CancelJobModal|AttachInvoiceModal|InvoiceFormModal|ImportJobsModal|JobCalendarFeedModal|ClientDetailModal)\.tsx$'
@@ -153,8 +156,8 @@ jobs:
             files: tests/job-card-workflows.spec.ts
           - name: Job lists, import/export and customer portal job pages
             files: tests/job-card-surfaces.spec.ts
-          - name: Contact form, news, grants and portal sign-in
-            files: tests/contact-form.spec.ts tests/news.spec.ts tests/grants.spec.ts tests/portal-login.spec.ts tests/portal-callback.spec.ts
+          - name: Contact form, news, grants, competitor watch and portal sign-in
+            files: tests/contact-form.spec.ts tests/news.spec.ts tests/grants.spec.ts tests/competitors.spec.ts tests/portal-login.spec.ts tests/portal-callback.spec.ts
     steps:
       - uses: actions/checkout@v7
 
