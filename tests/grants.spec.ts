@@ -162,8 +162,8 @@ test('a card starts collapsed on the name, company and the three facts, and open
   await expect(grant.getByText('Example Bank Foundation')).toBeVisible();
   await expect(grant.getByRole('definition')).toHaveCount(3);
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(grant.getByText(OPEN_LATER.description as string)).toHaveCount(0);
-  await expect(grant.getByRole('link', { name: /Go to the application/ })).toHaveCount(0);
+  await expect(grant.getByText(OPEN_LATER.description as string)).toBeHidden();
+  await expect(grant.getByRole('link', { name: /Go to the application/ })).toBeHidden();
 
   // Clicking the facts opens it too, and a second click closes it again.
   await grant.getByRole('definition').first().click();
@@ -171,7 +171,20 @@ test('a card starts collapsed on the name, company and the three facts, and open
   await expect(grant.getByText(OPEN_LATER.description as string)).toBeVisible();
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(grant.getByText(OPEN_LATER.description as string)).toHaveCount(0);
+  await expect(grant.getByText(OPEN_LATER.description as string)).toBeHidden();
+});
+
+test('collapsing an applied card keeps notes that have not been saved yet', async ({ page }) => {
+  const APPLIED: Row = { ...OPEN_LATER, applied_on: '2026-10-05', application_outcome: 'pending', application_notes: null };
+  await stubGrants(page, [APPLIED]);
+  await open(page);
+  await page.getByRole('tab', { name: /Applied/ }).click();
+  await expand(page, APPLIED);
+
+  await card(page, APPLIED).getByLabel('Notes').fill('Confirmation 12345');
+  await expand(page, APPLIED); // collapse
+  await expand(page, APPLIED); // reopen
+  await expect(card(page, APPLIED).getByLabel('Notes')).toHaveValue('Confirmation 12345');
 });
 
 test('a grant shows its name, company, description, criteria and how to apply', async ({ page }) => {

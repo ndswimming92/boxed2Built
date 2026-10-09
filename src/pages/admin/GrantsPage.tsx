@@ -270,8 +270,8 @@ function GrantCard({
         </dl>
       </div>
 
-      {expanded && (
-      <>
+      {/* Hidden, not unmounted, so unsaved notes on an applied card survive a collapse. */}
+      <div hidden={!expanded}>
         <div id={`grant-details-${grant.id}`} className="px-5 sm:px-6 py-5 sm:py-6">
           {/* A summary reads as a paragraph; the rules and steps below read as lists. */}
           <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line break-words">
@@ -341,8 +341,7 @@ function GrantCard({
             {stale ? '. Confirm the details with the funder.' : ''}
           </p>
         </footer>
-      </>
-      )}
+      </div>
     </article>
   );
 }
