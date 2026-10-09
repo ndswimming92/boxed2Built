@@ -221,7 +221,7 @@ export async function generateRealtorFlyerPDF(businessData?: BusinessData): Prom
   doc.save('Boxed2Built-Realtor-Partnership-Flyer.pdf');
 }
 
-function formatPhone(raw: string): string {
+export function formatPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '').replace(/^1/, '');
   if (digits.length === 10) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
