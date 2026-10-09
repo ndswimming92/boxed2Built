@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const HEADER_OFFSET = 140;
+const FALLBACK_HEADER_OFFSET = 96;
 const BOTTOM_MARGIN = 16;
 
 interface NewsScrollBarProps {
@@ -55,7 +55,12 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
       }
       const firstTop = first.getBoundingClientRect().top;
       const lastBottom = last.getBoundingClientRect().bottom;
-      const top = Math.max(HEADER_OFFSET, firstTop);
+      // Header publishes its live bottom edge (including any notification bar) on :root.
+      const published = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--app-header-bottom'),
+      );
+      const headerBottom = Number.isFinite(published) ? published : FALLBACK_HEADER_OFFSET;
+      const top = Math.max(headerBottom + 8, firstTop);
       const bottom = Math.min(viewport - BOTTOM_MARGIN, lastBottom);
       const height = bottom - top;
       setSpan({ top, height: Math.max(0, height) });
