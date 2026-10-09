@@ -5,7 +5,7 @@
  * Set this once the price is decided. While it is null, both places say rooms
  * are priced per quote instead of showing a number.
  */
-export const HOST_ROOM_STARTING_PRICE: number | null = null;
+export const HOST_ROOM_STARTING_PRICE: number | null = 200;
 
 /** "Rooms from $X per room", or a request-a-quote line while no price is set. */
 export function hostRoomPriceLabel(price: number | null = HOST_ROOM_STARTING_PRICE): string {
