@@ -10,6 +10,9 @@ import {
   Gift,
   Tag,
   Clock,
+  Home,
+  KeyRound,
+  BedDouble,
 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 
@@ -17,6 +20,7 @@ import { Head } from 'vite-react-ssg';
 import { formatPhoneForDisplay } from '../services/communicationService';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
+import { hostRoomPriceLabel } from '../constants/hostPartners';
 
 const PartnersPage: React.FC = () => {
   const businessData = useBusinessLoaderData();
@@ -81,6 +85,18 @@ const PartnersPage: React.FC = () => {
     await generateRealtorFlyerPDF(businessData);
   };
 
+  const handleHostFlyerDownload = async () => {
+    trackEvent('file_download', 'partners_page_host_flyer', {
+      event_category: 'download',
+      event_label: 'host_flyer_download',
+      action_type: 'download',
+      action_value: 'host_flyer_pdf',
+    });
+
+    const { generateHostFlyerPDF } = await import('../utils/hostFlyerPDF');
+    await generateHostFlyerPDF(businessData);
+  };
+
   return (
     <>
       <Head>
@@ -136,7 +152,7 @@ const PartnersPage: React.FC = () => {
               </div>
 
               <p className="mt-4 text-xs sm:text-sm text-gray-600">
-                Built for Realtors, Movers, and Local Partners across Spring Hill & Middle TN.
+                Built for Realtors, Airbnb Hosts, Property Managers, Movers, and Local Partners across Spring Hill & Middle TN.
               </p>
             </div>
           </div>
@@ -203,6 +219,78 @@ const PartnersPage: React.FC = () => {
                 >
                   <Download size={18} className="mr-2" />
                   Download Realtor Flyer (PDF)
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FOR HOSTS & PROPERTY MANAGERS */}
+        <section id="hosts" className="py-10 md:py-12 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">
+                For Airbnb Hosts, Landlords &amp; Property Managers
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600 text-center max-w-2xl mx-auto mb-8">
+                Need a unit furnished in one visit? We unbox and assemble everything so it is ready for guests or tenants.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Home className="text-blue-600" size={28} />
+                  </div>
+                  <h3 className="font-semibold mb-2">A whole unit furnished in one visit</h3>
+                  <p className="text-sm text-gray-600">
+                    Beds, dressers, desks and shelving assembled and placed room by room. See our{' '}
+                    <a href="/gallery" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      completed projects
+                    </a>{' '}
+                    for real examples.
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <KeyRound className="text-green-600" size={28} />
+                  </div>
+                  <h3 className="font-semibold mb-2">Fast turnarounds</h3>
+                  <p className="text-sm text-gray-600">
+                    We work around your booking calendar and move-in dates so units are not sitting empty.
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BedDouble className="text-purple-600" size={28} />
+                  </div>
+                  <h3 className="font-semibold mb-2">Simple per-room pricing</h3>
+                  <p className="text-sm text-gray-600">
+                    {hostRoomPriceLabel()} See our{' '}
+                    <a href="/services" className="text-blue-700 hover:text-blue-800 underline font-medium">
+                      services &amp; pricing
+                    </a>{' '}
+                    for per-item rates.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a
+                  href="/contact"
+                  onClick={handleContactClick}
+                  className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <Phone size={18} className="mr-2" />
+                  Request a Quote
+                </a>
+                <button
+                  onClick={handleHostFlyerDownload}
+                  className="inline-flex items-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <Download size={18} className="mr-2" />
+                  Download Host Flyer (PDF)
                 </button>
               </div>
             </div>
