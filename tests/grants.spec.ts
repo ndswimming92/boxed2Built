@@ -147,9 +147,37 @@ function card(page: Page, row: Row) {
   return page.getByRole('article', { name: row.name as string });
 }
 
+/** Open a collapsed card by clicking its title. */
+async function expand(page: Page, row: Row) {
+  await card(page, row).getByRole('button', { name: row.name as string }).click();
+}
+
+test('a card starts collapsed on the name, company and the three facts, and opens on a click', async ({ page }) => {
+  await stubGrants(page, [OPEN_LATER]);
+  await open(page);
+
+  const grant = card(page, OPEN_LATER);
+  const toggle = grant.getByRole('button', { name: OPEN_LATER.name as string });
+  await expect(grant.getByRole('heading', { name: 'Main Street Boost Grant' })).toBeVisible();
+  await expect(grant.getByText('Example Bank Foundation')).toBeVisible();
+  await expect(grant.getByRole('definition')).toHaveCount(3);
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(grant.getByText(OPEN_LATER.description as string)).toHaveCount(0);
+  await expect(grant.getByRole('link', { name: /Go to the application/ })).toHaveCount(0);
+
+  // Clicking the facts opens it too, and a second click closes it again.
+  await grant.getByRole('definition').first().click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(grant.getByText(OPEN_LATER.description as string)).toBeVisible();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(grant.getByText(OPEN_LATER.description as string)).toHaveCount(0);
+});
+
 test('a grant shows its name, company, description, criteria and how to apply', async ({ page }) => {
   await stubGrants(page, [OPEN_LATER]);
   await open(page);
+  await expand(page, OPEN_LATER);
 
   const grant = card(page, OPEN_LATER);
   await expect(grant.getByRole('heading', { name: 'Main Street Boost Grant' })).toBeVisible();
@@ -195,6 +223,7 @@ test('long text is broken into a list of points, and a single point stays a sent
   };
   await stubGrants(page, [BY_LINE]);
   await open(page);
+  await expand(page, BY_LINE);
 
   const grant = card(page, BY_LINE);
   // Saved as a paragraph of two sentences: shown as two points.
@@ -270,6 +299,7 @@ test('upcoming and closed grants are kept apart from the open ones', async ({ pa
   await page.getByRole('tab', { name: /Closed/ }).click();
   await expect(card(page, DEADLINE_PASSED)).toBeVisible();
   await expect(card(page, DEADLINE_PASSED).getByText('Closed', { exact: true })).toBeVisible();
+  await expand(page, DEADLINE_PASSED);
   await expect(card(page, DEADLINE_PASSED).getByRole('link', { name: /View on the funder/ })).toBeVisible();
 });
 
@@ -322,6 +352,7 @@ test('search narrows the list by grant, company or criteria', async ({ page }) =
 test('the page only reads, and a bad link is never clickable', async ({ page }) => {
   const writes = await stubGrants(page, [BAD_LINK, OPEN_LATER]);
   await open(page);
+  await expand(page, BAD_LINK);
 
   await expect(card(page, BAD_LINK).getByText('The saved link is not a valid web address.')).toBeVisible();
   await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0);
