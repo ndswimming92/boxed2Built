@@ -335,6 +335,46 @@ test('removing an item keeps it under Removed, where it can be put back', async 
   expect(writes[1].body).toEqual({ status: 'open' });
 });
 
+test('each row stays locked until its own save comes back', async ({ page }) => {
+  // Ticking down the list quickly starts several saves at once. Tracking only
+  // the latest one unlocked the first row as soon as the second was clicked,
+  // and the first reply to arrive unlocked them all.
+  await stubWatch(page, { items: [ITEM_HIGH, ITEM_MEDIUM] });
+  const release: Record<string, () => void> = {};
+  const patches: string[] = [];
+  await page.route(/\/rest\/v1\/competitor_action_items(\?|$)/, async (route) => {
+    if (route.request().method() !== 'PATCH') return route.fallback();
+    const id = /^eq\.(.+)$/.exec(new URL(route.request().url()).searchParams.get('id') ?? '')?.[1] as string;
+    patches.push(id);
+    await new Promise<void>((resolve) => {
+      release[id] = resolve;
+    });
+    return route.fallback();
+  });
+  await open(page);
+
+  const first = page.getByRole('checkbox', { name: `Mark as done: ${ITEM_HIGH.title}` });
+  const second = page.getByRole('checkbox', { name: `Mark as done: ${ITEM_MEDIUM.title}` });
+  await first.click();
+  await expect(first).toBeDisabled();
+  await second.click();
+  await expect(second).toBeDisabled();
+  // The second click must not have handed the first row back.
+  await expect(first).toBeDisabled();
+  await expect(page.getByRole('button', { name: `Remove: ${ITEM_HIGH.title}` })).toBeDisabled();
+
+  // The second save lands first: its row moves to Done, and the first is still waiting.
+  await expect.poll(() => patches).toEqual(['item-1', 'item-2']);
+  release['item-2']();
+  await expect(item(page, ITEM_MEDIUM)).toHaveCount(0);
+  await expect(first).toBeDisabled();
+
+  release['item-1']();
+  await expect(item(page, ITEM_HIGH)).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: /Done/ })).toContainText('2');
+  expect(patches).toEqual(['item-1', 'item-2']);
+});
+
 test('a save that fails says so and leaves the item where it was', async ({ page }) => {
   await stubWatch(page, { items: [ITEM_HIGH] }, { failWrites: true });
   await open(page);
