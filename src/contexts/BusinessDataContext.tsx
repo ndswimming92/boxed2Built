@@ -75,10 +75,12 @@ export function BusinessDataProvider({ initialData, children }: BusinessDataProv
       .catch((err) => {
         if (!active) return;
         console.error('Error loading business data:', err);
-        if (!initialData) setError(err as Error);
+        if (!initialData) startTransition(() => setError(err as Error));
       })
       .finally(() => {
-        if (active) setLoading(false);
+        // Also a transition: loading flips to false even when the fetch fails
+        // or settles before the lazy page has hydrated.
+        if (active) startTransition(() => setLoading(false));
       });
 
     return () => {
