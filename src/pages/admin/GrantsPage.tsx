@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Building2, CalendarCheck, CalendarClock, CheckCircle2, ExternalLink, HandCoins, Search, Undo2, X } from 'lucide-react';
+import { AlertCircle, Building2, CalendarCheck, CalendarClock, CheckCircle2, ChevronDown, ExternalLink, HandCoins, Search, Undo2, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getGrants, updateGrantApplication, type GrantApplicationUpdate } from '../../services/grantsService';
 import {
@@ -196,6 +196,7 @@ function GrantCard({
   const lastChecked = formatEndsOn(grant.last_verified_on);
   const amount = splitAmount(grant.amount);
   const deadline = deadlineParts(grant);
+  const [expanded, setExpanded] = useState(false);
   const stale = (bucket === 'open' || bucket === 'upcoming') && isStale(grant, today);
 
   return (
@@ -203,122 +204,145 @@ function GrantCard({
       className="bg-white rounded-xl border border-slate-200 overflow-hidden"
       aria-labelledby={`grant-${grant.id}`}
     >
-      <header className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4">
-        <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
-          {(bucket === 'open' || bucket === 'upcoming') && isNewGrant(grant, today) && (
-            <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">New</span>
-          )}
-          {closingSoon && (
-            <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">{closingSoon}</span>
-          )}
-          {bucket === 'applied' && (
-            <span className="px-2 py-1 bg-sky-100 text-sky-800 font-semibold rounded">Applied</span>
-          )}
-          {bucket === 'closed' && (
-            <span className="px-2 py-1 bg-slate-200 text-slate-700 font-semibold rounded">Closed</span>
-          )}
-          <span className="px-2 py-1 bg-blue-100 text-blue-700 font-semibold rounded">
-            {GRANT_SCOPE_LABELS[grant.funder_scope] ?? grant.funder_scope}
-          </span>
-        </div>
-        <h2 id={`grant-${grant.id}`} className="text-xl font-bold text-slate-900 break-words">
-          {grant.name}
-        </h2>
-        <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-          <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
-          <span className="break-words">{grant.funder}</span>
-        </p>
-      </header>
+      {/* Collapsed, a card is the header and the three facts. Clicking either opens the rest.
+          The title is a real button so the keyboard can do the same; its click bubbles up here. */}
+      <div onClick={() => setExpanded((open) => !open)} className="cursor-pointer">
+        <header className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
+            {(bucket === 'open' || bucket === 'upcoming') && isNewGrant(grant, today) && (
+              <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">New</span>
+            )}
+            {closingSoon && (
+              <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">{closingSoon}</span>
+            )}
+            {bucket === 'closed' && (
+              <span className="px-2 py-1 bg-slate-200 text-slate-700 font-semibold rounded">Closed</span>
+            )}
+            {bucket === 'applied' && (
+              <span className="px-2 py-1 bg-slate-100 text-slate-700 font-semibold rounded">
+                {OUTCOME_OPTIONS.find((option) => option.value === grant.application_outcome)?.label}
+              </span>
+            )}
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 font-semibold rounded">
+              {GRANT_SCOPE_LABELS[grant.funder_scope] ?? grant.funder_scope}
+            </span>
+          </div>
+          <div className="flex items-start justify-between gap-3">
+            <h2 id={`grant-${grant.id}`} className="text-xl font-bold text-slate-900 break-words">
+              <button
+                type="button"
+                aria-expanded={expanded}
+                aria-controls={`grant-details-${grant.id}`}
+                className="text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                {grant.name}
+              </button>
+            </h2>
+            <ChevronDown
+              className={`w-5 h-5 mt-1 flex-shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </div>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+            <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
+            <span className="break-words">{grant.funder}</span>
+          </p>
+        </header>
 
-      {/* The three things decided on first, side by side, so two grants can be compared at a glance. */}
-      <dl className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-y border-slate-200 bg-slate-50">
-        <Fact label="Amount" headline={amount.headline} detail={amount.detail} tone="money" />
-        {bucket === 'upcoming' ? (
+        {/* The three things decided on first, side by side, so two grants can be compared at a glance. */}
+        <dl className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 border-y border-slate-200 bg-slate-50">
+          <Fact label="Amount" headline={amount.headline} detail={amount.detail} tone="money" />
+          {bucket === 'upcoming' ? (
+            <Fact
+              label="Applications open"
+              headline={formatGrantOpens(grant)}
+              detail={upcomingDeadlineDetail(grant)}
+            />
+          ) : (
+            <Fact label="Deadline" headline={deadline.headline} detail={deadline.detail} />
+          )}
           <Fact
-            label="Applications open"
-            headline={formatGrantOpens(grant)}
-            detail={upcomingDeadlineDetail(grant)}
+            label="Cost to apply"
+            headline={grant.entry_fee ?? 'Free'}
+            detail={grant.entry_fee ? 'This one costs money to enter.' : null}
+            tone={grant.entry_fee ? 'warning' : 'default'}
           />
-        ) : (
-          <Fact label="Deadline" headline={deadline.headline} detail={deadline.detail} />
-        )}
-        <Fact
-          label="Cost to apply"
-          headline={grant.entry_fee ?? 'Free'}
-          detail={grant.entry_fee ? 'This one costs money to enter.' : null}
-          tone={grant.entry_fee ? 'warning' : 'default'}
-        />
-      </dl>
-
-      <div className="px-5 sm:px-6 py-5 sm:py-6">
-        {/* A summary reads as a paragraph; the rules and steps below read as lists. */}
-        <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line break-words">
-          {grant.description}
-        </p>
-
-        {bucket === 'applied' && (
-          <ApplicationPanel
-            key={`${grant.application_outcome}|${grant.application_notes ?? ''}`}
-            grant={grant}
-            saving={saving}
-            onSave={(update) => onApplication(grant, { applied_on: grant.applied_on, ...update })}
-          />
-        )}
-
-        {toPoints(grant.fit_notes).length > 0 && (
-          <section className="mb-5 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3.5">
-            <h3 className="text-sm font-semibold text-emerald-900 mb-2">Fit for Boxed2Built</h3>
-            <div className="max-w-prose">
-              <Points text={grant.fit_notes} className="text-slate-800" />
-            </div>
-          </section>
-        )}
-
-        <div className="divide-y divide-slate-100">
-          <Section title="Who can apply" text={grant.eligibility} />
-          <Section title="What the application asks for" text={grant.application_requirements} />
-          <Section title="Good to know" text={grant.other_notes} />
-        </div>
+        </dl>
       </div>
 
-      <footer className="px-5 sm:px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-        {applyUrl ? (
-          <a
-            href={applyUrl}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
-          >
-            {bucket === 'open' ? 'Go to the application' : 'View on the funder’s site'}
-            <ExternalLink className="w-4 h-4" aria-hidden="true" />
-          </a>
-        ) : (
-          <span className="text-sm text-red-700">The saved link is not a valid web address.</span>
-        )}
-        {bucket === 'applied' ? (
-          <button
-            onClick={() => onApplication(grant, { applied_on: null })}
-            disabled={saving}
-            className="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-2"
-          >
-            <Undo2 className="w-4 h-4" aria-hidden="true" />
-            Move back
-          </button>
-        ) : (
-          <button
-            onClick={() => onApplication(grant, { applied_on: today })}
-            disabled={saving}
-            className="px-3 py-2 border border-emerald-600 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 inline-flex items-center gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-            Mark as applied
-          </button>
-        )}
-        <p className={`text-xs ${stale ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
-          {lastChecked ? `Last checked ${lastChecked}` : 'Not checked yet'}
-          {stale ? '. Confirm the details with the funder.' : ''}
-        </p>
-      </footer>
+      {expanded && (
+      <>
+        <div id={`grant-details-${grant.id}`} className="px-5 sm:px-6 py-5 sm:py-6">
+          {/* A summary reads as a paragraph; the rules and steps below read as lists. */}
+          <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line break-words">
+            {grant.description}
+          </p>
+
+          {bucket === 'applied' && (
+            <ApplicationPanel
+              key={`${grant.application_outcome}|${grant.application_notes ?? ''}`}
+              grant={grant}
+              saving={saving}
+              onSave={(update) => onApplication(grant, { applied_on: grant.applied_on, ...update })}
+            />
+          )}
+
+          {toPoints(grant.fit_notes).length > 0 && (
+            <section className="mb-5 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3.5">
+              <h3 className="text-sm font-semibold text-emerald-900 mb-2">Fit for Boxed2Built</h3>
+              <div className="max-w-prose">
+                <Points text={grant.fit_notes} className="text-slate-800" />
+              </div>
+            </section>
+          )}
+
+          <div className="divide-y divide-slate-100">
+            <Section title="Who can apply" text={grant.eligibility} />
+            <Section title="What the application asks for" text={grant.application_requirements} />
+            <Section title="Good to know" text={grant.other_notes} />
+          </div>
+        </div>
+
+        <footer className="px-5 sm:px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          {applyUrl ? (
+            <a
+              href={applyUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
+            >
+              {bucket === 'open' ? 'Go to the application' : 'View on the funder’s site'}
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            </a>
+          ) : (
+            <span className="text-sm text-red-700">The saved link is not a valid web address.</span>
+          )}
+          {bucket === 'applied' ? (
+            <button
+              onClick={() => onApplication(grant, { applied_on: null })}
+              disabled={saving}
+              className="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              <Undo2 className="w-4 h-4" aria-hidden="true" />
+              Move back
+            </button>
+          ) : (
+            <button
+              onClick={() => onApplication(grant, { applied_on: today })}
+              disabled={saving}
+              className="px-3 py-2 border border-emerald-600 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Mark as applied
+            </button>
+          )}
+          <p className={`text-xs ${stale ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+            {lastChecked ? `Last checked ${lastChecked}` : 'Not checked yet'}
+            {stale ? '. Confirm the details with the funder.' : ''}
+          </p>
+        </footer>
+      </>
+      )}
     </article>
   );
 }
