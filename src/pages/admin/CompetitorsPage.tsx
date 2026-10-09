@@ -466,7 +466,10 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
   const [itemTab, setItemTab] = useState<ActionItemStatus>('open');
   const [filter, setFilter] = useState<CompetitorFilter>('all');
   const [search, setSearch] = useState('');
-  const [savingId, setSavingId] = useState<string | null>(null);
+  // Every row with a save in flight, not just the latest one: ticking down the
+  // list quickly starts several at once, and each row stays locked until its
+  // own request comes back.
+  const [savingIds, setSavingIds] = useState<ReadonlySet<string>>(() => new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -493,8 +496,8 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
   }, [organizationId]);
 
   const save = async (id: string, change: () => Promise<(previous: Loaded) => Loaded>) => {
-    if (!organizationId) return;
-    setSavingId(id);
+    if (!organizationId || savingIds.has(id)) return;
+    setSavingIds((pending) => new Set(pending).add(id));
     setSaveError(null);
     try {
       const apply = await change();
@@ -504,7 +507,11 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
     } catch (cause) {
       setSaveError(cause instanceof Error ? cause.message : 'Failed to save');
     } finally {
-      setSavingId(null);
+      setSavingIds((pending) => {
+        const next = new Set(pending);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -691,7 +698,7 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
                     key={item.id}
                     item={item}
                     today={today}
-                    saving={savingId === item.id}
+                    saving={savingIds.has(item.id)}
                     onStatus={saveItemStatus}
                   />
                 ))}
@@ -775,7 +782,7 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
                     key={competitor.id}
                     competitor={competitor}
                     today={today}
-                    saving={savingId === competitor.id}
+                    saving={savingIds.has(competitor.id)}
                     onRemoved={saveCompetitorRemoved}
                   />
                 ))
