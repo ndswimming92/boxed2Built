@@ -10,7 +10,7 @@ export const GRANT_SCOPE_LABELS: Record<GrantFunderScope, string> = {
 };
 
 /** Which tab a grant belongs on. */
-export type GrantBucket = 'open' | 'upcoming' | 'closed';
+export type GrantBucket = 'applied' | 'open' | 'upcoming' | 'closed';
 
 /** A deadline this many days away or fewer is flagged as closing soon. */
 export const CLOSING_SOON_DAYS = 14;
@@ -19,7 +19,7 @@ export const NEW_GRANT_DAYS = 7;
 /** Past this many days without a re-check, the details are flagged as possibly stale. */
 export const STALE_AFTER_DAYS = 3;
 
-type DatedGrant = Pick<BusinessGrant, 'cycle_status' | 'deadline'>;
+type DatedGrant = Pick<BusinessGrant, 'cycle_status' | 'deadline'> & Partial<Pick<BusinessGrant, 'applied_on'>>;
 
 /** Whole days from one YYYY-MM-DD date to another. Null if either is not a date. */
 export function daysBetween(from: string, to: string): number | null {
@@ -39,6 +39,8 @@ export function daysBetween(from: string, to: string): number | null {
  * run. The deadline day itself still counts as open, judged in Central time.
  */
 export function grantBucket(grant: DatedGrant, today: string = centralToday()): GrantBucket {
+  // Once applied, a grant stays on the Applied tab whatever its deadline does.
+  if (grant.applied_on) return 'applied';
   if (grant.cycle_status === 'closed') return 'closed';
   if (grant.deadline && grant.deadline < today) return 'closed';
   return grant.cycle_status === 'upcoming' ? 'upcoming' : 'open';
@@ -242,11 +244,14 @@ function compareDates(a: string | null, b: string | null, ascending: boolean): n
  * rolling and undated ones after. Upcoming: soonest opening first. Closed: most
  * recently closed first.
  */
-export function sortGrants<T extends Pick<BusinessGrant, 'deadline' | 'opens_on' | 'name'>>(
-  grants: T[],
-  bucket: GrantBucket,
-): T[] {
+export function sortGrants<
+  T extends Pick<BusinessGrant, 'deadline' | 'opens_on' | 'name'> & Partial<Pick<BusinessGrant, 'applied_on'>>,
+>(grants: T[], bucket: GrantBucket): T[] {
   return [...grants].sort((a, b) => {
+    // Applied: most recently applied first.
+    if (bucket === 'applied') {
+      return (b.applied_on ?? '').localeCompare(a.applied_on ?? '') || compareText(a.name, b.name);
+    }
     const byDate =
       bucket === 'upcoming'
         ? compareDates(a.opens_on, b.opens_on, true)

@@ -50,6 +50,13 @@ shows "$500 to one business each month" in bold with the rest in small text.
 
 ## Tabs
 
+- **Applied** — grants the business has applied for, most recent first. Each
+  card on the other tabs has a **Mark as applied** button; it moves the grant
+  here with today's date, and **Move back** returns it (clearing its outcome and
+  notes). On this tab each grant also has an outcome (waiting to hear back,
+  awarded, not selected) and a notes box. Any owner or admin sees the same list,
+  and the database records who marked it. An applied grant stays here even after
+  its deadline passes, and the daily grant finder never overwrites these fields.
 - **Open now** — accepting applications, nearest deadline first. Rolling and
   undated grants come after the dated ones.
 - **Opening soon** — real programs that are between cycles or not open yet,
@@ -65,6 +72,7 @@ across cycles, so its history is not lost and it is not saved twice.
 | Piece | Where |
 | --- | --- |
 | Table, RLS, trigger | `supabase/migrations/20261008181155_create_business_grants.sql` |
+| Applied tracking (columns, column-level UPDATE grant, policy) | `supabase/migrations/20261009120000_add_business_grant_applications.sql` |
 | Owners and admins only | `supabase/migrations/20261008182942_restrict_business_grants_to_org_admins.sql` |
 | Admin page | `src/pages/admin/GrantsPage.tsx` |
 | Query | `src/services/grantsService.ts` |

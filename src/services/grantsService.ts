@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { BusinessGrant } from '../types/grants';
+import type { BusinessGrant, GrantApplicationOutcome } from '../types/grants';
 
 const FETCH_SIZE = 1000;
 /** A runaway guard, not a real limit. */
@@ -43,4 +43,39 @@ export async function getGrants(organizationId: string): Promise<BusinessGrant[]
   // Rows can shift between requests if the grant finder saves mid-read.
   const seen = new Set<string>();
   return rows.filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)));
+}
+
+/** The only fields the browser may change on a grant: the business's own application record. */
+export interface GrantApplicationUpdate {
+  applied_on: string | null;
+  application_outcome?: GrantApplicationOutcome;
+  application_notes?: string | null;
+}
+
+/**
+ * Mark a grant applied (or move it back), or update its outcome and notes.
+ *
+ * The database only lets the browser write these columns, and only for
+ * owners and admins. `applied_by` is set there from the signed-in user.
+ * Clearing `applied_on` also resets the outcome and notes.
+ */
+export async function updateGrantApplication(
+  grantId: string,
+  organizationId: string,
+  update: GrantApplicationUpdate,
+): Promise<BusinessGrant> {
+  const { data, error } = await supabase
+    .from('business_grants')
+    .update(update)
+    .eq('id', grantId)
+    .eq('organization_id', organizationId)
+    .select('*')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error updating grant application:', error);
+    throw new Error(`Failed to save: ${error.message}`);
+  }
+  if (!data) throw new Error('Failed to save: you may not have permission to change this grant');
+  return data as BusinessGrant;
 }

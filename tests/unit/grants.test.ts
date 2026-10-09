@@ -241,3 +241,26 @@ test('the last run date is the most recent day any grant was confirmed', () => {
     '2026-10-08',
   );
 });
+
+test('an applied grant sits on the Applied tab whatever its deadline or cycle says', () => {
+  const applied_on = '2026-10-01';
+  assert.equal(grantBucket({ cycle_status: 'open', deadline: '2026-10-31', applied_on }, TODAY), 'applied');
+  assert.equal(grantBucket({ cycle_status: 'open', deadline: '2026-09-01', applied_on }, TODAY), 'applied');
+  assert.equal(grantBucket({ cycle_status: 'closed', deadline: null, applied_on }, TODAY), 'applied');
+  assert.equal(grantBucket({ cycle_status: 'open', deadline: '2026-10-31', applied_on: null }, TODAY), 'open');
+});
+
+test('applied grants are not flagged as closing soon', () => {
+  assert.equal(
+    isClosingSoon({ cycle_status: 'open', deadline: '2026-10-10', applied_on: '2026-10-01' }, TODAY),
+    false,
+  );
+});
+
+test('applied grants sort by most recently applied', () => {
+  const grants = [
+    { name: 'A', deadline: null, opens_on: null, applied_on: '2026-09-01' },
+    { name: 'B', deadline: null, opens_on: null, applied_on: '2026-10-05' },
+  ];
+  assert.deepEqual(sortGrants(grants, 'applied').map((grant) => grant.name), ['B', 'A']);
+});

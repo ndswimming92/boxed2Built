@@ -16,6 +16,9 @@ export type GrantFunderScope = 'national' | 'state' | 'local' | 'federal';
  */
 export type GrantCycleStatus = 'open' | 'upcoming' | 'closed';
 
+/** How an application turned out. Mirrors the check constraint on `application_outcome`. */
+export type GrantApplicationOutcome = 'pending' | 'awarded' | 'not_selected';
+
 /** One row of `business_grants`, written by the daily grant finder. */
 export interface BusinessGrant {
   id: string;
@@ -47,6 +50,12 @@ export interface BusinessGrant {
   opens_on: string | null;
   /** The last day the grant finder confirmed these details (YYYY-MM-DD). */
   last_verified_on: string;
+  /** The day the business applied (YYYY-MM-DD). Null when it has not. */
+  applied_on: string | null;
+  /** The admin who marked it applied; set by the database. */
+  applied_by: string | null;
+  application_outcome: GrantApplicationOutcome;
+  application_notes: string | null;
   created_at: string;
   updated_at: string;
 }

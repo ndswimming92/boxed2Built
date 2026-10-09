@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Building2, CalendarClock, ExternalLink, HandCoins, Search, X } from 'lucide-react';
+import { AlertCircle, Building2, CalendarCheck, CalendarClock, CheckCircle2, ExternalLink, HandCoins, Search, Undo2, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { getGrants } from '../../services/grantsService';
+import { getGrants, updateGrantApplication, type GrantApplicationUpdate } from '../../services/grantsService';
 import {
   GRANT_SCOPE_LABELS,
   closingSoonLabel,
@@ -19,9 +19,14 @@ import {
   type GrantBucket,
 } from '../../utils/grants';
 import { centralToday, formatEndsOn, safeExternalUrl } from '../../utils/news';
-import type { BusinessGrant } from '../../types/grants';
+import type { BusinessGrant, GrantApplicationOutcome } from '../../types/grants';
 
 const TABS: Array<{ bucket: GrantBucket; label: string; empty: string }> = [
+  {
+    bucket: 'applied',
+    label: 'Applied',
+    empty: 'No applications yet. Use "Mark as applied" on a grant once you have submitted it and it moves here.',
+  },
   {
     bucket: 'open',
     label: 'Open now',
@@ -38,6 +43,78 @@ const TABS: Array<{ bucket: GrantBucket; label: string; empty: string }> = [
     empty: 'No closed grants. A grant moves here once its deadline passes.',
   },
 ];
+
+const OUTCOME_OPTIONS: Array<{ value: GrantApplicationOutcome; label: string }> = [
+  { value: 'pending', label: 'Waiting to hear back' },
+  { value: 'awarded', label: 'Awarded' },
+  { value: 'not_selected', label: 'Not selected' },
+];
+
+/** The business's own record of an application: when, how it turned out, and notes. */
+function ApplicationPanel({
+  grant,
+  saving,
+  onSave,
+}: {
+  grant: BusinessGrant;
+  saving: boolean;
+  onSave: (update: { application_outcome: GrantApplicationOutcome; application_notes: string | null }) => void;
+}) {
+  const [outcome, setOutcome] = useState<GrantApplicationOutcome>(grant.application_outcome);
+  const [notes, setNotes] = useState(grant.application_notes ?? '');
+  const dirty = outcome !== grant.application_outcome || notes.trim() !== (grant.application_notes ?? '');
+
+  return (
+    <section className="mb-5 rounded-lg border-l-4 border-sky-500 bg-sky-50 px-4 py-3.5">
+      <h3 className="text-sm font-semibold text-sky-900 mb-3 flex items-center gap-2">
+        <CalendarCheck className="w-4 h-4" aria-hidden="true" />
+        Applied {formatEndsOn(grant.applied_on) ?? ''}
+      </h3>
+      <div className="grid gap-3 sm:grid-cols-[14rem_minmax(0,1fr)]">
+        <div>
+          <label htmlFor={`outcome-${grant.id}`} className="block text-xs font-medium text-slate-600 mb-1">
+            Outcome
+          </label>
+          <select
+            id={`outcome-${grant.id}`}
+            value={outcome}
+            onChange={(event) => setOutcome(event.target.value as GrantApplicationOutcome)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-sky-500"
+          >
+            {OUTCOME_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor={`notes-${grant.id}`} className="block text-xs font-medium text-slate-600 mb-1">
+            Notes
+          </label>
+          <textarea
+            id={`notes-${grant.id}`}
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            maxLength={2000}
+            rows={2}
+            placeholder="Confirmation number, who you spoke with, when to expect a decision"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-sky-500"
+          />
+        </div>
+      </div>
+      {dirty && (
+        <button
+          onClick={() => onSave({ application_outcome: outcome, application_notes: notes.trim() || null })}
+          disabled={saving}
+          className="mt-3 px-3 py-1.5 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      )}
+    </section>
+  );
+}
 
 /**
  * A block of grant text as a short list, one point per line, or as a plain
@@ -101,13 +178,25 @@ function Section({ title, text }: { title: string; text: string | null }) {
   );
 }
 
-function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: GrantBucket; today: string }) {
+function GrantCard({
+  grant,
+  bucket,
+  today,
+  saving,
+  onApplication,
+}: {
+  grant: BusinessGrant;
+  bucket: GrantBucket;
+  today: string;
+  saving: boolean;
+  onApplication: (grant: BusinessGrant, update: GrantApplicationUpdate) => void;
+}) {
   const applyUrl = safeExternalUrl(grant.apply_url);
   const closingSoon = closingSoonLabel(grant, today);
   const lastChecked = formatEndsOn(grant.last_verified_on);
   const amount = splitAmount(grant.amount);
   const deadline = deadlineParts(grant);
-  const stale = bucket !== 'closed' && isStale(grant, today);
+  const stale = (bucket === 'open' || bucket === 'upcoming') && isStale(grant, today);
 
   return (
     <article
@@ -116,11 +205,14 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
     >
       <header className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4">
         <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
-          {bucket !== 'closed' && isNewGrant(grant, today) && (
+          {(bucket === 'open' || bucket === 'upcoming') && isNewGrant(grant, today) && (
             <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">New</span>
           )}
           {closingSoon && (
             <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">{closingSoon}</span>
+          )}
+          {bucket === 'applied' && (
+            <span className="px-2 py-1 bg-sky-100 text-sky-800 font-semibold rounded">Applied</span>
           )}
           {bucket === 'closed' && (
             <span className="px-2 py-1 bg-slate-200 text-slate-700 font-semibold rounded">Closed</span>
@@ -164,6 +256,15 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
           {grant.description}
         </p>
 
+        {bucket === 'applied' && (
+          <ApplicationPanel
+            key={`${grant.application_outcome}|${grant.application_notes ?? ''}`}
+            grant={grant}
+            saving={saving}
+            onSave={(update) => onApplication(grant, { applied_on: grant.applied_on, ...update })}
+          />
+        )}
+
         {toPoints(grant.fit_notes).length > 0 && (
           <section className="mb-5 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3.5">
             <h3 className="text-sm font-semibold text-emerald-900 mb-2">Fit for Boxed2Built</h3>
@@ -194,6 +295,25 @@ function GrantCard({ grant, bucket, today }: { grant: BusinessGrant; bucket: Gra
         ) : (
           <span className="text-sm text-red-700">The saved link is not a valid web address.</span>
         )}
+        {bucket === 'applied' ? (
+          <button
+            onClick={() => onApplication(grant, { applied_on: null })}
+            disabled={saving}
+            className="px-3 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <Undo2 className="w-4 h-4" aria-hidden="true" />
+            Move back
+          </button>
+        ) : (
+          <button
+            onClick={() => onApplication(grant, { applied_on: today })}
+            disabled={saving}
+            className="px-3 py-2 border border-emerald-600 text-emerald-700 rounded-lg text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+            Mark as applied
+          </button>
+        )}
         <p className={`text-xs ${stale ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
           {lastChecked ? `Last checked ${lastChecked}` : 'Not checked yet'}
           {stale ? '. Confirm the details with the funder.' : ''}
@@ -218,6 +338,26 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
   } | null>(null);
   const [activeTab, setActiveTab] = useState<GrantBucket>('open');
   const [search, setSearch] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const saveApplication = async (grant: BusinessGrant, update: GrantApplicationUpdate) => {
+    if (!organizationId) return;
+    setSavingId(grant.id);
+    setSaveError(null);
+    try {
+      const saved = await updateGrantApplication(grant.id, organizationId, update);
+      setLoaded((previous) =>
+        previous && previous.organizationId === organizationId
+          ? { ...previous, grants: previous.grants.map((row) => (row.id === saved.id ? saved : row)) }
+          : previous,
+      );
+    } catch (cause) {
+      setSaveError(cause instanceof Error ? cause.message : 'Failed to save');
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!organizationId) return;
@@ -250,7 +390,7 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
 
   const { counts, visible } = useMemo(() => {
     const matching = grants.filter((grant) => matchesGrantSearch(grant, search));
-    const tally: Record<GrantBucket, number> = { open: 0, upcoming: 0, closed: 0 };
+    const tally: Record<GrantBucket, number> = { applied: 0, open: 0, upcoming: 0, closed: 0 };
     for (const grant of matching) tally[grantBucket(grant, today)] += 1;
     return {
       counts: tally,
@@ -361,6 +501,13 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
             })}
           </div>
 
+          {saveError && (
+            <div role="alert" className="mb-4 p-3 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm flex-1 text-red-800">{saveError}</p>
+            </div>
+          )}
+
           <div className="space-y-4">
             {visible.length === 0 ? (
               <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
@@ -370,7 +517,16 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
                 </p>
               </div>
             ) : (
-              visible.map((grant) => <GrantCard key={grant.id} grant={grant} bucket={activeTab} today={today} />)
+              visible.map((grant) => (
+                <GrantCard
+                  key={grant.id}
+                  grant={grant}
+                  bucket={activeTab}
+                  today={today}
+                  saving={savingId === grant.id}
+                  onApplication={saveApplication}
+                />
+              ))
             )}
           </div>
 
