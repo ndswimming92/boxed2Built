@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, startTransition, ReactNode } from 'react';
 import { CompleteBusinessData } from '../lib/supabase';
 import { fetchBusinessData, primeBusinessDataCache } from '../hooks/businessDataStore';
 
@@ -63,8 +63,14 @@ export function BusinessDataProvider({ initialData, children }: BusinessDataProv
     fetchBusinessData(Boolean(initialData))
       .then((fresh) => {
         if (!active || !fresh) return;
-        stableSetData(fresh);
-        setError(null);
+        // A transition, not a plain update: the page below is lazy, so on a
+        // fresh load it may still be waiting to hydrate when this lands. A
+        // plain update to the context would hit that unhydrated boundary and
+        // raise React error #421, throwing away the prerendered page.
+        startTransition(() => {
+          stableSetData(fresh);
+          setError(null);
+        });
       })
       .catch((err) => {
         if (!active) return;
