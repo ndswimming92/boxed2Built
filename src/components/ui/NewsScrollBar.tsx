@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
+const HEADER_OFFSET = 140;
+const BOTTOM_MARGIN = 16;
+
 interface NewsScrollBarProps {
   /** Element wrapping the story cards; each card carries `data-news-card`. */
   listRef: React.RefObject<HTMLElement>;
@@ -17,7 +20,8 @@ interface NewsScrollBarProps {
 const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded }) => {
   const [progress, setProgress] = useState(0);
   const [current, setCurrent] = useState(1);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
+  const [span, setSpan] = useState({ top: 0, height: 0 });
 
   useEffect(() => {
     let frame = 0;
@@ -41,9 +45,21 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
       });
       setCurrent(index);
 
-      // Hide once the last card is fully on screen; it returns on scroll up.
+      // The bar runs from the first card to the last card, clamped to the area below the
+      // sticky header and above the bottom edge. It only shows while that span is on screen.
+      const first = cards[0];
       const last = cards[cards.length - 1];
-      setVisible(!last || last.getBoundingClientRect().bottom > viewport);
+      if (!first || !last) {
+        setVisible(false);
+        return;
+      }
+      const firstTop = first.getBoundingClientRect().top;
+      const lastBottom = last.getBoundingClientRect().bottom;
+      const top = Math.max(HEADER_OFFSET, firstTop);
+      const bottom = Math.min(viewport - BOTTOM_MARGIN, lastBottom);
+      const height = bottom - top;
+      setSpan({ top, height: Math.max(0, height) });
+      setVisible(firstTop < viewport - BOTTOM_MARGIN && height > 80);
     };
 
     const onScroll = () => {
@@ -68,9 +84,10 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
   return (
     <div
       aria-hidden={!visible}
-      className={`hidden md:flex fixed right-[max(1rem,calc(50%-26.5rem))] top-1/2 -translate-y-1/2 z-30 h-[50vh] flex-col items-center gap-2 text-xs text-gray-600 transition-opacity duration-300 ${
+      className={`hidden md:flex fixed right-[max(1rem,calc(50%-26.5rem))] z-30 flex-col items-center gap-2 text-xs text-gray-600 transition-opacity duration-300 ${
         visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
+      style={{ top: span.top, height: span.height }}
       role="progressbar"
       aria-label="Scroll progress through news"
       aria-valuemin={0}
