@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, startTransition } from 'react';
 import type { CartLine, ShopProduct } from '../types/shop';
 import { maxQuantityFor } from '../services/shopService';
 
@@ -48,8 +48,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    setLines(readStoredCart());
-    setHydrated(true);
+    // Transition for the same reason as the business data refresh: this can
+    // land before a lazy page has hydrated (React error #421).
+    startTransition(() => {
+      setLines(readStoredCart());
+      setHydrated(true);
+    });
   }, []);
 
   useEffect(() => {
