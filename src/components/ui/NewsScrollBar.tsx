@@ -10,7 +10,7 @@ interface NewsScrollBarProps {
 }
 
 /**
- * A slim vertical bar fixed to the right edge. The fill shows how far down the
+ * A slim vertical bar fixed just right of the story column. The fill shows how far down the
  * feed the visitor has scrolled; the label says which story they are on out of
  * how many there are.
  */
@@ -68,7 +68,7 @@ const NewsScrollBar: React.FC<NewsScrollBarProps> = ({ listRef, total, loaded })
   return (
     <div
       aria-hidden={!visible}
-      className={`hidden md:flex fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 h-[50vh] flex-col items-center gap-2 text-xs text-gray-600 transition-opacity duration-300 ${
+      className={`hidden md:flex fixed right-[max(1rem,calc(50%-26.5rem))] top-1/2 -translate-y-1/2 z-30 h-[50vh] flex-col items-center gap-2 text-xs text-gray-600 transition-opacity duration-300 ${
         visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       role="progressbar"
