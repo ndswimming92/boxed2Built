@@ -1,4 +1,24 @@
 import { SERVICES } from '../constants';
+import {
+  AMBER,
+  BODY_TEXT,
+  FLYER_MARGIN,
+  CONTENT_TOP,
+  GREEN_TEXT,
+  NAVY,
+  PANEL_BG,
+  PANEL_BORDER,
+  SLATE_LABEL,
+  drawAreasAndIncluded,
+  drawBenefitCards,
+  drawFooter,
+  drawHeader,
+  drawSectionHeading,
+  formatPhone,
+  loadFlyerAssets,
+} from './flyerBranding';
+
+export { formatPhone };
 
 interface BusinessData {
   info?: {
@@ -11,220 +31,142 @@ interface BusinessData {
 }
 
 export async function generateRealtorFlyerPDF(businessData?: BusinessData): Promise<void> {
-  const { default: jsPDF } = await import('jspdf');
+  const [{ default: jsPDF }, assets] = await Promise.all([import('jspdf'), loadFlyerAssets()]);
   const doc = new jsPDF();
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 18;
+  const margin = FLYER_MARGIN;
   const contentWidth = pageWidth - margin * 2;
-  let y = 0;
 
-  const name = businessData?.info?.name || 'Boxed2Built';
-  const phone = formatPhone(businessData?.info?.phone || '+16154034538');
-  const email = businessData?.info?.email || 'nicholas.davidson@boxed2built.com';
-  const website = businessData?.info?.website || 'https://boxed2built.com';
-  const slogan = businessData?.info?.slogan || 'Turning boxes into comfort so families can focus on what matters most';
+  const contact = {
+    phone: formatPhone(businessData?.info?.phone || '+16154034538'),
+    email: businessData?.info?.email || 'nicholas.davidson@boxed2built.com',
+    website: businessData?.info?.website || 'https://boxed2built.com',
+  };
 
-  // --- HEADER BANNER ---
-  doc.setFillColor(29, 78, 216);
-  doc.rect(0, 0, pageWidth, 42, 'F');
+  drawHeader(doc, assets, contact, {
+    pill: 'REALTOR PARTNERS',
+    bandTag: 'PARTNERSHIP PROGRAM',
+    bandTitle: 'Realtor Partnership Program',
+    bandRightTag: 'BUYER DISCOUNT',
+    bandRightText: '10% off first service',
+  });
 
-  doc.setFontSize(26);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 255, 255);
-  doc.text(name, margin, 18);
+  let y = CONTENT_TOP;
 
-  doc.setFontSize(9);
+  // --- INTRO ---
   doc.setFont('helvetica', 'normal');
-  doc.text(slogan, margin, 26);
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text(phone, pageWidth - margin, 14, { align: 'right' });
-  doc.text(email, pageWidth - margin, 20, { align: 'right' });
-  doc.text(website.replace('https://', ''), pageWidth - margin, 26, { align: 'right' });
-
-  // Green accent line below header
-  doc.setFillColor(21, 128, 61);
-  doc.rect(0, 42, pageWidth, 3, 'F');
-
-  y = 55;
-
-  // --- TITLE ---
-  doc.setTextColor(29, 78, 216);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Realtor Partnership Program', margin, y);
-
-  y += 10;
-  doc.setTextColor(55, 65, 81);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...BODY_TEXT);
   const introLines = doc.splitTextToSize(
-    'Give your customers a stress-free move-in. We assemble furniture so buyers enjoy their new home from day one. Partner with us to offer a closing gift that customers actually use.',
+    'Give your clients a stress-free move-in. We assemble their furniture so buyers enjoy their new home from day one. Partner with us to offer a closing gift they will actually use.',
     contentWidth
   );
   doc.text(introLines, margin, y);
-  y += introLines.length * 5 + 8;
+  y += introLines.length * 5 + 6;
 
   // --- WHY PARTNER WITH US ---
-  doc.setTextColor(29, 78, 216);
-  doc.setFontSize(13);
+  y = drawSectionHeading(doc, 'Why Realtors Partner With Us', y);
+  y = drawBenefitCards(
+    doc,
+    [
+      { title: 'A closing gift clients use', desc: 'Professional furniture assembly your buyers will appreciate on day one.' },
+      { title: 'Fast help for move-in day', desc: 'We coordinate directly with closing timelines and buyer schedules.' },
+      { title: 'Personalized discount code', desc: 'Track referrals and add value with a code tied to your name.' },
+    ],
+    y
+  );
+
+  // --- PRICING (left) + REFERRAL CODE (right) ---
+  const gap = 8;
+  const refW = 62;
+  const tableW = contentWidth - refW - gap;
+  const refX = margin + tableW + gap;
+  const sectionTop = y;
+
+  y = drawSectionHeading(doc, 'Pricing at a Glance', y);
+  const tableTop = y - 4;
+
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(margin, tableTop, tableW, 7, 1.5, 1.5, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.text('Why Realtors Partner With Us', margin, y);
-  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(255, 255, 255);
+  doc.text('SERVICE', margin + 3, tableTop + 4.8);
+  doc.text('PRICE RANGE', margin + tableW - 3, tableTop + 4.8, { align: 'right' });
 
-  const benefits = [
-    { title: 'Closing gift customers actually use', desc: 'Professional furniture assembly your buyers will appreciate on day one.' },
-    { title: 'Fast help for move-in day', desc: 'We coordinate directly with closing timelines and buyer schedules.' },
-    { title: 'Personalized discount code', desc: 'Track referrals and provide added value with a code tied to your name.' },
-  ];
-
-  doc.setTextColor(55, 65, 81);
-  for (const benefit of benefits) {
-    doc.setFontSize(10);
+  let rowY = tableTop + 7;
+  SERVICES.forEach((service, i) => {
+    if (i % 2 === 1) {
+      doc.setFillColor(...PANEL_BG);
+      doc.rect(margin, rowY, tableW, 6.5, 'F');
+    }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...BODY_TEXT);
+    doc.text(service.type, margin + 3, rowY + 4.4);
     doc.setFont('helvetica', 'bold');
-    doc.text(`•  ${benefit.title}`, margin + 2, y);
-    y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.text(`    ${benefit.desc}`, margin + 2, y);
-    y += 7;
-  }
+    doc.setTextColor(...NAVY);
+    doc.text(service.priceRange || '', margin + tableW - 3, rowY + 4.4, { align: 'right' });
+    rowY += 6.5;
+  });
+  doc.setDrawColor(...PANEL_BORDER);
+  doc.setLineWidth(0.2);
+  doc.line(margin, rowY, margin + tableW, rowY);
 
-  y += 4;
-
-  // --- PRICING SECTION ---
-  doc.setTextColor(29, 78, 216);
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Pricing at a Glance', margin, y);
-  y += 7;
-
-  doc.setTextColor(55, 65, 81);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Starting at $85/hour  |  Per-item pricing also available', margin, y);
-  y += 8;
-
-  // Pricing table
-  doc.setFillColor(239, 246, 255);
-  doc.rect(margin, y - 4, contentWidth, 6, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(29, 78, 216);
-  doc.text('Service', margin + 3, y);
-  doc.text('Price Range', pageWidth - margin - 3, y, { align: 'right' });
-  y += 7;
-
-  doc.setTextColor(55, 65, 81);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-
-  for (const service of SERVICES) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(service.type, margin + 3, y);
-    doc.text(service.priceRange || '', pageWidth - margin - 3, y, { align: 'right' });
-    y += 5.5;
-  }
-
-  y += 3;
-  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'italic');
-  doc.text('Volume discounts available for multiple pieces. Visit boxed2built.com/services for full details.', margin, y);
-  y += 10;
+  doc.setFontSize(8);
+  doc.setTextColor(...SLATE_LABEL);
+  doc.text('Starting at $85 per item. Volume discounts for multiple pieces.', margin, rowY + 5);
+  const tableBottom = rowY + 5;
 
-  // --- REFERRAL CODE BOX ---
-  doc.setTextColor(29, 78, 216);
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Your Realtor Referral Code', margin, y);
-  y += 6;
-
-  // Dashed border box
-  doc.setDrawColor(21, 128, 61);
+  // Referral code card
+  const refTop = sectionTop + 1;
+  const refH = tableBottom - refTop;
+  doc.setFillColor(...PANEL_BG);
+  doc.roundedRect(refX, refTop, refW, refH, 2, 2, 'F');
+  doc.setDrawColor(...AMBER);
   doc.setLineWidth(0.7);
   doc.setLineDashPattern([3, 2], 0);
-  doc.roundedRect(margin, y, contentWidth, 28, 3, 3, 'S');
+  doc.roundedRect(refX, refTop, refW, refH, 2, 2, 'S');
   doc.setLineDashPattern([], 0);
 
-  y += 10;
-  doc.setFontSize(16);
+  const refCx = refX + refW / 2;
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(21, 128, 61);
-  doc.text('REALTOR-YOURNAME', pageWidth / 2, y, { align: 'center' });
+  doc.setFontSize(8);
+  doc.setTextColor(...SLATE_LABEL);
+  doc.text('YOUR REFERRAL CODE', refCx, refTop + 9, { align: 'center' });
+  doc.setFontSize(12.5);
+  doc.setTextColor(...GREEN_TEXT);
+  doc.text('REALTOR-YOURNAME', refCx, refTop + 17, { align: 'center' });
 
-  y += 7;
-  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(55, 65, 81);
-  doc.text('Share this code with your customers. They receive 10% off their first service,', pageWidth / 2, y, { align: 'center' });
-  y += 4.5;
-  doc.text('and you earn referral credit toward future services.', pageWidth / 2, y, { align: 'center' });
-
-  y += 12;
   doc.setFontSize(8.5);
+  doc.setTextColor(...BODY_TEXT);
+  const refLines = doc.splitTextToSize(
+    'Clients get 10% off their first service. You earn referral credit toward future services.',
+    refW - 10
+  );
+  doc.text(refLines, refCx, refTop + 24, { align: 'center' });
   doc.setFont('helvetica', 'italic');
-  doc.setTextColor(100, 100, 100);
-  doc.text('Contact us to get your personalized code set up.', margin, y);
+  doc.setFontSize(8);
+  doc.setTextColor(...SLATE_LABEL);
+  doc.text('Contact us to set up your code.', refCx, refTop + refH - 5, { align: 'center' });
 
-  y += 10;
+  y = tableBottom + 11;
 
   // --- SERVICE AREAS & WHAT'S INCLUDED ---
-  const colWidth = contentWidth / 2;
+  drawAreasAndIncluded(
+    doc,
+    ['Spring Hill', 'Franklin', 'Brentwood', 'Nashville', 'Columbia', "Thompson's Station", 'Williamson & Maury Counties'],
+    ['Unboxing & full assembly', 'Leveling & stability checks', 'Placement in desired room', 'Anti-tip wall securing', 'Debris cleanup', 'Safety inspection', 'Professional tools provided'],
+    y
+  );
 
-  doc.setTextColor(29, 78, 216);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Service Areas', margin, y);
-  doc.text("What's Included", margin + colWidth + 5, y);
-  y += 6;
-
-  doc.setTextColor(55, 65, 81);
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-
-  const areas = ['Spring Hill', 'Franklin', 'Brentwood', 'Nashville', 'Columbia', "Thompson's Station", 'Williamson & Maury Counties'];
-  const included = ['Unboxing & full assembly', 'Leveling & stability checks', 'Placement in desired room', 'Anti-tip wall securing', 'Debris cleanup', 'Safety inspection', 'Professional tools provided'];
-
-  const rows = Math.max(areas.length, included.length);
-  for (let i = 0; i < rows; i++) {
-    if (areas[i]) {
-      doc.text(`•  ${areas[i]}`, margin + 2, y);
-    }
-    if (included[i]) {
-      doc.text(`•  ${included[i]}`, margin + colWidth + 7, y);
-    }
-    y += 4.5;
-  }
-
-  y += 6;
-
-  // --- FOOTER CTA ---
-  const footerHeight = 28;
-  const footerY = doc.internal.pageSize.getHeight() - footerHeight;
-
-  doc.setFillColor(21, 128, 61);
-  doc.rect(0, footerY, pageWidth, footerHeight, 'F');
-
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Ready to partner? Contact us today!', pageWidth / 2, footerY + 10, { align: 'center' });
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${phone}  |  ${email}  |  boxed2built.com/partners`, pageWidth / 2, footerY + 18, { align: 'center' });
-
-  doc.setFontSize(7.5);
-  doc.text('Labor-only service (not subject to TN sales tax)', pageWidth / 2, footerY + 24, { align: 'center' });
+  drawFooter(doc, assets, contact, {
+    cta: 'Ready to partner? Contact us today.',
+    subline: 'Let us take furniture assembly off your closing checklist.',
+  });
 
   doc.save('Boxed2Built-Realtor-Partnership-Flyer.pdf');
-}
-
-export function formatPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, '').replace(/^1/, '');
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  }
-  return raw;
 }
