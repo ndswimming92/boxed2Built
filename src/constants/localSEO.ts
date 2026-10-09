@@ -218,9 +218,9 @@ export const LOCAL_SEO_CONTENT = {
       "Find answers to common questions about furniture assembly, pricing, scheduling, and service areas. Boxed2Built helps Spring Hill families build with confidence."
   },
   partners: {
-    title: "Boxed2Built Partnerships | Realtors & Movers in Spring Hill",
+    title: "Boxed2Built Partnerships | Realtors, Hosts & Movers in Spring Hill",
     description:
-      "Realtors & movers—add value for customers with Boxed2Built furniture assembly partnerships. Stress-free move-ins, referral benefits & closing gifts."
+      "Realtors, Airbnb hosts, property managers & movers—partner with Boxed2Built for furniture assembly. Stress-free move-ins, closing gifts & per-room unit furnishing."
   },
   gallery: {
     title: "Furniture Assembly Gallery | Boxed2Built Spring Hill",

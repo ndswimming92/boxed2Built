@@ -31,7 +31,7 @@ const PartnersPage: React.FC = () => {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: 'Boxed2Built Partnership Program',
-      description: 'Partner with Boxed2Built for realtor closing gifts and mover referrals. Professional furniture assembly services in Spring Hill, TN.',
+      description: 'Partner with Boxed2Built for realtor closing gifts, Airbnb host and property manager unit furnishing, and mover referrals. Professional furniture assembly services in Spring Hill, TN.',
       url: 'https://boxed2built.com/partners',
       mainEntity: {
         '@type': 'Service',
@@ -73,6 +73,15 @@ const PartnersPage: React.FC = () => {
     });
   };
 
+  const handleHostContactClick = () => {
+    trackEvent('link_click', 'partners_page_hosts', {
+      event_category: 'navigation',
+      event_label: 'contact_link_partners_hosts',
+      action_type: 'click',
+      action_value: '/contact',
+    });
+  };
+
   const handleFlyerDownload = async () => {
     trackEvent('file_download', 'partners_page_flyer', {
       event_category: 'download',
@@ -104,17 +113,17 @@ const PartnersPage: React.FC = () => {
         <meta name="description" content={LOCAL_SEO_CONTENT.partners.description} />
         <link rel="canonical" href="https://boxed2built.com/partners" />
         <meta property="og:url" content="https://boxed2built.com/partners" />
-        <meta property="og:title" content="Boxed2Built Partnerships | Realtors & Movers in Spring Hill" />
-        <meta property="og:description" content="Partner with Boxed2Built to add furniture assembly value for your customers. Referral benefits and closing gift options in Spring Hill, TN." />
+        <meta property="og:title" content="Boxed2Built Partnerships | Realtors, Hosts & Movers in Spring Hill" />
+        <meta property="og:description" content="Partner with Boxed2Built to add furniture assembly value for your customers. Closing gifts for realtors and per-room unit furnishing for Airbnb hosts and property managers in Spring Hill, TN." />
         <meta name="twitter:title" content="Partner with Boxed2Built | Spring Hill, TN" />
-        <meta name="twitter:description" content="Add furniture assembly value for your customers. Referral benefits and closing gift options for realtors and movers." />
+        <meta name="twitter:description" content="Add furniture assembly value for your customers. Closing gifts for realtors, per-room unit furnishing for hosts and property managers, and referral benefits for movers." />
       </Head>
       <Header />
 
       <noscript>
         <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#f3f4f6' }}>
           <h2>Partner with Boxed2Built</h2>
-          <p>Professional furniture assembly partnerships for realtors and movers in Spring Hill, TN.</p>
+          <p>Professional furniture assembly partnerships for realtors, Airbnb hosts, property managers and movers in Spring Hill, TN.</p>
           <p>Call us at {phoneDisplay} or visit our contact page.</p>
         </div>
       </noscript>
@@ -279,7 +288,7 @@ const PartnersPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a
                   href="/contact"
-                  onClick={handleContactClick}
+                  onClick={handleHostContactClick}
                   className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Phone size={18} className="mr-2" />
