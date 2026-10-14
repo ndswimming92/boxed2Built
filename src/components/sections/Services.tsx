@@ -161,6 +161,11 @@ const Services: React.FC = () => {
               Book a free consultation or get a custom quote for multiple items. Volume discounts available — see our whole-room packages below!
             </p>
               </InternalLink>
+            <p className="mt-3 text-blue-50">
+              <a href="#packages" className="underline font-semibold hover:text-white">
+                See our whole-room packages
+              </a>
+            </p>
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-4">
