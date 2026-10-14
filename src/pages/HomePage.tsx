@@ -38,7 +38,7 @@ const HomePage: React.FC = () => {
     generalQuestions[0], // What is Boxed2Built?
     {
       question: "How much does furniture assembly cost in Spring Hill, TN?",
-      answer: "Our furniture assembly prices start at $85 for small items like chairs, $185 for tables and desks, $220 for storage and shelving, $320 for dressers, and $295 for bed frames. All prices include assembly, cleanup, and placement."
+      answer: "Our furniture assembly prices start at $85 for small items like chairs, $185 for tables and desks, $220 for storage and shelving, $320 for dressers, and $295 for bed frames. All prices include white-glove service: unboxing, assembly, placement where you want it, and packaging removal."
     }
   ];
 

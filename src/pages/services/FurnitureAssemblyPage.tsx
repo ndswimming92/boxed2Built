@@ -94,6 +94,9 @@ const FurnitureAssemblyPage: React.FC = () => {
                   <p className="text-xl font-medium text-blue-700 mb-4">
                     Got furniture in a box? We build it.
                   </p>
+                  <p className="text-base font-medium text-gray-800 mb-4">
+                    White-glove furniture assembly: we unbox, build, place it where you want it, and haul away the packaging.
+                  </p>
                   <p className="text-lg text-gray-700 mb-8 leading-relaxed">
                     Hire a local furniture assembler for IKEA, Wayfair, Amazon, Target, Walmart, Costco, and more. Flat pack, ready-to-assemble, or anything that came in a box — we handle it from start to finish with no hidden fees.
                   </p>
