@@ -1,5 +1,5 @@
 // Content for the service landing pages added off the back of the 2026 online
-// presence audit: IKEA assembly, nursery setup and garage organization. Each
+// presence audit: IKEA assembly, nursery setup, garage organization and home gym equipment. Each
 // entry renders one pre-rendered page through <ServiceLandingPage />.
 //
 // A move-in / whole-house assembly page was removed: as a one-person
@@ -80,6 +80,9 @@ const SHELVING_PRICE = priceFor('Storage & Shelving Assembly');
 const DESK_PRICE = priceFor('Tables & Desks Assembly');
 const DRESSER_PRICE = priceFor('Dressers & Storage Assembly');
 const BED_PRICE = priceFor('Beds & Frames Assembly');
+// Home gym / backyard equipment has no PRIMARY_SERVICES entry; this is the
+// owner-confirmed starting price for that page only.
+const HOME_GYM_START_PRICE = '200';
 
 export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
   {
@@ -607,6 +610,176 @@ export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
         href: '/services/ikea-furniture-assembly',
         title: 'IKEA Assembly',
         subtitle: 'PAX, MALM, KALLAX and the rest',
+      },
+      {
+        href: '/service-areas',
+        title: 'All Service Areas',
+        subtitle: 'Nine Middle Tennessee cities',
+      },
+    ],
+  },
+  {
+    slug: 'home-gym-equipment-assembly',
+    navLabel: 'Home Gym & Backyard',
+    navDescription: 'Treadmills, racks, trampolines & hoops',
+    metaTitle: 'Home Gym & Backyard Equipment Assembly Spring Hill, TN | Boxed2Built',
+    metaDescription:
+      'Treadmill, exercise bike, power rack, trampoline and basketball hoop assembly in Spring Hill, TN. NordicTrack, Bowflex, Rogue, Lifetime and more. Starting at $200.',
+    ogTitle: 'Home Gym & Backyard Equipment Assembly in Spring Hill, TN | Boxed2Built',
+    ogDescription:
+      'Treadmills, bikes, power racks, trampolines and basketball hoops — built, leveled and packaging removed. Serving Spring Hill and Middle Tennessee.',
+    breadcrumbLabel: 'Home Gym & Backyard Equipment Assembly',
+    h1: 'Home Gym & Backyard Equipment Assembly in Spring Hill, TN',
+    heroSubtitle:
+      'Treadmills, exercise bikes, power racks, trampolines and basketball hoops arrive in heavy boxes with hundreds of bolts. We build them right and take the packaging with us.',
+    schemaName: 'Home Gym and Backyard Equipment Assembly Service',
+    schemaDescription:
+      'Assembly of home gym and backyard equipment in Spring Hill, TN: treadmills, exercise bikes, ellipticals, power racks, weight benches, trampolines and basketball hoops from NordicTrack, ProForm, Bowflex, Rogue, Lifetime, Spalding and other brands. No concrete anchoring or electrical work.',
+    serviceType: 'Home Gym and Backyard Equipment Assembly',
+    intro: [
+      'Fitness equipment and backyard gear are some of the hardest things to assemble at home. A folding treadmill can weigh over 200 pounds in the box, a power rack has dozens of bolts that all need to be torqued in the right order, and a trampoline or basketball hoop is a multi-hour job that goes much faster with the right tools and experience.',
+      'We assemble the equipment you have already bought, whatever the brand. Frames get squared and tightened, moving parts get checked, and everything is leveled before we leave. Some pieces are too heavy or awkward for one person; we will tell you up front and bring a second helper when the item calls for it.',
+    ],
+    highlights: [
+      {
+        title: 'Every popular brand',
+        description:
+          'NordicTrack, ProForm, Bowflex, Rogue, Lifetime, Spalding, Sole, Schwinn and more. If it came in a box, we can build it.',
+      },
+      {
+        title: 'Built square and torqued properly',
+        description:
+          'Loose bolts on a rack or treadmill frame are a safety problem. We follow the manufacturer sequence and check every fastener before we hand it over.',
+      },
+      {
+        title: 'Second helper when needed',
+        description:
+          'Heavy or oversized items sometimes need two people. We determine that per item during the follow-up after you book, so you know before the visit.',
+      },
+      {
+        title: 'All packaging removed',
+        description:
+          'Treadmill and trampoline boxes are enormous. Every box, strap and piece of foam leaves with us.',
+      },
+    ],
+    pricingHeading: 'Home Gym & Backyard Assembly Pricing',
+    pricingIntro: `Equipment assembly starts at $${HOME_GYM_START_PRICE}. The final price depends on the item, its size and whether it needs a second helper, and we confirm it with you before the visit.`,
+    pricing: [
+      {
+        name: 'Treadmill, exercise bike or elliptical',
+        description: 'Cardio equipment assembled, leveled and test-run for basic movement.',
+        price: HOME_GYM_START_PRICE,
+      },
+      {
+        name: 'Power rack, weight bench or home gym system',
+        description: 'Frame assembled and torqued to spec, attachments installed.',
+        price: HOME_GYM_START_PRICE,
+      },
+      {
+        name: 'Trampoline',
+        description: 'Frame, springs or bands, mat and safety enclosure assembled.',
+        price: HOME_GYM_START_PRICE,
+      },
+      {
+        name: 'Basketball hoop (portable or above-ground)',
+        description: 'Pole, backboard, rim and base assembled and filled where applicable.',
+        price: HOME_GYM_START_PRICE,
+      },
+    ],
+    alsoIncluded: [
+      'Hardware checked against the parts list before we start',
+      'Leveling and a stability check before we leave',
+      'Second helper brought when the item requires it, confirmed with you beforehand',
+      'All packaging and cardboard removed',
+      'Not included: concrete anchoring or digging for in-ground hoops, and electrical work',
+    ],
+    processHeading: 'How a Home Gym or Backyard Project Works',
+    process: [
+      {
+        title: 'Tell us what you have',
+        description:
+          'Send the brand, model and where it is going. Photos of the boxes help.',
+      },
+      {
+        title: 'Follow-up on size and helpers',
+        description:
+          'We review the item and confirm whether it needs a second helper and what the final price will be.',
+      },
+      {
+        title: 'Build and tighten',
+        description:
+          'We assemble to the manufacturer instructions, tighten every fastener and check moving parts.',
+      },
+      {
+        title: 'Level and test',
+        description:
+          'The equipment is leveled and checked for stability before we hand it over.',
+      },
+      {
+        title: 'Clean up',
+        description: 'All packaging comes with us.',
+      },
+    ],
+    showcase: {
+      heading: 'What We Assemble',
+      intro:
+        'NordicTrack, ProForm, Bowflex, Rogue, Lifetime, Spalding, Sole, Schwinn, Peloton, Life Fitness, Sunny Health, Titan, Rep Fitness, Skywalker, JumpSport and more — the brand matters less than the instructions in the box.',
+      items: [
+        'Treadmills',
+        'Exercise bikes',
+        'Ellipticals',
+        'Rowing machines',
+        'Power racks & squat racks',
+        'Weight benches',
+        'Home gym systems',
+        'Trampolines',
+        'Basketball hoops',
+        'Pull-up bars & dip stations',
+        'Weight storage racks',
+        'Backyard play equipment',
+      ],
+    },
+    faqs: [
+      {
+        question: 'How much does home gym or backyard equipment assembly cost in Spring Hill, TN?',
+        answer: `Assembly starts at $${HOME_GYM_START_PRICE}. The final price depends on the item and its size, and we confirm it before the visit.`,
+      },
+      {
+        question: 'Will you bring a second person?',
+        answer:
+          'Some items are too heavy or awkward for one person. We decide that per item during the follow-up after you book, and let you know before the visit whether a second helper is needed.',
+      },
+      {
+        question: 'Do you install in-ground basketball hoops?',
+        answer:
+          'We do not do concrete anchoring or digging. We assemble portable and above-ground hoops, and we can assemble an in-ground hoop kit if the footing is already set.',
+      },
+      {
+        question: 'Do you do electrical work or wire up equipment?',
+        answer:
+          'No. We assemble the equipment and plug-in items are left ready for you to connect. We do not do electrical work.',
+      },
+      {
+        question: 'Which brands do you assemble?',
+        answer:
+          'All popular brands, including NordicTrack, ProForm, Bowflex, Rogue, Lifetime, Spalding and many others. If you are unsure, send us the model name.',
+      },
+    ],
+    related: [
+      {
+        href: '/services/furniture-assembly',
+        title: 'All Furniture Assembly',
+        subtitle: 'Every brand, every room',
+      },
+      {
+        href: '/services/garage-organization',
+        title: 'Garage Organization',
+        subtitle: 'Shelving, racks and workbenches',
+      },
+      {
+        href: '/services/tv-mounting',
+        title: 'TV Mounting',
+        subtitle: 'Secure installation on any wall type',
       },
       {
         href: '/service-areas',
