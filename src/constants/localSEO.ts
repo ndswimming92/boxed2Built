@@ -324,10 +324,6 @@ export const FAQ_CONTENT = [
         answer: "Our all-inclusive pricing covers complete assembly from start to finish, all necessary tools and equipment, hardware installation and tightening, placement in your desired location, packaging material removal and cleanup, quality inspection to ensure stability and safety, and minor adjustments as needed. There are no hidden fees."
       },
       {
-        question: "Do you offer white glove furniture assembly?",
-        answer: "Yes. Every Boxed2Built job is white-glove assembly. We bring your boxes in, unbox everything, build the furniture, place it exactly where you want it, haul away all the packaging, and leave your space clean. There are no service tiers or add-ons, so the same careful, start-to-finish experience is included at the listed price."
-      },
-      {
         question: "Do you offer discounts for multiple furniture pieces?",
         answer: "Yes! We offer volume discounts when you have multiple furniture pieces to assemble. The more items you need assembled, the better the per-item rate. Contact us for a custom quote on multi-piece projects to receive the best pricing."
       },
@@ -342,6 +338,10 @@ export const FAQ_CONTENT = [
       {
         question: "How long does furniture assembly take?",
         answer: "Assembly time varies by item complexity and size. Small items like chairs typically take 30-60 minutes, medium items like desks and bookshelves take 1-2 hours, and larger items like bed frames and dressers can take 2-3 hours. We provide time estimates with every quote and work efficiently without compromising quality."
+      },
+      {
+        question: "Do you offer white glove furniture assembly?",
+        answer: "Yes. Every Boxed2Built job is white-glove assembly. We bring your boxes in, unbox everything, build the furniture, place it exactly where you want it, haul away all the packaging, and leave your space clean. There are no service tiers or add-ons, so the same careful, start-to-finish experience is included at the listed price."
       }
     ]
   },
