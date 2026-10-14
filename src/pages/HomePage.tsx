@@ -84,9 +84,8 @@ const HomePage: React.FC = () => {
 
               <div className="relative">
                 <FormProgressRail progress={quoteProgress} />
-                <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-200">
-                  <ContactForm sideRail onProgressChange={setQuoteProgress} />
-                </div>
+                {/* The form brings its own surface; the heading above introduces it. */}
+                <ContactForm sideRail showIntro={false} onProgressChange={setQuoteProgress} />
               </div>
 
               <p className="text-center text-sm text-gray-500 mt-6">

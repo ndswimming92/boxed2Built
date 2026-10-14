@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import InputMask from 'react-input-mask';
-import { Send, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Clock, Loader2, Lock, Image, Link, X, Calendar, Gift, Home, Building2, Tag } from 'lucide-react';
+import {
+  Send, AlertCircle, CheckCircle, ChevronDown, Loader2, Lock, Image as ImageIcon, X, Calendar,
+  Gift, Home, Building2, Tag, Users, Upload, Check, BedDouble, Package, Sparkles,
+} from 'lucide-react';
 import { formatGiftCardCodeInput } from '../utils/giftCardCode';
 import { lookupCouponByCode } from '../services/couponService';
 import { describeDiscount, discountAmount, formatMoney, normalizeCouponCode } from '../utils/coupon';
@@ -14,9 +17,6 @@ import {
 } from '../services/referralQRService';
 import type { CouponLookupResult } from '../types/coupon';
 import { trackEvent, trackFormInteraction, trackConversion, trackLead } from '../utils/analytics';
-import FormField from './ui/FormField';
-import ValidationMessage from './ui/ValidationMessage';
-import ProgressBar from './ui/ProgressBar';
 import { useFormValidation, ValidationRule } from '../hooks/useFormValidation';
 import { supabase } from '../lib/supabase';
 import { createInquiry } from '../services/inquiryService';
@@ -28,21 +28,86 @@ import ConfettiCanvas from './ConfettiCanvas';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../services/communicationService';
 
-const initialValues = {
-  name: { value: '', error: '', touched: false },
-  email: { value: '', error: '', touched: false },
-  serviceZip: { value: '', error: '', touched: false },
-  phone: { value: '', error: '', touched: false },
-  furnitureType: { value: '', error: '', touched: false },
-  pieces: { value: '1', error: '', touched: false },
-  preferredDate: { value: '', error: '', touched: false },
-  preferredTimeSlot: { value: '', error: '', touched: false },
-  notes: { value: '', error: '', touched: false },
-  referralCode: { value: '', error: '', touched: false },
-  giftCardCode: { value: '', error: '', touched: false },
+/**
+ * The furniture the tile picker offers, and the single source of truth for the
+ * estimate. Each `id` is a value `furniture_type` already accepts, so the
+ * inquiry, the saved request, both emails and the admin filters keep working
+ * unchanged. Prices and times are the estimator's long-standing figures.
+ */
+type FurnitureId = 'Chair' | 'Table' | 'Bed' | 'Dresser' | 'Bookshelf' | 'IKEA' | 'Other';
+
+const FURNITURE: { id: FurnitureId; label: string; minutes: number; price: number; sub?: string }[] = [
+  { id: 'Chair', label: 'Chairs & Seating', minutes: 60, price: 85 },
+  { id: 'Table', label: 'Tables & Desks', minutes: 120, price: 185 },
+  { id: 'Bed', label: 'Bed Frames', minutes: 180, price: 295 },
+  { id: 'Dresser', label: 'Dressers & Storage', minutes: 210, price: 320 },
+  { id: 'Bookshelf', label: 'Bookshelves & Media', minutes: 150, price: 220 },
+  { id: 'IKEA', label: 'IKEA Flat-Pack', minutes: 120, price: 185 },
+  { id: 'Other', label: 'Something Else', minutes: 120, price: 185, sub: 'grill, gym, patio…' },
+];
+
+const MAX_PER_TYPE = 20;
+// The old single "pieces" box capped here with the same message.
+const MAX_TOTAL_ITEMS = 50;
+// Jobs need two days to schedule. Weekends are fine.
+const MIN_LEAD_DAYS = 2;
+
+const emptyQty = (): Record<FurnitureId, number> =>
+  ({ Chair: 0, Table: 0, Bed: 0, Dresser: 0, Bookshelf: 0, IKEA: 0, Other: 0 });
+
+/**
+ * Local-time YYYY-MM-DD, n days from today. `toISOString` is UTC, which rolls
+ * over to tomorrow during a Central-time evening and would let a customer pick
+ * a date one day too early.
+ */
+const isoDaysFromToday = (n: number) => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + n);
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
 };
 
-// Enhanced validation rules
+// Lucide has no chair, table or dresser glyph. These follow its 24px grid and
+// round caps so they sit with the Lucide icons beside them.
+const svgProps = {
+  width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+  strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  'aria-hidden': true,
+};
+const FurnitureIcon: React.FC<{ id: FurnitureId }> = ({ id }) => {
+  switch (id) {
+    case 'Chair':
+      return <svg {...svgProps}><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" /><path d="M5 9h14a1 1 0 0 1 1 1v3H4v-3a1 1 0 0 1 1-1z" /><path d="M6 13v6M18 13v6" /></svg>;
+    case 'Table':
+      return <svg {...svgProps}><rect x="3" y="6" width="18" height="3" rx="1" /><path d="M5 9v10M19 9v10M9 9v5M15 9v5" /></svg>;
+    case 'Bed':
+      return <BedDouble size={28} strokeWidth={1.7} aria-hidden />;
+    case 'Dresser':
+      return <svg {...svgProps}><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M4 9h16M4 15h16" /><path d="M10.5 6h3M10.5 12h3M10.5 18h3" /></svg>;
+    case 'Bookshelf':
+      return <svg {...svgProps}><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M4 9h16M4 15h16" /><path d="M7 5v3M9 5v3M16 12v2" /></svg>;
+    case 'IKEA':
+      return <Package size={28} strokeWidth={1.7} aria-hidden />;
+    default:
+      return <Sparkles size={28} strokeWidth={1.7} aria-hidden />;
+  }
+};
+
+const initialValues: Record<string, string> = {
+  name: '',
+  email: '',
+  phone: '',
+  preferredDate: '',
+  preferredTimeSlot: '',
+  notes: '',
+  referralCode: '',
+  giftCardCode: '',
+};
+
+// The furniture picker is validated in the component (see `itemsError`); it is
+// not a text field, so it does not fit the hook.
 const validationRules: Record<string, ValidationRule> = {
   name: {
     required: true,
@@ -50,9 +115,6 @@ const validationRules: Record<string, ValidationRule> = {
     maxLength: 50,
     pattern: /^[a-zA-Z\s'-]+$/,
     custom: (value) => {
-      if (value.trim().split(' ').length < 1) {
-        return 'Please enter your full name';
-      }
       if (value.trim().length < 2) {
         return 'Name must be at least 2 characters';
       }
@@ -78,72 +140,24 @@ const validationRules: Record<string, ValidationRule> = {
     validateOnChange: true
   },
   phone: {
-    required: false,
-    custom: (value) => {
-      if (!value) return null;
-      const digits = value.replace(/\D/g, '');
-      if (digits.length > 0 && digits.length < 10) {
-        return 'Please enter a complete phone number';
-      }
-      if (digits.length > 11) {
-        return 'Phone number is too long';
-      }
-      return null;
-    }
-  },
-  serviceZip: {
-    required: true,
-    pattern: /^\d{5}(?:-\d{4})?$/,
-    custom: (value) => {
-      if (!value) return 'ZIP code is required';
-      const cleaned = value.trim();
-      if (!/^\d{5}(?:-\d{4})?$/.test(cleaned)) {
-        return 'Please enter a valid ZIP code (e.g., 37064)';
-      }
-      return null;
-    },
-    validateOnChange: true
-  },
-  furnitureType: {
     required: true,
     custom: (value) => {
-      const validTypes = ['Chair', 'Table', 'Bed', 'Dresser', 'Bookshelf', 'IKEA', 'Other'];
-      if (!validTypes.includes(value)) {
-        return 'Please select a valid furniture type';
-      }
-      return null;
-    }
-  },
-  pieces: {
-    required: true,
-    custom: (value) => {
-      const num = parseInt(value, 10);
-      if (isNaN(num) || num < 1) {
-        return 'Please enter at least 1 piece';
-      }
-      if (num > 50) {
-        return 'For large projects, please contact us directly';
-      }
+      const digits = (value || '').replace(/\D/g, '');
+      if (digits.length === 0) return 'Phone number is required';
+      if (digits.length < 10) return 'Please enter a complete phone number';
+      if (digits.length > 11) return 'Phone number is too long';
       return null;
     }
   },
   notes: {
     required: false,
-    maxLength: 500,
-    custom: (value, allValues) => {
-      // Only require notes if "Other" is selected for furniture type
-      if (allValues?.furnitureType === 'Other' && !value?.trim()) {
-        return 'Please specify the furniture type';
-      }
-      return null;
-    }
+    maxLength: 500
   },
   preferredDate: {
     required: false,
     custom: (value) => {
       if (!value) return null;
-      const today = new Date().toISOString().split('T')[0];
-      if (value < today) return 'Please select a date today or in the future';
+      if (value < isoDaysFromToday(MIN_LEAD_DAYS)) return 'Please choose a date at least 2 days from today';
       return null;
     }
   },
@@ -182,9 +196,19 @@ interface ContactFormProps {
   sideRail?: boolean;
   /** Notifies the parent of completion percentage so it can drive an external rail. */
   onProgressChange?: (progress: number) => void;
+  /** Hide the badge and headline when the page section already introduces the form. */
+  showIntro?: boolean;
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressChange }) => {
+// Marketing register: cream page, navy ink, amber accent.
+const cardCls = 'bg-white border border-[#ECE3D2] rounded-[20px] p-5 sm:p-6 shadow-[0_10px_30px_rgba(14,39,72,0.05)]';
+const labelCls = 'block text-[13px] font-semibold text-[#0E2748] mb-1.5';
+const stepBadgeCls = 'w-[26px] h-[26px] shrink-0 rounded-full bg-[#0E2748] text-[#FBF8F1] text-[13px] font-bold inline-flex items-center justify-center';
+const disclosureIconCls = 'w-[38px] h-[38px] shrink-0 rounded-[10px] bg-[#F5EFE3] text-[#0E2748] inline-flex items-center justify-center';
+const tooltipCls = 'absolute bottom-[26px] left-1/2 -translate-x-1/2 w-[220px] bg-[#0E2748] text-[#FBF8F1] text-xs font-medium leading-normal px-3 py-2.5 rounded-[10px] shadow-[0_10px_24px_rgba(14,39,72,0.3)] z-20';
+const requiredMark = <span className="text-[#B45309]" aria-hidden="true">*</span>;
+
+const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressChange, showIntro = true }) => {
   // Must start false so the initial render matches the SSG snapshot.
   // InputMask@2 renders differently between Node (SSG) and the browser,
   // so we swap it in after mount to avoid hydration mismatch.
@@ -192,10 +216,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   useEffect(() => setIsMounted(true), []);
 
   const [clientType, setClientType] = useState<'residential' | 'business'>('residential');
-  const [showOptionalFields, setShowOptionalFields] = useState(false);
-  const [showFurnitureReference, setShowFurnitureReference] = useState(false);
-  const [estimatedTime, setEstimatedTime] = useState('');
-  const [estimatedPrice, setEstimatedPrice] = useState('');
+  const [qty, setQty] = useState<Record<FurnitureId, number>>(emptyQty);
+  const [otherText, setOtherText] = useState('');
+  const [itemsTouched, setItemsTouched] = useState(false);
+
+  const [showScheduling, setShowScheduling] = useState(false);
+  const [showReference, setShowReference] = useState(false);
+  const [openTip, setOpenTip] = useState<'referral' | 'gift' | null>(null);
+
   // The code box takes either a friend's referral code or one of our coupon
   // codes. Only a coupon changes the price, so it is looked up on blur and the
   // result parked here; anything else falls through as a referral code.
@@ -207,14 +235,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [prefilledReferral, setPrefilledReferral] = useState<string | null>(null);
   const [utmParams, setUtmParams] = useState<UTMParams>({});
   const checkedCodeRef = useRef<string | null>(null);
-  const [, setIsIOS] = useState(false);
+
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationData, setConfirmationData] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const { data: businessData } = useBusinessDataWithFallback();
   const phoneDisplay = formatPhoneForDisplay((businessData?.info?.phone || "+16154034538").replace(/^\+1/, ""));
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [formProgress, setFormProgress] = useState(0);
+
   const [furniturePhotoUrl, setFurniturePhotoUrl] = useState('');
   const [furniturePhotoFile, setFurniturePhotoFile] = useState<File | null>(null);
   const [furniturePhotoPreview, setFurniturePhotoPreview] = useState<string | null>(null);
@@ -222,10 +250,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Use enhanced form validation
   const {
     fields,
-    isFormValid,
     hasErrors,
     isValidating,
     isSubmitting,
@@ -235,10 +261,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     reset,
     getFieldProps
   } = useFormValidation({
-    initialValues: Object.keys(initialValues).reduce((acc, key) => {
-      acc[key] = initialValues[key as keyof typeof initialValues].value;
-      return acc;
-    }, {} as Record<string, string>),
+    initialValues,
     validationRules,
     validateOnChange: false,
     validateOnBlur: true,
@@ -251,8 +274,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   useEffect(() => {
     const codeParam = searchParams.get('gift_card_code');
     if (codeParam) {
-      const formatted = formatGiftCardCodeInput(codeParam);
-      handleFieldChange('giftCardCode', formatted);
+      handleFieldChange('giftCardCode', formatGiftCardCodeInput(codeParam));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -334,107 +356,71 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Detect iOS — navigator.platform is deprecated; use maxTouchPoints + UA instead
+  // Items and the estimate they add up to
+  const selected = useMemo(() => FURNITURE.filter((f) => qty[f.id] > 0), [qty]);
+  const totalItems = selected.reduce((n, f) => n + qty[f.id], 0);
+  const totalMinutes = selected.reduce((n, f) => n + qty[f.id] * f.minutes, 0);
+  const rawPrice = selected.reduce((n, f) => n + qty[f.id] * f.price, 0);
+  // Volume discount for 4 or more items, as before.
+  const multiItemDiscount = totalItems > 3;
+  const baseEstimateAmount = Math.round(multiItemDiscount ? rawPrice * 0.9 : rawPrice);
+  const estimatedPrice = totalItems ? `$${baseEstimateAmount}` : '';
+  const estimatedHours = Math.round((totalMinutes / 60) * 10) / 10;
+  const estimatedTime = totalItems ? `${estimatedHours} hours` : '';
+
+  // The number the customer is actually quoted. The coupon comes off here, so
+  // every downstream copy — the confirmation screen, both emails, the saved
+  // request and the admin's inquiry card — already has the discount in it.
+  const couponSavings =
+    appliedCoupon && baseEstimateAmount > 0 ? discountAmount(appliedCoupon, baseEstimateAmount) : 0;
+  const quotedPrice = couponSavings > 0 ? formatMoney(baseEstimateAmount - couponSavings) : estimatedPrice;
+
+  const itemsError =
+    totalItems === 0 ? 'Pick at least one item to assemble'
+    : totalItems > MAX_TOTAL_ITEMS ? 'For large projects, please contact us directly'
+    : qty.Other > 0 && !otherText.trim() ? 'Tell us what the "Something Else" item is'
+    : null;
+
+  // The backend still stores one furniture_type and a total piece count. The
+  // type with the most pieces stands in for the job, and the full breakdown
+  // leads the notes so the admin sees every item.
+  const primaryType: FurnitureId | '' = selected.length
+    ? [...selected].sort((a, b) => qty[b.id] - qty[a.id])[0].id
+    : '';
+  const itemBreakdown = selected
+    .map((f) => `${f.id === 'Other' && otherText.trim() ? `Other (${otherText.trim()})` : f.label} ×${qty[f.id]}`)
+    .join(', ');
+
+  const toggleType = (id: FurnitureId) => {
+    setItemsTouched(true);
+    const turningOn = qty[id] === 0;
+    setQty((q) => ({ ...q, [id]: q[id] > 0 ? 0 : 1 }));
+    trackEvent('quote-tile-toggle', 'contact_form', {
+      event_category: 'form_interaction',
+      action_type: turningOn ? 'select' : 'deselect',
+      furniture_type: id,
+      element_type: 'tile',
+      form_name: 'contact_form'
+    });
+  };
+
+  const stepQty = (id: FurnitureId, delta: number) => {
+    setItemsTouched(true);
+    setQty((q) => ({ ...q, [id]: Math.max(0, Math.min(MAX_PER_TYPE, q[id] + delta)) }));
+  };
+
+  // Progress: the four things a quote cannot go out without.
+  const isFieldComplete = (name: string) => Boolean(fields[name]?.value?.trim() && fields[name]?.valid);
+  const progressParts = [!itemsError, isFieldComplete('name'), isFieldComplete('email'), isFieldComplete('phone')];
+  const formProgress = Math.round((progressParts.filter(Boolean).length / progressParts.length) * 100);
   useEffect(() => {
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
-    setIsIOS(iOS);
-  }, []);
-
-  // Smart estimation based on furniture type and pieces
-  useEffect(() => {
-    const furnitureType = fields.furnitureType?.value;
-    const pieces = parseInt(fields.pieces?.value) || 0;
-
-    if (furnitureType && pieces > 0) {
-      let baseTime = 0;
-      let basePrice = 0;
-
-      switch (furnitureType) {
-        case 'Chair':
-          baseTime = 60;
-          basePrice = 85;
-          break;
-        case 'Table':
-          baseTime = 120;
-          basePrice = 185;
-          break;
-        case 'Bookshelf':
-          baseTime = 150;
-          basePrice = 220;
-          break;
-        case 'Dresser':
-          baseTime = 210;
-          basePrice = 320;
-          break;
-        case 'Bed':
-          baseTime = 180;
-          basePrice = 295;
-          break;
-        case 'IKEA':
-          baseTime = 120;
-          basePrice = 185;
-          break;
-        case 'Multiple':
-          baseTime = 60;
-          basePrice = 85;
-          break;
-        default:
-          baseTime = 120;
-          basePrice = 185;
-      }
-
-      const totalTime = baseTime * pieces;
-      const totalPrice = basePrice * pieces;
-
-      // Apply volume discount for multiple pieces
-      const discountedPrice = pieces > 3 ? totalPrice * 0.9 : totalPrice;
-
-      setEstimatedTime(`${Math.round(totalTime / 60 * 10) / 10} hours`);
-      setEstimatedPrice(`$${Math.round(discountedPrice)}`);
-    } else {
-      setEstimatedTime('');
-      setEstimatedPrice('');
-    }
-  }, [fields.furnitureType?.value, fields.pieces?.value]);
-
-  // Calculate form progress based on required fields
-  useEffect(() => {
-    const isFieldComplete = (fieldName: string) => {
-      const field = fields[fieldName];
-      return field && field.value && field.value.trim() !== '' && field.valid;
-    };
-
-    const requiredFields = ['name', 'email', 'serviceZip', 'furnitureType', 'pieces'];
-
-    // Add notes as required if furniture type is "Other"
-    const isOtherSelected = fields.furnitureType?.value === 'Other';
-    if (isOtherSelected) {
-      requiredFields.push('notes');
-    }
-
-    const completedFields = requiredFields.filter(isFieldComplete).length;
-    const totalRequired = requiredFields.length;
-    const progress = Math.round((completedFields / totalRequired) * 100);
-
-    setFormProgress(progress);
-    onProgressChange?.(progress);
-  }, [
-    onProgressChange,
-    fields.name?.value,
-    fields.name?.valid,
-    fields.email?.value,
-    fields.email?.valid,
-    fields.serviceZip?.value,
-    fields.serviceZip?.valid,
-    fields.furnitureType?.value,
-    fields.furnitureType?.valid,
-    fields.pieces?.value,
-    fields.pieces?.valid,
-    fields.notes?.value,
-    fields.notes?.valid
-  ]);
-
+    onProgressChange?.(formProgress);
+  }, [formProgress, onProgressChange]);
+  const progressLabel =
+    formProgress === 0 ? 'Just getting started'
+    : formProgress < 67 ? 'Looking good'
+    : formProgress < 100 ? 'Almost there'
+    : 'Ready to send!';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -473,33 +459,35 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const toggleOptionalFields = () => {
-    setShowOptionalFields(!showOptionalFields);
+  const toggleDisclosure = (section: 'scheduling' | 'reference', open: boolean) => {
+    if (section === 'scheduling') setShowScheduling(!open);
+    else setShowReference(!open);
     trackEvent('form-optional-fields-toggle', 'contact_form', {
       event_category: 'form_interaction',
-      action_type: showOptionalFields ? 'hide' : 'show',
-      action_value: showOptionalFields ? 'hide' : 'show',
+      action_type: open ? 'hide' : 'show',
+      action_value: section,
       page_section: 'contact_form',
       element_type: 'button',
       form_name: 'contact_form'
     });
   };
 
-  // The number the customer is actually quoted. The coupon comes off here, so
-  // every downstream copy — the confirmation screen, both emails, the saved
-  // request and the admin's inquiry card — already has the discount in it.
-  const baseEstimateAmount = parseFloat(estimatedPrice.replace(/[^0-9.]/g, '')) || 0;
-  const couponSavings =
-    appliedCoupon && baseEstimateAmount > 0 ? discountAmount(appliedCoupon, baseEstimateAmount) : 0;
-  const quotedPrice = couponSavings > 0 ? formatMoney(baseEstimateAmount - couponSavings) : estimatedPrice;
+  const validatedSubmit = handleValidatedSubmit(async (values) => {
+    // The picker lives outside the validation hook, so a valid contact section
+    // must not be allowed to carry an empty or unusable item list through.
+    if (itemsError) return;
 
-  const onSubmit = handleValidatedSubmit(async (values) => {
+    const pieces = totalItems;
+    const notes = [`Items: ${itemBreakdown}`, values.notes?.trim()].filter(Boolean).join('\n\n');
+    const referralCodeUsed = values.referralCode ? values.referralCode.trim().toUpperCase() : undefined;
+    const giftCardCode = values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined;
+
     try {
       // Track form completion with detailed parameters
       trackFormInteraction('contact_form', 'complete', {
         page_section: 'contact_form',
-        furniture_type: values.furnitureType,
-        number_of_pieces: parseInt(values.pieces) || 0,
+        furniture_type: primaryType,
+        number_of_pieces: pieces,
         estimated_value: quotedPrice,
         form_step: 'submit'
       });
@@ -508,8 +496,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
       trackConversion('form_submission', 1, 'USD', {
         page_section: 'contact_form',
         conversion_type: 'lead',
-        furniture_type: values.furnitureType,
-        number_of_pieces: parseInt(values.pieces) || 0
+        furniture_type: primaryType,
+        number_of_pieces: pieces
       });
 
       trackEvent('contact-form-submit', 'contact_form', {
@@ -518,8 +506,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         user_engagement: 'form_submission',
         element_type: 'form',
         action_type: 'submit',
-        furniture_type: values.furnitureType,
-        number_of_pieces: parseInt(values.pieces) || 0
+        furniture_type: primaryType,
+        number_of_pieces: pieces
       });
 
       // Save to Supabase database for admin tracking and create saved request
@@ -548,24 +536,25 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         }
       }
 
+      // No ZIP is asked for any more, so user_city is left empty (the column
+      // is nullable) and the emails and confirmation simply omit the city row.
       const inquiry = await createInquiry({
         business_id: businessInfo.id,
         organization_id: businessInfo.organization_id,
         client_name: values.name,
         client_email: values.email,
         client_phone: values.phone || undefined,
-        user_city: values.serviceZip,
-        furniture_type: values.furnitureType,
-        pieces: parseInt(values.pieces) || 1,
+        furniture_type: primaryType,
+        pieces,
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
-        notes: values.notes || undefined,
+        notes,
         estimated_price: quotedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         referral_source: 'contact_form',
         ...utmParams,
-        referral_code_used: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
-        gift_card_code: values.giftCardCode ? values.giftCardCode.trim().toUpperCase() : undefined,
+        referral_code_used: referralCodeUsed,
+        gift_card_code: giftCardCode,
         coupon_code: appliedCoupon ? appliedCoupon.code : undefined,
         coupon_discount_type: appliedCoupon ? appliedCoupon.discount_type : undefined,
         coupon_discount_value: appliedCoupon ? appliedCoupon.discount_value : undefined,
@@ -583,12 +572,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         client_name: values.name,
         client_email: values.email,
         client_phone: values.phone || undefined,
-        user_city: values.serviceZip,
-        furniture_type: values.furnitureType,
-        pieces: parseInt(values.pieces) || 1,
+        furniture_type: primaryType,
+        pieces,
         preferred_date: values.preferredDate || undefined,
         preferred_time_slot: values.preferredTimeSlot || undefined,
-        notes: values.notes || undefined,
+        notes,
         estimated_price: quotedPrice || undefined,
         estimated_time: estimatedTime || undefined,
         furniture_photo_url: furniturePhotoUrl.trim() || undefined,
@@ -596,18 +584,17 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         is_test: isTest,
       });
 
-      // Set confirmation data
+      // The customer sees every item they picked, not just the primary type.
       const confirmData = {
         confirmationCode: savedRequest.confirmation_code,
         clientName: values.name,
         clientEmail: values.email,
         clientPhone: values.phone || undefined,
-        userCity: values.serviceZip,
-        furnitureType: values.furnitureType,
-        pieces: parseInt(values.pieces) || 1,
+        furnitureType: itemBreakdown,
+        pieces,
         preferredDate: values.preferredDate || undefined,
         preferredTimeSlot: values.preferredTimeSlot || undefined,
-        notes: values.notes || undefined,
+        notes: values.notes?.trim() || undefined,
         estimatedPrice: quotedPrice || undefined,
         estimatedTime: estimatedTime || undefined,
         submissionDate: savedRequest.submission_date,
@@ -635,19 +622,18 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           name: values.name,
           email: values.email,
           phone: values.phone || undefined,
-          userCity: values.serviceZip,
-          furnitureType: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
+          furnitureType: primaryType,
+          pieces,
           preferredDate: values.preferredDate || undefined,
           preferredTimeSlot: values.preferredTimeSlot || undefined,
-          notes: values.notes || undefined,
+          notes,
           estimatedPrice: quotedPrice || undefined,
           estimatedTime: estimatedTime || undefined,
           confirmationCode: savedRequest.confirmation_code,
           isTest,
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
-          referralCodeUsed: values.referralCode ? values.referralCode.trim().toUpperCase() : undefined,
+          referralCodeUsed,
           couponCode: appliedCoupon ? appliedCoupon.code : undefined,
           couponDiscountLabel: appliedCoupon ? describeDiscount(appliedCoupon) : undefined,
           clientType,
@@ -667,13 +653,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         console.error('[ContactForm] Email send error:', err);
       });
 
-
       // The request is saved, so this is a real lead.
       // Flagged test submissions stay out of GA, as they do out of the admin metrics.
       if (!isTest) {
         trackLead({
-          service_type: values.furnitureType,
-          zip_code: values.serviceZip,
+          service_type: primaryType,
           form_location: sideRail ? 'home_hero' : 'contact_page',
         });
       }
@@ -688,8 +672,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         status: 'success',
         metadata: {
           form_type: 'contact_form',
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
+          furniture_type: primaryType,
+          items: itemBreakdown,
+          pieces,
           estimated_price: quotedPrice,
           confirmation_code: savedRequest.confirmation_code,
         },
@@ -697,20 +682,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       // Reset form AFTER showing modal
       reset();
+      setQty(emptyQty());
+      setOtherText('');
+      setItemsTouched(false);
       setFurniturePhotoUrl('');
-      setFurniturePhotoFile(null);
-      setFurniturePhotoPreview(null);
-      setPhotoUploadError(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-
+      handleRemoveFile();
     } catch (error) {
       console.error('[ContactForm] Error during form submission:', error);
-
-      // Log detailed error information
-      if (error instanceof Error) {
-        console.error('[ContactForm] Error message:', error.message);
-        console.error('[ContactForm] Error stack:', error.stack);
-      }
 
       // Never surface raw backend error text to visitors: it leaks table,
       // column and policy detail. The full error is in the console log above.
@@ -719,7 +697,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       setSubmissionError(errorMessage);
 
-
       // Log failed form submission
       await logPublicAction({
         actionType: 'SUBMIT',
@@ -727,11 +704,12 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         recordIdentifier: `${values.name} - Contact Form`,
         userEmail: values.email,
         status: 'error',
-        errorMessage: errorMessage,
+        errorMessage,
         metadata: {
           form_type: 'contact_form',
-          furniture_type: values.furnitureType,
-          pieces: parseInt(values.pieces) || 1,
+          furniture_type: primaryType,
+          items: itemBreakdown,
+          pieces,
           error_details: error instanceof Error ? error.stack : String(error),
         },
       });
@@ -743,25 +721,38 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     }
   });
 
-  const getInputClasses = (fieldName: string) => {
-    const field = fields[fieldName];
-    const baseClasses = 'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200';
-    
-    if (!field?.touched && !submitAttempted) {
-      return `${baseClasses} border-gray-300`;
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    setItemsTouched(true);
+    // A past-the-cutoff date is easy to miss inside a collapsed section.
+    if (fields.preferredDate?.value && fields.preferredDate.value < isoDaysFromToday(MIN_LEAD_DAYS)) {
+      setShowScheduling(true);
     }
-    
-    if (field?.error) {
-      return `${baseClasses} border-red-500 bg-red-50`;
-    }
-    
-    if (field?.valid && field?.touched) {
-      return `${baseClasses} border-green-500 bg-green-50`;
-    }
-    
-    return `${baseClasses} border-gray-300`;
+    if (itemsError) document.getElementById('quote-items')?.focus();
+    // Always run field validation, so every problem shows at once.
+    validatedSubmit(e);
   };
 
+  const showFieldError = (name: string) => Boolean((fields[name]?.touched || submitAttempted) && fields[name]?.error);
+
+  const inputCls = (name: string) => {
+    const base =
+      'w-full px-3.5 py-3 rounded-xl text-base text-gray-900 outline-none border-[1.5px] transition-[border-color,box-shadow] duration-200 placeholder:text-gray-400 focus:border-[#D9A441] focus:shadow-[0_0_0_3px_rgba(217,164,65,0.22)]';
+    return showFieldError(name) ? `${base} border-red-500 bg-red-50` : `${base} border-gray-300 bg-white`;
+  };
+
+  // The id matches the aria-describedby that getFieldProps puts on the input.
+  const fieldError = (name: string) =>
+    showFieldError(name) ? (
+      <p id={`${name}-error`} className="mt-1.5 text-xs text-red-600" role="alert">{fields[name].error}</p>
+    ) : null;
+
+  const referralProps = getFieldProps('referralCode');
+  const giftProps = getFieldProps('giftCardCode');
+  // The "Something Else" description waits for a submit: nagging the moment the
+  // tile is tapped, before there was a chance to type, reads as a scolding.
+  const otherDescriptionMissing = qty.Other > 0 && !otherText.trim();
+  const showItemsError = Boolean(itemsError && (submitAttempted || (itemsTouched && !otherDescriptionMissing)));
+  const minDate = isoDaysFromToday(MIN_LEAD_DAYS);
 
   return (
     <>
@@ -779,705 +770,639 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           requestData={confirmationData}
         />
       )}
-      <div className="bg-white rounded shadow p-6">
-      <div className="mb-6">
-        <h3 className="text-xl font-bold mb-2">Get Your Free Quote</h3>
-        <p className="text-sm text-gray-600">Just a few details to get started - takes less than 2 minutes</p>
-      </div>
 
-      {/* Progress Bar — sticky compact bar that follows the user down the form.
-          Pins just below the fixed header stack via --app-header-bottom (set by
-          Header; accounts for the notification bar + scroll shrink). The 96px
-          fallback covers the scrolled header before JS sets the variable.
-          On side-rail pages it is replaced by the vertical rail on lg+. */}
-      <div
-        className={`${sideRail ? 'lg:hidden ' : ''}sticky z-20 -mx-6 px-6 py-3 mb-6 bg-white/95 backdrop-blur border-b border-gray-100`}
-        style={{ top: 'var(--app-header-bottom, 96px)' }}
-      >
-        <ProgressBar progress={formProgress} />
-      </div>
-
-      {/* Submission error message */}
-      {submissionError && (
-        <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={24} className="text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-red-900 font-bold mb-1">Submission Error</h4>
-              <p className="text-red-800 text-sm mb-3">{submissionError}</p>
-              <div className="text-xs text-red-700">
-                <p className="mb-1">You can:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Try submitting again</li>
-                  <li>Call us at {phoneDisplay}</li>
-                  <li>Email us at nicholas.davidson@boxed2built.com</li>
-                </ul>
+      {/* Bleeds to the screen edge on phones so the tiles keep two across. */}
+      <div className="-mx-4 sm:mx-0 bg-[radial-gradient(1200px_500px_at_50%_-180px,#FBF8F1_0%,#F5EFE3_60%)] sm:rounded-3xl px-5 py-8 sm:px-6">
+        <div className="max-w-[760px] mx-auto">
+          {showIntro && (
+            <div className="text-center mb-[22px]">
+              <div className="inline-flex items-center gap-2 bg-[#0E2748] text-[#FBF8F1] text-[11px] font-semibold tracking-[0.08em] uppercase px-3.5 py-1.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D9A441]" aria-hidden="true" />
+                Free Quote · No payment until done
               </div>
+              <h2 className="text-[30px] sm:text-[40px] font-bold text-[#0E2748] mt-4 mb-2 leading-[1.1] tracking-[-0.01em]">
+                Let's turn those boxes into comfort.
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-[560px] mx-auto">
+                Tap what needs building, set how many, and we'll have a quote in your inbox — usually within 2–4 hours.
+              </p>
             </div>
-            <button
-              onClick={() => setSubmissionError(null)}
-              className="text-red-600 hover:text-red-800"
-              aria-label="Dismiss error"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Form validation summary */}
-      {submitAttempted && hasErrors && (
-        <ValidationMessage
-          type="error"
-          message="Please fix the errors below before submitting."
-          className="mb-6"
-        />
-      )}
-
-      <form 
-        ref={formRef}
-        onSubmit={onSubmit}
-        noValidate 
-        autoComplete="on"
-      >
-        <div className="space-y-5">
-          {/* Essential Information Group */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
-              <span className="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs mr-2">1</span>
-              Contact Information
-              {isValidating && <Loader2 size={16} className="ml-2 animate-spin text-blue-600" />}
-            </h4>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Name */}
-              <FormField
-                label="Your Name"
-                required
-                error={fields.name?.error}
-                success={fields.name?.valid && fields.name?.touched}
-                helpText="Enter your full name"
-              >
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  placeholder="John Smith"
-                  className={getInputClasses('name')}
-                  autoCapitalize="words"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  {...getFieldProps('name')}
-                />
-              </FormField>
-
-              {/* Email */}
-              <FormField
-                label="Email Address"
-                required
-                error={fields.email?.error}
-                success={fields.email?.valid && fields.email?.touched}
-                helpText="We'll send your quote to this email"
-              >
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  placeholder="john@example.com"
-                  className={getInputClasses('email')}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  {...getFieldProps('email')}
-                />
-              </FormField>
+          {/* Progress — sticky pill that follows the customer down the form.
+              Pins just below the fixed header stack via --app-header-bottom (set
+              by Header; accounts for the notification bar + scroll shrink). On
+              side-rail pages it is replaced by the vertical rail on lg+. */}
+          <div
+            className={`${sideRail ? 'lg:hidden ' : ''}sticky z-20 mb-6 flex items-center gap-3 sm:gap-4 bg-[#0E2748] border border-[#0A1E38] rounded-full px-[18px] py-3 shadow-[0_10px_26px_rgba(14,39,72,0.28)]`}
+            style={{ top: 'calc(var(--app-header-bottom, 96px) + 12px)' }}
+            role="progressbar"
+            aria-valuenow={formProgress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Quote form progress"
+          >
+            <span className="text-[13px] font-bold text-[#FBF8F1] whitespace-nowrap">{progressLabel}</span>
+            <div className="flex-1 h-3 rounded-full overflow-hidden bg-white/[0.14] shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#D9A441] to-[#E9BE6A] shadow-[0_0_12px_rgba(217,164,65,0.6)] transition-[width] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                style={{ width: `${formProgress}%` }}
+              />
             </div>
-
-            {/* ZIP code and phone */}
-            <div className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  label="Service ZIP Code"
-                  required
-                  error={fields.serviceZip?.error}
-                  success={fields.serviceZip?.valid && fields.serviceZip?.touched}
-                  helpText="Used to confirm availability and estimate travel time"
-                >
-                  <input
-                    id="serviceZip"
-                    name="serviceZip"
-                    type="text"
-                    autoComplete="postal-code"
-                    inputMode="numeric"
-                    pattern="[0-9-]*"
-                    maxLength={10}
-                    placeholder="37064"
-                    className={getInputClasses('serviceZip')}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck="false"
-                    {...getFieldProps('serviceZip')}
-                  />
-                </FormField>
-
-              <FormField
-                label="Phone Number (optional)"
-                inputId="phone"
-                error={fields.phone?.error}
-                success={Boolean(fields.phone?.valid && fields.phone?.touched && fields.phone?.value)}
-                helpText="10-digit US phone number (for faster response)"
-              >
-                {isMounted ? (
-                  <InputMask
-                    mask="(999) 999-9999"
-                    {...getFieldProps('phone')}
-                  >
-                    {(inputProps: any) => (
-                      <input
-                        {...inputProps}
-                        id="phone"
-                        name="phone"
-                        autoComplete="tel"
-                        className={getInputClasses('phone')}
-                        placeholder="(555) 123-4567"
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                      />
-                    )}
-                  </InputMask>
-                ) : (
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    className={getInputClasses('phone')}
-                    placeholder="(555) 123-4567"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    {...getFieldProps('phone')}
-                  />
-                )}
-              </FormField>
-              </div>
-            </div>
+            <span className={`text-[15px] font-bold w-[42px] text-right ${formProgress === 100 ? 'text-[#4ADE80]' : 'text-[#E9BE6A]'}`}>
+              {formProgress}%
+            </span>
           </div>
 
-          {/* Project Details Group */}
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="text-sm font-semibold text-green-900 mb-3 flex items-center">
-              <span className="w-5 h-5 bg-green-700 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
-              Project Details
-            </h4>
-
-            {/* Residential / Business Toggle */}
-            <div className="mb-4 flex justify-center">
-              <div className={`relative inline-flex items-center rounded-full p-0.5 bg-gradient-to-r transition-all duration-300 max-w-full ${
-                    clientType === 'business'
-                      ? 'from-sky-400 to-blue-500'
-                      : 'from-emerald-400 to-teal-400'
-                  }`}>
-                <button
-                  type="button"
-                  onClick={() => setClientType('residential')}
-                  className={`relative z-10 flex items-center gap-1.5 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                    clientType === 'residential'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'bg-transparent text-white'
-                  }`}
-                >
-                  <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                  Residential
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setClientType('business')}
-                  className={`relative z-10 flex items-center gap-1.5 px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                    clientType === 'business'
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'bg-transparent text-white'
-                  }`}
-                >
-                  <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                  Business
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Furniture Type */}
-              <FormField
-                label="What needs assembly?"
-                required
-                error={fields.furnitureType?.error}
-                success={fields.furnitureType?.valid && fields.furnitureType?.touched}
-                helpText="Select the type of furniture you need assembled"
-              >
-                <select
-                  id="furnitureType"
-                  name="furnitureType"
-                  className={getInputClasses('furnitureType')}
-                  {...getFieldProps('furnitureType')}
-                >
-                  <option value="">Select furniture type</option>
-                  <option value="Chair">Dining Chairs</option>
-                  <option value="Table">Tables & Desks</option>
-                  <option value="Bed">Bed Frames</option>
-                  <option value="Dresser">Dressers & Storage</option>
-                  <option value="Bookshelf">Bookshelves & Media Units</option>
-                  <option value="IKEA">IKEA Furniture</option>
-                  <option value="Other">Other (please specify in notes)</option>
-                </select>
-              </FormField>
-
-              {/* Pieces */}
-              <FormField
-                label="How many items?"
-                required
-                error={fields.pieces?.error}
-                success={fields.pieces?.valid && fields.pieces?.touched}
-                helpText="e.g. 2 chairs + 1 desk = 3 items"
-              >
-                <input
-                  id="pieces"
-                  type="number"
-                  name="pieces"
-                  min="1"
-                  max="20"
-                  className={getInputClasses('pieces')}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="1"
-                  {...getFieldProps('pieces')}
-                />
-              </FormField>
-            </div>
-
-            {/* Conditional Notes Field for "Other" Selection */}
-            {fields.furnitureType?.value === 'Other' && (
-              <div className="mt-4">
-                <FormField
-                  label="Please specify the furniture type"
-                  required
-                  error={fields.notes?.error}
-                  success={fields.notes?.valid && fields.notes?.touched}
-                  helpText="Describe the furniture you need assembled"
-                  showCharacterCount
-                  maxLength={500}
-                  currentLength={fields.notes?.value?.length || 0}
-                >
-                  <textarea
-                    id="notes"
-                    name="notes"
-                    rows={3}
-                    className={getInputClasses('notes')}
-                    placeholder="Please describe the furniture you need assembled (e.g., outdoor furniture, exercise equipment, etc.)"
-                    autoCapitalize="sentences"
-                    autoCorrect="on"
-                    maxLength={500}
-                    {...getFieldProps('notes')}
-                  />
-                </FormField>
-              </div>
-            )}
-
-            {/* Smart Estimation Display */}
-            {estimatedTime && estimatedPrice && (
-              <div className="mt-4 p-4 bg-white rounded-lg border border-green-300 animate-fadeIn">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <div className="flex items-center text-green-700">
-                    <Clock size={16} className="mr-2" />
-                    <span>Estimated time: <strong>{estimatedTime}</strong></span>
-                  </div>
-                  <div className="text-green-700">
-                    {couponSavings > 0 ? (
-                      <span>
-                        Estimated cost:{' '}
-                        <span className="line-through text-green-600/70 mr-1">{estimatedPrice}</span>
-                        <strong>{quotedPrice}</strong>
-                      </span>
-                    ) : (
-                      <span>Estimated cost: <strong>{estimatedPrice}</strong></span>
-                    )}
+          {submissionError && (
+            <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-2xl p-4" role="alert">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={22} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="text-red-900 font-bold mb-1">Submission Error</h4>
+                  <p className="text-red-800 text-sm mb-3">{submissionError}</p>
+                  <div className="text-xs text-red-700">
+                    <p className="mb-1">You can:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Try submitting again</li>
+                      <li>Call us at {phoneDisplay}</li>
+                      <li>Email us at nicholas.davidson@boxed2built.com</li>
+                    </ul>
                   </div>
                 </div>
-                {couponSavings > 0 && appliedCoupon && (
-                  <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mb-2 inline-flex items-center gap-1">
-                    <Tag size={12} />
-                    {appliedCoupon.code} · {formatMoney(couponSavings)} saved
-                  </p>
-                )}
-                <p className="text-xs text-green-600">
-                  {parseInt(fields.pieces?.value || '0') > 3 && "Multi-item discount applied! "}
-                  Final quote provided after consultation.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Progressive Disclosure for Optional Fields */}
-          <div className="border-t border-gray-200 pt-4">
-            <button
-              type="button"
-              onClick={toggleOptionalFields}
-              className="flex items-center justify-between w-full text-left rounded-lg px-3 py-2.5 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-expanded={showOptionalFields}
-            >
-              <span className="flex items-center gap-2">
-                <Calendar size={16} className="text-blue-600 shrink-0" />
-                <span className="text-sm font-semibold text-gray-800">Scheduling Preferences</span>
-                <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
-                <span className="text-xs text-blue-600 font-medium">— helps us respond faster</span>
-              </span>
-              {showOptionalFields ? (
-                <ChevronUp size={16} className="text-blue-500 shrink-0" />
-              ) : (
-                <ChevronDown size={16} className="text-blue-500 shrink-0" />
-              )}
-            </button>
-
-            {showOptionalFields && (
-              <div className="mt-3 space-y-4 bg-gray-50 border-l-2 border-blue-200 pl-4 pr-3 py-4 rounded-r-lg animate-fadeIn">
-                {/* Preferred Date */}
-                <FormField
-                  label="Preferred Date"
-                  error={fields.preferredDate?.error}
-                  success={Boolean(fields.preferredDate?.valid && fields.preferredDate?.touched && fields.preferredDate?.value)}
-                  helpText="When would you like the assembly completed?"
+                <button
+                  type="button"
+                  onClick={() => setSubmissionError(null)}
+                  className="text-red-600 hover:text-red-800"
+                  aria-label="Dismiss error"
                 >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <form
+            ref={formRef}
+            onSubmit={onSubmit}
+            noValidate
+            autoComplete="on"
+            className="flex flex-col gap-[22px]"
+          >
+            {/* Step 1 — what needs assembling */}
+            <section className={cardCls} aria-labelledby="quote-items-title">
+              <div className="flex items-center gap-2.5 mb-1 flex-wrap">
+                <span className={stepBadgeCls} aria-hidden="true">1</span>
+                <h3 id="quote-items-title" className="text-[19px] font-bold text-[#0E2748] m-0">What needs assembling?</h3>
+                <span className="text-[11px] font-bold tracking-[0.04em] uppercase text-[#B45309] bg-[#FDF3E3] border border-[#F1D9AE] px-2.5 py-[3px] rounded-full">Required</span>
+              </div>
+              <p className="text-sm text-gray-500 mb-[18px] sm:ml-9">Pick everything that applies — then set how many of each.</p>
+
+              <div
+                id="quote-items"
+                tabIndex={-1}
+                role="group"
+                aria-labelledby="quote-items-title"
+                aria-describedby={showItemsError ? 'quote-items-error' : undefined}
+                className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 outline-none"
+              >
+                {FURNITURE.map((f) => {
+                  const n = qty[f.id];
+                  const on = n > 0;
+                  return (
+                    <div
+                      key={f.id}
+                      className={`relative rounded-2xl border-2 border-[#ECE3D2] transition-[box-shadow,background-color] duration-200 ${
+                        on ? 'bg-[#FBF8F1] shadow-[0_0_0_2px_#D9A441,0_8px_20px_rgba(217,164,65,0.18)]' : 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(14,39,72,0.08)]'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        aria-pressed={on}
+                        aria-label={f.label}
+                        onClick={() => toggleType(f.id)}
+                        className={`block w-full text-left rounded-[14px] px-3.5 pt-4 ${on ? 'pb-0' : 'pb-3.5'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441]`}
+                      >
+                        {on && (
+                          <span className="absolute top-2.5 right-2.5 w-[22px] h-[22px] rounded-full bg-[#D9A441] text-[#0E2748] flex items-center justify-center" aria-hidden="true">
+                            <Check size={14} strokeWidth={3} />
+                          </span>
+                        )}
+                        <span className="w-[46px] h-[46px] rounded-xl bg-[#F5EFE3] text-[#0E2748] flex items-center justify-center mb-3">
+                          <FurnitureIcon id={f.id} />
+                        </span>
+                        <span className="block text-[15px] font-bold text-[#0E2748] leading-tight">{f.label}</span>
+                        <span className="block text-xs text-gray-400 mt-0.5">{f.sub ?? `from $${f.price}`}</span>
+                      </button>
+
+                      {on && (
+                        <div className="px-3.5 pb-3.5">
+                          <div className="flex items-center justify-between mt-3 bg-[#FBF8F1] border border-[#ECE3D2] rounded-full p-1">
+                            <button
+                              type="button"
+                              onClick={() => stepQty(f.id, -1)}
+                              aria-label={`Fewer ${f.label}`}
+                              className="w-[30px] h-[30px] rounded-full bg-white text-[#0E2748] text-lg font-bold leading-none shadow-[0_1px_2px_rgba(0,0,0,0.08)]"
+                            >
+                              −
+                            </button>
+                            <span className="text-[15px] font-bold text-[#0E2748]" aria-live="polite" aria-label={`${n} ${f.label}`}>{n}</span>
+                            <button
+                              type="button"
+                              onClick={() => stepQty(f.id, 1)}
+                              aria-label={`More ${f.label}`}
+                              disabled={n >= MAX_PER_TYPE}
+                              className="w-[30px] h-[30px] rounded-full bg-[#0E2748] text-[#FBF8F1] text-lg font-bold leading-none disabled:opacity-40"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {f.id === 'Other' && (
+                            <input
+                              id="otherItem"
+                              type="text"
+                              value={otherText}
+                              maxLength={200}
+                              onChange={(e) => setOtherText(e.target.value)}
+                              placeholder="Tell us what it is — grill, patio set, gym…"
+                              aria-label="Describe the other item"
+                              className="w-full mt-2.5 px-3 py-2.5 rounded-[10px] border-[1.5px] border-gray-300 text-sm text-gray-900 bg-white outline-none placeholder:text-gray-400 focus:border-[#D9A441] focus:shadow-[0_0_0_3px_rgba(217,164,65,0.22)]"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {showItemsError && (
+                <p id="quote-items-error" className="mt-3 text-sm text-red-600" role="alert">{itemsError}</p>
+              )}
+            </section>
+
+            {/* Step 2 — contact */}
+            <section className={cardCls} aria-labelledby="quote-contact-title">
+              <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+                <span className={stepBadgeCls} aria-hidden="true">2</span>
+                <h3 id="quote-contact-title" className="text-[19px] font-bold text-[#0E2748] m-0">Where do we send the quote?</h3>
+                {isValidating && <Loader2 size={16} className="animate-spin text-[#D9A441]" />}
+                <span className="ml-auto text-xs text-gray-400"><span className="text-[#B45309] font-bold">*</span> required</span>
+              </div>
+
+              <div className="flex justify-center mb-5">
+                <div className="inline-flex bg-[#F5EFE3] border border-[#ECE3D2] rounded-full p-1" role="radiogroup" aria-label="Client type">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={clientType === 'residential'}
+                    onClick={() => setClientType('residential')}
+                    className={`inline-flex items-center gap-[7px] px-5 py-[9px] rounded-full text-sm font-bold transition-all duration-200 ${
+                      clientType === 'residential' ? 'bg-[#0E2748] text-[#FBF8F1]' : 'bg-transparent text-[#0E2748]'
+                    }`}
+                  >
+                    <Home size={16} aria-hidden /> Home
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={clientType === 'business'}
+                    onClick={() => setClientType('business')}
+                    className={`inline-flex items-center gap-[7px] px-5 py-[9px] rounded-full text-sm font-bold transition-all duration-200 ${
+                      clientType === 'business' ? 'bg-[#D9A441] text-[#0E2748]' : 'bg-transparent text-[#8A6D2F]'
+                    }`}
+                  >
+                    <Building2 size={16} aria-hidden /> Business
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className={labelCls}>Your name {requiredMark}</label>
                   <input
-                    id="preferredDate"
-                    name="preferredDate"
-                    type="date"
-                    className={getInputClasses('preferredDate')}
-                    min={new Date().toISOString().split('T')[0]}
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="John Smith"
+                    autoCapitalize="words"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className={inputCls('name')}
+                    {...getFieldProps('name')}
+                  />
+                  {fieldError('name')}
+                </div>
+                <div>
+                  <label htmlFor="email" className={labelCls}>Email address {requiredMark}</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="john@example.com"
                     autoCapitalize="none"
                     autoCorrect="off"
-                    {...getFieldProps('preferredDate')}
+                    spellCheck={false}
+                    className={inputCls('email')}
+                    {...getFieldProps('email')}
                   />
-                </FormField>
+                  {fieldError('email')}
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="phone" className={labelCls}>Phone number {requiredMark}</label>
+                  {isMounted ? (
+                    <InputMask mask="(999) 999-9999" {...getFieldProps('phone')}>
+                      {(inputProps: any) => (
+                        <input
+                          {...inputProps}
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          placeholder="(615) 555-0199"
+                          className={inputCls('phone')}
+                        />
+                      )}
+                    </InputMask>
+                  ) : (
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder="(615) 555-0199"
+                      className={inputCls('phone')}
+                      {...getFieldProps('phone')}
+                    />
+                  )}
+                  {fieldError('phone')}
+                </div>
+              </div>
+            </section>
 
-                {/* Preferred Time Slot */}
-                <FormField
-                  label="Preferred Time"
-                  error={fields.preferredTimeSlot?.error}
-                  success={Boolean(fields.preferredTimeSlot?.valid && fields.preferredTimeSlot?.touched && fields.preferredTimeSlot?.value)}
-                  helpText="What time works best for you?"
-                >
-                  <select
-                    id="preferredTimeSlot"
-                    name="preferredTimeSlot"
-                    className={getInputClasses('preferredTimeSlot')}
-                    {...getFieldProps('preferredTimeSlot')}
-                  >
-                    <option value="">No preference</option>
-                    <option value="morning">Morning (9 AM - 12 PM)</option>
-                    <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
-                    <option value="evening">Evening (5 PM - 8 PM)</option>
-                    <option value="weekend">Weekend preferred</option>
-                  </select>
-                </FormField>
-
-                {/* Additional Notes */}
-                {fields.furnitureType?.value !== 'Other' && (
-                  <FormField
-                    label="Additional Details"
-                    error={fields.notes?.error}
-                    warning={fields.notes?.warning}
-                    success={Boolean(fields.notes?.valid && fields.notes?.touched && fields.notes?.value)}
-                    helpText="Any special requirements or questions?"
-                    showCharacterCount
-                    maxLength={500}
-                    currentLength={fields.notes?.value?.length || 0}
-                  >
+            {/* Optional extras */}
+            <section className={`${cardCls} !py-2`} aria-label="Optional details">
+              {/* Scheduling */}
+              <button
+                type="button"
+                onClick={() => toggleDisclosure('scheduling', showScheduling)}
+                aria-expanded={showScheduling}
+                aria-controls="quote-scheduling"
+                className="w-full flex items-center justify-between gap-2.5 py-4 text-left"
+              >
+                <span className="flex items-center gap-3">
+                  <span className={disclosureIconCls}><Calendar size={19} aria-hidden /></span>
+                  <span>
+                    <span className="block text-[15px] font-bold text-[#0E2748]">Scheduling preferences</span>
+                    <span className="block text-[12.5px] font-semibold text-[#D9A441]">Optional — tell us when works best for you</span>
+                  </span>
+                </span>
+                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showScheduling ? 'rotate-180' : ''}`} />
+              </button>
+              {showScheduling && (
+                <div id="quote-scheduling" className="pb-[18px] pt-1 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
+                  <div>
+                    <label htmlFor="preferredDate" className={labelCls}>Preferred date</label>
+                    <input
+                      id="preferredDate"
+                      name="preferredDate"
+                      type="date"
+                      min={minDate}
+                      max={isoDaysFromToday(365)}
+                      className={inputCls('preferredDate')}
+                      {...getFieldProps('preferredDate')}
+                    />
+                    {showFieldError('preferredDate') ? fieldError('preferredDate') : (
+                      <p className="mt-1.5 text-xs text-gray-400">At least 2 days out — weekends welcome.</p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="preferredTimeSlot" className={labelCls}>Preferred time</label>
+                    <select
+                      id="preferredTimeSlot"
+                      name="preferredTimeSlot"
+                      className={inputCls('preferredTimeSlot')}
+                      {...getFieldProps('preferredTimeSlot')}
+                    >
+                      <option value="">No preference</option>
+                      <option value="morning">Morning (9 AM – 12 PM)</option>
+                      <option value="afternoon">Afternoon (12 – 5 PM)</option>
+                      <option value="evening">Evening (5 – 8 PM)</option>
+                      <option value="weekend">Weekend preferred</option>
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="additionalNotes" className={labelCls}>Anything else we should know?</label>
                     <textarea
                       id="additionalNotes"
                       name="notes"
                       rows={3}
-                      className={getInputClasses('notes')}
-                      placeholder="Any special requirements, access instructions, or questions..."
+                      maxLength={500}
+                      placeholder="Access instructions, stairs, questions…"
                       autoCapitalize="sentences"
                       autoCorrect="on"
-                      maxLength={500}
-                      onKeyDown={(e) => e.stopPropagation()}
+                      className={inputCls('notes')}
                       {...getFieldProps('notes')}
                     />
-                  </FormField>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Furniture Reference - Optional photo/link */}
-          <div className="border-t border-gray-200 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowFurnitureReference(!showFurnitureReference)}
-              className="flex items-center justify-between w-full text-left rounded-lg px-3 py-2.5 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-expanded={showFurnitureReference}
-            >
-              <span className="flex items-center gap-2">
-                <Image size={16} className="text-blue-600 shrink-0" />
-                <span className="text-sm font-semibold text-gray-800">Furniture Reference</span>
-                <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
-                <span className="text-xs text-blue-600 font-medium">— helps us give a more accurate quote</span>
-              </span>
-              {showFurnitureReference ? (
-                <ChevronUp size={16} className="text-blue-500 shrink-0" />
-              ) : (
-                <ChevronDown size={16} className="text-blue-500 shrink-0" />
-              )}
-            </button>
-
-            {showFurnitureReference && (
-              <div className="mt-3 space-y-4 bg-gray-50 border-l-2 border-blue-200 pl-4 pr-3 py-4 rounded-r-lg animate-fadeIn">
-                <div>
-                  <label htmlFor="productUrl" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                    <Link size={13} />
-                    Product link (Wayfair, IKEA, etc.)
-                  </label>
-                  <input
-                    id="productUrl"
-                    type="url"
-                    value={furniturePhotoUrl}
-                    onChange={(e) => setFurniturePhotoUrl(e.target.value)}
-                    placeholder="https://www.example.com/product..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    autoComplete="off"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                  />
+                    {fieldError('notes')}
+                  </div>
                 </div>
+              )}
 
+              <div className="h-px bg-[#F1E9D9]" />
+
+              {/* Photo / product link */}
+              <button
+                type="button"
+                onClick={() => toggleDisclosure('reference', showReference)}
+                aria-expanded={showReference}
+                aria-controls="quote-reference"
+                className="w-full flex items-center justify-between gap-2.5 py-4 text-left"
+              >
+                <span className="flex items-center gap-3">
+                  <span className={disclosureIconCls}><ImageIcon size={19} aria-hidden /></span>
+                  <span>
+                    <span className="block text-[15px] font-bold text-[#0E2748]">Add a photo or product link</span>
+                    <span className="block text-[12.5px] font-semibold text-[#D9A441]">Optional — helps us give a sharper quote</span>
+                  </span>
+                </span>
+                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showReference ? 'rotate-180' : ''}`} />
+              </button>
+              {showReference && (
+                <div id="quote-reference" className="pb-[18px] pt-1 flex flex-col gap-4 animate-fadeIn">
+                  <div>
+                    <label htmlFor="productUrl" className={labelCls}>Product link (Wayfair, IKEA, Amazon…)</label>
+                    <input
+                      id="productUrl"
+                      type="url"
+                      value={furniturePhotoUrl}
+                      onChange={(e) => setFurniturePhotoUrl(e.target.value)}
+                      placeholder="https://www.example.com/product…"
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      className={inputCls('productUrl')}
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Upload a photo</span>
+                    {furniturePhotoPreview ? (
+                      <div className="relative inline-block">
+                        <img
+                          src={furniturePhotoPreview}
+                          alt="Furniture preview"
+                          className="h-[120px] w-auto rounded-xl border border-[#ECE3D2] object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          aria-label="Remove photo"
+                          className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-[#0E2748] text-white flex items-center justify-center shadow"
+                        >
+                          <X size={14} />
+                        </button>
+                        <p className="text-xs text-gray-500 mt-1.5">{furniturePhotoFile?.name}</p>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="furniturePhoto"
+                        className="flex items-center gap-3.5 border-2 border-dashed border-[#D9C6A0] hover:border-[#D9A441] rounded-[14px] p-4 cursor-pointer bg-[#FBF8F1] transition-colors"
+                      >
+                        <span className="w-11 h-11 rounded-[10px] bg-[#F5EFE3] text-[#0E2748] inline-flex items-center justify-center flex-shrink-0">
+                          <Upload size={22} aria-hidden />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-semibold text-[#0E2748]">Click to choose a photo</span>
+                          <span className="block text-xs text-gray-400">JPG, PNG or WEBP · up to 10 MB</span>
+                        </span>
+                        <input
+                          id="furniturePhoto"
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          aria-label="Upload furniture photo"
+                        />
+                      </label>
+                    )}
+                    {photoUploadError && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1" role="alert">
+                        <AlertCircle size={12} />
+                        {photoUploadError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="h-px bg-[#F1E9D9]" />
+
+              {/* Referral / coupon + gift card */}
+              <div className="py-[18px] grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="furniturePhoto" className="block text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
-                    <Image size={13} />
-                    Upload a photo
-                  </label>
-                  {furniturePhotoPreview ? (
-                    <div className="relative inline-block">
-                      <img
-                        src={furniturePhotoPreview}
-                        alt="Furniture preview"
-                        className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
-                      />
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Users size={15} className="text-[#D9A441] shrink-0" strokeWidth={2.2} aria-hidden />
+                    <label htmlFor="referralCode" className="text-[13px] font-semibold text-[#0E2748]">
+                      Referral or coupon code
+                    </label>
+                    <span className="relative inline-flex">
                       <button
                         type="button"
-                        onClick={handleRemoveFile}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
-                        aria-label="Remove photo"
+                        aria-label="Referral code help"
+                        aria-expanded={openTip === 'referral'}
+                        aria-describedby={openTip === 'referral' ? 'referral-tip' : undefined}
+                        onClick={() => setOpenTip((t) => (t === 'referral' ? null : 'referral'))}
+                        className="w-[17px] h-[17px] rounded-full bg-[#F5EFE3] text-[#8A6D2F] text-[11px] font-bold inline-flex items-center justify-center leading-none"
                       >
-                        <X size={12} />
+                        ?
                       </button>
-                      <p className="text-xs text-gray-500 mt-1.5">{furniturePhotoFile?.name}</p>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group"
-                    >
-                      <Image size={24} className="mx-auto text-gray-400 group-hover:text-blue-500 mb-2 transition-colors" />
-                      <p className="text-sm text-gray-600 group-hover:text-gray-700">
-                        Click to upload a photo
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP up to 10 MB</p>
-                      <input
-                        id="furniturePhoto"
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        aria-label="Upload furniture photo"
-                      />
-                    </div>
-                  )}
-                  {photoUploadError && (
-                    <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                      <AlertCircle size={12} />
-                      {photoUploadError}
+                      {openTip === 'referral' && (
+                        <span id="referral-tip" role="tooltip" className={tooltipCls}>
+                          Have a code from a friend? Enter it here — they'll get $25 credit toward their next build once your job is done. Coupon codes work here too and take money off your quote.
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <input
+                    id="referralCode"
+                    name="referralCode"
+                    type="text"
+                    placeholder="B2B-JONES-4X2"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    maxLength={30}
+                    className={`${inputCls('referralCode')} uppercase`}
+                    {...referralProps}
+                    onChange={(e) => {
+                      const upper = e.target.value.toUpperCase();
+                      handleFieldChange('referralCode', upper);
+                      // A code being edited is no longer the code that was checked.
+                      if (appliedCoupon || couponRejected) {
+                        setAppliedCoupon(null);
+                        setCouponRejected(false);
+                        checkedCodeRef.current = null;
+                      }
+                      if (prefilledReferral && upper !== prefilledReferral) {
+                        setPrefilledReferral(null);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      referralProps.onBlur();
+                      // A prefilled referral code is already known to be a referral.
+                      // Checking it would only render the coupon miss.
+                      if (prefilledReferral && e.target.value.toUpperCase() === prefilledReferral) return;
+                      checkCouponCode(e.target.value);
+                    }}
+                  />
+                  {fieldError('referralCode')}
+                  {couponChecking && (
+                    <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1">
+                      <Loader2 size={12} className="animate-spin" /> Checking code…
                     </p>
                   )}
+                  {appliedCoupon && !couponChecking && (
+                    <p className="mt-1.5 text-xs font-semibold text-[#047857] flex items-center gap-1">
+                      <CheckCircle size={12} className="shrink-0" />
+                      {appliedCoupon.code} applied — {describeDiscount(appliedCoupon)}
+                      {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
+                    </p>
+                  )}
+                  {prefilledReferral && !appliedCoupon && !couponChecking && (
+                    <p className="mt-1.5 text-xs font-semibold text-[#047857] flex items-center gap-1">
+                      <CheckCircle size={12} className="shrink-0" />
+                      Referral code applied — your friend gets $25 credit when you book.
+                    </p>
+                  )}
+                  {couponRejected && !couponChecking && !prefilledReferral && (
+                    <p className="mt-1.5 text-xs text-gray-500">
+                      Not a coupon code — we'll treat it as a referral code.
+                    </p>
+                  )}
+                  {!appliedCoupon && !prefilledReferral && !couponChecking && !couponRejected && !showFieldError('referralCode') && (
+                    <p className="mt-1.5 text-xs text-gray-400">A friend's code earns them $25 credit.</p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Gift size={15} className="text-[#047857] shrink-0" strokeWidth={2.2} aria-hidden />
+                    <label htmlFor="giftCardCode" className="text-[13px] font-semibold text-[#0E2748]">
+                      Gift card
+                    </label>
+                    <span className="relative inline-flex">
+                      <button
+                        type="button"
+                        aria-label="Gift card help"
+                        aria-expanded={openTip === 'gift'}
+                        aria-describedby={openTip === 'gift' ? 'gift-tip' : undefined}
+                        onClick={() => setOpenTip((t) => (t === 'gift' ? null : 'gift'))}
+                        className="w-[17px] h-[17px] rounded-full bg-[#F5EFE3] text-[#047857] text-[11px] font-bold inline-flex items-center justify-center leading-none"
+                      >
+                        ?
+                      </button>
+                      {openTip === 'gift' && (
+                        <span id="gift-tip" role="tooltip" className={tooltipCls}>
+                          Redeeming a Boxed2Built gift card? Enter its code to apply the balance to your quote. Balances never expire and roll over.
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <input
+                    id="giftCardCode"
+                    name="giftCardCode"
+                    type="text"
+                    placeholder="B2B-XXXX-XXXX"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    maxLength={14}
+                    className={`${inputCls('giftCardCode')} font-mono tracking-wider uppercase`}
+                    {...giftProps}
+                    onChange={(e) => handleFieldChange('giftCardCode', formatGiftCardCodeInput(e.target.value))}
+                  />
+                  {fieldError('giftCardCode')}
+                  <p className="mt-1.5 text-xs text-gray-400">
+                    Balances never expire and roll over.{' '}
+                    <a href="/redeem-gift-card" className="text-[#047857] hover:text-[#065F46] underline font-medium">
+                      Check balance
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Ballpark estimate */}
+            {totalItems > 0 && (
+              <div
+                className="flex items-center justify-between gap-4 flex-wrap bg-[#0E2748] rounded-[20px] px-6 py-5 shadow-[0_14px_34px_rgba(14,39,72,0.22)] animate-fadeIn"
+                aria-live="polite"
+                data-testid="quote-estimate"
+              >
+                <div>
+                  <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-[#D9A441] mb-1">Ballpark estimate</div>
+                  <div className="text-sm text-slate-300">
+                    {totalItems} {totalItems === 1 ? 'item' : 'items'} · about {estimatedHours} {estimatedHours === 1 ? 'hr' : 'hrs'} on site
+                  </div>
+                  <div className="text-xs text-[#8FA0B8] mt-0.5 flex items-center gap-1">
+                    {couponSavings > 0 && appliedCoupon ? (
+                      <>
+                        <Tag size={12} className="text-[#D9A441]" aria-hidden />
+                        {appliedCoupon.code} · {formatMoney(couponSavings)} saved
+                      </>
+                    ) : multiItemDiscount ? (
+                      'Multi-item 10% discount applied'
+                    ) : (
+                      'Includes assembly, cleanup & placement'
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[30px] font-bold text-[#FBF8F1] leading-none">
+                    {couponSavings > 0 && (
+                      <span className="text-base line-through text-[#8FA0B8] mr-2 align-middle">{estimatedPrice}</span>
+                    )}
+                    from {quotedPrice}
+                  </div>
+                  <div className="text-xs text-[#8FA0B8] mt-[3px]">final quote after a quick look</div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Referral Code */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <label htmlFor="referralCode" className="text-sm font-medium text-gray-700">
-                Have a Referral or Coupon Code?
-              </label>
-              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
-            </div>
-            <input
-              id="referralCode"
-              name="referralCode"
-              type="text"
-              placeholder="Referral or Coupon Code"
-              className={getInputClasses('referralCode')}
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck="false"
-              maxLength={30}
-              {...getFieldProps('referralCode')}
-              onChange={(e) => {
-                const upper = e.target.value.toUpperCase();
-                getFieldProps('referralCode').onChange({ ...e, target: { ...e.target, value: upper } });
-                // A code being edited is no longer the code that was checked.
-                if (appliedCoupon || couponRejected) {
-                  setAppliedCoupon(null);
-                  setCouponRejected(false);
-                  checkedCodeRef.current = null;
-                }
-                if (prefilledReferral && upper !== prefilledReferral) {
-                  setPrefilledReferral(null);
-                }
-              }}
-              onBlur={(e) => {
-                getFieldProps('referralCode').onBlur();
-                // A prefilled referral code is already known to be a referral.
-                // Checking it would only render the coupon miss.
-                if (prefilledReferral && e.target.value.toUpperCase() === prefilledReferral) return;
-                checkCouponCode(e.target.value);
-              }}
-            />
-            {fields.referralCode?.error && (
-              <p className="text-xs text-red-600 mt-1">{fields.referralCode.error}</p>
-            )}
-            {couponChecking && (
-              <p className="text-xs text-gray-500 mt-1">Checking code…</p>
-            )}
-            {appliedCoupon && !couponChecking && (
-              <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
-                <CheckCircle size={12} />
-                {appliedCoupon.code} applied — {describeDiscount(appliedCoupon)}
-                {appliedCoupon.description ? ` (${appliedCoupon.description})` : ''}
+            {submitAttempted && (hasErrors || itemsError) && (
+              <p className="text-center text-sm text-red-600" role="alert">
+                Please fix the highlighted fields before sending.
               </p>
             )}
-            {prefilledReferral && !appliedCoupon && !couponChecking && (
-              <p className="text-xs font-semibold text-emerald-700 mt-1 flex items-center gap-1">
-                <CheckCircle size={12} />
-                Referral code applied — your friend gets $25 credit when you book.
-              </p>
-            )}
-            {couponRejected && !couponChecking && !prefilledReferral && (
-              <p className="text-xs text-gray-500 mt-1">
-                Not a coupon code — we'll treat it as a referral code.
-              </p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              A coupon code takes money off your quote. A friend's referral code earns them $25
-              credit on their next service.
-            </p>
-          </div>
 
-          {/* Gift Card Code */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Gift size={14} className="text-emerald-700 shrink-0" />
-              <label htmlFor="giftCardCode" className="text-sm font-medium text-gray-700">
-                Redeeming a Gift Card?
-              </label>
-              <span className="text-xs text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">Optional</span>
-            </div>
-            <input
-              id="giftCardCode"
-              name="giftCardCode"
-              type="text"
-              placeholder="B2B-XXXX-XXXX"
-              className={`${getInputClasses('giftCardCode')} font-mono tracking-wider`}
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck="false"
-              maxLength={14}
-              {...getFieldProps('giftCardCode')}
-              onChange={(e) => {
-                const formatted = formatGiftCardCodeInput(e.target.value);
-                handleFieldChange('giftCardCode', formatted);
-              }}
-            />
-            {fields.giftCardCode?.error && (
-              <p className="text-xs text-red-600 mt-1">{fields.giftCardCode.error}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              We'll apply your credit to the final invoice. Balances never expire and partial amounts roll over.{' '}
-              <a href="/redeem-gift-card" className="text-emerald-700 hover:text-emerald-800 underline font-medium">
-                Check balance
-              </a>
-            </p>
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-6">
             <button
               type="submit"
-              disabled={isSubmitting || (!isFormValid && submitAttempted)}
-              className={`w-full py-4 px-6 rounded-lg font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
-                isSubmitting || (!isFormValid && submitAttempted)
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-blue-700 text-white hover:bg-blue-800 transform hover:-translate-y-0.5'
-              }`}
+              disabled={isSubmitting}
               aria-busy={isSubmitting}
+              className="w-full flex items-center justify-center gap-2.5 bg-[#D9A441] hover:bg-[#E9BE6A] text-[#0E2748] rounded-2xl p-[18px] text-[17px] font-bold shadow-[0_10px_24px_rgba(217,164,65,0.35)] hover:shadow-[0_14px_30px_rgba(217,164,65,0.45)] hover:-translate-y-px transition-all duration-200 disabled:opacity-60 disabled:hover:translate-y-0"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Send size={18} />
-                  Get My Free Quote
-                </>
-              )}
+              {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+              {isSubmitting ? 'Sending…' : 'Send Me My Free Quote'}
             </button>
 
-            <p className="flex items-center justify-center gap-1 text-xs text-gray-600 mt-3">
-              <Lock size={12} />
-              <span>We respect your privacy. Your information is never shared or sold.</span>
-            </p>
-
-            {/* Form status messages */}
-            {submitAttempted && !isFormValid && (
-              <ValidationMessage
-                type="warning"
-                message="Please complete all required fields to submit your request."
-                className="mt-4"
-              />
-            )}
-
-          </div>
-
-          {/* Terms and Benefits */}
-          <div className="text-center pt-4 space-y-3">
-            <p className="text-xs text-gray-600">
-              By submitting, you agree to our{' '}
-              <a href="/terms-of-service" className="text-blue-700 hover:text-blue-800 underline">
-                Terms of Service
-              </a>
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 text-xs text-green-700 font-medium">
-              <span className="flex items-center">
-                <CheckCircle size={12} className="mr-1" />
-                Free consultation
-              </span>
-              <span className="flex items-center">
-                <CheckCircle size={12} className="mr-1" />
-                Weekend service available
-              </span>
-              <span className="flex items-center">
-                <CheckCircle size={12} className="mr-1" />
-                No commitment required
-              </span>
+            <div className="-mt-1.5 text-center space-y-1.5">
+              <p className="flex items-center justify-center gap-1 text-[12.5px] text-[#7C6E55]">
+                <Lock size={12} aria-hidden />
+                No spam, no obligation. We'll only use this to build your quote.
+              </p>
+              <p className="text-xs text-[#7C6E55]">
+                By submitting, you agree to our{' '}
+                <a href="/terms-of-service" className="text-[#0E2748] hover:text-[#1D4ED8] underline">
+                  Terms of Service
+                </a>
+              </p>
             </div>
-          </div>
+          </form>
         </div>
-      </form>
-    </div>
+      </div>
     </>
   );
 };

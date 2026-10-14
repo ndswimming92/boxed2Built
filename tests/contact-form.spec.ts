@@ -30,14 +30,23 @@ const LEAD = {
   // the customer can never find their request again.
   email: 'Dana.Ruiz@Example.com',
   phone: '(763) 555-0142',
-  zip: '37064',
+  // The tile picked, and how many of it. 'Bed' is the furniture_type it stores.
+  tile: 'Bed Frames',
   furnitureType: 'Bed',
-  pieces: '2',
+  pieces: 2,
   timeSlot: 'morning',
   notes: 'Second floor walk-up, no elevator.',
 };
 
-const TOMORROW = new Date(Date.now() + 86_400_000).toISOString().split('T')[0];
+/** Local-time YYYY-MM-DD, as the date input reads and writes it. */
+function localDate(daysFromToday: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromToday);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Jobs need two days' notice, so the earliest date a customer can ask for.
+const EARLIEST = localDate(2);
 
 /**
  * Stubs everything the form talks to on its way to a saved lead and records
@@ -101,36 +110,48 @@ async function openForm(page: Page, query = '') {
   await expect(page.getByLabel('Your Name')).toBeVisible();
 }
 
-/** Fills the four required answers. */
+const tile = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
+
+/** Picks a furniture tile and steps it up to `count`. */
+async function pick(page: Page, name: string, count = 1) {
+  await tile(page, name).click();
+  for (let i = 1; i < count; i++) {
+    await page.getByRole('button', { name: `More ${name}` }).click();
+  }
+}
+
+/** Fills the four required answers: an item, a name, an email and a phone. */
 async function fillRequired(page: Page, overrides: Partial<typeof LEAD> = {}) {
   const lead = { ...LEAD, ...overrides };
+  if (lead.pieces > 0) await pick(page, lead.tile, lead.pieces);
   await page.getByLabel('Your Name').fill(lead.name);
   await page.getByLabel('Email Address').fill(lead.email);
-  await page.getByLabel('Service ZIP Code').fill(lead.zip);
-  await page.getByLabel('What needs assembly?').selectOption(lead.furnitureType);
-  await page.getByLabel('How many items?').fill(lead.pieces);
+  // Entered bare: the field masks it into shape, and the masked value is what
+  // the lead has to carry.
+  await page.locator('#phone').fill(lead.phone.replace(/\D/g, ''));
+  if (lead.phone) await expect(page.locator('#phone')).toHaveValue(lead.phone);
 }
+
+const estimate = (page: Page) => page.getByTestId('quote-estimate');
 
 /** Fills everything, required and optional, the way a thorough customer would. */
 async function fillEverything(page: Page) {
   await fillRequired(page);
 
-  // Entered bare: the field masks it into shape, and the masked value is what
-  // the lead has to carry.
-  await page.locator('#phone').fill('7635550142');
-  await expect(page.locator('#phone')).toHaveValue(LEAD.phone);
-
   // Two beds at $295, under the 4-item volume discount: $590 for 6 hours. That
   // number is the quote on screen, and it has to survive into the lead.
-  await expect(page.getByText('Estimated cost:')).toContainText('$590');
+  await expect(estimate(page)).toContainText('$590');
+  await expect(estimate(page)).toContainText('2 items · about 6 hrs on site');
 
-  await page.getByRole('button', { name: /Scheduling Preferences/ }).click();
-  await page.getByLabel('Preferred Date').fill(TOMORROW);
-  await page.getByLabel('Preferred Time').selectOption(LEAD.timeSlot);
-  await page.getByLabel('Additional Details').fill(LEAD.notes);
+  await page.getByRole('button', { name: /Scheduling preferences/i }).click();
+  await page.getByLabel('Preferred date').fill(EARLIEST);
+  await page.getByLabel('Preferred time').selectOption(LEAD.timeSlot);
+  await page.getByLabel('Anything else we should know?').fill(LEAD.notes);
 }
 
-const submit = (page: Page) => page.getByRole('button', { name: 'Get My Free Quote' }).click();
+const submit = (page: Page) => page.getByRole('button', { name: 'Send Me My Free Quote' }).click();
+
+const refused = (page: Page) => page.getByText('Please fix the highlighted fields before sending.');
 
 const confirmation = (page: Page) => page.getByRole('heading', { name: 'Request Confirmed!' });
 
@@ -169,12 +190,14 @@ test('the saved lead carries every answer the customer gave', async ({ page }) =
     client_name: LEAD.name,
     client_email: LEAD.email,
     client_phone: LEAD.phone,
-    user_city: LEAD.zip,
+    // No ZIP is asked for any more; the column is nullable.
+    user_city: null,
     furniture_type: LEAD.furnitureType,
     pieces: 2,
-    preferred_date: TOMORROW,
+    preferred_date: EARLIEST,
     preferred_time_slot: LEAD.timeSlot,
-    notes: LEAD.notes,
+    // The picker's breakdown leads, so the admin sees every item.
+    notes: `Items: Bed Frames ×2\n\n${LEAD.notes}`,
     estimated_price: '$590',
     estimated_time: '6 hours',
     // Nothing the customer sees, but what the admin working list sorts,
@@ -226,17 +249,95 @@ test('a form missing a required answer is stopped before it looks like a lead', 
   const backend = await stubBackend(page);
   await openForm(page);
 
-  // Everything but the ZIP, which decides whether the job is even in range.
-  await fillRequired(page, { zip: '' });
+  // Everything but the phone, which is how the job actually gets booked.
+  await fillRequired(page, { phone: '' });
 
   await submit(page);
 
   // Flagged on the field and refused at the form, rather than a dead button.
-  await expect(page.getByLabel('Service ZIP Code')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.getByText('Please complete all required fields to submit your request.')).toBeVisible();
+  await expect(page.locator('#phone')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#phone-error')).toBeVisible();
+  await expect(refused(page)).toBeVisible();
   await expect(confirmation(page)).toHaveCount(0);
   expect(backend.inquiries).toHaveLength(0);
   expect(backend.savedRequests).toHaveLength(0);
+});
+
+test('a form with nothing to assemble is stopped', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page);
+
+  // Contact details are perfect, but the picker lives outside the field
+  // validation, so it has to block on its own.
+  await fillRequired(page, { pieces: 0 });
+
+  await submit(page);
+
+  await expect(page.getByText('Pick at least one item to assemble')).toBeVisible();
+  await expect(refused(page)).toBeVisible();
+  await expect(confirmation(page)).toHaveCount(0);
+  expect(backend.inquiries).toHaveLength(0);
+});
+
+test('"Something Else" needs a description, which reaches the lead', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page);
+  await fillRequired(page, { pieces: 0 });
+  await pick(page, 'Something Else');
+
+  await submit(page);
+  await expect(page.getByText('Tell us what the "Something Else" item is')).toBeVisible();
+  expect(backend.inquiries).toHaveLength(0);
+
+  await page.getByLabel('Describe the other item').fill('Peloton bike');
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  expect(backend.inquiries[0]).toMatchObject({
+    furniture_type: 'Other',
+    pieces: 1,
+    notes: 'Items: Other (Peloton bike) ×1',
+  });
+});
+
+test('several kinds of furniture file under the biggest one with the full list in notes', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page);
+  await fillRequired(page, { pieces: 0 });
+  await pick(page, 'Chairs & Seating', 3);
+  await pick(page, 'Tables & Desks', 1);
+
+  // 3 × $85 + $185 = $440, less the 10% for four or more items.
+  await expect(estimate(page)).toContainText('$396');
+  await expect(estimate(page)).toContainText('Multi-item 10% discount applied');
+
+  await submit(page);
+  await expect(confirmation(page)).toBeVisible();
+
+  expect(backend.inquiries[0]).toMatchObject({
+    furniture_type: 'Chair',
+    pieces: 4,
+    estimated_price: '$396',
+    notes: 'Items: Chairs & Seating ×3, Tables & Desks ×1',
+  });
+});
+
+test('a date with less than two days notice is refused', async ({ page }) => {
+  const backend = await stubBackend(page);
+  await openForm(page);
+  await fillRequired(page);
+
+  await page.getByRole('button', { name: /Scheduling preferences/i }).click();
+  const date = page.getByLabel('Preferred date');
+  // The picker itself greys out anything earlier.
+  await expect(date).toHaveAttribute('min', EARLIEST);
+
+  await date.fill(localDate(1));
+  await submit(page);
+
+  await expect(page.getByText('Please choose a date at least 2 days from today')).toBeVisible();
+  await expect(confirmation(page)).toHaveCount(0);
+  expect(backend.inquiries).toHaveLength(0);
 });
 
 test('an address that cannot receive a reply is refused', async ({ page }) => {
@@ -249,7 +350,7 @@ test('an address that cannot receive a reply is refused', async ({ page }) => {
   await submit(page);
 
   await expect(page.getByLabel('Email Address')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.getByText('Please complete all required fields to submit your request.')).toBeVisible();
+  await expect(refused(page)).toBeVisible();
   await expect(confirmation(page)).toHaveCount(0);
   expect(backend.inquiries).toHaveLength(0);
 });
