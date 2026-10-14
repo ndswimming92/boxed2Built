@@ -1063,15 +1063,19 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
               </button>
               {showScheduling && (
                 <div id="quote-scheduling" className="pb-[18px] pt-1 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="preferredDate" className={labelCls}>Preferred date</label>
+                    {/* iOS Safari gives date inputs an intrinsic min-width and
+                        centred text, which pushed the box past the card edge on
+                        phones. Let it shrink, left-align it like the other
+                        fields, and hold the shared input height when empty. */}
                     <input
                       id="preferredDate"
                       name="preferredDate"
                       type="date"
                       min={minDate}
                       max={isoDaysFromToday(365)}
-                      className={inputCls('preferredDate')}
+                      className={`${inputCls('preferredDate')} block min-w-0 max-w-full min-h-[48px] appearance-none text-left [&::-webkit-date-and-time-value]:text-left`}
                       {...getFieldProps('preferredDate')}
                     />
                     {showFieldError('preferredDate') ? fieldError('preferredDate') : (
