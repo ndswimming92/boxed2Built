@@ -179,6 +179,11 @@ function buildHtml(clientName: string, referralCode: string | null): string {
           <a href="${REVIEW_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">Leave a Google Review &rarr;</a>
         </div>
 
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+          <p style="margin:0 0 6px;color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Your 30-Day Workmanship Guarantee</p>
+          <p style="margin:0;color:#374151;font-size:14px;line-height:1.7;">If anything I built or mounted comes loose or ends up misaligned in the next 30 days, just reply to this email or call me and I'll come back and fix it free. This doesn't cover misuse, items that have been moved, or manufacturer defects.</p>
+        </div>
+
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
           <p style="margin:0 0 12px;color:#111827;font-size:14px;font-weight:700;">Need help again down the road?</p>
           <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.7;">Whether it's another piece of furniture, a TV to mount, or anything else you need set up — just reply to this email or request a quote anytime. I'm always happy to come back.</p>
@@ -225,6 +230,9 @@ function buildPlainText(clientName: string, referralCode: string | null): string
     '--- Would you leave me a Google review? ---',
     'As a small local business, reviews mean everything to me. If I earned it, it only takes 30 seconds:',
     REVIEW_URL,
+    '',
+    '--- Your 30-Day Workmanship Guarantee ---',
+    'If anything I built or mounted comes loose or ends up misaligned in the next 30 days, just reply to this email or call me and I\'ll come back and fix it free. This doesn\'t cover misuse, items that have been moved, or manufacturer defects.',
     '',
     '--- Need help again down the road? ---',
     'Whether it\'s another piece of furniture, a TV to mount, or anything else you need set up — just reply to this email or request a quote anytime:',

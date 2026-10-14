@@ -167,7 +167,7 @@ const TVMountingPage: React.FC = () => {
                   {
                     icon: Shield,
                     title: 'Safety Guaranteed',
-                    description: 'Your TV is securely mounted using professional techniques and quality hardware. Satisfaction guaranteed.'
+                    description: 'Your TV is securely mounted using professional techniques and quality hardware. Backed by our 30-day workmanship guarantee.'
                   }
                 ].map((feature, index) => (
                   <div key={index} className="text-center">

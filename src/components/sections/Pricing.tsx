@@ -68,7 +68,7 @@ const Pricing: React.FC = () => {
                 <CheckCircle size={20} className="text-green-600 mr-3 flex-shrink-0 mt-1" />
                 <div>
                   <div className="font-semibold text-gray-900">Quality Guarantee</div>
-                  <div className="text-sm text-gray-600">100% satisfaction or we make it right</div>
+                  <div className="text-sm text-gray-600">30-day workmanship guarantee on every job</div>
                 </div>
               </div>
             </div>

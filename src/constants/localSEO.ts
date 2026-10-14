@@ -482,7 +482,7 @@ export const FAQ_CONTENT = [
       },
       {
         question: "Do you offer a warranty or guarantee?",
-        answer: "Yes! We stand behind our work with a satisfaction guarantee. If you experience any issues with the assembly workmanship, contact us and we'll make it right. Your furniture should be sturdy, safe, and built to last. We take pride in quality work and want you to be completely satisfied."
+        answer: "Yes! Every job is backed by our 30-day workmanship guarantee. If anything we assembled or mounted comes loose or ends up misaligned within 30 days, contact us and we'll come back and fix it free. It doesn't cover misuse, items that have been moved, or manufacturer defects. Your furniture should be sturdy, safe, and built to last."
       },
       {
         question: "What if I'm not satisfied with the service?",

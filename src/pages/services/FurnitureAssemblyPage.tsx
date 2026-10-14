@@ -155,7 +155,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                   {
                     icon: Shield,
                     title: 'Satisfaction Guaranteed',
-                    description: 'Quality workmanship backed by our guarantee. We ensure every piece is sturdy, safe, and properly assembled.'
+                    description: 'Quality workmanship backed by our 30-day guarantee: if anything comes loose, we fix it free. We ensure every piece is sturdy, safe, and properly assembled.'
                   }
                 ].map((feature, index) => (
                   <div key={index} className="text-center">

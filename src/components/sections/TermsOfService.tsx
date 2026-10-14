@@ -110,6 +110,9 @@ const TermsOfService = () => {
         <p>
           We are not responsible for damage due to pre-existing defects in furniture or misuse of assembled products. Our liability for furniture assembly services is limited to the cost of the service provided. We guarantee professional assembly according to manufacturer specifications.
         </p>
+        <p className="mt-3">
+          <strong>30-Day Workmanship Guarantee.</strong> For 30 days after completion of any service (including furniture assembly and TV mounting), we will return and correct, at no charge, any work that comes loose or is misaligned due to our workmanship. This guarantee does not cover misuse or abuse, items that have been moved or disassembled after our visit, manufacturer defects or missing/damaged parts, or normal wear and tear. To make a claim, contact us within the 30-day period.
+        </p>
       </section>
 
       <section className="mb-8">
