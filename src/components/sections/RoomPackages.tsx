@@ -2,15 +2,28 @@ import React from 'react';
 import { Check, Phone } from 'lucide-react';
 import { PRIMARY_SERVICES } from '../../constants/localSEO';
 import { trackEvent } from '../../utils/analytics';
+import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 
-const priceFor = (name: string): number =>
-  Number(PRIMARY_SERVICES.find((service) => service.name === name)?.price ?? 0);
-
-const SMALL = priceFor('Small Furniture Assembly');
-const SHELVING = priceFor('Storage & Shelving Assembly');
-const DESK = priceFor('Tables & Desks Assembly');
-const DRESSER = priceFor('Dressers & Storage Assembly');
-const BED = priceFor('Beds & Frames Assembly');
+/**
+ * Per-item starting prices, read from the same live business data the
+ * Services cards above use so the savings never disagree with them. Falls
+ * back to the build-time constants when a service is missing from that data.
+ */
+const usePerItemPrices = () => {
+  const { data } = useBusinessDataWithFallback();
+  const priceFor = (name: string): number => {
+    const live = data?.services.find((service) => service.name === name)?.base_price;
+    if (typeof live === 'number') return live;
+    return Number(PRIMARY_SERVICES.find((service) => service.name === name)?.price ?? 0);
+  };
+  return {
+    small: priceFor('Small Furniture Assembly'),
+    shelving: priceFor('Storage & Shelving Assembly'),
+    desk: priceFor('Tables & Desks Assembly'),
+    dresser: priceFor('Dressers & Storage Assembly'),
+    bed: priceFor('Beds & Frames Assembly'),
+  };
+};
 
 interface RoomPackage {
   id: string;
@@ -21,31 +34,33 @@ interface RoomPackage {
   separateTotal: number;
 }
 
-const ROOM_PACKAGES: RoomPackage[] = [
-  {
-    id: 'nursery',
-    name: 'Nursery Package',
-    price: 400,
-    items: ['Crib', 'Dresser', 'Glider'],
-    separateTotal: BED + DRESSER + SMALL,
-  },
-  {
-    id: 'bedroom',
-    name: 'Bedroom Package',
-    price: 475,
-    items: ['Bed frame', 'Dresser', 'Two nightstands'],
-    separateTotal: BED + DRESSER + SMALL * 2,
-  },
-  {
-    id: 'home-office',
-    name: 'Home Office Package',
-    price: 500,
-    items: ['Desk', 'Two office chairs', 'Shelving unit'],
-    separateTotal: DESK + SMALL * 2 + SHELVING,
-  },
-];
+const RoomPackages: React.FC = () => {
+  const { small, shelving, desk, dresser, bed } = usePerItemPrices();
+  const packages: RoomPackage[] = [
+    {
+      id: 'nursery',
+      name: 'Nursery Package',
+      price: 400,
+      items: ['Crib', 'Dresser', 'Glider'],
+      separateTotal: bed + dresser + small,
+    },
+    {
+      id: 'bedroom',
+      name: 'Bedroom Package',
+      price: 475,
+      items: ['Bed frame', 'Dresser', 'Two nightstands'],
+      separateTotal: bed + dresser + small * 2,
+    },
+    {
+      id: 'home-office',
+      name: 'Home Office Package',
+      price: 500,
+      items: ['Desk', 'Two office chairs', 'Shelving unit'],
+      separateTotal: desk + small * 2 + shelving,
+    },
+  ];
 
-const RoomPackages: React.FC = () => (
+  return (
   <section id="packages" className="py-12 bg-white">
     <div className="container mx-auto px-4">
       <div className="text-center mb-10">
@@ -57,7 +72,7 @@ const RoomPackages: React.FC = () => (
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {ROOM_PACKAGES.map((pkg) => {
+        {packages.map((pkg) => {
           const savings = pkg.separateTotal - pkg.price;
           return (
             <div key={pkg.id} className="rounded-xl border-t-4 border-t-blue-600 bg-gray-50 shadow-md p-6 flex flex-col">
@@ -99,6 +114,7 @@ const RoomPackages: React.FC = () => (
       </p>
     </div>
   </section>
-);
+  );
+};
 
 export default RoomPackages;
