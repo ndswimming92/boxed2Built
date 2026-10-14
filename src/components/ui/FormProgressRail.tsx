@@ -16,8 +16,9 @@ interface FormProgressRailProps {
  */
 const FormProgressRail: React.FC<FormProgressRailProps> = ({ progress }) => {
   const isComplete = progress >= 100;
-  const barColor = progress === 0 ? 'bg-gray-300' : isComplete ? 'bg-green-600' : 'bg-blue-600';
-  const textColor = progress === 0 ? 'text-gray-500' : isComplete ? 'text-green-700' : 'text-blue-700';
+  // Matches the quote form's navy and amber, turning green once it can be sent.
+  const barColor = progress === 0 ? 'bg-gray-300' : isComplete ? 'bg-green-600' : 'bg-[#D9A441]';
+  const textColor = progress === 0 ? 'text-gray-500' : isComplete ? 'text-green-700' : 'text-[#0E2748]';
 
   const motivationalText = (() => {
     if (progress === 0) return 'Get started';

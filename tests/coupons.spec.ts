@@ -57,14 +57,16 @@ async function openForm(page: Page) {
   // The form pulls business details and writes analytics; neither decides a price.
   await page.route('**/rest/v1/services*', (route) => route.fulfill({ json: [] }));
   await page.goto('/tests/harness/coupons.html');
-  await expect(page.getByLabel('What needs assembly?')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'IKEA Flat-Pack', exact: true })).toBeVisible();
 }
+
+/** The navy ballpark-estimate bar under the picker. */
+const estimate = (page: Page) => page.getByTestId('quote-estimate');
 
 /** IKEA at $185 a piece is the cheapest way to get a known number on screen. */
 async function quoteOnePiece(page: Page) {
-  await page.getByLabel('What needs assembly?').selectOption('IKEA');
-  await page.getByLabel('How many items?').fill('1');
-  await expect(page.getByText('Estimated cost:')).toContainText('$185');
+  await page.getByRole('button', { name: 'IKEA Flat-Pack', exact: true }).click();
+  await expect(estimate(page)).toContainText('$185');
 }
 
 async function enterCode(page: Page, code: string) {
@@ -87,8 +89,8 @@ test('a flat coupon comes off the quote the customer is shown', async ({ page })
   await expect(page.getByText(/Codes are 3–30 letters/)).toHaveCount(0);
   await expect(page.getByText(/Referral codes look like/)).toHaveCount(0);
   // The original stays visible, struck through, so the saving is legible.
-  await expect(page.getByText('Estimated cost:')).toContainText('$185');
-  await expect(page.getByText('Estimated cost:')).toContainText('$160');
+  await expect(estimate(page)).toContainText('$185');
+  await expect(estimate(page)).toContainText('$160');
 });
 
 test('a percentage coupon is worked out against the estimate', async ({ page }) => {
@@ -101,7 +103,7 @@ test('a percentage coupon is worked out against the estimate', async ({ page }) 
   // The field reports the coupon; the estimate reports the money it took off.
   await expect(page.getByText('FALL10 applied — 10% off')).toBeVisible();
   await expect(page.getByText('FALL10 · $18.50 saved')).toBeVisible();
-  await expect(page.getByText('Estimated cost:')).toContainText('$166.50');
+  await expect(estimate(page)).toContainText('$166.50');
 });
 
 test('a code that is not a coupon leaves the price alone', async ({ page }) => {
@@ -113,7 +115,7 @@ test('a code that is not a coupon leaves the price alone', async ({ page }) => {
   await enterCode(page, 'B2B-JONES-4X2');
 
   await expect(page.getByText(/we'll treat it as a referral code/i)).toBeVisible();
-  await expect(page.getByText('Estimated cost:')).toContainText('$185');
+  await expect(estimate(page)).toContainText('$185');
   await expect(page.getByText(/applied —/)).toHaveCount(0);
 });
 
@@ -128,7 +130,7 @@ test('editing the code after it applied drops the discount', async ({ page }) =>
   await page.getByLabel(/Referral or Coupon Code/i).fill('WELCOME2');
 
   await expect(page.getByText(/applied —/)).toHaveCount(0);
-  await expect(page.getByText('Estimated cost:')).toContainText('$185');
+  await expect(estimate(page)).toContainText('$185');
 });
 
 test('a shared link arrives with the coupon already applied', async ({ page }) => {
