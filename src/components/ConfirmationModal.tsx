@@ -26,6 +26,17 @@ interface ConfirmationModalProps {
   };
 }
 
+// Marketing register shared with ContactForm: cream page, navy ink, amber accent.
+const cardCls = 'bg-white border border-[#ECE3D2] rounded-[20px] p-5 sm:p-6 shadow-[0_10px_30px_rgba(14,39,72,0.05)]';
+const stepBadgeCls = 'w-[26px] h-[26px] shrink-0 rounded-full bg-[#0E2748] text-[#FBF8F1] text-[13px] font-bold inline-flex items-center justify-center';
+
+const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div className="flex justify-between gap-4">
+    <span className="text-gray-500 shrink-0">{label}</span>
+    <span className="font-semibold text-[#0E2748] text-right break-words min-w-0">{value}</span>
+  </div>
+);
+
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   onClose,
@@ -69,188 +80,160 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       title="Service Request Confirmed"
       description="Your furniture assembly service request has been successfully submitted"
     >
-      <div className="text-center">
-        <div className="mb-6 animate-bounce">
-          <CheckCircle size={64} className="text-green-600 mx-auto" />
+      {/* Same marketing register as the quote form: cream page, navy ink, amber accent. */}
+      <div className="-m-6 px-5 py-8 sm:px-6 rounded-t-lg sm:rounded-lg bg-[radial-gradient(1200px_500px_at_50%_-180px,#FBF8F1_0%,#F5EFE3_60%)]">
+        <div className="text-center mb-[22px]">
+          <div className="inline-flex items-center gap-2 bg-[#0E2748] text-[#FBF8F1] text-[11px] font-semibold tracking-[0.08em] uppercase px-3.5 py-1.5 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D9A441]" aria-hidden="true" />
+            Quote request received
+          </div>
+          <div className="mt-5 mb-3 inline-flex w-16 h-16 items-center justify-center rounded-full bg-[#FBF8F1] border-2 border-[#D9A441] shadow-[0_8px_20px_rgba(217,164,65,0.25)]">
+            <CheckCircle size={36} className="text-[#047857]" aria-hidden="true" />
+          </div>
+          <h2 className="text-[30px] sm:text-[36px] font-bold text-[#0E2748] mb-2 leading-[1.1] tracking-[-0.01em]">
+            Request Confirmed!
+          </h2>
+          <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-[480px] mx-auto">
+            Your furniture assembly service request has been successfully submitted.
+          </p>
         </div>
 
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Request Confirmed!
-        </h2>
+        <div className="flex flex-col gap-[22px] text-left">
+          {/* Confirmation code */}
+          <section className={`${cardCls} text-center`} aria-labelledby="confirm-code-title">
+            <p id="confirm-code-title" className="text-[11px] font-bold tracking-[0.08em] uppercase text-[#B45309] mb-3">
+              Your Confirmation Code
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <code className="text-2xl font-bold text-[#0E2748] bg-[#FBF8F1] px-4 py-2 rounded-xl border-[1.5px] border-[#D9A441] tracking-wider">
+                {confirmationCode}
+              </code>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-[#F5EFE3] hover:bg-[#ECE3D2] text-[#0E2748] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441]"
+                title="Copy confirmation code"
+                aria-label="Copy confirmation code"
+              >
+                {copied ? <Check size={18} className="text-[#047857]" /> : <Copy size={18} />}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Save this code to look up your request anytime at boxed2built.com/lookup-request
+            </p>
+          </section>
 
-        <p className="text-lg text-gray-600 mb-6">
-          Your furniture assembly service request has been successfully submitted.
-        </p>
+          {/* Summary */}
+          <section className={cardCls} aria-labelledby="confirm-summary-title">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className={stepBadgeCls} aria-hidden="true">1</span>
+              <h3 id="confirm-summary-title" className="text-[19px] font-bold text-[#0E2748] m-0">Request Summary</h3>
+            </div>
 
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
-          <p className="text-sm font-semibold text-blue-900 mb-2">
-            Your Confirmation Code
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <code className="text-2xl font-bold text-blue-700 bg-white px-4 py-2 rounded border border-blue-300">
-              {confirmationCode}
-            </code>
-            <button
-              onClick={handleCopyCode}
-              className="p-2 hover:bg-blue-100 rounded transition-colors"
-              title="Copy confirmation code"
-            >
-              {copied ? (
-                <Check size={20} className="text-green-600" />
-              ) : (
-                <Copy size={20} className="text-blue-600" />
+            <div className="space-y-3 text-sm">
+              <Row label="Name" value={requestData.clientName} />
+              <Row label="Email" value={requestData.clientEmail} />
+              {requestData.clientPhone && <Row label="Phone" value={requestData.clientPhone} />}
+              {requestData.userCity && <Row label="Location" value={requestData.userCity} />}
+
+              <div className="border-t border-[#F1E9D9] pt-3 mt-3 space-y-3">
+                <Row label="Furniture" value={requestData.furnitureType} />
+                <Row label="Number of Pieces" value={String(requestData.pieces)} />
+              </div>
+
+              {(requestData.preferredDate || requestData.preferredTimeSlot) && (
+                <div className="border-t border-[#F1E9D9] pt-3 mt-3 space-y-3">
+                  {requestData.preferredDate && (
+                    <Row label="Preferred Date" value={new Date(requestData.preferredDate).toLocaleDateString()} />
+                  )}
+                  {requestData.preferredTimeSlot && (
+                    <Row label="Time Slot" value={requestData.preferredTimeSlot} />
+                  )}
+                </div>
               )}
-            </button>
-          </div>
-          <p className="text-xs text-blue-700 mt-3">
-            Save this code to look up your request anytime at boxed2built.com/lookup-request
-          </p>
-        </div>
 
-        <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
-            Request Summary
-          </h3>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Name:</span>
-              <span className="font-semibold text-gray-900">{requestData.clientName}</span>
+              {requestData.notes && (
+                <div className="border-t border-[#F1E9D9] pt-3 mt-3">
+                  <p className="text-gray-500 mb-1.5">Additional Notes</p>
+                  <p className="text-sm text-[#0E2748] bg-[#FBF8F1] p-3 rounded-xl border border-[#ECE3D2]">
+                    {requestData.notes}
+                  </p>
+                </div>
+              )}
             </div>
+          </section>
 
-            <div className="flex justify-between">
-              <span className="text-gray-600">Email:</span>
-              <span className="font-semibold text-gray-900">{requestData.clientEmail}</span>
-            </div>
-
-            {requestData.clientPhone && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Phone:</span>
-                <span className="font-semibold text-gray-900">{requestData.clientPhone}</span>
-              </div>
-            )}
-
-            {requestData.userCity && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Location:</span>
-                <span className="font-semibold text-gray-900">{requestData.userCity}</span>
-              </div>
-            )}
-
-            <div className="border-t border-gray-200 pt-3 mt-3">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600">Furniture Type:</span>
-                <span className="font-semibold text-gray-900">{requestData.furnitureType}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-600">Number of Pieces:</span>
-                <span className="font-semibold text-gray-900">{requestData.pieces}</span>
-              </div>
-            </div>
-
-            {(requestData.estimatedPrice || requestData.estimatedTime) && (
-              <div className="border-t border-gray-200 pt-3 mt-3 bg-green-50 -mx-3 px-3 py-2 rounded">
-                {requestData.estimatedPrice && (
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Estimated Cost:</span>
-                    <span className="font-bold text-green-700">{requestData.estimatedPrice}</span>
-                  </div>
-                )}
-
+          {/* Estimate - same navy card as the form's ballpark estimate */}
+          {(requestData.estimatedPrice || requestData.estimatedTime) && (
+            <div className="flex items-center justify-between gap-4 flex-wrap bg-[#0E2748] rounded-[20px] px-6 py-5 shadow-[0_14px_34px_rgba(14,39,72,0.22)]">
+              <div>
+                <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-[#D9A441] mb-1">Ballpark estimate</div>
                 {requestData.estimatedTime && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Estimated Time:</span>
-                    <span className="font-bold text-green-700">{requestData.estimatedTime}</span>
-                  </div>
+                  <div className="text-sm text-slate-300">about {requestData.estimatedTime} on site</div>
                 )}
               </div>
-            )}
+              {requestData.estimatedPrice && (
+                <div className="text-right">
+                  <div className="text-[30px] font-bold text-[#FBF8F1] leading-none">from {requestData.estimatedPrice}</div>
+                  <div className="text-xs text-[#8FA0B8] mt-[3px]">final quote after a quick look</div>
+                </div>
+              )}
+            </div>
+          )}
 
-            {(requestData.preferredDate || requestData.preferredTimeSlot) && (
-              <div className="border-t border-gray-200 pt-3 mt-3">
-                {requestData.preferredDate && (
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Preferred Date:</span>
-                    <span className="font-semibold text-gray-900">
-                      {new Date(requestData.preferredDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
+          {/* What happens next */}
+          <section className={cardCls} aria-labelledby="confirm-next-title">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className={stepBadgeCls} aria-hidden="true">2</span>
+              <h3 id="confirm-next-title" className="text-[19px] font-bold text-[#0E2748] m-0 flex items-center gap-2">
+                What happens next?
+                <Clock size={17} className="text-[#D9A441]" aria-hidden="true" />
+              </h3>
+            </div>
+            <ol className="space-y-3 text-sm text-gray-700">
+              {[
+                'We will review your project details within 24 hours',
+                'You will receive a detailed quote via email',
+                'Once approved, we will schedule your assembly service',
+                'Our professional team will complete your assembly on time',
+              ].map((step, i) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="w-[22px] h-[22px] shrink-0 rounded-full bg-[#F5EFE3] text-[#0E2748] text-xs font-bold inline-flex items-center justify-center" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <span className="pt-0.5">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-                {requestData.preferredTimeSlot && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Time Slot:</span>
-                    <span className="font-semibold text-gray-900">{requestData.preferredTimeSlot}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {requestData.notes && (
-              <div className="border-t border-gray-200 pt-3 mt-3">
-                <p className="text-gray-600 mb-1">Additional Notes:</p>
-                <p className="text-sm text-gray-900 bg-white p-2 rounded border border-gray-200">
-                  {requestData.notes}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-left">
-          <h3 className="text-lg font-bold text-green-900 mb-3 flex items-center">
-            <Clock size={20} className="mr-2" />
-            What Happens Next?
-          </h3>
-
-          <ol className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start">
-              <span className="font-bold text-green-700 mr-2">1.</span>
-              <span>We will review your project details within 24 hours</span>
-            </li>
-            <li className="flex items-start">
-              <span className="font-bold text-green-700 mr-2">2.</span>
-              <span>You will receive a detailed quote via email</span>
-            </li>
-            <li className="flex items-start">
-              <span className="font-bold text-green-700 mr-2">3.</span>
-              <span>Once approved, we will schedule your assembly service</span>
-            </li>
-            <li className="flex items-start">
-              <span className="font-bold text-green-700 mr-2">4.</span>
-              <span>Our professional team will complete your assembly on time</span>
-            </li>
-          </ol>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-center gap-2 text-sm text-blue-900">
-            <Phone size={16} />
+          <div className="flex items-center justify-center gap-2 text-sm text-[#0E2748]">
+            <Phone size={16} className="text-[#D9A441]" aria-hidden="true" />
             <span>Questions? Call us at <strong>{phoneDisplay}</strong></span>
           </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              className="w-full flex items-center justify-center gap-2.5 bg-[#D9A441] hover:bg-[#E9BE6A] text-[#0E2748] rounded-2xl p-[18px] text-[17px] font-bold shadow-[0_10px_24px_rgba(217,164,65,0.35)] hover:shadow-[0_14px_30px_rgba(217,164,65,0.45)] hover:-translate-y-px transition-all duration-200"
+            >
+              <Download size={20} aria-hidden="true" />
+              Download Summary
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3.5 bg-white hover:bg-[#FBF8F1] text-[#0E2748] border border-[#ECE3D2] rounded-2xl font-bold transition-colors"
+            >
+              Close
+            </button>
+          </div>
+
+          <p className="text-xs text-[#7C6E55] text-center -mt-1.5">
+            Average response time: 2-4 hours • Serving Spring Hill & surrounding areas
+          </p>
         </div>
-
-        <div className="mb-4">
-          <button
-            onClick={handleDownloadPDF}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-          >
-            <Download size={18} />
-            Download Summary
-          </button>
-        </div>
-
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-colors"
-        >
-          Close
-        </button>
-
-        <p className="text-xs text-gray-500 mt-4">
-          Average response time: 2-4 hours • Serving Spring Hill & surrounding areas
-        </p>
       </div>
     </Modal>
   );
