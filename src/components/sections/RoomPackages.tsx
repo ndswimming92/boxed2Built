@@ -40,8 +40,8 @@ const ROOM_PACKAGES: RoomPackage[] = [
     id: 'home-office',
     name: 'Home Office Package',
     price: 500,
-    items: ['Desk', 'Office chair', 'Shelving unit'],
-    separateTotal: DESK + SMALL + SHELVING,
+    items: ['Desk', 'Two office chairs', 'Shelving unit'],
+    separateTotal: DESK + SMALL * 2 + SHELVING,
   },
 ];
 
