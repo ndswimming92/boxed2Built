@@ -16,7 +16,7 @@ const TermsOfService = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2">Terms of Service - Boxed2Built Furniture Assembly</h1>
       <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
-      <p className="text-sm text-gray-500 mb-8">Last Updated: October 7, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: October 14, 2026</p>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
@@ -109,6 +109,9 @@ const TermsOfService = () => {
         <h2 className="text-xl font-semibold mb-2">6. Liability and Furniture Assembly Warranty</h2>
         <p>
           We are not responsible for damage due to pre-existing defects in furniture or misuse of assembled products. Our liability for furniture assembly services is limited to the cost of the service provided. We guarantee professional assembly according to manufacturer specifications.
+        </p>
+        <p className="mt-3">
+          <strong>30-Day Workmanship Guarantee.</strong> For 30 days after completion of any service (including furniture assembly and TV mounting), we will return and correct, at no charge, any work that comes loose or is misaligned due to our workmanship. This guarantee does not cover misuse or abuse, items that have been moved or disassembled after our visit, manufacturer defects or missing/damaged parts, or normal wear and tear. To make a claim, contact us within the 30-day period.
         </p>
       </section>
 
