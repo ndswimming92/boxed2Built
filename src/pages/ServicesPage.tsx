@@ -5,6 +5,7 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import Services from '../components/sections/Services';
+import RoomPackages from '../components/sections/RoomPackages';
 import HomeFAQ from '../components/sections/HomeFAQ';
 import CallButton from '../components/ui/CallButton';
 import Testimonials from '../components/sections/Testimonials';
@@ -138,6 +139,9 @@ const ServicesPage: React.FC = () => {
 
         {/* Services Section */}
         <Services />
+
+        {/* Whole-room packages */}
+        <RoomPackages />
 
         {/* Testimonials */}
         <Testimonials />
