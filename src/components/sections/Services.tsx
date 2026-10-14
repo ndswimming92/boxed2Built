@@ -158,7 +158,7 @@ const Services: React.FC = () => {
           <div className="text-center mb-8">
               <InternalLink href="/about" trackingCategory="services_info">
             <p className="text-blue-50 text-lg max-w-3xl mx-auto">
-              Book a free consultation or get a custom quote for multiple items. Volume discounts available!
+              Book a free consultation or get a custom quote for multiple items. Volume discounts available — see our whole-room packages below!
             </p>
               </InternalLink>
             <p className="mt-3 text-blue-50">
