@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "sitemap": "node scripts/generate-sitemap.mjs",
+    "changelog": "node scripts/generate-changelog.mjs",
     "images": "node scripts/optimize-images.mjs",
     "verify:seo": "node scripts/verify-seo.mjs",
     "build": "node scripts/generate-sitemap.mjs && vite-react-ssg build",
