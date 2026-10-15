@@ -255,114 +255,116 @@ function customerConfirmationContact(p: ContactFormPayload): string {
   const safeNotes = p.notes ? escapeHtml(p.notes) : null;
   const safeCouponCode = p.couponCode ? escapeHtml(p.couponCode) : null;
   const safeCouponLabel = p.couponDiscountLabel ? escapeHtml(p.couponDiscountLabel) : null;
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
+  const lookupUrl = `https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}`;
+
+  // Brand palette (matches the homepage hero): navy ground, gold accents.
+  const NAVY = "#0E2748";
+  const NAVY_CARD = "#152F55";
+  const NAVY_LINE = "#25406B";
+  const GOLD = "#D9A441";
+  const MUTED = "#C3CCE0";
+  const LABEL = "#9FB0CC";
+  const FONT = "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+  const row = (label: string, value: string, valueStyle = `color:#ffffff;font-weight:600;`) => `<tr>
+            <td style="padding:12px 0;border-bottom:1px solid ${NAVY_LINE};color:${LABEL};font-size:14px;width:42%;vertical-align:top;">${label}</td>
+            <td style="padding:12px 0;border-bottom:1px solid ${NAVY_LINE};font-size:14px;text-align:right;${valueStyle}">${value}</td>
+          </tr>`;
+
+  const step = (n: number, title: string, body: string, last = false) => `<tr>
+              <td style="vertical-align:top;width:40px;${last ? "" : "padding-bottom:18px;"}">
+                <div style="width:30px;height:30px;background:${GOLD};border-radius:8px;text-align:center;line-height:30px;color:${NAVY};font-size:15px;font-weight:800;">${n}</div>
+              </td>
+              <td style="vertical-align:top;padding-left:12px;${last ? "" : "padding-bottom:18px;"}">
+                <p style="margin:0 0 3px;color:#ffffff;font-size:15px;font-weight:700;">${title}</p>
+                <p style="margin:0;color:${MUTED};font-size:13px;line-height:1.55;">${body}</p>
+              </td>
+            </tr>`;
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:${NAVY};font-family:${FONT};">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" bgcolor="${NAVY}" style="background:${NAVY};padding:28px 12px 36px;">
   <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-      <tr><td style="background:#1e3a5f;padding:28px 32px;border-radius:12px 12px 0 0;">
-        <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">We got your request!</h1>
-        <p style="margin:8px 0 0;color:#93c5fd;font-size:14px;">Thanks for reaching out, ${firstName}. We'll be in touch shortly.</p>
+    <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;">
+
+      <tr><td style="padding:0 12px 28px;text-align:center;">
+        <a href="https://boxed2built.com" style="text-decoration:none;font-size:22px;font-weight:800;letter-spacing:-0.3px;color:#ffffff;">Boxed<span style="color:${GOLD};">2</span>Built</a>
       </td></tr>
-      <tr><td style="background:#ffffff;padding:32px;">
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Hi ${firstName},</p>
-        <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7;">Your quote request has been received and saved. Here's a summary of what you submitted:</p>
 
-        <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:20px;margin-bottom:24px;">
-          <p style="margin:0 0 12px;color:#1e3a5f;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Your Confirmation Code</p>
-          <p style="margin:0 0 10px;font-size:28px;font-weight:800;color:#1e3a5f;font-family:monospace;letter-spacing:2px;">${safeCode}</p>
-          <p style="margin:0 0 14px;color:#6b7280;font-size:12px;">Keep this handy — you can use it to look up your request at any time.</p>
-          <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 20px;border-radius:6px;">View My Request &rarr;</a>
-        </div>
+      <tr><td style="padding:0 12px;text-align:center;">
+        <h1 style="margin:0;color:#ffffff;font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-0.5px;">We got your request!</h1>
+        <div style="width:56px;height:4px;background:${GOLD};border-radius:4px;margin:16px auto 0;font-size:0;line-height:0;">&nbsp;</div>
+        <p style="margin:18px 0 0;color:${MUTED};font-size:16px;line-height:1.6;">Thanks for reaching out, <strong style="color:#ffffff;">${firstName}</strong>. Your quote request is saved, and we'll be in touch shortly.</p>
+      </td></tr>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-          <tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:40%;">Furniture Type</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeFurnitureType}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Pieces</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${p.pieces}</td>
-          </tr>
-          ${safeCity ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Service ZIP</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeCity}</td>
-          </tr>` : ""}
-          ${safeEstimatedPrice ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Cost</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#15803d;font-size:13px;font-weight:600;">${safeEstimatedPrice}</td>
-          </tr>` : ""}
-          ${safeCouponCode ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Coupon Applied</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#b45309;font-size:13px;font-weight:600;">${safeCouponCode}${safeCouponLabel ? ` &middot; ${safeCouponLabel}` : ""}</td>
-          </tr>` : ""}
-          ${safeEstimatedTime ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Estimated Time</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${safeEstimatedTime}</td>
-          </tr>` : ""}
-          ${p.preferredDate ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Preferred Date</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${formatDate(p.preferredDate)}</td>
-          </tr>` : ""}
-          ${p.preferredTimeSlot ? `<tr>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;">Preferred Time</td>
-            <td style="padding:8px 0;border-bottom:1px solid #f3f4f6;color:#111827;font-size:13px;font-weight:500;">${formatTimeSlot(p.preferredTimeSlot)}</td>
-          </tr>` : ""}
-          ${safeNotes ? `<tr>
-            <td style="padding:8px 0;color:#6b7280;font-size:13px;vertical-align:top;">Notes</td>
-            <td style="padding:8px 0;color:#111827;font-size:13px;font-weight:500;">${safeNotes}</td>
-          </tr>` : ""}
+      <tr><td style="padding:32px 12px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" bgcolor="${GOLD}" style="background:${GOLD};border-radius:16px;">
+          <tr><td style="padding:26px 24px;text-align:center;">
+            <p style="margin:0 0 10px;color:${NAVY};font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:3px;">Your Confirmation Code</p>
+            <p style="margin:0 0 8px;color:${NAVY};font-size:30px;font-weight:800;font-family:'SFMono-Regular',Menlo,Consolas,monospace;letter-spacing:3px;word-break:break-all;">${safeCode}</p>
+            <p style="margin:0 0 20px;color:${NAVY};font-size:13px;line-height:1.5;opacity:.8;">Keep this handy — use it to look up your request any time.</p>
+            <a href="${lookupUrl}" style="display:inline-block;background:${NAVY};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:10px;">View My Request &rarr;</a>
+          </td></tr>
         </table>
-
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:24px;">
-          <p style="margin:0 0 16px;color:#111827;font-size:14px;font-weight:700;">What happens next</p>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="vertical-align:top;padding-bottom:14px;width:32px;">
-                <div style="width:24px;height:24px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:24px;color:#ffffff;font-size:12px;font-weight:700;">1</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:14px;padding-left:12px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We review your request</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Our team looks over your details and double-checks availability for your preferred date and time.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;padding-bottom:14px;width:32px;">
-                <div style="width:24px;height:24px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:24px;color:#ffffff;font-size:12px;font-weight:700;">2</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:14px;padding-left:12px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We reach out to confirm</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Expect a call or email from us within <strong>24 hours</strong> to lock in your appointment and finalize any details.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;padding-bottom:14px;width:32px;">
-                <div style="width:24px;height:24px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:24px;color:#ffffff;font-size:12px;font-weight:700;">3</div>
-              </td>
-              <td style="vertical-align:top;padding-bottom:14px;padding-left:12px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">We arrive and get to work</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">Our assembler shows up at your location on the scheduled day and handles everything start to finish.</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;width:32px;">
-                <div style="width:24px;height:24px;background:#1e3a5f;border-radius:50%;text-align:center;line-height:24px;color:#ffffff;font-size:12px;font-weight:700;">4</div>
-              </td>
-              <td style="vertical-align:top;padding-left:12px;">
-                <p style="margin:0 0 2px;color:#111827;font-size:13px;font-weight:600;">Pay only when the job is done</p>
-                <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.5;">No upfront payment required. You pay after you're satisfied with the completed work.</p>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.7;">Questions in the meantime? Call us at <span style="color:#111827;font-weight:600;">(615) 403-4538</span> or <a href="https://boxed2built.com/lookup-request?code=${encodeURIComponent(p.confirmationCode)}&email=${encodeURIComponent(p.email)}" style="color:#1d4ed8;">look up your request online</a>.</p>
-
-        <p style="margin:0;color:#374151;font-size:15px;">— The Boxed2Built Team</p>
       </td></tr>
-      <tr><td style="background:#f9fafb;padding:16px 32px;border-radius:0 0 12px 12px;border-top:1px solid #e5e7eb;">
-        <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Boxed2Built &bull; Spring Hill, TN &bull; <a href="https://boxed2built.com" style="color:#9ca3af;">boxed2built.com</a></p>
+
+      <tr><td style="padding:24px 12px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" bgcolor="${NAVY_CARD}" style="background:${NAVY_CARD};border-radius:16px;">
+          <tr><td style="padding:22px 24px 10px;">
+            <p style="margin:0 0 6px;color:${GOLD};font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:3px;">Your Request</p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          ${row("Furniture Type", safeFurnitureType)}
+          ${row("Pieces", String(p.pieces))}
+          ${safeCity ? row("Service ZIP", safeCity) : ""}
+          ${safeEstimatedPrice ? row("Estimated Cost", safeEstimatedPrice, `color:${GOLD};font-weight:800;font-size:17px;`) : ""}
+          ${safeCouponCode ? row("Coupon Applied", `${safeCouponCode}${safeCouponLabel ? ` &middot; ${safeCouponLabel}` : ""}`, `color:${GOLD};font-weight:700;`) : ""}
+          ${safeEstimatedTime ? row("Estimated Time", safeEstimatedTime) : ""}
+          ${p.preferredDate ? row("Preferred Date", formatDate(p.preferredDate)) : ""}
+          ${p.preferredTimeSlot ? row("Preferred Time", formatTimeSlot(p.preferredTimeSlot)) : ""}
+          ${safeNotes ? `<tr><td colspan="2" style="padding:14px 0 6px;">
+              <p style="margin:0 0 6px;color:${LABEL};font-size:14px;">Notes</p>
+              <p style="margin:0;color:#ffffff;font-size:14px;line-height:1.6;">${safeNotes}</p>
+            </td></tr>` : ""}
+            </table>
+          </td></tr>
+        </table>
       </td></tr>
+
+      <tr><td style="padding:24px 12px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" bgcolor="${NAVY_CARD}" style="background:${NAVY_CARD};border-radius:16px;">
+          <tr><td style="padding:22px 24px;">
+            <p style="margin:0 0 18px;color:${GOLD};font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:3px;">What Happens Next</p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            ${step(1, "We review your request", "We look over your details and double-check availability for your preferred date and time.")}
+            ${step(2, "We reach out to confirm", `Expect a call or email from us within <strong style="color:#ffffff;">24 hours</strong> to lock in your appointment and finalize any details.`)}
+            ${step(3, "We arrive and get to work", "Your assembler shows up on the scheduled day and handles everything start to finish.")}
+            ${step(4, "Pay only when the job is done", "No upfront payment required. You pay after you're happy with the finished work.", true)}
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:28px 12px 0;text-align:center;">
+        <p style="margin:0 0 6px;color:#ffffff;font-size:18px;font-weight:600;font-style:italic;line-height:1.5;">Turning boxes into comfort so families can focus on what matters most.</p>
+        <p style="margin:14px 0 18px;color:${MUTED};font-size:15px;line-height:1.6;">Questions in the meantime? We're happy to help.</p>
+        <a href="tel:+16154034538" style="display:inline-block;background:${GOLD};color:${NAVY};font-size:16px;font-weight:700;text-decoration:none;padding:14px 28px;border-radius:10px;">Call (615) 403-4538</a>
+        <p style="margin:22px 0 0;color:#ffffff;font-size:15px;">— The Boxed2Built Team</p>
+      </td></tr>
+
+      <tr><td style="padding:32px 12px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${NAVY_LINE};">
+          <tr>
+            <td style="padding:18px 4px 0;text-align:center;color:${MUTED};font-size:12px;font-weight:700;">&#9733; 5-Star Rated</td>
+            <td style="padding:18px 4px 0;text-align:center;color:${MUTED};font-size:12px;font-weight:700;">No Payment Until Done</td>
+            <td style="padding:18px 4px 0;text-align:center;color:${MUTED};font-size:12px;font-weight:700;">Locally Owned</td>
+          </tr>
+        </table>
+        <p style="margin:18px 0 0;color:${LABEL};font-size:12px;text-align:center;">Boxed2Built &bull; Spring Hill, TN &bull; <a href="https://boxed2built.com" style="color:${LABEL};">boxed2built.com</a></p>
+      </td></tr>
+
     </table>
   </td></tr>
 </table>
