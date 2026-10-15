@@ -20,6 +20,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        // Slab serif that echoes the logo's lettering (mobile menu headings).
+        display: ['Arvo', 'Rockwell', 'Georgia', 'serif'],
       },
       fontWeight: {
         normal: '400',
