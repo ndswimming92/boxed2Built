@@ -102,7 +102,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onView, onAdd }) => 
             type="button"
             onClick={() => onAdd(product)}
             disabled={!available}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-gold-cta px-3.5 py-2 text-sm font-semibold text-brand-navy-deep transition-colors hover:bg-brand-gold-cta-hover disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             <ShoppingCart className="w-4 h-4" />
             {available ? 'Add' : 'Sold out'}

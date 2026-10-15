@@ -11,6 +11,11 @@ export default {
           gold: '#ECB045',
           'gold-light': '#FDF3E0',
           'gold-dark': '#6B4708',
+          'gold-cta': '#d9a441',
+          'gold-cta-hover': '#c4922f',
+          'teal-cta': '#177e79',
+          'teal-cta-hover': '#11625e',
+          'navy-deep': '#152747',
         },
       },
       fontFamily: {

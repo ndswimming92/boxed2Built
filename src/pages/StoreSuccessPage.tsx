@@ -165,7 +165,7 @@ const StoreSuccessPage: React.FC = () => {
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href="/store"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-800"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-gold-cta px-5 py-3 font-semibold text-brand-navy-deep transition-colors hover:bg-brand-gold-cta-hover"
               >
                 <Store className="h-5 w-5" />
                 Back to the shop

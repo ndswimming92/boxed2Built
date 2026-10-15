@@ -97,7 +97,7 @@ const WhyChooseSection: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 mt-12">
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-[17px] font-semibold shadow-md hover:shadow-lg transition"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep text-[17px] font-semibold shadow-md hover:shadow-lg transition"
               >
                 Get a Free Quote
                 <ArrowRight size={18} aria-hidden="true" />

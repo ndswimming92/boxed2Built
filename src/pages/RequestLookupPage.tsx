@@ -241,7 +241,7 @@ const RequestLookupPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-4 bg-brand-gold-cta hover:bg-brand-gold-cta text-brand-navy-deep rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -433,7 +433,7 @@ const RequestLookupPage: React.FC = () => {
                     <div className="mt-6">
                       <button
                         onClick={handleDownloadPDF}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-brand-gold-cta hover:bg-brand-gold-cta text-brand-navy-deep rounded-lg font-semibold transition-colors"
                       >
                         <Download size={18} />
                         Download PDF
@@ -463,7 +463,7 @@ const RequestLookupPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a
                     href="tel:+16154034538"
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-teal-cta hover:bg-brand-teal-cta text-white rounded-lg font-semibold transition-colors"
                   >
                     Call {phoneDisplay}
                   </a>

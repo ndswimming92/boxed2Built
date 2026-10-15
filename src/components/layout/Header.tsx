@@ -356,8 +356,8 @@ const Header: React.FC = () => {
               onClick={() => handleNavClick('store', '/store')}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-md transition-all duration-200 hover:shadow-lg 2xl:gap-2 2xl:px-4 2xl:text-base ${
                 isActivePage('/store')
-                  ? 'bg-blue-800 text-white'
-                  : 'bg-blue-700 text-white hover:bg-blue-800'
+                  ? 'bg-brand-gold-cta-hover text-brand-navy-deep'
+                  : 'bg-brand-gold-cta text-brand-navy-deep hover:bg-brand-gold-cta-hover'
               }`}
               aria-label="Shop 3D printed items"
             >
@@ -516,7 +516,7 @@ const Header: React.FC = () => {
                 <a
                   href="/store"
                   onClick={() => handleNavClick('store', '/store')}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-lg font-semibold text-white shadow-md transition-colors hover:bg-blue-800"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold-cta px-6 py-3 text-lg font-semibold text-brand-navy-deep shadow-md transition-colors hover:bg-brand-gold-cta-hover"
                 >
                   <ShoppingBag size={20} />
                   <span>Store</span>

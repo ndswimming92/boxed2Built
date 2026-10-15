@@ -232,7 +232,7 @@ const EmptyState: React.FC<{ title: string; body: string }> = ({ title, body }) 
     <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">{body}</p>
     <a
       href="/contact"
-      className="mt-6 inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-blue-800"
+      className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-gold-cta px-5 py-2.5 font-semibold text-brand-navy-deep transition-colors hover:bg-brand-gold-cta-hover"
     >
       Get in touch
     </a>
