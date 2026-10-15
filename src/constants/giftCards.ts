@@ -13,6 +13,20 @@ export const GIFT_CARD_DENOMINATIONS: GiftCardDenomination[] = [
   { label: '$200', dollars: 200, amountCents: 20000, stripePriceIdEnvKey: 'STRIPE_GIFT_CARD_PRICE_200' },
 ];
 
+/**
+ * Starting prices shown in the gift card page's "What this covers" panel.
+ * Mirrors the FURNITURE tiles on the quote form (src/components/ContactForm.tsx)
+ * so a buyer sees the same "from $X" numbers in both places — keep them in sync.
+ */
+export const GIFT_CARD_COVERAGE: { label: string; fromDollars: number }[] = [
+  { label: 'Chairs & Seating', fromDollars: 85 },
+  { label: 'Tables & Desks', fromDollars: 185 },
+  { label: 'IKEA Flat-Pack', fromDollars: 185 },
+  { label: 'Bookshelves & Media', fromDollars: 220 },
+  { label: 'Bed Frames', fromDollars: 295 },
+  { label: 'Dressers & Storage', fromDollars: 320 },
+];
+
 export const ALLOWED_GIFT_CARD_AMOUNTS_CENTS = new Set(
   GIFT_CARD_DENOMINATIONS.map((d) => d.amountCents),
 );
