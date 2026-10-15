@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarCheck, Menu, X, ChevronDown, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { ArrowRight, CalendarCheck, Menu, X, ChevronDown, ChevronRight, Phone, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useLocation } from 'react-router-dom';
 
@@ -55,6 +55,44 @@ const desktopNavItemClass = (active: boolean, open = false) =>
     active || open
       ? 'after:scale-x-100'
       : 'after:scale-x-0 hover:after:scale-x-100',
+  ].join(' ');
+
+/* Mobile menu: a full-screen navy sheet in the hero's navy and the logo's
+   gold. The five pages people look for most get large slab-serif links; the
+   rest sit in a quieter grid of tiles below, and the calls to action are
+   pinned to the end of the list. */
+const MOBILE_FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E2748]';
+
+const MOBILE_PRIMARY_LINKS = [
+  { label: 'Service Areas', href: '/service-areas' },
+  { label: 'Gallery', href: '/gallery' },
+  { label: 'Deals & News', href: '/news', badge: 'Sales' },
+];
+
+const MOBILE_SECONDARY_LINKS = [
+  { label: 'About', href: '/about' },
+  { label: 'Partners', href: '/partners' },
+  { label: 'Gift Cards', href: '/gift-cards' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'Contact', href: '/contact' },
+];
+
+const mobilePrimaryClass = (active: boolean) =>
+  [
+    'flex min-h-[56px] w-full items-center gap-3 rounded-md text-left font-display text-[26px] font-bold leading-tight transition-colors',
+    MOBILE_FOCUS_RING,
+    active ? 'text-[#D9A441]' : 'text-[#F5EFE3] hover:text-[#D9A441]',
+  ].join(' ');
+
+const mobileTileClass = (active: boolean) =>
+  [
+    'flex min-h-[46px] items-center justify-between rounded-xl border pl-3.5 pr-3 text-[15px] font-medium',
+    'shadow-[0_2px_6px_rgba(0,0,0,0.18)] transition-colors',
+    MOBILE_FOCUS_RING,
+    active
+      ? 'border-[#D9A441]/70 bg-[#D9A441]/10 text-[#D9A441]'
+      : 'border-[#F5EFE3]/[0.12] bg-[#F5EFE3]/[0.05] text-[#E6E9F0] hover:bg-[#F5EFE3]/10',
   ].join(' ');
 
 const Header: React.FC = () => {
@@ -144,6 +182,24 @@ const Header: React.FC = () => {
     window.setTimeout(() => {
       firstMobileLinkRef.current?.focus();
     }, 0);
+  }, [isMenuOpen]);
+
+  /* While the full-screen menu is open the page behind it must not scroll,
+     Escape closes it, and closing hands focus back to the hamburger. */
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const hamburger = mobileMenuButtonRef.current;
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+      hamburger?.focus({ preventScroll: true });
+    };
   }, [isMenuOpen]);
 
   const toggleMenu = () => {
@@ -396,134 +452,228 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="xl:hidden mt-4 bg-white rounded-xl shadow-lg border">
-            <nav className="flex flex-col p-2">
-              {[
-                { label: 'Home', href: '/' },
-                { label: 'About', href: '/about' },
-              ].map((item, index) => (
-                <a
-                  key={item.href}
-                  ref={index === 0 ? firstMobileLinkRef : undefined}
-                  href={item.href}
-                  onClick={() =>
-                    handleNavClick(item.label.toLowerCase(), item.href)
-                  }
-                  className={`px-4 py-3 rounded-lg font-medium
-                    ${
-                      isActivePage(item.href)
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  {item.label}
-                </a>
-              ))}
+          <div
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+            className="xl:hidden fixed inset-0 z-[60] flex flex-col bg-[#0E2748] text-[#F5EFE3] animate-fadeIn"
+          >
+            {/* Menu header: logo + name on the left, close on the right */}
+            <div className="flex items-center justify-between gap-3 px-6 pt-5 pb-2">
+              <a
+                href="/"
+                aria-label="Boxed2Built - Home"
+                onClick={() => handleNavClick('logo', '/')}
+                className={`flex items-center gap-3 rounded-lg ${MOBILE_FOCUS_RING}`}
+              >
+                <span className="grid h-[52px] w-[52px] place-items-center rounded-full bg-white">
+                  <img
+                    src="/boxed2built_logo.svg"
+                    alt=""
+                    width="52"
+                    height="52"
+                    className="h-[52px] w-[52px] object-contain"
+                  />
+                </span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-display text-xl font-bold tracking-[0.01em] text-[#F5EFE3]">
+                    Boxed2Built
+                  </span>
+                  <span className="text-xs text-[#AEB8CC]">Furniture assembly</span>
+                </span>
+              </a>
+              <button
+                type="button"
+                onClick={toggleMenu}
+                aria-label="Close menu"
+                className={`grid h-11 w-11 flex-none place-items-center rounded-full border-[1.5px] border-[#F5EFE3]/35 text-[#F5EFE3] transition-colors hover:bg-white/5 ${MOBILE_FOCUS_RING}`}
+              >
+                <X size={18} strokeWidth={2.2} />
+              </button>
+            </div>
 
-              <div>
-                <button
-                  onClick={() => setIsMobileServicesOpen(!isMobileServicesOpen)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium
-                    ${
-                      isActivePage('/services')
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'hover:bg-gray-50'
-                    }
-                  `}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-6 pb-8">
+              <div className="mt-5 mb-2.5 h-[3px] w-12 rounded-full bg-[#D9A441]" aria-hidden="true" />
+
+              <nav aria-label="Mobile navigation" className="flex flex-col">
+                <a
+                  ref={firstMobileLinkRef}
+                  href="/"
+                  aria-current={isActivePage('/') ? 'page' : undefined}
+                  onClick={() => handleNavClick('home', '/')}
+                  className={mobilePrimaryClass(isActivePage('/'))}
                 >
-                  <span>Services</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${isMobileServicesOpen ? 'rotate-180' : ''}`} />
+                  Home
+                  {isActivePage('/') && (
+                    <span aria-hidden="true" className="ml-1 h-2 w-2 rotate-45 bg-[#D9A441]" />
+                  )}
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMobileServicesOpen(!isMobileServicesOpen)}
+                  aria-expanded={isMobileServicesOpen}
+                  aria-controls="mobile-services-menu"
+                  className={mobilePrimaryClass(isActivePage('/services') || isMobileServicesOpen)}
+                >
+                  <span className="flex-1">Services</span>
+                  <span
+                    aria-hidden="true"
+                    className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
+                      isMobileServicesOpen
+                        ? 'bg-[#D9A441] text-[#0E2748]'
+                        : 'bg-[#F5EFE3]/[0.08] text-[#F5EFE3]'
+                    }`}
+                  >
+                    <ChevronDown
+                      size={16}
+                      strokeWidth={2.4}
+                      className={`transition-transform duration-200 ${isMobileServicesOpen ? 'rotate-180' : ''}`}
+                    />
+                  </span>
                 </button>
+
                 {isMobileServicesOpen && (
-                  <div className="ml-4 mt-1 space-y-1">
-                    <a
-                      href="/services"
-                      onClick={() => handleNavClick('all_services', '/services')}
-                      className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      All Services
-                    </a>
+                  <div
+                    id="mobile-services-menu"
+                    className="mt-1 mb-2.5 flex flex-col rounded-2xl bg-[#F5EFE3]/[0.06] py-1.5"
+                  >
                     {SERVICE_MENU_ITEMS.map((item) => (
                       <a
                         key={item.href}
                         href={item.href}
+                        aria-current={isActivePage(item.href) ? 'page' : undefined}
                         onClick={() => handleNavClick(item.trackingId, item.href)}
-                        className="block px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                        className={`flex min-h-[48px] items-center gap-3 rounded-lg px-4 text-base font-medium transition-colors ${MOBILE_FOCUS_RING} ${
+                          isActivePage(item.href) ? 'text-[#D9A441]' : 'text-[#F5EFE3] hover:text-[#D9A441]'
+                        }`}
                       >
+                        <span aria-hidden="true" className="h-1.5 w-1.5 flex-none rotate-45 bg-[#D9A441]" />
                         {item.label}
                       </a>
                     ))}
+                    <a
+                      href="/services"
+                      onClick={() => handleNavClick('all_services', '/services')}
+                      className={`mt-0.5 flex min-h-[48px] items-center justify-between rounded-lg border-t border-[#F5EFE3]/[0.12] px-4 text-[15px] font-bold text-[#D9A441] ${MOBILE_FOCUS_RING}`}
+                    >
+                      All services
+                      <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+                    </a>
                   </div>
                 )}
+
+                {MOBILE_PRIMARY_LINKS.map((item) => {
+                  const active = isActivePage(item.href);
+                  return (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => handleNavClick(item.label.toLowerCase(), item.href)}
+                      className={mobilePrimaryClass(active)}
+                    >
+                      {item.label}
+                      {item.badge && (
+                        <span className="rounded-full bg-[#D9A441] px-2 py-1 font-sans text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-[#0E2748]">
+                          {item.badge}
+                        </span>
+                      )}
+                      {active && !item.badge && (
+                        <span aria-hidden="true" className="ml-1 h-2 w-2 rotate-45 bg-[#D9A441]" />
+                      )}
+                    </a>
+                  );
+                })}
+              </nav>
+
+              <div className="mt-5 mb-2 flex items-center gap-3" aria-hidden="true">
+                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#8592AD]">More</span>
+                <span className="h-px flex-1 bg-[#F5EFE3]/[0.14]" />
               </div>
 
-              {[
-                { label: 'Service Areas', href: '/service-areas' },
-                { label: 'Partners', href: '/partners' },
-                { label: 'Gallery', href: '/gallery' },
-                { label: 'Gift Cards', href: '/gift-cards' },
-                { label: 'FAQ', href: '/faq' },
-                { label: 'Deals & News', href: '/news' },
-                { label: 'Contact', href: '/contact' },
-              ].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() =>
-                    handleNavClick(item.label.toLowerCase(), item.href)
-                  }
-                  className={`px-4 py-3 rounded-lg font-medium
-                    ${
-                      isActivePage(item.href)
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  {item.label}
-                </a>
-              ))}
+              <nav aria-label="More pages" className="grid grid-cols-2 gap-2">
+                {MOBILE_SECONDARY_LINKS.map((item) => {
+                  const active = isActivePage(item.href);
+                  return (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={() => handleNavClick(item.label.toLowerCase(), item.href)}
+                      className={mobileTileClass(active)}
+                    >
+                      {item.label}
+                      <ChevronRight size={14} strokeWidth={2.4} className="text-[#8592AD]" aria-hidden="true" />
+                    </a>
+                  );
+                })}
+              </nav>
 
-              {bookingEnabled && (
-                <div className="mt-4 pt-4 border-t">
+              {/* Calls to action */}
+              <div className="mt-8 flex flex-col gap-2.5">
+                <a
+                  href="/contact"
+                  onClick={() => handleNavClick('free_quote', '/contact')}
+                  className={`flex h-14 items-center justify-center gap-2.5 rounded-[14px] bg-[#D9A441] text-[17px] font-bold text-[#0E2748] shadow-[0_8px_20px_rgba(217,164,65,0.25)] transition-colors hover:bg-[#E9BE6A] ${MOBILE_FOCUS_RING}`}
+                >
+                  Get My Free Quote
+                  <ArrowRight size={18} strokeWidth={2.4} aria-hidden="true" />
+                </a>
+
+                {bookingEnabled && (
                   <a
                     href="/book"
                     onClick={() => handleNavClick('book', '/book')}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-lg font-semibold text-white shadow-md transition-colors hover:bg-emerald-700"
+                    className={`flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-brand-teal-cta text-[15px] font-bold text-white transition-colors hover:bg-brand-teal-cta-hover ${MOBILE_FOCUS_RING}`}
                   >
-                    <CalendarCheck size={20} />
-                    <span>Book Now</span>
+                    <CalendarCheck size={18} aria-hidden="true" />
+                    Book Now
                   </a>
-                </div>
-              )}
+                )}
 
-              {hasStoreProducts && (
-              <div className="mt-4 pt-4 border-t space-y-3">
-                {cartCount > 0 && (
+                {hasStoreProducts && cartCount > 0 && (
                   <button
+                    type="button"
                     onClick={openCart}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-blue-700 bg-white px-6 py-3 text-lg font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                    className={`flex h-[52px] items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-[#D9A441] text-[15px] font-bold text-[#D9A441] transition-colors hover:bg-[#D9A441]/10 ${MOBILE_FOCUS_RING}`}
                   >
-                    <ShoppingCart size={20} />
-                    <span>View cart</span>
-                    <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-blue-700 px-1.5 text-sm font-bold text-white">
+                    <ShoppingCart size={18} aria-hidden="true" />
+                    View cart
+                    <span className="flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-[#D9A441] px-1.5 text-sm font-bold text-[#0E2748]">
                       {cartCount}
                     </span>
                   </button>
                 )}
 
-                <a
-                  href="/store"
-                  onClick={() => handleNavClick('store', '/store')}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold-cta px-6 py-3 text-lg font-semibold text-brand-navy-deep shadow-md transition-colors hover:bg-brand-gold-cta-hover"
-                >
-                  <ShoppingBag size={20} />
-                  <span>Store</span>
-                </a>
+                <div className={`grid gap-2.5 ${hasStoreProducts ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  <a
+                    href="tel:+16154034538"
+                    onClick={() => handleNavClick('phone', 'tel:+16154034538')}
+                    aria-label="Call Boxed2Built at (615) 403-4538"
+                    className={`flex h-[52px] items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-[#F5EFE3]/30 text-[15px] font-medium text-[#F5EFE3] transition-colors hover:bg-white/5 ${MOBILE_FOCUS_RING}`}
+                  >
+                    <Phone size={17} aria-hidden="true" />
+                    (615) 403-4538
+                  </a>
+                  {hasStoreProducts && (
+                    <a
+                      href="/store"
+                      onClick={() => handleNavClick('store', '/store')}
+                      className={`flex h-[52px] items-center justify-center gap-2 rounded-[14px] border-[1.5px] border-[#F5EFE3]/30 text-[15px] font-medium text-[#F5EFE3] transition-colors hover:bg-white/5 ${MOBILE_FOCUS_RING}`}
+                    >
+                      <ShoppingBag size={17} aria-hidden="true" />
+                      Store
+                    </a>
+                  )}
+                </div>
+
+                <p className="mt-2.5 text-center font-display text-sm italic text-[#AEB8CC]">
+                  We assemble. You enjoy!
+                </p>
               </div>
-              )}
-            </nav>
+            </div>
           </div>
         )}
       </div>
