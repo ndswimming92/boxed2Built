@@ -154,7 +154,7 @@ const PartnersPage: React.FC = () => {
                 <a
                   href="/contact"
                   onClick={handleContactClick}
-                  className="inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
+                  className="inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
                 >
                   Contact Us
                 </a>
@@ -224,7 +224,7 @@ const PartnersPage: React.FC = () => {
               <div className="text-center">
                 <button
                   onClick={handleFlyerDownload}
-                  className="inline-flex items-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-brand-teal-cta hover:bg-brand-teal-cta-hover text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Download size={18} className="mr-2" />
                   Download Realtor Flyer (PDF)
@@ -289,14 +289,14 @@ const PartnersPage: React.FC = () => {
                 <a
                   href="/contact"
                   onClick={handleHostContactClick}
-                  className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Phone size={18} className="mr-2" />
                   Request a Quote
                 </a>
                 <button
                   onClick={handleHostFlyerDownload}
-                  className="inline-flex items-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  className="inline-flex items-center px-6 py-3 bg-brand-teal-cta hover:bg-brand-teal-cta-hover text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Download size={18} className="mr-2" />
                   Download Host Flyer (PDF)

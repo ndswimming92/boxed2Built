@@ -173,7 +173,7 @@ const Booking: React.FC = () => {
 
               <a
                 href={`tel:${phoneRaw}`}
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-green-700 hover:bg-green-800 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-brand-teal-cta hover:bg-brand-teal-cta-hover text-white rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
               >
                 <Phone size={24} className="mr-3" />
                 <span className="mr-2">Call</span>

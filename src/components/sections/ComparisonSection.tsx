@@ -91,7 +91,7 @@ const ComparisonSection: React.FC = () => {
             </p>
             <a
               href="https://boxed2built.com/contact?utm_id=B2B&utm_source=website&utm_medium=comparison_section&utm_campaign=local_vs_marketplace&utm_term=furniture_assembly&utm_content=quote_cta"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold shadow-md hover:shadow-lg transition"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep font-semibold shadow-md hover:shadow-lg transition"
             >
               Get Your Clear Quote
             </a>

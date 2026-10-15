@@ -164,7 +164,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                 <button
                   type="button"
                   onClick={() => onAdd(product, quantity)}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 font-semibold text-white shadow-md transition-colors hover:bg-blue-800"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-gold-cta px-5 py-3 font-semibold text-brand-navy-deep shadow-md transition-colors hover:bg-brand-gold-cta-hover"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   Add to cart

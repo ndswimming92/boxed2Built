@@ -190,7 +190,7 @@ const HoursGivenBackCounter: React.FC<HoursGivenBackCounterProps> = ({ totalHour
                 conversion_type: 'form_intent',
               });
             }}
-            className="group inline-flex items-center justify-center w-full sm:w-auto mt-8 px-6 py-3 md:px-8 md:py-4 bg-blue-700 hover:bg-blue-800 text-white font-medium text-base md:text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+            className="group inline-flex items-center justify-center w-full sm:w-auto mt-8 px-6 py-3 md:px-8 md:py-4 bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep font-medium text-base md:text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
           >
             Get Your Time Back
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

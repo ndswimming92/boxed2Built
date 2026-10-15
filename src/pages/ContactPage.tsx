@@ -184,7 +184,7 @@ const ContactPage: React.FC = () => {
                     <a
                       href="#"
                       onClick={(e) => { e.preventDefault(); handleEmailClick(); }}
-                      className="inline-flex items-center justify-center px-6 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg font-medium transition-colors"
+                      className="inline-flex items-center justify-center px-6 py-3 bg-brand-teal-cta hover:bg-brand-teal-cta-hover text-white rounded-lg font-medium transition-colors"
                     >
                       <Mail size={20} className="mr-2" />
                       Email Us

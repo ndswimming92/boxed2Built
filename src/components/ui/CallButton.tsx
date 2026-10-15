@@ -30,13 +30,13 @@ const CallButton: React.FC<CallButtonProps> = ({
     lg: 20
   };
 
-  const baseClasses = className || 'bg-green-700 hover:bg-green-800 text-white';
+  const baseClasses = className || 'bg-brand-teal-cta hover:bg-brand-teal-cta-hover text-white';
 
   return (
     <a
       href={`tel:${phoneRaw}`}
       data-page-section={pageSection}
-      className={`inline-flex items-center justify-center ${sizeClasses[size]} ${baseClasses} font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''}`}
+      className={`inline-flex items-center justify-center ${sizeClasses[size]} ${baseClasses} font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group ${fullWidth ? 'w-full' : ''}`}
       aria-label={`Call Boxed2Built at ${phoneDisplay}`}
       itemProp="telephone"
     >

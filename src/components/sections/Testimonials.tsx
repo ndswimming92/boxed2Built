@@ -369,7 +369,7 @@ const Testimonials: React.FC = () => {
                 navigate('/contact');
               }
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-gold-cta hover:bg-brand-gold-cta-hover text-brand-navy-deep font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             type="button"
           >
             Get Your Free Quote
