@@ -1,0 +1,44 @@
+name: Update changelog
+
+# Regenerates src/data/changelog.json (the admin Changelog page) after every
+# merge to main, so the page never falls behind. The bot's own commit is
+# ignored by scripts/generate-changelog.mjs and, being pushed with
+# GITHUB_TOKEN, does not re-trigger this workflow.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'src/data/changelog.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-changelog
+  cancel-in-progress: false
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/generate-changelog.mjs
+      - name: Commit changelog if it changed
+        run: |
+          if git diff --quiet -- src/data/changelog.json; then
+            echo "Changelog already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/changelog.json
+          git commit -m "Update changelog"
+          git pull --rebase origin main
+          git push origin HEAD:main

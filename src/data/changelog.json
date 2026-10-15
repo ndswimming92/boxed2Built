@@ -3,6 +3,13 @@
  "entries": [
   {
    "date": "2026-10-15",
+   "title": "Add searchable Changelog page to the admin console",
+   "category": "Content & Gallery",
+   "sha": "2b0a081",
+   "by": "claude"
+  },
+  {
+   "date": "2026-10-15",
    "title": "Redesign mobile menu in brand navy and gold",
    "category": "Design & Mobile",
    "pr": 472,

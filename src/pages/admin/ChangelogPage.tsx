@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, ScrollText, Search, X } from 'lucide-react';
 import changelog from '../../data/changelog.json';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ChangelogEntry {
   date: string;
@@ -41,6 +42,20 @@ const formatMonth = (iso: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
 export default function ChangelogPage() {
+  const { currentRole } = useAuth();
+
+  if (currentRole !== 'owner') {
+    return (
+      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-200">
+        {currentRole === null ? 'Loading…' : 'The changelog is only available to the business owner.'}
+      </div>
+    );
+  }
+
+  return <ChangelogContent />;
+}
+
+function ChangelogContent() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [showMinor, setShowMinor] = useState(true);

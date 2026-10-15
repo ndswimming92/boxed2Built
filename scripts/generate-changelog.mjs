@@ -50,7 +50,7 @@ for (const rec of raw.split(SEP)) {
     pr = Number(merge[1]);
     const firstLine = body.trim().split('\n')[0]?.trim();
     title = firstLine || title;
-  } else if (/^Merge (branch|remote)/.test(title)) {
+  } else if (/^Merge (branch|remote)/.test(title) || /^Update changelog\b/.test(title)) {
     continue;
   } else {
     const squash = title.match(/^(.*) \(#(\d+)\)$/);

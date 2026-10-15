@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
@@ -17,6 +17,7 @@ interface NavigationItem {
   name: string;
   href: string;
   icon: React.ElementType;
+  ownerOnly?: boolean;
 }
 
 interface NavigationGroup {
@@ -117,7 +118,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Scheduled Emails', href: '/admin/scheduled-emails', icon: CalendarClock },
       { name: 'Email Activity', href: '/admin/email-activity', icon: Mail },
       { name: 'Activity Logs', href: '/admin/activity-logs', icon: ScrollText },
-      { name: 'Changelog', href: '/admin/changelog', icon: History },
+      { name: 'Changelog', href: '/admin/changelog', icon: History, ownerOnly: true },
       { name: 'API Keys', href: '/admin/api-keys', icon: KeyRound },
       { name: 'Security', href: '/admin/security', icon: ShieldCheck },
       { name: 'Connections', href: '/admin/connections', icon: Plug },
@@ -141,10 +142,6 @@ const navigationGroups: NavigationGroup[] = [
   },
 ];
 
-const navigation: Array<NavigationItem & { category?: string }> = navigationGroups.flatMap(group =>
-  group.items.map(item => ({ ...item, category: group.name }))
-);
-
 function AdminLayoutContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -153,7 +150,19 @@ function AdminLayoutContent() {
   });
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
-  const { user, signOut } = useAuth();
+  const { user, signOut, currentRole } = useAuth();
+  const visibleGroups = useMemo(
+    () =>
+      navigationGroups.map(group => ({
+        ...group,
+        items: group.items.filter(item => !item.ownerOnly || currentRole === 'owner'),
+      })),
+    [currentRole]
+  );
+  const visibleNavigation = useMemo(
+    () => visibleGroups.flatMap(group => group.items.map(item => ({ ...item, category: group.name }))),
+    [visibleGroups]
+  );
   const location = useLocation();
   const { unviewedCount } = useRealtimeInquiries({
     businessId,
@@ -172,7 +181,7 @@ function AdminLayoutContent() {
         return {};
       }
     }
-    return navigationGroups.reduce((acc, group) => {
+    return visibleGroups.reduce((acc, group) => {
       acc[group.id] = group.defaultExpanded;
       return acc;
     }, {} as Record<string, boolean>);
@@ -205,7 +214,7 @@ function AdminLayoutContent() {
   };
 
   const expandAll = () => {
-    const allExpanded = navigationGroups.reduce((acc, group) => {
+    const allExpanded = visibleGroups.reduce((acc, group) => {
       acc[group.id] = true;
       return acc;
     }, {} as Record<string, boolean>);
@@ -213,7 +222,7 @@ function AdminLayoutContent() {
   };
 
   const collapseAll = () => {
-    const allCollapsed = navigationGroups.reduce((acc, group) => {
+    const allCollapsed = visibleGroups.reduce((acc, group) => {
       acc[group.id] = false;
       return acc;
     }, {} as Record<string, boolean>);
@@ -277,7 +286,7 @@ function AdminLayoutContent() {
       <CommandPalette
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
-        navigation={navigation}
+        navigation={visibleNavigation}
       />
 
       {/* Mobile sidebar backdrop */}
@@ -336,7 +345,7 @@ function AdminLayoutContent() {
           <nav className="flex-1 overflow-y-auto p-4">
             {/* Navigation Groups */}
             <div className="space-y-3">
-              {navigationGroups.map((group, groupIndex) => {
+              {visibleGroups.map((group, groupIndex) => {
                 const isExpanded = expandedCategories[group.id];
                 const GroupIcon = group.icon;
                 const hasActiveItem = group.items.some(item => location.pathname === item.href);
