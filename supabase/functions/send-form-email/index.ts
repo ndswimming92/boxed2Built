@@ -291,7 +291,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
     <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;">
 
       <tr><td style="padding:0 12px 28px;text-align:center;">
-        <a href="https://boxed2built.com" style="text-decoration:none;font-size:22px;font-weight:800;letter-spacing:-0.3px;color:#ffffff;">Boxed<span style="color:${GOLD};">2</span>Built</a>
+        <a href="https://boxed2built.com" style="text-decoration:none;display:inline-block;"><img src="https://boxed2built.com/boxed2built_logo_email.png" width="96" height="96" alt="Boxed2Built" style="display:block;width:96px;height:96px;border:0;outline:none;color:#ffffff;font-size:20px;font-weight:800;"></a>
       </td></tr>
 
       <tr><td style="padding:0 12px;text-align:center;">
