@@ -25,6 +25,7 @@ import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
 import ConfirmationModal from './ConfirmationModal';
 import ConfettiCanvas from './ConfettiCanvas';
+import TimeSavedPopup from './TimeSavedPopup';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../services/communicationService';
 
@@ -219,6 +220,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [qty, setQty] = useState<Record<FurnitureId, number>>(emptyQty);
   const [otherText, setOtherText] = useState('');
   const [itemsTouched, setItemsTouched] = useState(false);
+  // The tile whose time-saved note is showing; cleared when it is deselected or dismissed.
+  const [savingsItem, setSavingsItem] = useState<FurnitureId | null>(null);
 
   const [showScheduling, setShowScheduling] = useState(false);
   const [showReference, setShowReference] = useState(false);
@@ -395,6 +398,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
     setItemsTouched(true);
     const turningOn = qty[id] === 0;
     setQty((q) => ({ ...q, [id]: q[id] > 0 ? 0 : 1 }));
+    setSavingsItem(turningOn ? id : null);
     trackEvent('quote-tile-toggle', 'contact_form', {
       event_category: 'form_interaction',
       action_type: turningOn ? 'select' : 'deselect',
@@ -407,6 +411,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const stepQty = (id: FurnitureId, delta: number) => {
     setItemsTouched(true);
     setQty((q) => ({ ...q, [id]: Math.max(0, Math.min(MAX_PER_TYPE, q[id] + delta)) }));
+    if (qty[id] + delta <= 0) setSavingsItem((cur) => (cur === id ? null : cur));
   };
 
   // Progress: the four things a quote cannot go out without.
@@ -936,6 +941,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   );
                 })}
               </div>
+              {savingsItem && qty[savingsItem] > 0 && (
+                <TimeSavedPopup
+                  key={savingsItem}
+                  itemId={savingsItem}
+                  label={FURNITURE.find((f) => f.id === savingsItem)?.label ?? savingsItem}
+                  qty={qty}
+                  onClose={() => setSavingsItem(null)}
+                />
+              )}
               {showItemsError && (
                 <p id="quote-items-error" className="mt-3 text-sm text-red-600" role="alert">{itemsError}</p>
               )}
