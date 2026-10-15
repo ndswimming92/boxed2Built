@@ -1,12 +1,15 @@
-// Builds src/data/changelog.json from git history for the admin Changelog page.
-// Run `npm run changelog` (needs full history: `git fetch --unshallow` if needed).
+// Builds the admin Changelog data from git history and writes an SQL upsert for
+// the owner-only `site_changelog` table (kept out of the client bundle on purpose).
+// Usage: node scripts/generate-changelog.mjs [out.sql]   (needs full history:
+// `git fetch --unshallow` if needed). The GitHub workflow "Update changelog"
+// runs this and applies the SQL after every merge to main.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const out = resolve(root, 'src/data/changelog.json');
+const out = resolve(process.argv[2] ?? resolve(root, 'changelog.generated.sql'));
 
 const SEP = '\x1e';
 const FIELD = '\x1f';
@@ -92,6 +95,15 @@ for (const [date, files] of editsByDate) {
 
 entries.sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1));
 
+const payload = JSON.stringify(entries);
+if (payload.includes('$changelog$')) throw new Error('Entry text contains the SQL quote tag');
+const generatedAt = new Date().toISOString().slice(0, 10);
+const sql = `insert into public.site_changelog (id, generated_at, entries, updated_at)
+values (1, '${generatedAt}', $changelog$${payload}$changelog$::jsonb, now())
+on conflict (id) do update
+  set generated_at = excluded.generated_at, entries = excluded.entries, updated_at = excluded.updated_at;
+`;
+
 mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, JSON.stringify({ generatedAt: new Date().toISOString().slice(0, 10), entries }, null, 1) + '\n');
+writeFileSync(out, sql);
 console.log(`Wrote ${entries.length} entries to ${out}`);

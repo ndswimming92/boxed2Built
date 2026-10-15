@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, ScrollText, Search, X } from 'lucide-react';
-import changelog from '../../data/changelog.json';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ChangelogEntry {
@@ -13,7 +13,6 @@ interface ChangelogEntry {
   files?: string[];
 }
 
-const ENTRIES = changelog.entries as ChangelogEntry[];
 const REPO_URL = 'https://github.com/ndswimming92/boxed2Built';
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -52,10 +51,49 @@ export default function ChangelogPage() {
     );
   }
 
-  return <ChangelogContent />;
+  return <ChangelogLoader />;
 }
 
-function ChangelogContent() {
+// The history is kept in an owner-only table (row level security), not in the
+// site bundle, so nothing is downloaded unless an owner is signed in.
+function ChangelogLoader() {
+  const [data, setData] = useState<{ generatedAt: string; entries: ChangelogEntry[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from('site_changelog')
+      .select('generated_at, entries')
+      .eq('id', 1)
+      .maybeSingle()
+      .then(({ data: row, error: err }) => {
+        if (cancelled) return;
+        if (err) setError(err.message);
+        else setData({ generatedAt: row?.generated_at ?? '', entries: (row?.entries as ChangelogEntry[]) ?? [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">Could not load the changelog: {error}</div>;
+  }
+  if (!data) {
+    return <div className="text-center py-12 text-gray-500">Loading…</div>;
+  }
+  if (data.entries.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-200">
+        The changelog hasn&rsquo;t been generated yet. It is filled in automatically after the next merge to main.
+      </div>
+    );
+  }
+  return <ChangelogContent entries={data.entries} generatedAt={data.generatedAt} />;
+}
+
+function ChangelogContent({ entries, generatedAt }: { entries: ChangelogEntry[]; generatedAt: string }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [showMinor, setShowMinor] = useState(true);
@@ -63,13 +101,13 @@ function ChangelogContent() {
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const e of ENTRIES) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+    for (const e of entries) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  }, []);
+  }, [entries]);
 
   const filtered = useMemo(() => {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    return ENTRIES.filter((e) => {
+    return entries.filter((e) => {
       if (!showMinor && e.category === 'Minor edits') return false;
       if (category !== 'All' && e.category !== category) return false;
       if (terms.length === 0) return true;
@@ -78,7 +116,7 @@ function ChangelogContent() {
         .toLowerCase();
       return terms.every((t) => haystack.includes(t));
     });
-  }, [query, category, showMinor]);
+  }, [entries, query, category, showMinor]);
 
   const grouped = useMemo(() => {
     const months: { month: string; days: { date: string; items: ChangelogEntry[] }[] }[] = [];
@@ -107,7 +145,7 @@ function ChangelogContent() {
       return next;
     });
 
-  const oldest = ENTRIES[ENTRIES.length - 1]?.date;
+  const oldest = entries[entries.length - 1]?.date;
 
   return (
     <div className="space-y-6">
@@ -117,7 +155,7 @@ function ChangelogContent() {
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Every change made to the site, newest first
-          {oldest ? `, going back to ${formatDay(oldest)}` : ''}. Last updated {changelog.generatedAt}.
+          {oldest ? `, going back to ${formatDay(oldest)}` : ''}. Last updated {generatedAt}.
         </p>
       </div>
 
@@ -144,7 +182,7 @@ function ChangelogContent() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {[['All', ENTRIES.length] as const, ...categories].map(([name, count]) => (
+          {[['All', entries.length] as const, ...categories].map(([name, count]) => (
             <button
               key={name}
               onClick={() => setCategory(name)}
@@ -161,7 +199,7 @@ function ChangelogContent() {
 
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>
-            Showing {filtered.length} of {ENTRIES.length} entries
+            Showing {filtered.length} of {entries.length} entries
           </span>
           <label className="inline-flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={showMinor} onChange={(e) => setShowMinor(e.target.checked)} />
