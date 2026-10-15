@@ -62,6 +62,7 @@ const TaxSettingsPage = React.lazy(() => import('./pages/admin/TaxSettingsPage')
 const MileageSettingsPage = React.lazy(() => import('./pages/admin/MileageSettingsPage'));
 const GoalsPage = React.lazy(() => import('./pages/admin/GoalsPage'));
 const ActivityLogsPage = React.lazy(() => import('./pages/admin/ActivityLogsPage'));
+const ChangelogPage = React.lazy(() => import('./pages/admin/ChangelogPage'));
 const QRCodesPage = React.lazy(() => import('./pages/admin/QRCodesPage'));
 const QRCodeDetailPage = React.lazy(() => import('./pages/admin/QRCodeDetailPage'));
 const CompletionsPage = React.lazy(() => import('./pages/admin/CompletionsPage'));
@@ -205,6 +206,7 @@ export const routes: RouteRecord[] = [
           { path: 'mileage-settings', Component: MileageSettingsPage },
           { path: 'notification-bar', Component: NotificationBarPage },
           { path: 'activity-logs', Component: ActivityLogsPage },
+          { path: 'changelog', Component: ChangelogPage },
           { path: 'test-identifiers', Component: TestIdentifiersPage },
           { path: 'business-info', Component: BusinessInfoPage },
           { path: 'services', Component: ServicesAdminPage },
