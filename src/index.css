@@ -345,12 +345,12 @@ body {
   }
 }
 
-/* Time-saved note that pops in under the furniture tiles */
-@keyframes time-saved-pop-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+/* Time-saved note that fades in inside a selected furniture tile */
+@keyframes time-saved-note-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.time-saved-pop { animation: time-saved-pop-in 260ms ease-out both; }
+.time-saved-note { animation: time-saved-note-in 220ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
-  .time-saved-pop { animation: none; }
+  .time-saved-note { animation: none; }
 }
