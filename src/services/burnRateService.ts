@@ -445,11 +445,16 @@ export function chargesInMonth(subscriptions: Subscription[], monthKey: string):
   const monthStart = new Date(Date.UTC(y, m - 1, 1));
   const monthEnd = new Date(Date.UTC(y, m, 0));
   const today = todayDateOnly();
-  const from = monthStart < today ? today : monthStart;
+  // Enumerate from today (as upcomingPayments does) so undated subscriptions
+  // follow the same schedule, then keep only this month's charges.
   const events: ChargeEvent[] = [];
   subscriptions
     .filter((s) => s.is_active && s.amount > 0)
-    .forEach((sub) => events.push(...enumerateCharges(sub, from, monthEnd)));
+    .forEach((sub) =>
+      events.push(
+        ...enumerateCharges(sub, today, monthEnd).filter((ev) => ev.date >= monthStart)
+      )
+    );
   return events.sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
