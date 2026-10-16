@@ -61,6 +61,8 @@ export default function BurnRatePage() {
   const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  // What-if toggles: ids switched off for simulation only (never saved).
+  const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [latestBalance, setLatestBalance] = useState<BalanceSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -106,19 +108,39 @@ export default function BurnRatePage() {
 
   const currentBalance = latestBalance?.balance ?? 0;
 
-  const metrics = useMemo(
+  const scenarioSubs = useMemo(
+    () => subscriptions.filter((s) => !excludedIds.has(s.id)),
+    [subscriptions, excludedIds]
+  );
+  const excludedCount = subscriptions.length - scenarioSubs.length;
+
+  const toggleSub = (id: string) =>
+    setExcludedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // Metrics for the real (all-on) setup, used to show the what-if difference.
+  const baseline = useMemo(
     () => computeBurnMetrics(subscriptions, currentBalance),
     [subscriptions, currentBalance]
   );
 
-  const burndown = useMemo(
-    () => projectBurndown(subscriptions, currentBalance),
-    [subscriptions, currentBalance]
+  const metrics = useMemo(
+    () => computeBurnMetrics(scenarioSubs, currentBalance),
+    [scenarioSubs, currentBalance]
   );
 
-  const upcoming = useMemo(() => upcomingPayments(subscriptions, 12), [subscriptions]);
+  const burndown = useMemo(
+    () => projectBurndown(scenarioSubs, currentBalance),
+    [scenarioSubs, currentBalance]
+  );
 
-  const costBreakdown = useMemo(() => subscriptionCostBreakdown(subscriptions), [subscriptions]);
+  const upcoming = useMemo(() => upcomingPayments(scenarioSubs, 12), [scenarioSubs]);
+
+  const costBreakdown = useMemo(() => subscriptionCostBreakdown(scenarioSubs), [scenarioSubs]);
 
   const formatCurrency = (value: number, opts?: { decimals?: boolean }) => {
     const formatted = new Intl.NumberFormat('en-US', {
@@ -258,6 +280,33 @@ export default function BurnRatePage() {
               to calculate how long your money will last.
             </p>
           </div>
+        </div>
+      )}
+
+      {excludedCount > 0 && (
+        <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div>
+            <strong>What-if mode:</strong> {excludedCount} subscription
+            {excludedCount === 1 ? '' : 's'} switched off. You'd save{' '}
+            <strong>{formatCurrency(baseline.monthlyBurn - metrics.monthlyBurn, { decimals: true })}/mo</strong>{' '}
+            ({formatCurrency(baseline.annualBurn - metrics.annualBurn)}/yr,{' '}
+            {formatCurrency(baseline.dailyBurn - metrics.dailyBurn, { decimals: true })}/day).
+            {baseline.runwayDays != null && (
+              <>
+                {' '}Runway: {baseline.runwayDays} days →{' '}
+                {metrics.runwayDays != null ? `${metrics.runwayDays} days` : 'stable'}.
+              </>
+            )}
+            <span className="block text-xs text-amber-700 mt-0.5">
+              Simulation only — nothing is saved.
+            </span>
+          </div>
+          <button
+            onClick={() => setExcludedIds(new Set())}
+            className="px-3 py-1.5 bg-white border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors text-xs font-medium"
+          >
+            Reset
+          </button>
         </div>
       )}
 
@@ -541,8 +590,9 @@ export default function BurnRatePage() {
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Subscriptions</h2>
             <p className="text-sm text-slate-500 mt-0.5">
-              {metrics.activeCount} active · {formatCurrency(metrics.monthlyBurn)}/mo ·{' '}
-              {formatCurrency(metrics.annualBurn)}/yr
+              {metrics.activeCount} active
+              {excludedCount > 0 ? ` of ${subscriptions.length}` : ''} ·{' '}
+              {formatCurrency(metrics.monthlyBurn)}/mo · {formatCurrency(metrics.annualBurn)}/yr
             </p>
           </div>
           <button
@@ -561,6 +611,9 @@ export default function BurnRatePage() {
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  On
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                   Subscription
                 </th>
@@ -590,7 +643,28 @@ export default function BurnRatePage() {
             <tbody className="bg-white divide-y divide-slate-200">
               {subscriptions.length > 0 ? (
                 subscriptions.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50">
+                  <tr
+                    key={sub.id}
+                    className={`hover:bg-slate-50 ${excludedIds.has(sub.id) ? 'opacity-50' : ''}`}
+                  >
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={!excludedIds.has(sub.id)}
+                        aria-label={`Include ${sub.name} in totals`}
+                        onClick={() => toggleSub(sub.id)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          excludedIds.has(sub.id) ? 'bg-slate-300' : 'bg-emerald-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            excludedIds.has(sub.id) ? 'translate-x-0.5' : 'translate-x-4'
+                          }`}
+                        />
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="text-sm font-medium text-slate-900">{sub.name}</div>
                       {sub.description && (
@@ -666,7 +740,7 @@ export default function BurnRatePage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-slate-500">
                     No subscriptions yet. Click "Add Subscription" to start tracking your burn rate.
                   </td>
                 </tr>
