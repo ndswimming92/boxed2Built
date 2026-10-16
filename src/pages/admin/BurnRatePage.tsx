@@ -45,6 +45,8 @@ import {
   annualAmount,
   cycleLabel,
   getNextDueDate,
+  dailyToCover,
+  steadyDaily,
   type Subscription,
   type BalanceSnapshot,
 } from '../../services/burnRateService';
@@ -260,7 +262,7 @@ export default function BurnRatePage() {
       )}
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2 sm:mb-3">
             <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -293,6 +295,21 @@ export default function BurnRatePage() {
           </p>
           <p className="text-xs text-slate-500 mt-1">
             {formatCurrency(metrics.annualBurn)}/yr
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+              <Flame className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-600 mb-1">Daily to Cover</p>
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">
+            {formatCurrency(metrics.dailyToCoverTotal, { decimals: true })}/day
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            avg {formatCurrency(metrics.dailyBurn, { decimals: true })}/day
           </p>
         </div>
 
@@ -563,6 +580,9 @@ export default function BurnRatePage() {
                   Next Due
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  Daily
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -612,6 +632,15 @@ export default function BurnRatePage() {
                           : '—';
                       })()}
                     </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right whitespace-nowrap">
+                      {(() => {
+                        const toCover = dailyToCover(sub);
+                        return toCover != null ? formatCurrency(toCover, { decimals: true }) : '—';
+                      })()}
+                      <span className="block text-xs text-slate-400">
+                        avg {formatCurrency(steadyDaily(sub), { decimals: true })}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -637,7 +666,7 @@ export default function BurnRatePage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                     No subscriptions yet. Click "Add Subscription" to start tracking your burn rate.
                   </td>
                 </tr>

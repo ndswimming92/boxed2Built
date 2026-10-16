@@ -179,6 +179,32 @@ export function getNextDueDate(
   return occurrence(anchor, sub.billing_cycle, k);
 }
 
+/** Whole days from `from` until the subscription's next due date (min 1). */
+export function daysUntilDue(
+  sub: Pick<Subscription, 'next_due_date' | 'billing_cycle'>,
+  from: Date = todayDateOnly()
+): number | null {
+  const next = getNextDueDate(sub, from);
+  if (!next) return null;
+  return Math.max(1, Math.round((next.getTime() - from.getTime()) / 86_400_000));
+}
+
+/**
+ * Daily amount to set aside so this bill is covered by its next due date:
+ * amount / days until due. Rises as the due date approaches.
+ */
+export function dailyToCover(
+  sub: Pick<Subscription, 'amount' | 'next_due_date' | 'billing_cycle'>
+): number | null {
+  const days = daysUntilDue(sub);
+  return days == null ? null : sub.amount / days;
+}
+
+/** Steady long-run daily cost: annual cost spread over a year. */
+export function steadyDaily(sub: Pick<Subscription, 'amount' | 'billing_cycle'>): number {
+  return annualAmount(sub) / DAYS_PER_YEAR;
+}
+
 export interface ChargeEvent {
   date: Date;
   amount: number;
@@ -226,7 +252,8 @@ export interface BurnMetrics {
   monthlyBurn: number;
   annualBurn: number;
   weeklyBurn: number;
-  dailyBurn: number;
+  dailyBurn: number; // steady average: annual cost / 365.25
+  dailyToCoverTotal: number; // sum of amount / days-until-due across subscriptions
   activeCount: number;
   runwayDays: number | null; // null = effectively infinite (no burn)
   runwayMonths: number | null;
@@ -266,6 +293,7 @@ export function computeBurnMetrics(
   const annualBurn = monthlyBurn * 12;
   const weeklyBurn = annualBurn / 52;
   const dailyBurn = annualBurn / DAYS_PER_YEAR;
+  const dailyToCoverTotal = active.reduce((sum, s) => sum + (dailyToCover(s) ?? steadyDaily(s)), 0);
 
   const projection = projectBurndown(subscriptions, currentBalance);
 
@@ -285,6 +313,7 @@ export function computeBurnMetrics(
     annualBurn,
     weeklyBurn,
     dailyBurn,
+    dailyToCoverTotal,
     activeCount: active.length,
     runwayDays,
     runwayMonths,
