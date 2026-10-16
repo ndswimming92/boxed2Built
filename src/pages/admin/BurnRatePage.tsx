@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
   Wallet,
-  Flame,
   CalendarClock,
   TrendingDown,
   Plus,
@@ -10,7 +9,6 @@ import {
   Trash2,
   Repeat,
   AlertTriangle,
-  Hourglass,
   PieChart as PieChartIcon,
   BarChart3,
 } from 'lucide-react';
@@ -283,152 +281,108 @@ export default function BurnRatePage() {
         </div>
       )}
 
-      {excludedCount > 0 && (
-        <div className="sticky top-[73px] z-20 mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-md">
-          <div>
-            <strong>What-if mode:</strong> {excludedCount} subscription
-            {excludedCount === 1 ? '' : 's'} switched off. You'd save{' '}
-            <strong>{formatCurrency(baseline.monthlyBurn - metrics.monthlyBurn, { decimals: true })}/mo</strong>{' '}
-            ({formatCurrency(baseline.annualBurn - metrics.annualBurn)}/yr,{' '}
-            {formatCurrency(baseline.dailyBurn - metrics.dailyBurn, { decimals: true })}/day).
-            {baseline.runwayDays != null && (
-              <>
-                {' '}Runway: {baseline.runwayDays} days →{' '}
-                {metrics.runwayDays != null ? `${metrics.runwayDays} days` : 'stable'}.
-              </>
-            )}
-            <span className="block text-xs text-amber-800 mt-1 font-medium">
-              Now: {formatCurrency(metrics.monthlyBurn, { decimals: true })}/mo ·{' '}
-              {formatCurrency(metrics.annualBurn)}/yr ·{' '}
-              {formatCurrency(metrics.dailyToCoverTotal, { decimals: true })}/day to cover · Runway{' '}
-              {runwayLabel}
-              {metrics.zeroDate ? ` · Empty ${formatDate(metrics.zeroDate)}` : ''}
-            </span>
-            <span className="block text-xs text-amber-700 mt-0.5">
-              Simulation only — nothing is saved.
-            </span>
-          </div>
-          <button
-            onClick={() => setExcludedIds(new Set())}
-            className="px-3 py-1.5 bg-white border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors text-xs font-medium"
-          >
-            Reset
-          </button>
-        </div>
-      )}
-
-      {/* Stat tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 mb-6 sm:mb-8">
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
+      {/* Pinned summary: what-if banner + compact stat tiles */}
+      <div className="sm:sticky sm:top-[73px] z-20 bg-slate-50 pb-3 mb-3 sm:mb-5 -mx-1 px-1 pt-1">
+        {excludedCount > 0 && (
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs sm:text-sm text-amber-900">
+            <div>
+              <strong>What-if mode:</strong> {excludedCount} subscription
+              {excludedCount === 1 ? '' : 's'} off. You'd save{' '}
+              <strong>
+                {formatCurrency(baseline.monthlyBurn - metrics.monthlyBurn, { decimals: true })}/mo
+              </strong>{' '}
+              ({formatCurrency(baseline.annualBurn - metrics.annualBurn)}/yr,{' '}
+              {formatCurrency(baseline.dailyBurn - metrics.dailyBurn, { decimals: true })}/day).
+              {baseline.runwayDays != null && (
+                <>
+                  {' '}Runway: {baseline.runwayDays} days →{' '}
+                  {metrics.runwayDays != null ? `${metrics.runwayDays} days` : 'stable'}.
+                </>
+              )}
+              <span className="text-amber-700"> Simulation only — nothing is saved.</span>
             </div>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-1">Current Balance</p>
-          <p className="text-lg sm:text-2xl font-bold text-slate-900">{formatCurrency(currentBalance)}</p>
-          <p className="text-xs text-slate-500 mt-1">
-            {latestBalance
-              ? `as of ${new Date(latestBalance.recorded_at).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  timeZone: 'UTC',
-                })}`
-              : 'not set'}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Flame className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
-            </div>
-            <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-          </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-1">Monthly Burn</p>
-          <p className="text-lg sm:text-2xl font-bold text-slate-900">
-            {formatCurrency(metrics.monthlyBurn)}
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            {formatCurrency(metrics.annualBurn)}/yr
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-              <Flame className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-1">Daily to Cover</p>
-          <p className="text-lg sm:text-2xl font-bold text-slate-900">
-            {formatCurrency(metrics.dailyToCoverTotal, { decimals: true })}/day
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            avg {formatCurrency(metrics.dailyBurn, { decimals: true })}/day
-          </p>
-        </div>
-
-        <div
-          className={`rounded-xl border p-3 sm:p-6 ${
-            runwaySeverity === 'critical'
-              ? 'bg-red-50 border-red-200'
-              : runwaySeverity === 'warning'
-                ? 'bg-amber-50 border-amber-200'
-                : 'bg-white border-slate-200'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div
-              className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center ${
-                runwaySeverity === 'critical'
-                  ? 'bg-red-100'
-                  : runwaySeverity === 'warning'
-                    ? 'bg-amber-100'
-                    : 'bg-slate-100'
-              }`}
+            <button
+              onClick={() => setExcludedIds(new Set())}
+              className="px-3 py-1 bg-white border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors text-xs font-medium"
             >
-              <Hourglass
-                className={`w-4 h-4 sm:w-6 sm:h-6 ${
-                  runwaySeverity === 'critical'
-                    ? 'text-red-600'
-                    : runwaySeverity === 'warning'
-                      ? 'text-amber-600'
-                      : 'text-slate-600'
-                }`}
-              />
-            </div>
+              Reset
+            </button>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-1">Runway</p>
-          <p
-            className={`text-lg sm:text-2xl font-bold ${
+        )}
+
+        {/* Stat tiles */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+          <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+            <p className="text-[11px] text-slate-500">Current Balance</p>
+            <p className="text-base font-bold text-slate-900 leading-tight">
+              {formatCurrency(currentBalance)}
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              {latestBalance
+                ? `as of ${new Date(latestBalance.recorded_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'UTC',
+                  })}`
+                : 'not set'}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+            <p className="text-[11px] text-slate-500">Monthly Burn</p>
+            <p className="text-base font-bold text-slate-900 leading-tight">
+              {formatCurrency(metrics.monthlyBurn)}
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              {formatCurrency(metrics.annualBurn)}/yr
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+            <p className="text-[11px] text-slate-500">Daily to Cover</p>
+            <p className="text-base font-bold text-slate-900 leading-tight">
+              {formatCurrency(metrics.dailyToCoverTotal, { decimals: true })}/day
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              avg {formatCurrency(metrics.dailyBurn, { decimals: true })}/day
+            </p>
+          </div>
+
+          <div
+            className={`rounded-lg border px-3 py-2 shadow-sm ${
               runwaySeverity === 'critical'
-                ? 'text-red-700'
+                ? 'bg-red-50 border-red-200'
                 : runwaySeverity === 'warning'
-                  ? 'text-amber-700'
-                  : 'text-slate-900'
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-white border-slate-200'
             }`}
           >
-            {runwayLabel}
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            {metrics.runwayDays != null ? `${metrics.runwayDays} days left` : 'balance stable'}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-violet-100 rounded-lg flex items-center justify-center">
-              <CalendarClock className="w-4 h-4 sm:w-6 sm:h-6 text-violet-600" />
-            </div>
+            <p className="text-[11px] text-slate-500">Runway</p>
+            <p
+              className={`text-base font-bold leading-tight ${
+                runwaySeverity === 'critical'
+                  ? 'text-red-700'
+                  : runwaySeverity === 'warning'
+                    ? 'text-amber-700'
+                    : 'text-slate-900'
+              }`}
+            >
+              {runwayLabel}
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              {metrics.runwayDays != null ? `${metrics.runwayDays} days left` : 'balance stable'}
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-1">Projected Empty</p>
-          <p className="text-lg sm:text-2xl font-bold text-slate-900">
-            {metrics.zeroDate ? formatDate(metrics.zeroDate) : '—'}
-          </p>
-          <p className="text-xs text-slate-500 mt-1">
-            {metrics.activeCount} active subscription{metrics.activeCount === 1 ? '' : 's'}
-          </p>
+
+          <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+            <p className="text-[11px] text-slate-500">Projected Empty</p>
+            <p className="text-base font-bold text-slate-900 leading-tight">
+              {metrics.zeroDate ? formatDate(metrics.zeroDate) : '—'}
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              {metrics.activeCount} active subscription{metrics.activeCount === 1 ? '' : 's'}
+            </p>
+          </div>
         </div>
       </div>
 
