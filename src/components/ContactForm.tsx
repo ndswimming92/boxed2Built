@@ -873,7 +873,12 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   return (
                     <div
                       key={f.id}
-                      className={`relative rounded-2xl border-2 border-[#ECE3D2] transition-[box-shadow,background-color] duration-200 ${
+                      // The whole card toggles, not just its top. The button below is the
+                      // keyboard and screen-reader control (its click bubbles up to here);
+                      // the stepper and text box stop propagation so adjusting a count or
+                      // typing never drops the selection.
+                      onClick={() => toggleType(f.id)}
+                      className={`relative cursor-pointer rounded-2xl border-2 border-[#ECE3D2] transition-[box-shadow,background-color] duration-200 ${
                         on ? 'bg-[#FBF8F1] shadow-[0_0_0_2px_#D9A441,0_8px_20px_rgba(217,164,65,0.18)]' : 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(14,39,72,0.08)]'
                       }`}
                     >
@@ -881,7 +886,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                         type="button"
                         aria-pressed={on}
                         aria-label={f.label}
-                        onClick={() => toggleType(f.id)}
                         className={`block w-full text-left rounded-[14px] px-3.5 pt-4 ${on ? 'pb-0' : 'pb-3.5'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441]`}
                       >
                         {on && (
@@ -898,7 +902,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
                       {on && (
                         <div className="px-3.5 pb-3.5">
-                          <div className="flex items-center justify-between mt-3 bg-[#FBF8F1] border border-[#ECE3D2] rounded-full p-1">
+                          <div onClick={(e) => e.stopPropagation()} className="cursor-default flex items-center justify-between mt-3 bg-[#FBF8F1] border border-[#ECE3D2] rounded-full p-1">
                             <button
                               type="button"
                               onClick={() => stepQty(f.id, -1)}
@@ -934,6 +938,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                               value={otherText}
                               maxLength={200}
                               onChange={(e) => setOtherText(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
                               placeholder="Tell us what it is — grill, patio set, gym…"
                               aria-label="Describe the other item"
                               className="w-full mt-2.5 px-3 py-2.5 rounded-[10px] border-[1.5px] border-gray-300 text-sm text-gray-900 bg-white outline-none placeholder:text-gray-400 focus:border-[#D9A441] focus:shadow-[0_0_0_3px_rgba(217,164,65,0.22)]"
