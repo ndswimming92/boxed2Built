@@ -923,9 +923,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                             data-testid={`time-saved-${f.id}`}
                             className="time-saved-note mt-3 text-xs leading-snug text-[#0E2748]"
                           >
-                            On average this takes <strong>{formatHoursRange({ low: DIY_TIME_SAVINGS[f.id].diyHours[0], high: DIY_TIME_SAVINGS[f.id].diyHours[1] })}</strong> per piece to build yourself.{' '}
-                            Hire me and save about{' '}
-                            <strong className="text-[#B45309]">{formatHoursRange(estimateTimeSaved({ [f.id]: n }))}</strong>.
+                            Most people spend <strong>{formatHoursRange({ low: DIY_TIME_SAVINGS[f.id].diyHours[0], high: DIY_TIME_SAVINGS[f.id].diyHours[1] })}</strong> building each one themselves.{' '}
+                            Hire me and get{' '}
+                            <strong className="text-[#B45309]">{formatHoursRange(estimateTimeSaved({ [f.id]: n }))}</strong> of your time back.
                           </p>
 
                           {f.id === 'Other' && (
