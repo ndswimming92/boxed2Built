@@ -478,6 +478,7 @@ export default function BurnRatePage() {
             <BarChart3 className="w-5 h-5 text-slate-400" />
           </div>
           {hasSubscriptions ? (
+            <>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -566,6 +567,7 @@ export default function BurnRatePage() {
             ) : (
               <p className="mt-3 text-xs text-slate-400">Click a month to see its payments.</p>
             )}
+            </>
           ) : (
             <div className="h-72 flex items-center justify-center text-slate-400">
               <p>No subscriptions yet</p>
