@@ -435,6 +435,24 @@ export function upcomingPayments(
   });
 }
 
+/**
+ * The individual charges landing in one calendar month (`monthKey` = "YYYY-MM"),
+ * matching what upcomingPayments() counts for that month: for the current month
+ * only charges from today onward. Sorted by date.
+ */
+export function chargesInMonth(subscriptions: Subscription[], monthKey: string): ChargeEvent[] {
+  const [y, m] = monthKey.split('-').map(Number);
+  const monthStart = new Date(Date.UTC(y, m - 1, 1));
+  const monthEnd = new Date(Date.UTC(y, m, 0));
+  const today = todayDateOnly();
+  const from = monthStart < today ? today : monthStart;
+  const events: ChargeEvent[] = [];
+  subscriptions
+    .filter((s) => s.is_active && s.amount > 0)
+    .forEach((sub) => events.push(...enumerateCharges(sub, from, monthEnd)));
+  return events.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
 /** Per-subscription monthly-normalized cost, largest first — for the donut. */
 export function subscriptionCostBreakdown(subscriptions: Subscription[]): SubscriptionCostSlice[] {
   return subscriptions
