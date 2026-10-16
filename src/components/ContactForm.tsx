@@ -25,7 +25,7 @@ import { logPublicAction } from '../services/auditLogService';
 import { isTestSubmission } from '../services/testIdentifierService';
 import ConfirmationModal from './ConfirmationModal';
 import ConfettiCanvas from './ConfettiCanvas';
-import { DIY_TIME_SAVINGS, estimateTimeSaved, formatHoursRange } from '../utils/diyTimeSavings';
+import { estimateTimeSaved, formatHoursRange } from '../utils/diyTimeSavings';
 import { useBusinessDataWithFallback } from '../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../services/communicationService';
 
@@ -923,8 +923,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                             data-testid={`time-saved-${f.id}`}
                             className="time-saved-note mt-3 text-xs leading-snug text-[#0E2748]"
                           >
-                            On average this takes <strong>{formatHoursRange({ low: DIY_TIME_SAVINGS[f.id].diyHours[0], high: DIY_TIME_SAVINGS[f.id].diyHours[1] })}</strong> per piece to build yourself.{' '}
-                            Hire me and save about{' '}
+                            Hiring us saves you about{' '}
                             <strong className="text-[#B45309]">{formatHoursRange(estimateTimeSaved({ [f.id]: n }))}</strong>.
                           </p>
 
