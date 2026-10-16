@@ -44,6 +44,7 @@ import {
   monthlyAmount,
   annualAmount,
   cycleLabel,
+  getNextDueDate,
   type Subscription,
   type BalanceSnapshot,
 } from '../../services/burnRateService';
@@ -599,14 +600,17 @@ export default function BurnRatePage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {sub.next_due_date
-                        ? new Date(sub.next_due_date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            timeZone: 'UTC',
-                          })
-                        : '—'}
+                      {(() => {
+                        const next = getNextDueDate(sub);
+                        return next
+                          ? next.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              timeZone: 'UTC',
+                            })
+                          : '—';
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">

@@ -140,6 +140,45 @@ function advance(d: Date, cycle: BillingCycle): Date {
   }
 }
 
+/**
+ * The k-th occurrence after `anchor`. Always computed from the original anchor
+ * (not by chaining) so a 31st-of-month bill returns to the 31st after short
+ * months instead of drifting to the 28th.
+ */
+function occurrence(anchor: Date, cycle: BillingCycle, k: number): Date {
+  switch (cycle) {
+    case 'weekly':
+      return addDays(anchor, 7 * k);
+    case 'biweekly':
+      return addDays(anchor, 14 * k);
+    case 'quarterly':
+      return addMonths(anchor, 3 * k);
+    case 'semiannually':
+      return addMonths(anchor, 6 * k);
+    case 'yearly':
+      return addMonths(anchor, 12 * k);
+    case 'monthly':
+    default:
+      return addMonths(anchor, k);
+  }
+}
+
+/**
+ * The next upcoming due date for a subscription: the stored date if it is still
+ * today or later, otherwise the stored date rolled forward by the billing cycle
+ * (e.g. 10/20 monthly -> 11/20). Returns null when no date is set.
+ */
+export function getNextDueDate(
+  sub: Pick<Subscription, 'next_due_date' | 'billing_cycle'>,
+  from: Date = todayDateOnly()
+): Date | null {
+  if (!sub.next_due_date) return null;
+  const anchor = parseDateOnly(sub.next_due_date);
+  let k = 0;
+  while (k < 5000 && occurrence(anchor, sub.billing_cycle, k) < from) k += 1;
+  return occurrence(anchor, sub.billing_cycle, k);
+}
+
 export interface ChargeEvent {
   date: Date;
   amount: number;
@@ -162,29 +201,21 @@ export function enumerateCharges(
   const events: ChargeEvent[] = [];
   if (!sub.is_active || sub.amount <= 0) return events;
 
-  let cursor: Date;
-  if (sub.next_due_date) {
-    cursor = parseDateOnly(sub.next_due_date);
-    // Roll forward past occurrences to the first one on/after `from`.
-    let guard = 0;
-    while (cursor < from && guard < 5000) {
-      cursor = advance(cursor, sub.billing_cycle);
-      guard += 1;
-    }
-  } else {
-    cursor = advance(from, sub.billing_cycle);
-  }
+  // Anchor on the original due date so month-end dates don't drift; with no
+  // date set, assume the first charge is one interval from `from`.
+  const anchor = sub.next_due_date ? parseDateOnly(sub.next_due_date) : advance(from, sub.billing_cycle);
 
-  let guard = 0;
-  while (cursor <= to && guard < 5000) {
+  let k = 0;
+  while (k < 5000 && occurrence(anchor, sub.billing_cycle, k) < from) k += 1;
+  for (; k < 5000; k += 1) {
+    const date = occurrence(anchor, sub.billing_cycle, k);
+    if (date > to) break;
     events.push({
-      date: toDateOnly(cursor),
+      date: toDateOnly(date),
       amount: sub.amount,
       subscriptionId: sub.id,
       name: sub.name,
     });
-    cursor = advance(cursor, sub.billing_cycle);
-    guard += 1;
   }
 
   return events;
