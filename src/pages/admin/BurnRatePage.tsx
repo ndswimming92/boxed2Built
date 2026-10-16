@@ -38,6 +38,7 @@ import {
   computeBurnMetrics,
   projectBurndown,
   upcomingPayments,
+  chargesInMonth,
   subscriptionCostBreakdown,
   monthlyAmount,
   annualAmount,
@@ -137,6 +138,23 @@ export default function BurnRatePage() {
   );
 
   const upcoming = useMemo(() => upcomingPayments(scenarioSubs, 12), [scenarioSubs]);
+
+  // Month selected on the Upcoming Payments chart; its list follows the what-if toggles.
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const selectedCharges = useMemo(
+    () => (selectedMonth ? chargesInMonth(scenarioSubs, selectedMonth) : []),
+    [scenarioSubs, selectedMonth]
+  );
+  const selectedMonthLabel = selectedMonth
+    ? (() => {
+        const [y, m] = selectedMonth.split('-').map(Number);
+        return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        });
+      })()
+    : '';
 
   const costBreakdown = useMemo(() => subscriptionCostBreakdown(scenarioSubs), [scenarioSubs]);
 
@@ -453,16 +471,26 @@ export default function BurnRatePage() {
       </div>
 
       {/* Two-up: upcoming payments + cost breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-6 mb-6 sm:mb-8">
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-slate-900">Upcoming Payments (12 mo)</h2>
             <BarChart3 className="w-5 h-5 text-slate-400" />
           </div>
           {hasSubscriptions ? (
+            <>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={upcoming} margin={{ top: 10, right: 8, left: 8, bottom: 0 }}>
+                <BarChart
+                  data={upcoming}
+                  margin={{ top: 10, right: 8, left: 8, bottom: 0 }}
+                  style={{ cursor: 'pointer' }}
+                  onClick={(state) => {
+                    const point = upcoming.find((p) => p.label === state?.activeLabel);
+                    if (!point) return;
+                    setSelectedMonth((prev) => (prev === point.month ? null : point.month));
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                   <XAxis dataKey="label" stroke="#64748b" style={{ fontSize: '12px' }} minTickGap={8} />
                   <YAxis
@@ -476,10 +504,70 @@ export default function BurnRatePage() {
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
                     formatter={(value) => [formatCurrency(Number(value), { decimals: true }), 'Due']}
                   />
-                  <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Amount due" />
+                  <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Amount due">
+                    {upcoming.map((point) => (
+                      <Cell
+                        key={point.month}
+                        fill={
+                          selectedMonth == null || point.month === selectedMonth
+                            ? '#3b82f6'
+                            : '#bfdbfe'
+                        }
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            {selectedMonth ? (
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {selectedMonthLabel} ·{' '}
+                    {formatCurrency(
+                      selectedCharges.reduce((sum, c) => sum + c.amount, 0),
+                      { decimals: true }
+                    )}{' '}
+                    · {selectedCharges.length} payment{selectedCharges.length === 1 ? '' : 's'}
+                  </h3>
+                  <button
+                    onClick={() => setSelectedMonth(null)}
+                    className="text-xs text-slate-500 hover:text-slate-700"
+                  >
+                    Close
+                  </button>
+                </div>
+                {selectedCharges.length > 0 ? (
+                  <ul className="divide-y divide-slate-200">
+                    {selectedCharges.map((c) => (
+                      <li
+                        key={`${c.subscriptionId}-${c.date.toISOString()}`}
+                        className="flex items-center justify-between py-2 text-sm"
+                      >
+                        <span className="text-slate-900">
+                          <span className="inline-block w-16 text-slate-500">
+                            {c.date.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              timeZone: 'UTC',
+                            })}
+                          </span>
+                          {c.name}
+                        </span>
+                        <span className="font-medium text-slate-900">
+                          {formatCurrency(c.amount, { decimals: true })}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate-500">No payments due this month.</p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-slate-400">Click a month to see its payments.</p>
+            )}
+            </>
           ) : (
             <div className="h-72 flex items-center justify-center text-slate-400">
               <p>No subscriptions yet</p>
