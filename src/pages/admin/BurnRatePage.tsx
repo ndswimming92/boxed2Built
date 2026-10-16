@@ -284,7 +284,7 @@ export default function BurnRatePage() {
       )}
 
       {excludedCount > 0 && (
-        <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="sticky top-[73px] z-20 mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-md">
           <div>
             <strong>What-if mode:</strong> {excludedCount} subscription
             {excludedCount === 1 ? '' : 's'} switched off. You'd save{' '}
@@ -297,6 +297,13 @@ export default function BurnRatePage() {
                 {metrics.runwayDays != null ? `${metrics.runwayDays} days` : 'stable'}.
               </>
             )}
+            <span className="block text-xs text-amber-800 mt-1 font-medium">
+              Now: {formatCurrency(metrics.monthlyBurn, { decimals: true })}/mo ·{' '}
+              {formatCurrency(metrics.annualBurn)}/yr ·{' '}
+              {formatCurrency(metrics.dailyToCoverTotal, { decimals: true })}/day to cover · Runway{' '}
+              {runwayLabel}
+              {metrics.zeroDate ? ` · Empty ${formatDate(metrics.zeroDate)}` : ''}
+            </span>
             <span className="block text-xs text-amber-700 mt-0.5">
               Simulation only — nothing is saved.
             </span>
