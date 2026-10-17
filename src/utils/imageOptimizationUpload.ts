@@ -59,6 +59,8 @@ export function isHeicFile(file: File): boolean {
 export async function normalizeImageFile(file: File): Promise<File> {
   if (!isHeicFile(file)) return file;
 
+  // heic-to is LGPL-3.0: keep it a lazily imported, unmodified, separate chunk
+  // and keep public/THIRD-PARTY-NOTICES.txt in sync if the dependency changes.
   // heic-to bundles a current libheif, which decodes newer iPhone HEICs that the
   // older heic2any build rejects with "format not supported".
   const { heicTo } = await import('heic-to');
