@@ -53,15 +53,16 @@ export function isHeicFile(file: File): boolean {
 /**
  * Converts a HEIC/HEIF file to a JPEG File so it can be decoded by the browser
  * canvas (Chrome/Firefox/Edge can't render HEIC natively). Non-HEIC files are
- * returned unchanged. The heic2any decoder is loaded lazily so it only ships to
+ * returned unchanged. The heic-to decoder is loaded lazily so it only ships to
  * users who actually pick a HEIC file.
  */
 export async function normalizeImageFile(file: File): Promise<File> {
   if (!isHeicFile(file)) return file;
 
-  const { default: heic2any } = await import('heic2any');
-  const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-  const blob = Array.isArray(converted) ? converted[0] : converted;
+  // heic-to bundles a current libheif, which decodes newer iPhone HEICs that the
+  // older heic2any build rejects with "format not supported".
+  const { heicTo } = await import('heic-to');
+  const blob = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.9 });
   const fileName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
 
   return new File([blob], fileName, {
