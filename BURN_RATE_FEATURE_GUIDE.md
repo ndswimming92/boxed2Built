@@ -87,16 +87,48 @@ CREATE TABLE IF NOT EXISTS business_balance_snapshots (
 ALTER TABLE business_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE business_balance_snapshots ENABLE ROW LEVEL SECURITY;
 
--- Admin-only access (repeat the 4 policies for each table: SELECT, INSERT, UPDATE, DELETE)
-CREATE POLICY "Authenticated users can view business subscriptions"
-  ON business_subscriptions FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated users can insert business subscriptions"
-  ON business_subscriptions FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated users can update business subscriptions"
-  ON business_subscriptions FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated users can delete business subscriptions"
-  ON business_subscriptions FOR DELETE TO authenticated USING (true);
--- ...same four policies for business_balance_snapshots...
+-- Admin-only access. These tables hold financial data, so NEVER use USING (true):
+-- that lets every signed-in account (including customers) read and change them.
+-- Helper: reads an admin flag from the signed-in user's JWT (app_metadata, which
+-- users cannot edit themselves). Set it for your admin accounts, e.g. in the
+-- Supabase dashboard or with the service-role admin API:
+--   app_metadata = { "is_platform_admin": true }
+CREATE OR REPLACE FUNCTION public.is_platform_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT COALESCE((auth.jwt() -> 'app_metadata' ->> 'is_platform_admin')::boolean, false);
+$$;
+
+-- business_subscriptions: admins only, for all four operations
+CREATE POLICY "Admins can view business subscriptions"
+  ON public.business_subscriptions FOR SELECT TO authenticated
+  USING (public.is_platform_admin());
+CREATE POLICY "Admins can insert business subscriptions"
+  ON public.business_subscriptions FOR INSERT TO authenticated
+  WITH CHECK (public.is_platform_admin());
+CREATE POLICY "Admins can update business subscriptions"
+  ON public.business_subscriptions FOR UPDATE TO authenticated
+  USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin());
+CREATE POLICY "Admins can delete business subscriptions"
+  ON public.business_subscriptions FOR DELETE TO authenticated
+  USING (public.is_platform_admin());
+
+-- business_balance_snapshots: the same four policies, admins only
+CREATE POLICY "Admins can view balance snapshots"
+  ON public.business_balance_snapshots FOR SELECT TO authenticated
+  USING (public.is_platform_admin());
+CREATE POLICY "Admins can insert balance snapshots"
+  ON public.business_balance_snapshots FOR INSERT TO authenticated
+  WITH CHECK (public.is_platform_admin());
+CREATE POLICY "Admins can update balance snapshots"
+  ON public.business_balance_snapshots FOR UPDATE TO authenticated
+  USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin());
+CREATE POLICY "Admins can delete balance snapshots"
+  ON public.business_balance_snapshots FOR DELETE TO authenticated
+  USING (public.is_platform_admin());
 
 CREATE INDEX IF NOT EXISTS idx_business_subscriptions_business_id ON business_subscriptions(business_id);
 CREATE INDEX IF NOT EXISTS idx_business_subscriptions_is_active ON business_subscriptions(is_active);
@@ -309,7 +341,7 @@ Both modals are bottom sheets on mobile (`items-end`, `rounded-t-xl`) and centre
 4. **Floor chart balances at 0** so the line doesn't dive negative.
 5. **Cap the loops.** The occurrence loops stop at 5,000 iterations as a safety guard.
 6. **The soft delete means the DELETE RLS policy is never used.** Keep it anyway, or remove it for stricter security.
-7. **The RLS policies above allow any authenticated user.** That is fine for a single-owner admin app. If you have multiple tenants, scope the policies by `business_id` or `auth.uid()`.
+7. **Lock the data to admins.** The policies above use `is_platform_admin()`, so only accounts flagged as admin in their JWT `app_metadata` can read or change this data. If your site has customer logins, do not use `USING (true)`: it exposes your balance and bills to every signed-in customer. If you have multiple tenants, also scope by `business_id`. Also hide the admin page route from non-admins in the UI, but treat the database policies as the real protection.
 
 ---
 
