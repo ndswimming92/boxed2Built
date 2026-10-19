@@ -6,9 +6,65 @@ What ships automatically, what does not, and the one thing that will bite you.
 
 | Thing | How it deploys |
 | --- | --- |
-| Frontend (`src/`) | **Automatic** — Netlify builds on push to `main` |
+| Frontend (`src/`) | **Automatic** — Netlify builds on push to `main` (Cloudflare Pages once moved; see below) |
 | Edge functions (`supabase/functions/`) | **Automatic** — `.github/workflows/deploy-functions.yml`, once its two secrets are set |
 | Database migrations (`supabase/migrations/`) | **By hand. Always.** See below |
+
+## Frontend on Cloudflare Pages
+
+The site is moving from Netlify to Cloudflare Pages, whose free plan allows
+business use and 500 builds a month. Both can run side by side until the domain
+is switched: Netlify keeps using `netlify.toml` and `public/_redirects`, and
+Cloudflare runs `npm run build:cloudflare`, which builds normally and then runs
+`scripts/prepare-cloudflare.mjs` to swap in `cloudflare/_redirects` and append
+`cloudflare/_headers` to `public/_headers`.
+
+**Keep the two in step.** A redirect or header added to `netlify.toml` or
+`public/_redirects` must also go in `cloudflare/`, until Netlify is retired and
+those files can be deleted.
+
+### Project settings
+
+In Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, pick this
+repo, then:
+
+| Setting | Value |
+| --- | --- |
+| Production branch | `main` |
+| Framework preset | None |
+| Build command | `npm run build:cloudflare` |
+| Build output directory | `dist` |
+
+Environment variables (Production), copied from the Netlify site's settings:
+
+- `NODE_VERSION` = `22`
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- `VITE_AUTHORIZED_ADMIN_EMAILS` = `boxed2builtco@gmail.com`
+- `VITE_AUTHORIZED_ADMIN_DOMAINS` = `boxed2built.com`
+- Any others set in Netlify, such as `VITE_AUTHORIZED_CLIENT_EMAILS`,
+  `VITE_AUTHORIZED_CLIENT_DOMAINS` and the `VITE_*_OAUTH_REDIRECT_URI` values
+
+These are read at build time, so a change only takes effect after a redeploy.
+
+### Testing on the `.pages.dev` address
+
+Public pages, redirects and headers can all be checked there. Sign-in cannot:
+passkeys are bound to boxed2built.com, and Google/Supabase sign-in only returns
+to addresses on the Supabase redirect allow-list. Test admin, portal and booking
+sign-in after the domain moves.
+
+Spot checks: `/about` and `/about/` both 200 with the same page;
+`/services/move-in-assembly` 301s to `/services/furniture-assembly`; `/admin/x`
+loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404.
+
+### Switching the domain
+
+1. Add `boxed2built.com` (and `www`) under the Pages project's **Custom
+   domains** and follow the DNS steps it shows.
+2. Turn on **SSL/TLS → Edge Certificates → Always Use HTTPS**. This replaces
+   the HTTP→HTTPS redirect in `netlify.toml`.
+3. Test sign-in, checkout, gift cards and the client portal on the live domain.
+4. Once it has run cleanly for a day or two, disconnect Netlify and cancel Bolt.
 
 ## Edge functions
 

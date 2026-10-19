@@ -32,3 +32,6 @@ playwright-report/
 # TypeScript incremental build state
 *.tsbuildinfo
 changelog.generated.sql
+
+# Wrangler (local Cloudflare Pages testing)
+.wrangler

@@ -1,0 +1,51 @@
+# Cloudflare Pages redirects and rewrites.
+#
+# This is the Cloudflare twin of public/_redirects plus the [[redirects]]
+# blocks in netlify.toml. scripts/prepare-cloudflare.mjs copies it over
+# dist/_redirects during a Cloudflare build only, so Netlify keeps using
+# public/_redirects and netlify.toml untouched. When you change a rule in
+# one, change it in the other.
+#
+# How Cloudflare differs from Netlify, and why the rules below look the way
+# they do:
+#   - The FIRST matching rule wins, and rules without wildcards or
+#     placeholders must all come before rules with them.
+#   - There is no `!` force flag. Cloudflare always applies a matching rule,
+#     even when a real file exists at that path.
+#   - Trailing slashes are NOT ignored when matching, so every app route
+#     below also lists its trailing-slash form.
+#   - HTTP -> HTTPS is not done here. Turn on "Always Use HTTPS" in the
+#     Cloudflare dashboard (SSL/TLS -> Edge Certificates) instead.
+#   - Unmatched paths fall through to dist/404.html, which Cloudflare serves
+#     with a real 404 status. Never add a blanket `/*  /  200` here: without
+#     a match Cloudflare would answer every junk URL with the homepage at 200.
+
+# ── Retired pages -> closest live equivalent ───────────────────────────────
+/services/move-in-assembly     /services/furniture-assembly   301
+/services/move-in-assembly/    /services/furniture-assembly   301
+
+# ── App routes that are deliberately NOT pre-rendered ──────────────────────
+# (see ssgOptions.includedRoutes in vite.config.ts). They load the app shell
+# and let the client router take over.
+/admin      /   200
+/admin/     /   200
+/portal     /   200
+/portal/    /   200
+/book       /   200
+/book/      /   200
+
+/admin/*    /   200
+/portal/*   /   200
+/go/*       /   200
+# Referral QR tokens. The uppercase rule is not redundant: the QR payload is
+# uppercased to stay in QR alphanumeric mode, and paths match case-sensitively.
+/r/*        /   200
+/R/*        /   200
+/pay/*      /   200
+
+# ── Trailing-slash URLs ────────────────────────────────────────────────────
+# The build writes flat files (about.html, not about/index.html), and
+# Cloudflare would redirect /about/ -> /about. Google flags those as "Page
+# with redirect", so serve the flat page at both URLs with a 200 instead.
+/:page/             /:page            200
+/:section/:page/    /:section/:page   200
