@@ -1,0 +1,41 @@
+# Cloudflare Pages headers, appended after public/_headers.
+#
+# public/_headers (security headers, long caching for assets) is read the
+# same way by Netlify and Cloudflare, so it is reused as-is. This file adds
+# the [[headers]] blocks from netlify.toml, which Cloudflare ignores.
+# scripts/prepare-cloudflare.mjs joins the two into dist/_headers during a
+# Cloudflare build only.
+#
+# Left out on purpose:
+#   - Strict-Transport-Security: public/_headers already sets it on /*.
+#     Cloudflare joins repeated headers with a comma, so setting it twice
+#     would produce an invalid value.
+#   - "X-Robots-Tag: index, follow" on public pages: that is the default
+#     when the header is absent, and adding it to /* would merge with the
+#     noindex rules below into a contradictory value.
+#   - "Cache-Control: public, max-age=0, must-revalidate" on public pages:
+#     Cloudflare already sends exactly that for HTML pages.
+
+/admin
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+/portal
+  X-Robots-Tag: noindex, nofollow
+
+/portal/*
+  X-Robots-Tag: noindex, nofollow
+
+/store/success
+  X-Robots-Tag: noindex, follow
+  Cache-Control: no-store
+
+# Apple Pay domain verification. Stripe checks this file over HTTPS before it
+# will show an Apple Pay button. It has no extension, so pin the type. See
+# docs/apple-pay.md.
+/.well-known/apple-developer-merchantid-domain-association
+  ! Content-Type
+  Content-Type: text/plain
+  X-Robots-Tag: noindex, nofollow
