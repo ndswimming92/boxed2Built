@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical } from 'lucide-react';
+import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical, ChevronDown, ChevronRight } from 'lucide-react';
 import { Facebook } from '../../components/ui/BrandIcons';
 import {
   getCoupons, getCouponRedemptions, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
@@ -8,7 +8,7 @@ import {
 } from '../../services/couponService';
 import {
   couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
-  describeActiveDuration, describeDiscount, describePostDue, describeWindow,
+  describeActiveDuration, describeDiscount, describeStateDetail, describePostDue, describeWindow,
   endDateToTimestamp, formatMoney, formatPostAt, formatUsedOn, isValidCouponCode, nextCouponToPost,
   normalizeCouponCode, startDateToTimestamp, timestampToDatetimeLocal,
   timestampToEndDate, timestampToStartDate, toDatetimeLocal,
@@ -51,11 +51,31 @@ const EMPTY_FORM: FormState = {
  */
 const USES_PREVIEW = 3;
 
-const STATE_STYLES: Record<CouponState, { label: string; className: string }> = {
-  active: { label: 'Active', className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  scheduled: { label: 'Scheduled', className: 'bg-blue-100 text-blue-800 border-blue-200' },
-  expired: { label: 'Expired', className: 'bg-slate-100 text-slate-700 border-slate-200' },
-  off: { label: 'Off', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+/**
+ * `card` is the left edge and surface of the whole card, so state reads from a
+ * scroll away: green and bright when the code works today, muted when not.
+ */
+const STATE_STYLES: Record<CouponState, { label: string; badge: string; card: string }> = {
+  active: {
+    label: 'LIVE',
+    badge: 'bg-emerald-600 text-white border-emerald-700 shadow-sm',
+    card: 'bg-white border-slate-200 border-l-8 border-l-emerald-500',
+  },
+  scheduled: {
+    label: 'SCHEDULED',
+    badge: 'bg-blue-100 text-blue-800 border-blue-200',
+    card: 'bg-white border-slate-200 border-l-8 border-l-blue-400',
+  },
+  expired: {
+    label: 'EXPIRED',
+    badge: 'bg-slate-200 text-slate-600 border-slate-300',
+    card: 'bg-slate-50 border-slate-200 border-l-8 border-l-slate-300 opacity-70 hover:opacity-100',
+  },
+  off: {
+    label: 'OFF',
+    badge: 'bg-amber-100 text-amber-800 border-amber-200',
+    card: 'bg-slate-50 border-slate-200 border-l-8 border-l-amber-300 opacity-70 hover:opacity-100',
+  },
 };
 
 export default function CouponsPage() {
@@ -75,6 +95,7 @@ export default function CouponsPage() {
   const [draftingId, setDraftingId] = useState<string | null>(null);
   const [postingId, setPostingId] = useState<string | null>(null);
   const [remindingId, setRemindingId] = useState<string | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -360,6 +381,9 @@ export default function CouponsPage() {
   };
 
   const activeCount = coupons.filter((c) => couponState(c) === 'active').length;
+  const liveCoupons = coupons.filter((c) => couponState(c) === 'active');
+  const scheduledCoupons = coupons.filter((c) => couponState(c) === 'scheduled');
+  const inactiveCoupons = coupons.filter((c) => ['off', 'expired'].includes(couponState(c)));
   const totalUses = coupons.reduce((sum, c) => sum + c.times_used, 0);
   const nextUp = nextCouponToPost(coupons);
   const editing = form.id ? coupons.find((c) => c.id === form.id) ?? null : null;
@@ -582,6 +606,294 @@ export default function CouponsPage() {
     </div>
   );
 
+  /** One coupon card; the sections below decide where it goes. */
+  const renderCard = (coupon: Coupon) => {
+      // Editing swaps this card for the form, so it opens under the
+      // pencil you just clicked rather than at the top of the page.
+      if (showForm && form.id === coupon.id) {
+        return <div key={coupon.id}>{renderForm()}</div>;
+      }
+
+      const state = couponState(coupon);
+      const style = STATE_STYLES[state];
+      const promo = couponPromoState(coupon);
+
+      const used = redemptions?.[coupon.code] ?? [];
+      const showAllUses = expandedUses.includes(coupon.id);
+      const shownUses = showAllUses ? used : used.slice(0, USES_PREVIEW);
+      // The counter counts submissions; the list can only show the ones
+      // still on file. Renaming a code leaves its old uses behind under
+      // the old spelling, and a deleted inquiry takes its name with it.
+      const unaccounted = Math.max(0, coupon.times_used - used.length);
+
+      return (
+        <div key={coupon.id} className={`rounded-xl border p-5 sm:p-6 transition-opacity ${style.card}`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h3 className="text-xl font-bold font-mono tracking-wider text-slate-900 break-all">
+                  {coupon.code}
+                </h3>
+                <span className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold tracking-wide rounded-full border ${style.badge}`}>
+                  {state === 'active' && <span className="w-2 h-2 rounded-full bg-white animate-pulse" aria-hidden="true" />}
+                  {style.label}
+                </span>
+                <span className={`text-sm font-medium ${state === 'active' ? 'text-emerald-700' : 'text-slate-500'}`}>
+                  {describeStateDetail(coupon, state)}
+                </span>
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  {describeDiscount(coupon)}
+                </span>
+                {promo === 'queued' && (
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5">
+                    <Megaphone className="w-3 h-3" />
+                    {describePostDue(coupon.promo_post_at!)}
+                  </span>
+                )}
+                {promo === 'posted' && (
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5">
+                    <Facebook className="w-3 h-3" />
+                    Posted
+                  </span>
+                )}
+              </div>
+
+              {coupon.description && (
+                <p className="text-sm text-slate-600 mb-2">{coupon.description}</p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
+                  {describeWindow(coupon.starts_at, coupon.ends_at)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4" />
+                  Used {coupon.times_used} {coupon.times_used === 1 ? 'time' : 'times'}
+                  {coupon.last_used_at
+                    ? ` · last ${new Date(coupon.last_used_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                    : ''}
+                </span>
+              </div>
+
+              {used.length > 0 && (
+                <div className="mt-3 rounded-lg border border-slate-200 overflow-hidden">
+                  <p className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Users className="w-3.5 h-3.5" />
+                    Who used it
+                  </p>
+
+                  <ul className="divide-y divide-slate-100 border-t border-slate-200">
+                    {shownUses.map((use) => (
+                      <li
+                        key={use.inquiry_id}
+                        className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                            <span className="truncate">{use.client_name}</span>
+                            {use.is_test && (
+                              <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[10px] font-semibold text-amber-800">
+                                <FlaskConical className="w-2.5 h-2.5" />
+                                TEST
+                              </span>
+                            )}
+                          </p>
+                          {use.client_email ? (
+                            <a
+                              href={`mailto:${use.client_email}`}
+                              className="text-sm text-emerald-700 hover:underline break-all"
+                            >
+                              {use.client_email}
+                            </a>
+                          ) : (
+                            <span className="text-sm text-slate-400">No email given</span>
+                          )}
+                        </div>
+
+                        <div className="ml-auto shrink-0 text-right">
+                          <p className="text-xs text-slate-500">{formatUsedOn(use.used_at)}</p>
+                          {use.discount_amount !== null && (
+                            <p className="text-xs font-semibold text-emerald-700">
+                              {formatMoney(use.discount_amount)} off
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {(used.length > USES_PREVIEW || unaccounted > 0) && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+                      {used.length > USES_PREVIEW ? (
+                        <button
+                          onClick={() => toggleUses(coupon.id)}
+                          aria-expanded={showAllUses}
+                          className="text-xs font-semibold text-emerald-700 hover:underline"
+                        >
+                          {showAllUses ? 'Show fewer' : `Show all ${used.length}`}
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                      {unaccounted > 0 && (
+                        <span className="text-xs text-slate-500">
+                          {unaccounted} earlier {unaccounted === 1 ? 'use has' : 'uses have'} no request on file
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {redemptions && used.length === 0 && coupon.times_used > 0 && (
+                <p className="mt-3 text-xs text-slate-500">
+                  {coupon.times_used === 1
+                    ? 'No request on file for that use — it was deleted, or this code was renamed after it was used.'
+                    : 'No request on file for those uses — they were deleted, or this code was renamed after they were used.'}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={() => copy(coupon.id, coupon.code, 'Code')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                aria-label={`Copy code ${coupon.code}`}
+              >
+                <Copy className="w-4 h-4" />
+                {copiedId === coupon.id ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                onClick={() => copy(`${coupon.id}-link`, shareLink(coupon.code), 'Link')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                aria-label={`Copy prefilled link for ${coupon.code}`}
+                title="A link to your quote form with this code already filled in"
+              >
+                <LinkIcon className="w-4 h-4" />
+                {copiedId === `${coupon.id}-link` ? 'Copied' : 'Link'}
+              </button>
+              <button
+                onClick={() => handleShare(coupon)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                aria-label={`Share ${coupon.code}`}
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+              <button
+                onClick={() => handleToggle(coupon)}
+                className={`p-2 rounded-lg transition-colors ${
+                  coupon.is_active
+                    ? 'text-emerald-700 hover:bg-emerald-50'
+                    : 'text-slate-400 hover:bg-slate-100'
+                }`}
+                aria-label={`Turn ${coupon.code} ${coupon.is_active ? 'off' : 'on'}`}
+                title={coupon.is_active ? 'Turn off' : 'Turn on'}
+              >
+                <Power className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => openEdit(coupon)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label={`Edit ${coupon.code}`}
+                title="Edit"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleDelete(coupon)}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                aria-label={`Delete ${coupon.code}`}
+                title="Delete"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {promo !== 'none' && (
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 text-sm text-slate-600">
+                  {promo === 'queued' && (
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 shrink-0" />
+                      Post {formatPostAt(coupon.promo_post_at!)} · active {describeActiveDuration(coupon.starts_at, coupon.ends_at)}
+                      {coupon.promo_reminder_sent_at && ' · reminder sent'}
+                    </span>
+                  )}
+                  {promo === 'undated' && (
+                    <span className="flex items-center gap-1.5 text-amber-700">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      Promoted, but with no post date — it will not be queued or reminded about.
+                    </span>
+                  )}
+                  {promo === 'posted' && (
+                    <span className="flex items-center gap-1.5">
+                      <Facebook className="w-4 h-4 shrink-0" />
+                      Posted to Facebook {formatPostAt(coupon.facebook_posted_at!)}
+                    </span>
+                  )}
+                </div>
+
+                {promo !== 'posted' && (
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleDraft(coupon)}
+                      disabled={draftingId === coupon.id}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      title="Write the Facebook post with Claude"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {draftingId === coupon.id ? 'Writing…' : coupon.promo_message ? 'Rewrite' : 'Draft'}
+                    </button>
+                    {promo === 'queued' && (
+                      <button
+                        onClick={() => handleSendReminder(coupon)}
+                        disabled={remindingId === coupon.id}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        title="Send this reminder email now, to check it lands"
+                      >
+                        <Mail className="w-4 h-4" />
+                        {remindingId === coupon.id ? 'Sending…' : 'Email me'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handlePost(coupon)}
+                      disabled={postingId === coupon.id}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-white bg-[#1877F2] rounded-lg hover:bg-[#166fe0] transition-colors disabled:opacity-50"
+                    >
+                      <Facebook className="w-4 h-4" />
+                      {postingId === coupon.id ? 'Posting…' : 'Post to Facebook'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {coupon.facebook_post_error && (
+                <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  Facebook refused the last post: {coupon.facebook_post_error}
+                </p>
+              )}
+            </div>
+          )}
+
+          {state === 'off' && (
+            <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Turned off — the form will not accept this code until you turn it back on.
+            </p>
+          )}
+          {state === 'scheduled' && coupon.starts_at && (
+            <p className="mt-3 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              Starts {new Date(coupon.starts_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+              Customers entering it before then are told it is not a coupon code.
+            </p>
+          )}
+        </div>
+      );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -710,289 +1022,44 @@ export default function CouponsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {coupons.map((coupon) => {
-            // Editing swaps this card for the form, so it opens under the
-            // pencil you just clicked rather than at the top of the page.
-            if (showForm && form.id === coupon.id) {
-              return <div key={coupon.id}>{renderForm()}</div>;
-            }
-
-            const state = couponState(coupon);
-            const style = STATE_STYLES[state];
-            const promo = couponPromoState(coupon);
-
-            const used = redemptions?.[coupon.code] ?? [];
-            const showAllUses = expandedUses.includes(coupon.id);
-            const shownUses = showAllUses ? used : used.slice(0, USES_PREVIEW);
-            // The counter counts submissions; the list can only show the ones
-            // still on file. Renaming a code leaves its old uses behind under
-            // the old spelling, and a deleted inquiry takes its name with it.
-            const unaccounted = Math.max(0, coupon.times_used - used.length);
-
-            return (
-              <div key={coupon.id} className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold font-mono tracking-wider text-slate-900 break-all">
-                        {coupon.code}
-                      </h3>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${style.className}`}>
-                        {style.label}
-                      </span>
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        {describeDiscount(coupon)}
-                      </span>
-                      {promo === 'queued' && (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5">
-                          <Megaphone className="w-3 h-3" />
-                          {describePostDue(coupon.promo_post_at!)}
-                        </span>
-                      )}
-                      {promo === 'posted' && (
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5">
-                          <Facebook className="w-3 h-3" />
-                          Posted
-                        </span>
-                      )}
-                    </div>
-
-                    {coupon.description && (
-                      <p className="text-sm text-slate-600 mb-2">{coupon.description}</p>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4" />
-                        {describeWindow(coupon.starts_at, coupon.ends_at)}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <TrendingUp className="w-4 h-4" />
-                        Used {coupon.times_used} {coupon.times_used === 1 ? 'time' : 'times'}
-                        {coupon.last_used_at
-                          ? ` · last ${new Date(coupon.last_used_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                          : ''}
-                      </span>
-                    </div>
-
-                    {used.length > 0 && (
-                      <div className="mt-3 rounded-lg border border-slate-200 overflow-hidden">
-                        <p className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          <Users className="w-3.5 h-3.5" />
-                          Who used it
-                        </p>
-
-                        <ul className="divide-y divide-slate-100 border-t border-slate-200">
-                          {shownUses.map((use) => (
-                            <li
-                              key={use.inquiry_id}
-                              className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-2"
-                            >
-                              <div className="min-w-0">
-                                <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
-                                  <span className="truncate">{use.client_name}</span>
-                                  {use.is_test && (
-                                    <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[10px] font-semibold text-amber-800">
-                                      <FlaskConical className="w-2.5 h-2.5" />
-                                      TEST
-                                    </span>
-                                  )}
-                                </p>
-                                {use.client_email ? (
-                                  <a
-                                    href={`mailto:${use.client_email}`}
-                                    className="text-sm text-emerald-700 hover:underline break-all"
-                                  >
-                                    {use.client_email}
-                                  </a>
-                                ) : (
-                                  <span className="text-sm text-slate-400">No email given</span>
-                                )}
-                              </div>
-
-                              <div className="ml-auto shrink-0 text-right">
-                                <p className="text-xs text-slate-500">{formatUsedOn(use.used_at)}</p>
-                                {use.discount_amount !== null && (
-                                  <p className="text-xs font-semibold text-emerald-700">
-                                    {formatMoney(use.discount_amount)} off
-                                  </p>
-                                )}
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {(used.length > USES_PREVIEW || unaccounted > 0) && (
-                          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
-                            {used.length > USES_PREVIEW ? (
-                              <button
-                                onClick={() => toggleUses(coupon.id)}
-                                aria-expanded={showAllUses}
-                                className="text-xs font-semibold text-emerald-700 hover:underline"
-                              >
-                                {showAllUses ? 'Show fewer' : `Show all ${used.length}`}
-                              </button>
-                            ) : (
-                              <span />
-                            )}
-                            {unaccounted > 0 && (
-                              <span className="text-xs text-slate-500">
-                                {unaccounted} earlier {unaccounted === 1 ? 'use has' : 'uses have'} no request on file
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {redemptions && used.length === 0 && coupon.times_used > 0 && (
-                      <p className="mt-3 text-xs text-slate-500">
-                        {coupon.times_used === 1
-                          ? 'No request on file for that use — it was deleted, or this code was renamed after it was used.'
-                          : 'No request on file for those uses — they were deleted, or this code was renamed after they were used.'}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => copy(coupon.id, coupon.code, 'Code')}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                      aria-label={`Copy code ${coupon.code}`}
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copiedId === coupon.id ? 'Copied' : 'Copy'}
-                    </button>
-                    <button
-                      onClick={() => copy(`${coupon.id}-link`, shareLink(coupon.code), 'Link')}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                      aria-label={`Copy prefilled link for ${coupon.code}`}
-                      title="A link to your quote form with this code already filled in"
-                    >
-                      <LinkIcon className="w-4 h-4" />
-                      {copiedId === `${coupon.id}-link` ? 'Copied' : 'Link'}
-                    </button>
-                    <button
-                      onClick={() => handleShare(coupon)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
-                      aria-label={`Share ${coupon.code}`}
-                    >
-                      <Share2 className="w-4 h-4" />
-                      Share
-                    </button>
-                    <button
-                      onClick={() => handleToggle(coupon)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        coupon.is_active
-                          ? 'text-emerald-700 hover:bg-emerald-50'
-                          : 'text-slate-400 hover:bg-slate-100'
-                      }`}
-                      aria-label={`Turn ${coupon.code} ${coupon.is_active ? 'off' : 'on'}`}
-                      title={coupon.is_active ? 'Turn off' : 'Turn on'}
-                    >
-                      <Power className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => openEdit(coupon)}
-                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                      aria-label={`Edit ${coupon.code}`}
-                      title="Edit"
-                    >
-                      <Pencil className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(coupon)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      aria-label={`Delete ${coupon.code}`}
-                      title="Delete"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
+        <div className="space-y-8">
+          {([
+            { key: 'active', title: 'Live now', hint: 'Customers can use these right now', items: liveCoupons },
+            { key: 'scheduled', title: 'Scheduled', hint: 'Not live yet, will start on their first day', items: scheduledCoupons },
+          ] as const).map((section) =>
+            section.items.length === 0 ? null : (
+              <section key={section.key} aria-label={section.title}>
+                <div className="flex flex-wrap items-baseline gap-x-3 mb-3">
+                  <p className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                    {section.title} <span className="text-slate-400">({section.items.length})</span>
+                  </p>
+                  <p className="text-xs text-slate-500">{section.hint}</p>
                 </div>
+                <div className="space-y-4">{section.items.map(renderCard)}</div>
+              </section>
+            ),
+          )}
 
-                {promo !== 'none' && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0 text-sm text-slate-600">
-                        {promo === 'queued' && (
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="w-4 h-4 shrink-0" />
-                            Post {formatPostAt(coupon.promo_post_at!)} · active {describeActiveDuration(coupon.starts_at, coupon.ends_at)}
-                            {coupon.promo_reminder_sent_at && ' · reminder sent'}
-                          </span>
-                        )}
-                        {promo === 'undated' && (
-                          <span className="flex items-center gap-1.5 text-amber-700">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            Promoted, but with no post date — it will not be queued or reminded about.
-                          </span>
-                        )}
-                        {promo === 'posted' && (
-                          <span className="flex items-center gap-1.5">
-                            <Facebook className="w-4 h-4 shrink-0" />
-                            Posted to Facebook {formatPostAt(coupon.facebook_posted_at!)}
-                          </span>
-                        )}
-                      </div>
+          {liveCoupons.length === 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+              <strong>No coupon is live right now.</strong> Customers entering a code on the quote form will not get a discount.
+            </div>
+          )}
 
-                      {promo !== 'posted' && (
-                        <div className="flex flex-wrap items-center gap-2 shrink-0">
-                          <button
-                            onClick={() => handleDraft(coupon)}
-                            disabled={draftingId === coupon.id}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
-                            title="Write the Facebook post with Claude"
-                          >
-                            <Sparkles className="w-4 h-4" />
-                            {draftingId === coupon.id ? 'Writing…' : coupon.promo_message ? 'Rewrite' : 'Draft'}
-                          </button>
-                          {promo === 'queued' && (
-                            <button
-                              onClick={() => handleSendReminder(coupon)}
-                              disabled={remindingId === coupon.id}
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
-                              title="Send this reminder email now, to check it lands"
-                            >
-                              <Mail className="w-4 h-4" />
-                              {remindingId === coupon.id ? 'Sending…' : 'Email me'}
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handlePost(coupon)}
-                            disabled={postingId === coupon.id}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-white bg-[#1877F2] rounded-lg hover:bg-[#166fe0] transition-colors disabled:opacity-50"
-                          >
-                            <Facebook className="w-4 h-4" />
-                            {postingId === coupon.id ? 'Posting…' : 'Post to Facebook'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {coupon.facebook_post_error && (
-                      <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                        Facebook refused the last post: {coupon.facebook_post_error}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {state === 'off' && (
-                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    Turned off — the form will not accept this code until you turn it back on.
-                  </p>
-                )}
-                {state === 'scheduled' && coupon.starts_at && (
-                  <p className="mt-3 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                    Starts {new Date(coupon.starts_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
-                    Customers entering it before then are told it is not a coupon code.
-                  </p>
-                )}
-              </div>
-            );
-          })}
+          {inactiveCoupons.length > 0 && (
+            <section aria-label="Off or expired">
+              <button
+                onClick={() => setShowInactive((open) => !open)}
+                aria-expanded={showInactive}
+                className="flex items-center gap-2 mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 hover:text-slate-700"
+              >
+                {showInactive ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                Off &amp; expired <span className="text-slate-400">({inactiveCoupons.length})</span>
+                <span className="text-xs font-normal normal-case tracking-normal text-slate-400">Not usable right now</span>
+              </button>
+              {showInactive && <div className="space-y-4">{inactiveCoupons.map(renderCard)}</div>}
+            </section>
+          )}
         </div>
       )}
     </div>

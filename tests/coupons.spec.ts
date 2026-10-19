@@ -171,10 +171,19 @@ test('the admin list separates live codes from scheduled, expired and off', asyn
   const card = (code: string) =>
     page.locator('div').filter({ has: page.getByRole('heading', { level: 3, name: code }) }).last();
 
-  await expect(card('LIVE20')).toContainText('Active');
-  await expect(card('SOON10')).toContainText('Scheduled');
-  await expect(card('SUMMER15')).toContainText('Expired');
-  await expect(card('PAUSED5')).toContainText('Off');
+  await expect(card('LIVE20')).toContainText('LIVE');
+  await expect(card('LIVE20')).toContainText('Works now');
+  await expect(card('SOON10')).toContainText('SCHEDULED');
+  await expect(card('SOON10')).toContainText('Starts');
+
+  // Codes that cannot be used right now are tucked away until asked for.
+  await expect(page.getByRole('heading', { level: 3, name: 'SUMMER15' })).toBeHidden();
+  await expect(page.getByRole('heading', { level: 3, name: 'PAUSED5' })).toBeHidden();
+  await page.getByRole('button', { name: /Off & expired/ }).click();
+  await expect(card('SUMMER15')).toContainText('EXPIRED');
+  await expect(card('SUMMER15')).toContainText('Ended');
+  await expect(card('PAUSED5')).toContainText('OFF');
+  await expect(card('PAUSED5')).toContainText('not accepted');
 
   // Only one of the four is actually taking bookings right now.
   await expect(page.getByText('1 live now · 12 total uses')).toBeVisible();

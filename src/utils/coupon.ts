@@ -138,6 +138,39 @@ export function formatUsedOn(iso: string): string {
 }
 
 /** "Sep 1 – Sep 30", "From Sep 1", "Through Sep 30", or "Any time". */
+/** Why a code does or does not work today, in a few words for the card's status line. */
+export function describeStateDetail(
+  coupon: CouponWindow,
+  state: CouponState = couponState(coupon),
+  now: Date = new Date(),
+): string {
+  const day = (iso: string, endInclusive = false) => {
+    const date = new Date(iso);
+    if (endInclusive) date.setDate(date.getDate() - 1);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  switch (state) {
+    case 'active': {
+      if (!coupon.ends_at) return 'Works now · no end date';
+      // ends_at is the midnight after the last day; count calendar days to that
+      // last day (rounding absorbs the odd 23/25-hour DST day).
+      const lastDay = new Date(coupon.ends_at);
+      lastDay.setDate(lastDay.getDate() - 1);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const days = Math.round((lastDay.getTime() - today.getTime()) / 86_400_000);
+      if (days <= 0) return 'Works now · last day';
+      return `Works now · ends in ${days} ${days === 1 ? 'day' : 'days'}`;
+    }
+    case 'scheduled':
+      return coupon.starts_at ? `Starts ${day(coupon.starts_at)}` : 'Not started';
+    case 'expired':
+      return coupon.ends_at ? `Ended ${day(coupon.ends_at, true)}` : 'Ended';
+    case 'off':
+      return 'Turned off · not accepted';
+  }
+}
+
 export function describeWindow(starts_at: string | null, ends_at: string | null): string {
   const format = (iso: string, endInclusive = false) => {
     const date = new Date(iso);
