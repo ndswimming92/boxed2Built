@@ -153,9 +153,14 @@ export function describeStateDetail(
   switch (state) {
     case 'active': {
       if (!coupon.ends_at) return 'Works now · no end date';
-      const days = Math.ceil((new Date(coupon.ends_at).getTime() - now.getTime()) / 86_400_000);
-      if (days <= 1) return 'Works now · last day';
-      return `Works now · ends in ${days} days`;
+      // ends_at is the midnight after the last day; count calendar days to that
+      // last day (rounding absorbs the odd 23/25-hour DST day).
+      const lastDay = new Date(coupon.ends_at);
+      lastDay.setDate(lastDay.getDate() - 1);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const days = Math.round((lastDay.getTime() - today.getTime()) / 86_400_000);
+      if (days <= 0) return 'Works now · last day';
+      return `Works now · ends in ${days} ${days === 1 ? 'day' : 'days'}`;
     }
     case 'scheduled':
       return coupon.starts_at ? `Starts ${day(coupon.starts_at)}` : 'Not started';
