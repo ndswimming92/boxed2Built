@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { renderWelcomeEmail } from '../_shared/salesDigestEmail.ts';
+import { lookupIpLocation } from '../_shared/ipLocation.ts';
 import { UUID_PATTERN, unsubscribeHeaders, unsubscribePageUrl } from '../_shared/salesSubscribers.ts';
 
 /**
@@ -138,6 +139,9 @@ async function subscribe(
 
   const normalized = email.toLowerCase();
   const now = new Date().toISOString();
+  // Best effort: roughly where this sign-up comes from, for the admin map. The
+  // IP is looked up and discarded; only city, state and rounded coordinates are kept.
+  const location = (await lookupIpLocation(ipKey)) ?? {};
 
   const { data: existing, error: lookupError } = await admin
     .from('sale_subscribers')
@@ -165,7 +169,7 @@ async function subscribe(
     // "sent through" mark restarts so they do not get everything they missed.
     const { error } = await admin
       .from('sale_subscribers')
-      .update({ name, status: 'active', unsubscribed_at: null, subscribed_at: now, last_digest_at: now })
+      .update({ name, status: 'active', unsubscribed_at: null, subscribed_at: now, last_digest_at: now, ...location })
       .eq('id', existing.id);
     if (error) {
       console.error('sales-subscription: resubscribe failed', error.message);
@@ -175,7 +179,7 @@ async function subscribe(
   } else {
     const { data: created, error } = await admin
       .from('sale_subscribers')
-      .insert({ organization_id: business.organization_id, name, email, last_digest_at: now })
+      .insert({ organization_id: business.organization_id, name, email, last_digest_at: now, ...location })
       .select('unsubscribe_token')
       .single();
 

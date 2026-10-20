@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, MailCheck, MailX, Users } from 'lucide-react';
 import { getSaleSubscribers } from '../../services/salesSubscriptionService';
 import type { SaleSubscriber, SaleSubscriberStatus } from '../../types/saleSubscriber';
+
+// Loaded on demand: the map brings in the US outline data.
+const SubscriberMap = lazy(() => import('../../components/admin/SubscriberMap'));
+
+const REFRESH_MS = 30_000;
 
 const TABS: Array<{ status: SaleSubscriberStatus; label: string; empty: string }> = [
   {
@@ -22,23 +27,39 @@ export default function SalesSubscribersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SaleSubscriberStatus>('active');
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    getSaleSubscribers()
-      .then((data) => {
-        if (!cancelled) setSubscribers(data);
-      })
-      .catch((loadError) => {
-        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Failed to load subscribers');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const load = (initial: boolean) =>
+      getSaleSubscribers()
+        .then((data) => {
+          if (cancelled) return;
+          setSubscribers(data);
+          setUpdatedAt(Date.now());
+          setError(null);
+        })
+        .catch((loadError) => {
+          // A failed refresh keeps the list on screen; only the first load reports.
+          if (!cancelled && initial) {
+            setError(loadError instanceof Error ? loadError.message : 'Failed to load subscribers');
+          }
+        })
+        .finally(() => {
+          if (!cancelled && initial) setLoading(false);
+        });
+
+    void load(true);
+    // Quietly refetched while the page is open and visible, so new sign-ups
+    // show up on the map and feed without a reload.
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void load(false);
+    }, REFRESH_MS);
 
     return () => {
       cancelled = true;
+      clearInterval(timer);
     };
   }, []);
 
@@ -77,6 +98,12 @@ export default function SalesSubscribersPage() {
           <AlertCircle className="w-5 h-5 flex-none" aria-hidden="true" />
           {error}
         </div>
+      )}
+
+      {!loading && (
+        <Suspense fallback={<div className="mb-6 h-64 rounded-xl bg-[#050b17]" aria-hidden="true" />}>
+          <SubscriberMap subscribers={subscribers} updatedAt={updatedAt} />
+        </Suspense>
       )}
 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md">

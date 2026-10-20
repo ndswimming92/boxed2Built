@@ -48,7 +48,9 @@ export async function getSaleSubscribers(): Promise<SaleSubscriber[]> {
   for (let request = 0; request < ADMIN_FETCH_MAX_REQUESTS; request += 1) {
     const { data, error } = await supabase
       .from('sale_subscribers')
-      .select('id, name, email, status, subscribed_at, unsubscribed_at')
+      .select(
+        'id, name, email, status, subscribed_at, unsubscribed_at, city, region, region_code, country_code, latitude, longitude',
+      )
       .order('subscribed_at', { ascending: false })
       .order('id', { ascending: false })
       .range(rows.length, rows.length + ADMIN_FETCH_SIZE - 1);
@@ -64,5 +66,12 @@ export async function getSaleSubscribers(): Promise<SaleSubscriber[]> {
   }
 
   const seen = new Set<string>();
-  return rows.filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)));
+  // numeric columns can arrive as strings, depending on the API
+  return rows
+    .filter((row) => (seen.has(row.id) ? false : (seen.add(row.id), true)))
+    .map((row) => ({
+      ...row,
+      latitude: row.latitude === null ? null : Number(row.latitude),
+      longitude: row.longitude === null ? null : Number(row.longitude),
+    }));
 }
