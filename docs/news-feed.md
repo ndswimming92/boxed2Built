@@ -218,6 +218,7 @@ email**. Sales that have already ended are left out.
 | Piece | Where |
 | --- | --- |
 | Table and RLS | `supabase/migrations/20261020120000_create_sale_subscribers.sql` |
+| Atomic rate-limit claim | `supabase/migrations/20261020120400_claim_sale_subscribe_slot.sql` |
 | Sign-up attempt counter (rate limit) | `supabase/migrations/20261020120200_create_sale_subscribe_attempts.sql` |
 | Location columns for the map | `supabase/migrations/20261020120300_add_sale_subscriber_location.sql` |
 | Hourly cron job | `supabase/migrations/20261020120100_schedule_sales_digest.sql` |

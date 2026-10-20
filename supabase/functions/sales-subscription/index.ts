@@ -49,33 +49,30 @@ function json(body: unknown, status = 200): Response {
 type Admin = ReturnType<typeof createClient>;
 
 /**
- * Counts this connection's recent attempts. Fails closed: if the count cannot
- * be read, the sign-up is refused rather than let through unlimited, because
- * every sign-up sends an email to an address the visitor chose.
+ * Takes one of this connection's sign-up slots, or says the limit is used up.
+ * The count and the insert happen in one database step (see
+ * claim_sale_subscribe_slot), so a burst of parallel requests cannot all slip
+ * under the limit. Fails closed: if the database cannot answer, the sign-up is
+ * refused, because every sign-up sends an email to an address the visitor chose.
  */
-async function withinRateLimit(admin: Admin, ipKey: string): Promise<boolean> {
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-  const { count, error } = await admin
-    .from('sale_subscribe_attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('ip_key', ipKey)
-    .gte('created_at', windowStart);
+async function claimSignupSlot(admin: Admin, ipKey: string): Promise<boolean> {
+  const { data, error } = await admin.rpc('claim_sale_subscribe_slot', {
+    p_ip_key: ipKey,
+    p_window_seconds: RATE_LIMIT_WINDOW_MS / 1000,
+    p_max: RATE_LIMIT_MAX,
+  });
   if (error) {
-    console.error('sales-subscription: rate limit check failed', error.message);
+    console.error('sales-subscription: rate limit claim failed', error.message);
     return false;
   }
-  return (count ?? 0) < RATE_LIMIT_MAX;
-}
 
-async function recordAttempt(admin: Admin, ipKey: string): Promise<void> {
-  const { error } = await admin.from('sale_subscribe_attempts').insert({ ip_key: ipKey.slice(0, 100) });
-  if (error) console.error('sales-subscription: could not record attempt', error.message);
-
-  // Housekeeping: nothing older than the window is ever read again.
+  // Housekeeping: nothing older than the window is ever counted again.
   await admin
     .from('sale_subscribe_attempts')
     .delete()
     .lt('created_at', new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString());
+
+  return data === true;
 }
 
 async function unsubscribe(admin: Admin, token: string): Promise<Response> {
@@ -119,10 +116,9 @@ async function subscribe(
     .split(',')[0]
     .trim();
 
-  if (!(await withinRateLimit(admin, ipKey))) {
+  if (!(await claimSignupSlot(admin, ipKey))) {
     return json({ error: 'Too many sign-ups from this connection. Please try again later.' }, 429);
   }
-  await recordAttempt(admin, ipKey);
 
   const { data: business } = await admin
     .from('business_info')

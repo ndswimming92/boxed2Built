@@ -139,6 +139,9 @@ export default function SubscriberMap({ subscribers, updatedAt }: Props) {
   const dots = useMemo(
     () =>
       clusters
+        // The Tennessee view draws Tennessee by state. Without this, Kentucky or
+        // Alabama sign-ups near the border land inside the rectangle and get drawn.
+        .filter((cluster) => view === 'us' || cluster.inTennessee)
         .map((cluster) => {
           const point = projection([cluster.longitude, cluster.latitude]);
           if (!point) return null;
@@ -147,7 +150,7 @@ export default function SubscriberMap({ subscribers, updatedAt }: Props) {
           return { ...cluster, x, y, radius: Math.min(16, 4 + Math.sqrt(cluster.count) * 2.2) };
         })
         .filter((dot): dot is NonNullable<typeof dot> => dot !== null),
-    [clusters, projection],
+    [clusters, projection, view],
   );
 
   const hidden = summary.total - summary.unknown - dots.reduce((sum, dot) => sum + dot.count, 0);

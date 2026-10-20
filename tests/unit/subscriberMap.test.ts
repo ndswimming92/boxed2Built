@@ -52,6 +52,15 @@ test('people from the same place share one dot, counted', () => {
   assert.equal(springHill.latest, Date.parse('2026-10-20T10:00:00Z'));
 });
 
+test('a dot knows whether it is in Tennessee by state, not by position', () => {
+  const clusters = clusterSubscribers([
+    sub(),
+    sub({ city: 'Bowling Green', region: 'Kentucky', region_code: 'KY', latitude: 36.99, longitude: -86.44 }),
+  ]);
+  assert.equal(clusters.find((c) => c.label === 'Spring Hill, TN')!.inTennessee, true);
+  assert.equal(clusters.find((c) => c.label === 'Bowling Green, KY')!.inTennessee, false);
+});
+
 test('place labels fall back gracefully', () => {
   assert.equal(placeLabel({ city: 'Franklin', region_code: 'TN', region: 'Tennessee', country_code: 'US' }), 'Franklin, TN');
   assert.equal(placeLabel({ city: null, region_code: null, region: 'Ontario', country_code: 'CA' }), 'Ontario');
