@@ -55,15 +55,18 @@ export function summarize(subscribers: SaleSubscriber[], now: number = Date.now(
 }
 
 /**
- * Active subscribers grouped by place. Coordinates are already rounded to two
- * decimals when stored, so an exact match is the same city.
+ * Active subscribers grouped by place and by whether that place is in Tennessee.
+ * Coordinates are already rounded to two decimals when stored, so an exact match
+ * is the same city.
  */
 export function clusterSubscribers(subscribers: SaleSubscriber[]): MapCluster[] {
   const clusters = new Map<string, MapCluster>();
 
   for (const s of subscribers) {
     if (s.status !== 'active' || !isPlaced(s)) continue;
-    const key = `${s.latitude.toFixed(2)},${s.longitude.toFixed(2)}`;
+    // Tennessee membership is part of the key: people on opposite sides of the
+    // state line can round to the same coordinates, and must stay separate dots.
+    const key = `${s.latitude.toFixed(2)},${s.longitude.toFixed(2)},${isInTennessee(s) ? 'tn' : 'other'}`;
     const joined = new Date(s.subscribed_at).getTime();
     const existing = clusters.get(key);
     if (existing) {

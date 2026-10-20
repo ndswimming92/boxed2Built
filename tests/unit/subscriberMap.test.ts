@@ -61,6 +61,22 @@ test('a dot knows whether it is in Tennessee by state, not by position', () => {
   assert.equal(clusters.find((c) => c.label === 'Bowling Green, KY')!.inTennessee, false);
 });
 
+test('people either side of the state line who round to the same point stay separate dots', () => {
+  const border = { latitude: 36.5, longitude: -87.0 };
+  const forward = clusterSubscribers([
+    sub({ city: 'Adams', ...border }),
+    sub({ city: 'Guthrie', region: 'Kentucky', region_code: 'KY', ...border }),
+  ]);
+  const reversed = clusterSubscribers([
+    sub({ city: 'Guthrie', region: 'Kentucky', region_code: 'KY', ...border }),
+    sub({ city: 'Adams', ...border }),
+  ]);
+  for (const clusters of [forward, reversed]) {
+    assert.equal(clusters.length, 2);
+    assert.equal(clusters.filter((c) => c.inTennessee).length, 1);
+  }
+});
+
 test('place labels fall back gracefully', () => {
   assert.equal(placeLabel({ city: 'Franklin', region_code: 'TN', region: 'Tennessee', country_code: 'US' }), 'Franklin, TN');
   assert.equal(placeLabel({ city: null, region_code: null, region: 'Ontario', country_code: 'CA' }), 'Ontario');
