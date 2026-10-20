@@ -218,6 +218,7 @@ email**. Sales that have already ended are left out.
 | Piece | Where |
 | --- | --- |
 | Table and RLS | `supabase/migrations/20261020120000_create_sale_subscribers.sql` |
+| Sign-up attempt counter (rate limit) | `supabase/migrations/20261020120200_create_sale_subscribe_attempts.sql` |
 | Hourly cron job | `supabase/migrations/20261020120100_schedule_sales_digest.sql` |
 | Sign-up and opt-out (public, `verify_jwt = false`) | `supabase/functions/sales-subscription` |
 | Daily send | `supabase/functions/send-sales-digest` |

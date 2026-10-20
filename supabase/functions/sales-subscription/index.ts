@@ -34,7 +34,6 @@ const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://boxed2built.com').replace
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_ACTION = 'sales_subscribe_rate_limit_check';
 
 const EMAIL_PATTERN = /^[^\s@<>"',;:()[\]\\]+@[^\s@<>"',;:()[\]\\]+\.[^\s@<>"',;:()[\]\\]{2,}$/;
 const NAME_MAX = 100;
@@ -48,30 +47,34 @@ function json(body: unknown, status = 200): Response {
 
 type Admin = ReturnType<typeof createClient>;
 
+/**
+ * Counts this connection's recent attempts. Fails closed: if the count cannot
+ * be read, the sign-up is refused rather than let through unlimited, because
+ * every sign-up sends an email to an address the visitor chose.
+ */
 async function withinRateLimit(admin: Admin, ipKey: string): Promise<boolean> {
   const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-  try {
-    const { count } = await admin
-      .from('admin_audit_logs')
-      .select('id', { count: 'exact', head: true })
-      .eq('action', RATE_LIMIT_ACTION)
-      .eq('entity_type', 'ip')
-      .eq('entity_id', ipKey)
-      .gte('created_at', windowStart);
-    return (count ?? 0) < RATE_LIMIT_MAX;
-  } catch {
-    return true;
+  const { count, error } = await admin
+    .from('sale_subscribe_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('ip_key', ipKey)
+    .gte('created_at', windowStart);
+  if (error) {
+    console.error('sales-subscription: rate limit check failed', error.message);
+    return false;
   }
+  return (count ?? 0) < RATE_LIMIT_MAX;
 }
 
 async function recordAttempt(admin: Admin, ipKey: string): Promise<void> {
-  try {
-    await admin
-      .from('admin_audit_logs')
-      .insert({ action: RATE_LIMIT_ACTION, entity_type: 'ip', entity_id: ipKey, details: {} });
-  } catch {
-    // non-fatal
-  }
+  const { error } = await admin.from('sale_subscribe_attempts').insert({ ip_key: ipKey.slice(0, 100) });
+  if (error) console.error('sales-subscription: could not record attempt', error.message);
+
+  // Housekeeping: nothing older than the window is ever read again.
+  await admin
+    .from('sale_subscribe_attempts')
+    .delete()
+    .lt('created_at', new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString());
 }
 
 async function unsubscribe(admin: Admin, token: string): Promise<Response> {
