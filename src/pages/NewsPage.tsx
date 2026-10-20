@@ -7,6 +7,7 @@ import Footer from '../components/layout/Footer';
 import CallButton from '../components/ui/CallButton';
 import NewsScrollBar from '../components/ui/NewsScrollBar';
 import SaleFilters from '../components/ui/SaleFilters';
+import SalesSubscribeCard from '../components/ui/SalesSubscribeCard';
 import { LOCAL_SEO_CONTENT } from '../constants/localSEO';
 import { getPublishedNews, getSaleFilterOptions } from '../services/newsService';
 import { trackEvent } from '../utils/analytics';
@@ -474,6 +475,8 @@ const NewsPage: React.FC = () => {
                   );
                 })}
               </div>
+
+              {topic === 'deals' && <SalesSubscribeCard />}
 
               {topic === 'deals' ? (
                 <SaleFilters
