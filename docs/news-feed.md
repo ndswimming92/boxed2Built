@@ -218,6 +218,8 @@ email**. Sales that have already ended are left out.
 | Piece | Where |
 | --- | --- |
 | Table and RLS | `supabase/migrations/20261020120000_create_sale_subscribers.sql` |
+| Sign-up attempt counter (rate limit) | `supabase/migrations/20261020120200_create_sale_subscribe_attempts.sql` |
+| Location columns for the map | `supabase/migrations/20261020120300_add_sale_subscriber_location.sql` |
 | Hourly cron job | `supabase/migrations/20261020120100_schedule_sales_digest.sql` |
 | Sign-up and opt-out (public, `verify_jwt = false`) | `supabase/functions/sales-subscription` |
 | Daily send | `supabase/functions/send-sales-digest` |
@@ -227,3 +229,25 @@ email**. Sales that have already ended are left out.
 Needs both migrations applied by hand and both functions deployed (the deploy
 workflow does the functions on merge). The cron job needs the `service_role_key`
 Vault secret, which the other scheduled jobs already use.
+
+### Subscriber map
+
+The top of **Sales Subscribers** is a live map: total subscribers (counting up as
+new ones arrive), a Tennessee / US toggle, glowing dots sized by how many people
+are in a place (green and pulsing for anyone who joined in the last 24 hours), and
+a feed of the latest eight sign-ups. The page re-reads the list every 30 seconds
+while it is open and visible; new rows flash in the feed.
+
+- **Where the dots come from.** At sign-up, `sales-subscription` sends the
+  visitor's IP address to ipwho.is and keeps only the answer: city, state,
+  country and coordinates rounded to two decimals. The IP itself is never stored.
+  The privacy policy says so.
+- **It is a guess.** Phones and VPNs often resolve to another city. People who
+  signed up before this shipped, or whose address could not be placed, are counted
+  under **Unknown** and not drawn.
+- **Tennessee view** draws Tennessee sign-ups; others are counted in the footer
+  note. The **US view** draws everyone in the US.
+- Code: `src/components/admin/SubscriberMap.tsx` (outlines from the `us-atlas`
+  package, projected with `d3-geo`), `src/utils/subscriberMap.ts` and
+  `supabase/functions/_shared/ipLocation.ts` (tests in
+  `tests/unit/subscriberMap.test.ts`).

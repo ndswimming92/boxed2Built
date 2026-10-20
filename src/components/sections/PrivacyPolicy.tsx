@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2">Privacy Policy - Boxed2Built Furniture Assembly</h1>
       <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
-      <p className="text-sm text-gray-500 mb-8">Last Updated: October 7, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: October 20, 2026</p>
 
       <p className="mb-8">
         This Privacy Policy is provided by {LEGAL_NAME}, doing business as {DBA_NAME} ("{DBA_NAME}," "we," "us," or "our").
@@ -41,6 +41,7 @@ const PrivacyPolicy = () => {
           <li><strong>Technical Data:</strong> Device type, operating system, screen resolution, and browsing behavior for website optimization purposes.</li>
           <li><strong>Marketing Attribution Data:</strong> UTM parameters (source, medium, campaign) and referral source information collected when you submit a contact form. This data is used solely to understand how customers find our business and is never sold or shared with third parties for marketing purposes.</li>
           <li><strong>Customer Marketing Preferences:</strong> Your opt-in or opt-out status for marketing communications, along with your service history and contact history, used to ensure we only send communications you have consented to receive.</li>
+          <li><strong>Sales Email Subscription:</strong> If you subscribe to our daily furniture sales email, your name, email address and the approximate city your connection appears to come from (worked out from your IP address when you sign up; we do not keep the IP address). The city is used only to see where our subscribers are. You can unsubscribe at any time from the link in every email.</li>
         </ul>
       </section>
 
@@ -70,6 +71,7 @@ const PrivacyPolicy = () => {
           <li>Service providers assisting with our furniture assembly business operations</li>
           <li>Stripe, Inc. for payment processing when you pay for our services or pay an invoice online</li>
           <li>Google (through Google Analytics 4) for website analytics purposes</li>
+          <li>An IP location lookup service (ipwho.is), which receives your IP address when you subscribe to our sales email so it can return an approximate city</li>
                     <li>Third-party analytics providers to help us understand website usage and improve our services</li>
           <li>Law enforcement if required by Tennessee state law or federal law</li>
         </ul>

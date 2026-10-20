@@ -124,20 +124,29 @@ Deno.serve(async (req) => {
         .filter((s) => s.organization_id === orgId)
         .reduce((min, s) => (s.last_digest_at < min ? s.last_digest_at : min), runStart.toISOString());
 
-      const { data, error } = await admin
-        .from('news_items')
-        .select(SALE_COLUMNS)
-        .eq('organization_id', orgId)
-        .eq('topic', 'deals')
-        .eq('status', 'published')
-        .gt('published_at', oldest)
-        .lte('published_at', runStart.toISOString())
-        // Ended sales stay "published" but are hidden from the site the day after.
-        .or(`ends_on.is.null,ends_on.gte.${central.date}`)
-        .order('published_at', { ascending: false })
-        .returns<SaleRow[]>();
-      if (error) throw new Error(error.message);
-      salesByOrg.set(orgId, data ?? []);
+      // Read in pages: the API caps a response, and a capped read would drop
+      // the older sales and then advance everyone's mark past them.
+      const orgSales: SaleRow[] = [];
+      for (let from = 0; ; from += PAGE_SIZE) {
+        const { data, error } = await admin
+          .from('news_items')
+          .select(SALE_COLUMNS)
+          .eq('organization_id', orgId)
+          .eq('topic', 'deals')
+          .eq('status', 'published')
+          .gt('published_at', oldest)
+          .lte('published_at', runStart.toISOString())
+          // Ended sales stay "published" but are hidden from the site the day after.
+          .or(`ends_on.is.null,ends_on.gte.${central.date}`)
+          .order('published_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, from + PAGE_SIZE - 1)
+          .returns<SaleRow[]>();
+        if (error) throw new Error(error.message);
+        if (!data || data.length === 0) break;
+        orgSales.push(...data);
+      }
+      salesByOrg.set(orgId, orgSales);
     }
 
     interface Pending {
