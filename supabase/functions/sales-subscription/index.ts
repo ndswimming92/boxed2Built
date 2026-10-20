@@ -114,7 +114,9 @@ async function subscribe(
 
   const ipKey = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown')
     .split(',')[0]
-    .trim();
+    .trim()
+    // The same length the database function counts and locks on.
+    .slice(0, 100);
 
   if (!(await claimSignupSlot(admin, ipKey))) {
     return json({ error: 'Too many sign-ups from this connection. Please try again later.' }, 429);
