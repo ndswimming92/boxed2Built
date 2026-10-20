@@ -183,3 +183,47 @@ published. The outcome is stored in the admin-only `news_facebook_posts` table, 
 can contain raw Facebook API messages. A failed retry only updates the error. Needs migrations
 `20261006180000_add_news_facebook_posting.sql` and
 `20261006190000_move_news_facebook_status_to_admin_table.sql` applied and the function deployed.
+
+## Emailing the sales to subscribers
+
+A **Get new furniture sales by email** card sits at the top of the Sales tab
+(name and email, nothing else). Subscribing sends a welcome email at once, styled
+like the quote confirmation email. After that, subscribers get **one email each
+morning at 8 AM Central, only on days a sale was approved since their last
+email**. Sales that have already ended are left out.
+
+- **Admin > Marketing > Sales Subscribers** (`/admin/sales-subscribers`) lists
+  name, email and sign-up date, with the Subscribed and Unsubscribed tabs (the
+  latter with the opt-out date). Opted-out people are kept, never emailed.
+- **Opting out.** Every email has an Unsubscribe link to
+  `/unsubscribe-sales?token=...`, which asks for one click and then stops all
+  future emails. Mail apps also get their own Unsubscribe button through the
+  `List-Unsubscribe` headers. Signing up again with the same address reactivates
+  the same row.
+- **"New" is per person.** `sale_subscribers.last_digest_at` is each person's
+  "sent through" mark. It starts at sign-up (no backlog of old sales), moves
+  forward when an email goes out, and stays put when a send fails, so they catch
+  up the next morning. The send claims that mark first, so an overlapping run
+  cannot email anyone twice.
+- **Send time.** Cron runs `send-sales-digest` every hour; the function only
+  sends when it is 8 AM in Central time, so daylight saving needs no edit. To
+  send now, call the function with `{"force": true}` as a signed-in admin.
+- **Approve sales before 8 AM.** Anything still in Drafts at that moment goes in
+  the next day's email.
+- **Abuse limits.** The sign-up form has a hidden honeypot field, the function
+  allows 5 sign-ups an hour per connection, and signing up an address that is
+  already subscribed does nothing (no repeat welcome email, and no way to tell
+  who is on the list).
+
+| Piece | Where |
+| --- | --- |
+| Table and RLS | `supabase/migrations/20261020120000_create_sale_subscribers.sql` |
+| Hourly cron job | `supabase/migrations/20261020120100_schedule_sales_digest.sql` |
+| Sign-up and opt-out (public, `verify_jwt = false`) | `supabase/functions/sales-subscription` |
+| Daily send | `supabase/functions/send-sales-digest` |
+| Email templates | `supabase/functions/_shared/salesDigestEmail.ts` (tests in `tests/unit/salesDigestEmail.test.ts`) |
+| Sign-up card, unsubscribe page, admin list | `src/components/ui/SalesSubscribeCard.tsx`, `src/pages/UnsubscribeSalesPage.tsx`, `src/pages/admin/SalesSubscribersPage.tsx` |
+
+Needs both migrations applied by hand and both functions deployed (the deploy
+workflow does the functions on merge). The cron job needs the `service_role_key`
+Vault secret, which the other scheduled jobs already use.

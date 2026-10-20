@@ -97,6 +97,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Customers', href: '/admin/clients', icon: Users },
       { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'News Feed', href: '/admin/news', icon: Newspaper },
+      { name: 'Sales Subscribers', href: '/admin/sales-subscribers', icon: Mail },
       { name: 'Competitor Watch', href: '/admin/competitors', icon: Binoculars },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
