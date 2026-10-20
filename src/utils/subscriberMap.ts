@@ -10,6 +10,8 @@ export interface MapCluster {
   label: string;
   /** Newest sign-up here, ms since epoch. Drives the "just joined" pulse. */
   latest: number;
+  /** In Tennessee by state, not by where the dot lands on the map. */
+  inTennessee: boolean;
 }
 
 export interface MapSummary {
@@ -75,6 +77,7 @@ export function clusterSubscribers(subscribers: SaleSubscriber[]): MapCluster[] 
         count: 1,
         label: placeLabel(s),
         latest: joined,
+        inTennessee: isInTennessee(s),
       });
     }
   }
