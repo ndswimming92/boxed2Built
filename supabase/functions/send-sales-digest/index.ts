@@ -196,23 +196,42 @@ Deno.serve(async (req) => {
         }
       };
 
-      const emails = claimed.map(({ subscriber, sales }) => {
-        const rendered = renderDigestEmail({
+      const rendered = claimed.map(({ subscriber, sales }) =>
+        renderDigestEmail({
           name: subscriber.name,
           sales,
           siteUrl: SITE_URL,
           unsubscribeUrl: unsubscribePageUrl(SITE_URL, subscriber.unsubscribe_token),
-        });
-        return {
-          from: `Boxed2Built <${FROM_EMAIL}>`,
-          to: [subscriber.email],
-          subject: rendered.subject,
-          html: rendered.html,
-          text: rendered.text,
-          reply_to: REPLY_TO_EMAIL,
-          headers: unsubscribeHeaders(SUPABASE_URL, SITE_URL, subscriber.unsubscribe_token),
-        };
-      });
+        }),
+      );
+      const emails = claimed.map(({ subscriber }, index) => ({
+        from: `Boxed2Built <${FROM_EMAIL}>`,
+        to: [subscriber.email],
+        subject: rendered[index].subject,
+        html: rendered[index].html,
+        text: rendered[index].text,
+        reply_to: REPLY_TO_EMAIL,
+        headers: unsubscribeHeaders(SUPABASE_URL, SITE_URL, subscriber.unsubscribe_token),
+      }));
+
+      // One log row per email, so the admin can see what each person was sent.
+      const log = async (status: 'sent' | 'failed', emailIds: Array<string | null>, error?: string) => {
+        const { error: logError } = await admin.from('sale_digest_log').insert(
+          claimed.map(({ subscriber, sales }, index) => ({
+            organization_id: subscriber.organization_id,
+            subscriber_id: subscriber.id,
+            sent_at: new Date().toISOString(),
+            status,
+            subject: rendered[index].subject,
+            sale_count: sales.length,
+            sales: sales.map((sale) => ({ title: sale.title, store_name: sale.store_name })),
+            resend_email_id: emailIds[index] ?? null,
+            error: error ?? null,
+          })),
+        );
+        // The email is already out; a logging problem must not fail the run.
+        if (logError) console.error('send-sales-digest: could not write the log', logError.message);
+      };
 
       try {
         const response = await fetch('https://api.resend.com/emails/batch', {
@@ -221,15 +240,20 @@ Deno.serve(async (req) => {
           body: JSON.stringify(emails),
         });
         if (!response.ok) {
-          console.error('send-sales-digest: Resend rejected the batch', response.status, await response.text());
+          const detail = await response.text();
+          console.error('send-sales-digest: Resend rejected the batch', response.status, detail);
           await release();
+          await log('failed', [], `Resend ${response.status}`);
           failed += claimed.length;
           continue;
         }
+        const result = (await response.json().catch(() => null)) as { data?: Array<{ id?: string }> } | null;
+        await log('sent', claimed.map((_, index) => result?.data?.[index]?.id ?? null));
         sent += claimed.length;
       } catch (error) {
         console.error('send-sales-digest: batch send failed', error);
         await release();
+        await log('failed', [], error instanceof Error ? error.message.slice(0, 200) : 'Send failed');
         failed += claimed.length;
       }
     }

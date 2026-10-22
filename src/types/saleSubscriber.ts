@@ -17,3 +17,14 @@ export interface SaleSubscriber {
   latitude: number | null;
   longitude: number | null;
 }
+
+/** One email the daily send attempted for a subscriber. */
+export interface SaleDigestLogEntry {
+  id: string;
+  subscriber_id: string;
+  sent_at: string;
+  status: 'sent' | 'failed';
+  subject: string;
+  sale_count: number;
+  sales: Array<{ title: string; store_name: string | null }>;
+}
