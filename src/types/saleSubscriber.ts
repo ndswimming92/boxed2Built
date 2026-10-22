@@ -18,13 +18,13 @@ export interface SaleSubscriber {
   longitude: number | null;
 }
 
-/** One sales email that went out to a subscriber. */
-export interface SaleEmailLogEntry {
+/** One email the daily send attempted for a subscriber. */
+export interface SaleDigestLogEntry {
   id: string;
   subscriber_id: string;
   sent_at: string;
+  status: 'sent' | 'failed';
   subject: string;
   sale_count: number;
-  sale_titles: string[];
-  provider_message_id: string | null;
+  sales: Array<{ title: string; store_name: string | null }>;
 }

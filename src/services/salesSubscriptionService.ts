@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { SaleEmailLogEntry, SaleSubscriber } from '../types/saleSubscriber';
+import type { SaleDigestLogEntry, SaleSubscriber } from '../types/saleSubscriber';
 
 /**
  * Sign-up and opt-out go through the `sales-subscription` edge function: the
@@ -76,18 +76,18 @@ export async function getSaleSubscribers(): Promise<SaleSubscriber[]> {
     }));
 }
 
-/** Every sales email sent to one subscriber, newest first. */
-export async function getSaleEmailLog(subscriberId: string): Promise<SaleEmailLogEntry[]> {
+/** The sales emails sent to one subscriber, newest first. */
+export async function getSaleDigestLog(subscriberId: string): Promise<SaleDigestLogEntry[]> {
   const { data, error } = await supabase
-    .from('sale_email_log')
-    .select('id, subscriber_id, sent_at, subject, sale_count, sale_titles, provider_message_id')
+    .from('sale_digest_log')
+    .select('id, subscriber_id, sent_at, status, subject, sale_count, sales')
     .eq('subscriber_id', subscriberId)
     .order('sent_at', { ascending: false })
-    .limit(200);
+    .limit(100);
 
   if (error) {
-    console.error('Error fetching sale email log:', error);
+    console.error('Error fetching sale digest log:', error);
     throw new Error(`Failed to load email log: ${error.message}`);
   }
-  return (data || []) as SaleEmailLogEntry[];
+  return (data || []) as SaleDigestLogEntry[];
 }

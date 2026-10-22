@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ChevronDown, MailCheck, MailX, Users } from 'lucide-react';
-import { getSaleEmailLog, getSaleSubscribers } from '../../services/salesSubscriptionService';
-import type { SaleEmailLogEntry, SaleSubscriber, SaleSubscriberStatus } from '../../types/saleSubscriber';
+import { AlertCircle, ChevronRight, MailCheck, MailX, Users } from 'lucide-react';
+import { getSaleDigestLog, getSaleSubscribers } from '../../services/salesSubscriptionService';
+import type { SaleDigestLogEntry, SaleSubscriber, SaleSubscriberStatus } from '../../types/saleSubscriber';
 
 // Loaded on demand: the map brings in the US outline data.
 const SubscriberMap = lazy(() => import('../../components/admin/SubscriberMap'));
@@ -22,31 +22,36 @@ function formatDate(value: string | null): string {
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function formatSentAt(value: string): string {
-  const d = new Date(value);
-  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
-  return `${date}, ${time}`;
+function formatDateTime(value: string): string {
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'America/Chicago',
+    timeZoneName: 'short',
+  });
 }
 
 /** Small dropdown under a subscriber: every sales email sent to them. Loads when first opened. */
 function EmailLog({ subscriberId }: { subscriberId: string }) {
   const [open, setOpen] = useState(false);
-  const [entries, setEntries] = useState<SaleEmailLogEntry[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [entries, setEntries] = useState<SaleDigestLogEntry[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    getSaleEmailLog(subscriberId)
+    getSaleDigestLog(subscriberId)
       .then((rows) => {
         if (!cancelled) {
           setEntries(rows);
-          setFailed(false);
+          setError(null);
         }
       })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
+      .catch((loadError) => {
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Failed to load email log');
       });
     return () => {
       cancelled = true;
@@ -58,32 +63,44 @@ function EmailLog({ subscriberId }: { subscriberId: string }) {
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800"
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800"
       >
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-90' : ''}`} aria-hidden="true" />
         Email log{entries ? ` (${entries.length})` : ''}
       </button>
       {open && (
-        <div className="mt-2 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-          {failed ? (
-            <p className="text-red-700">Could not load the log.</p>
-          ) : entries === null ? (
-            <p>Loading...</p>
+        <div className="mt-2 ml-1 border-l border-slate-200 pl-3 text-xs text-slate-600">
+          {error ? (
+            <p className="text-red-700">{error}</p>
+          ) : !entries ? (
+            <p className="text-slate-400">Loading...</p>
           ) : entries.length === 0 ? (
-            <p>No sales emails sent yet.</p>
+            <p className="text-slate-400">No sales emails sent yet.</p>
           ) : (
-            <ul className="max-h-48 space-y-1.5 overflow-y-auto">
+            <ul className="space-y-2">
               {entries.map((entry) => (
-                <li key={entry.id} className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-medium text-slate-800">{formatSentAt(entry.sent_at)}</span>
-                  <span>
-                    {entry.sale_count} {entry.sale_count === 1 ? 'sale' : 'sales'}
-                  </span>
-                  <span className="text-slate-500" title={entry.sale_titles.join('\n')}>
-                    {entry.subject}
-                  </span>
-                  <span className="text-emerald-700">Sent</span>
+                <li key={entry.id}>
+                  <div className="flex flex-wrap items-center gap-x-2">
+                    <span className="font-medium text-slate-700">{formatDateTime(entry.sent_at)}</span>
+                    <span className={entry.status === 'sent' ? 'text-emerald-700' : 'text-red-700'}>
+                      {entry.status === 'sent' ? 'Sent' : 'Failed'}
+                    </span>
+                    <span className="text-slate-400">
+                      {entry.sale_count} {entry.sale_count === 1 ? 'sale' : 'sales'}
+                    </span>
+                  </div>
+                  <div className="text-slate-500">{entry.subject}</div>
+                  {entry.sales.length > 0 && (
+                    <ul className="mt-0.5 list-disc pl-4 text-slate-500">
+                      {entry.sales.map((sale, index) => (
+                        <li key={index}>
+                          {sale.title}
+                          {sale.store_name ? ` · ${sale.store_name}` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
@@ -234,18 +251,18 @@ export default function SalesSubscribersPage() {
             <tbody className="divide-y divide-slate-100">
               {visible.map((subscriber) => (
                 <tr key={subscriber.id}>
-                  <td className="px-4 py-3 align-top font-medium text-slate-900">
-                    {subscriber.name}
-                    <div className="mt-1 font-normal">
+                  <td className="px-4 py-3 align-top">
+                    <div className="font-medium text-slate-900">{subscriber.name}</div>
+                    <div className="mt-1">
                       <EmailLog subscriberId={subscriber.id} />
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 align-top">
                     <a href={`mailto:${subscriber.email}`} className="text-blue-700 hover:underline">
                       {subscriber.email}
                     </a>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{formatDate(subscriber.subscribed_at)}</td>
+                  <td className="px-4 py-3 align-top text-slate-600">{formatDate(subscriber.subscribed_at)}</td>
                   {activeTab === 'unsubscribed' && (
                     <td className="px-4 py-3 text-slate-600">{formatDate(subscriber.unsubscribed_at)}</td>
                   )}
