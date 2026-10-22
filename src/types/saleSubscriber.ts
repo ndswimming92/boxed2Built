@@ -17,3 +17,14 @@ export interface SaleSubscriber {
   latitude: number | null;
   longitude: number | null;
 }
+
+/** One sales email that went out to a subscriber. */
+export interface SaleEmailLogEntry {
+  id: string;
+  subscriber_id: string;
+  sent_at: string;
+  subject: string;
+  sale_count: number;
+  sale_titles: string[];
+  provider_message_id: string | null;
+}

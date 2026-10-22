@@ -196,6 +196,7 @@ Deno.serve(async (req) => {
         }
       };
 
+      const subjects: string[] = [];
       const emails = claimed.map(({ subscriber, sales }) => {
         const rendered = renderDigestEmail({
           name: subscriber.name,
@@ -203,6 +204,7 @@ Deno.serve(async (req) => {
           siteUrl: SITE_URL,
           unsubscribeUrl: unsubscribePageUrl(SITE_URL, subscriber.unsubscribe_token),
         });
+        subjects.push(rendered.subject);
         return {
           from: `Boxed2Built <${FROM_EMAIL}>`,
           to: [subscriber.email],
@@ -227,6 +229,26 @@ Deno.serve(async (req) => {
           continue;
         }
         sent += claimed.length;
+
+        // Record what went out for the admin's per-subscriber log. A logging
+        // problem must never undo or repeat a send that already happened.
+        try {
+          const result = (await response.json().catch(() => null)) as { data?: Array<{ id?: string }> } | null;
+          const { error: logError } = await admin.from('sale_email_log').insert(
+            claimed.map(({ subscriber, sales }, index) => ({
+              organization_id: subscriber.organization_id,
+              subscriber_id: subscriber.id,
+              sent_at: runStamp,
+              subject: subjects[index],
+              sale_count: sales.length,
+              sale_titles: sales.map((sale) => sale.title),
+              provider_message_id: result?.data?.[index]?.id ?? null,
+            })),
+          );
+          if (logError) console.error('send-sales-digest: could not log sends', logError.message);
+        } catch (logFailure) {
+          console.error('send-sales-digest: could not log sends', logFailure);
+        }
       } catch (error) {
         console.error('send-sales-digest: batch send failed', error);
         await release();

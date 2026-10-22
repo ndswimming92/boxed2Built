@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { SaleSubscriber } from '../types/saleSubscriber';
+import type { SaleEmailLogEntry, SaleSubscriber } from '../types/saleSubscriber';
 
 /**
  * Sign-up and opt-out go through the `sales-subscription` edge function: the
@@ -74,4 +74,20 @@ export async function getSaleSubscribers(): Promise<SaleSubscriber[]> {
       latitude: row.latitude === null ? null : Number(row.latitude),
       longitude: row.longitude === null ? null : Number(row.longitude),
     }));
+}
+
+/** Every sales email sent to one subscriber, newest first. */
+export async function getSaleEmailLog(subscriberId: string): Promise<SaleEmailLogEntry[]> {
+  const { data, error } = await supabase
+    .from('sale_email_log')
+    .select('id, subscriber_id, sent_at, subject, sale_count, sale_titles, provider_message_id')
+    .eq('subscriber_id', subscriberId)
+    .order('sent_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.error('Error fetching sale email log:', error);
+    throw new Error(`Failed to load email log: ${error.message}`);
+  }
+  return (data || []) as SaleEmailLogEntry[];
 }

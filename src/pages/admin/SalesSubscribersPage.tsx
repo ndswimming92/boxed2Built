@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, MailCheck, MailX, Users } from 'lucide-react';
-import { getSaleSubscribers } from '../../services/salesSubscriptionService';
-import type { SaleSubscriber, SaleSubscriberStatus } from '../../types/saleSubscriber';
+import { AlertCircle, ChevronDown, MailCheck, MailX, Users } from 'lucide-react';
+import { getSaleEmailLog, getSaleSubscribers } from '../../services/salesSubscriptionService';
+import type { SaleEmailLogEntry, SaleSubscriber, SaleSubscriberStatus } from '../../types/saleSubscriber';
 
 // Loaded on demand: the map brings in the US outline data.
 const SubscriberMap = lazy(() => import('../../components/admin/SubscriberMap'));
@@ -20,6 +20,78 @@ const TABS: Array<{ status: SaleSubscriberStatus; label: string; empty: string }
 function formatDate(value: string | null): string {
   if (!value) return '';
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatSentAt(value: string): string {
+  const d = new Date(value);
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+  return `${date}, ${time}`;
+}
+
+/** Small dropdown under a subscriber: every sales email sent to them. Loads when first opened. */
+function EmailLog({ subscriberId }: { subscriberId: string }) {
+  const [open, setOpen] = useState(false);
+  const [entries, setEntries] = useState<SaleEmailLogEntry[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    getSaleEmailLog(subscriberId)
+      .then((rows) => {
+        if (!cancelled) {
+          setEntries(rows);
+          setFailed(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, subscriberId]);
+
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800"
+      >
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+        Email log{entries ? ` (${entries.length})` : ''}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          {failed ? (
+            <p className="text-red-700">Could not load the log.</p>
+          ) : entries === null ? (
+            <p>Loading...</p>
+          ) : entries.length === 0 ? (
+            <p>No sales emails sent yet.</p>
+          ) : (
+            <ul className="max-h-48 space-y-1.5 overflow-y-auto">
+              {entries.map((entry) => (
+                <li key={entry.id} className="flex flex-wrap items-baseline gap-x-3">
+                  <span className="font-medium text-slate-800">{formatSentAt(entry.sent_at)}</span>
+                  <span>
+                    {entry.sale_count} {entry.sale_count === 1 ? 'sale' : 'sales'}
+                  </span>
+                  <span className="text-slate-500" title={entry.sale_titles.join('\n')}>
+                    {entry.subject}
+                  </span>
+                  <span className="text-emerald-700">Sent</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function SalesSubscribersPage() {
@@ -162,7 +234,12 @@ export default function SalesSubscribersPage() {
             <tbody className="divide-y divide-slate-100">
               {visible.map((subscriber) => (
                 <tr key={subscriber.id}>
-                  <td className="px-4 py-3 font-medium text-slate-900">{subscriber.name}</td>
+                  <td className="px-4 py-3 align-top font-medium text-slate-900">
+                    {subscriber.name}
+                    <div className="mt-1 font-normal">
+                      <EmailLog subscriberId={subscriber.id} />
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <a href={`mailto:${subscriber.email}`} className="text-blue-700 hover:underline">
                       {subscriber.email}
