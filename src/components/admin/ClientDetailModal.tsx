@@ -498,11 +498,24 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     query = mode === 'quote'
       ? query.eq('invoice_type', 'estimate')
       : query.neq('invoice_type', 'estimate');
-    const { data } = await query
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    return data;
+    return { data, error };
+  }
+
+  // The saved row itself, by id: used after the review form closes so the
+  // decision rests on the document just edited, not on whichever one of that
+  // type happens to be newest.
+  async function loadDocumentById(invoiceId: string) {
+    const { supabase } = await import('../../lib/supabase');
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .maybeSingle();
+    return { data, error };
   }
 
   async function handleJobSelected(jobId: string, mode: 'quote' | 'invoice' = docMode) {
@@ -512,7 +525,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     setInvoiceReviewed(false);
     setInvoiceMessage(null);
     if (!jobId) return;
-    const data = await findDocumentForJob(jobId, mode);
+    const { data } = await findDocumentForJob(jobId, mode);
     if (data) {
       setSelectedInvoiceId(data.id);
       setInvoiceForEdit(data);
@@ -1901,14 +1914,41 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           onClose={() => setShowInvoiceForm(false)}
           onSaved={async () => {
             setShowInvoiceForm(false);
-            setInvoiceReviewed(true);
             setInvoiceRevision((revision) => revision + 1);
-            if (selectedJobId) {
-              const data = await findDocumentForJob(selectedJobId, docMode);
-              if (data) {
-                setSelectedInvoiceId(data.id);
-                setInvoiceForEdit(data);
-              }
+            if (!selectedJobId) return;
+            // The form lets the type be changed, so a saved quote can come back
+            // as an invoice (or the reverse). Only the row just saved, and only
+            // if it still matches the toggle, is unlocked for sending.
+            const wantsQuote = docMode === 'quote';
+            const { data, error } = selectedInvoiceId
+              ? await loadDocumentById(selectedInvoiceId)
+              : await findDocumentForJob(selectedJobId, docMode);
+            if (error) {
+              // Could not confirm what was saved: keep the selection, but make
+              // the admin reopen Review before anything can be sent.
+              setInvoiceReviewed(false);
+              setInvoiceMessage({
+                type: 'error',
+                text: `Saved, but we could not confirm the ${docNoun}. Open Review / Edit again before sending.`,
+              });
+              return;
+            }
+            const matches = !!data
+              && data.is_active !== false
+              && data.status !== 'cancelled'
+              && (data.invoice_type === 'estimate') === wantsQuote;
+            if (matches) {
+              setSelectedInvoiceId(data.id);
+              setInvoiceForEdit(data);
+              setInvoiceReviewed(true);
+            } else {
+              setSelectedInvoiceId(null);
+              setInvoiceForEdit(null);
+              setInvoiceReviewed(false);
+              setInvoiceMessage({
+                type: 'error',
+                text: `That was saved as ${wantsQuote ? 'an invoice' : 'a quote'}, so there is no ${docNoun} to send. Switch to ${wantsQuote ? 'Invoice' : 'Quote'} above to send it.`,
+              });
             }
           }}
         />
