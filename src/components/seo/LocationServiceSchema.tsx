@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ServiceLocation } from '../../constants/serviceLocations';
 import { SITE_URL, locationLabel, locationUrl } from '../../constants/serviceLocations';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 interface LocationServiceSchemaProps {
   location: ServiceLocation;
@@ -76,7 +77,7 @@ const LocationServiceSchema: React.FC<LocationServiceSchemaProps> = ({ location,
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };

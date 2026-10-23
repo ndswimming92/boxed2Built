@@ -81,6 +81,13 @@ async function forwardReceivedEmail(received: ReceivedEmail, emailId: string): P
   return res.json();
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 async function verifySignature(req: Request, rawBody: string): Promise<boolean> {
   const webhookSecret = Deno.env.get("RESEND_WEBHOOK");
   if (!webhookSecret) return false;
@@ -90,6 +97,11 @@ async function verifySignature(req: Request, rawBody: string): Promise<boolean> 
   const svixSignature = req.headers.get("svix-signature");
 
   if (!svixId || !svixTimestamp || !svixSignature) return false;
+
+  // Reject stale or far-future deliveries so a captured request cannot be
+  // replayed later. Svix's own libraries use the same five-minute window.
+  const ageSeconds = Math.abs(Date.now() / 1000 - Number(svixTimestamp));
+  if (!Number.isFinite(ageSeconds) || ageSeconds > 300) return false;
 
   const toSign = `${svixId}.${svixTimestamp}.${rawBody}`;
   const secretBytes = Uint8Array.from(atob(webhookSecret.replace("whsec_", "")), (c) => c.charCodeAt(0));
@@ -106,7 +118,7 @@ async function verifySignature(req: Request, rawBody: string): Promise<boolean> 
   const computedSig = `v1,${btoa(String.fromCharCode(...new Uint8Array(signature)))}`;
 
   const expectedSigs = svixSignature.split(" ");
-  return expectedSigs.some((sig) => sig === computedSig);
+  return expectedSigs.some((sig) => timingSafeEqual(sig, computedSig));
 }
 
 Deno.serve(async (req: Request) => {

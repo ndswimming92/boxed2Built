@@ -1,6 +1,7 @@
 import React from 'react';
 import { CompleteBusinessData } from '../../lib/supabase';
 import { getWrittenReviews } from '../../utils/ratingCalculations';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 interface EnhancedLocalBusinessSchemaProps {
   businessData: CompleteBusinessData | null | undefined;
@@ -217,7 +218,7 @@ const EnhancedLocalBusinessSchema: React.FC<EnhancedLocalBusinessSchemaProps> = 
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schemaData, null, 2)
+        __html: safeJsonLd(schemaData, 2)
       }}
     />
   );

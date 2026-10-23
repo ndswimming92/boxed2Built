@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 export interface FAQ {
   question: string;
@@ -62,7 +63,7 @@ const FAQSchema: React.FC<FAQSchemaProps> = ({ faqs, maxItems = 50 }) => {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schemaData) }}
     />
   );
 };

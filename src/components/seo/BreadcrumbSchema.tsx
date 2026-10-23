@@ -1,3 +1,5 @@
+import { safeJsonLd } from '../../utils/safeJsonLd';
+
 interface BreadcrumbItem {
   name: string;
   url: string;
@@ -22,7 +24,7 @@ const BreadcrumbSchema: React.FC<BreadcrumbSchemaProps> = ({ items }) => {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };

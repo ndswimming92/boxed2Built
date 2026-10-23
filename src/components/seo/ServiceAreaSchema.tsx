@@ -1,5 +1,6 @@
 import React from 'react';
 import { ServiceArea } from '../../lib/supabase';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 interface ServiceAreaSchemaProps {
   businessName: string;
@@ -68,7 +69,7 @@ const ServiceAreaSchema: React.FC<ServiceAreaSchemaProps> = ({
           key={index}
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema, null, 2)
+            __html: safeJsonLd(schema, 2)
           }}
         />
       ))}
