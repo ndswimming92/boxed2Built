@@ -60,9 +60,16 @@ function formatDate(iso: string) {
   });
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: React.ElementType; color: string }) {
+function StatCard({ label, value, icon: Icon, color, active, onClick }: { label: string; value: number; icon: React.ElementType; color: string; active: boolean; onClick: () => void }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`bg-white rounded-xl border p-5 text-left transition-all hover:shadow-md hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+        active ? 'border-emerald-500 ring-2 ring-emerald-500' : 'border-slate-200'
+      }`}
+    >
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-medium text-slate-500">{label}</p>
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
@@ -70,7 +77,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
         </div>
       </div>
       <p className="text-2xl font-bold text-slate-900">{value.toLocaleString()}</p>
-    </div>
+    </button>
   );
 }
 
@@ -156,7 +163,10 @@ export default function EmailActivityPage() {
     });
   };
 
-  const eventTypes = Array.from(new Set(events.map(e => e.event_type))).sort();
+  const eventTypes = Array.from(new Set([
+    ...events.map(e => e.event_type),
+    ...(filterType !== 'all' ? [filterType] : []),
+  ])).sort();
 
   return (
     <div className="space-y-6">
@@ -178,12 +188,12 @@ export default function EmailActivityPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard label="Total Events"  value={counts.total}     icon={Mail}         color="bg-slate-100 text-slate-600" />
-        <StatCard label="Sent"          value={counts.sent}      icon={Send}         color="bg-blue-50 text-blue-600" />
-        <StatCard label="Delivered"     value={counts.delivered} icon={CheckCircle2} color="bg-emerald-50 text-emerald-600" />
-        <StatCard label="Opened"        value={counts.opened}    icon={Eye}          color="bg-teal-50 text-teal-600" />
-        <StatCard label="Bounced"       value={counts.bounced}   icon={XCircle}      color="bg-red-50 text-red-600" />
-        <StatCard label="Failed"        value={counts.failed}    icon={AlertTriangle} color="bg-orange-50 text-orange-600" />
+        <StatCard label="Total Events"  value={counts.total}     icon={Mail}         color="bg-slate-100 text-slate-600"     active={filterType === 'all'}             onClick={() => setFilterType('all')} />
+        <StatCard label="Sent"          value={counts.sent}      icon={Send}         color="bg-blue-50 text-blue-600"        active={filterType === 'email.sent'}      onClick={() => setFilterType('email.sent')} />
+        <StatCard label="Delivered"     value={counts.delivered} icon={CheckCircle2} color="bg-emerald-50 text-emerald-600"  active={filterType === 'email.delivered'} onClick={() => setFilterType('email.delivered')} />
+        <StatCard label="Opened"        value={counts.opened}    icon={Eye}          color="bg-teal-50 text-teal-600"        active={filterType === 'email.opened'}    onClick={() => setFilterType('email.opened')} />
+        <StatCard label="Bounced"       value={counts.bounced}   icon={XCircle}      color="bg-red-50 text-red-600"          active={filterType === 'email.bounced'}   onClick={() => setFilterType('email.bounced')} />
+        <StatCard label="Failed"        value={counts.failed}    icon={AlertTriangle} color="bg-orange-50 text-orange-600"   active={filterType === 'email.failed'}    onClick={() => setFilterType('email.failed')} />
       </div>
 
       {/* Filters */}
