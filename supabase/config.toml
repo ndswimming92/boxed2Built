@@ -71,9 +71,6 @@ verify_jwt = false
 [functions.send-invoice-email]
 verify_jwt = false
 
-[functions.send-quote-email]
-verify_jwt = false
-
 [functions.publish-gallery-photo]
 verify_jwt = false
 

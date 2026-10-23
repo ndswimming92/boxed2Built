@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 
 /**
  * Previewing and test-sending the emails an admin sends by hand from a client's
- * profile: the quote and the invoice.
+ * profile. A quote is an invoice of type 'estimate', so one pair serves both.
  *
  * (The post-job follow-up used to live here too, but it is now per-job and
  * driven by jobFollowupService, which mirrors jobReminderService.)
@@ -13,9 +13,9 @@ import { supabase } from '../lib/supabase';
  * sends is worse than no preview at all, and the whole point of one is to be
  * able to trust it.
  *
- * Sending each of these lives elsewhere (ClientDetailModal's own handlers, and
- * quoteEmailService), because sending carries cooldown handling that the
- * callers already own. Only the two read-only-for-the-client modes are here.
+ * Sending lives in ClientDetailModal's own handler, because sending carries
+ * cooldown handling that the caller already owns. Only the two
+ * read-only-for-the-client modes are here.
  */
 
 export interface ClientEmailPreview {
@@ -99,22 +99,6 @@ async function sendTest(
   );
 
   return { to: json.to ?? null };
-}
-
-export function previewQuoteEmail(
-  clientId: string,
-  organizationId: string,
-  jobId: string,
-): Promise<ClientEmailPreview> {
-  return loadPreview('send-quote-email', { clientId, organizationId, jobId });
-}
-
-export function sendQuoteEmailTest(
-  clientId: string,
-  organizationId: string,
-  jobId: string,
-): Promise<TestSendResult> {
-  return sendTest('send-quote-email', { clientId, organizationId, jobId });
 }
 
 /**

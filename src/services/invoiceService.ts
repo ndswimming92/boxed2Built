@@ -762,6 +762,41 @@ export async function createInvoiceFromJob(
 }
 
 /**
+ * Builds the quote record for a job that was priced on the job itself and has
+ * no quote yet: the quoted price becomes a labor line, and any materials cost
+ * a second one. After this the quote is an ordinary invoice row, so it is
+ * reviewed, edited and emailed exactly like every other one.
+ */
+export async function createQuoteFromJob(jobId: string): Promise<Invoice> {
+  const { data: job, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('id', jobId)
+    .single();
+
+  if (error || !job) {
+    throw new Error('Could not load that job to build a quote from.');
+  }
+
+  const quote = await createInvoiceFromJob(job as Job, 'estimate');
+
+  const materials = Number(job.materials_cost || 0);
+  if (materials > 0) {
+    await addLineItem({
+      invoice_id: quote.id,
+      item_type: 'material',
+      description: 'Materials & Extras',
+      quantity: 1,
+      unit_price: materials,
+      is_taxable: false,
+      display_order: 1,
+    });
+  }
+
+  return quote;
+}
+
+/**
  * An estimate is a quote, not a bill: nothing is owed until the customer
  * accepts it, so it carries no due date anywhere — form, PDF, or email.
  */
