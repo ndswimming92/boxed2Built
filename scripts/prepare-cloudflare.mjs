@@ -8,7 +8,8 @@
 //   1. dist/_redirects is replaced with cloudflare/_redirects. Netlify's file
 //      relies on Netlify-only behaviour (the `!` force flag, slash-insensitive
 //      matching, netlify.toml rules) that Cloudflare does not have.
-//   2. dist/_headers becomes public/_headers followed by cloudflare/_headers,
+//   2. dist/_headers (public/_headers after apply-csp.mjs has filled in the CSP
+//      hashes) is followed by cloudflare/_headers,
 //      which carries the netlify.toml [[headers]] blocks Cloudflare ignores.
 //   3. The build fails if dist/404.html is missing. Without it Cloudflare
 //      silently switches to single-page-app mode and answers every unknown
@@ -40,7 +41,7 @@ writeFileSync(join(dist, '_redirects'), redirects);
 // Drop lines that are not a valid rule start. public/_headers ends its first
 // block with a stray `*/` line, which Netlify ignores but Cloudflare would
 // read as a URL pattern.
-const baseHeaders = readFileSync(join(root, 'public', '_headers'), 'utf8')
+const baseHeaders = readFileSync(join(dist, '_headers'), 'utf8')
   .split('\n')
   .filter(line => line.trim() !== '*/')
   .join('\n');
