@@ -48,7 +48,33 @@ const groupThemes: Record<string, GroupTheme> = {
 };
 
 const QUICK_ACCESS_LIMIT = 5;
-const QUICK_ACCESS_MIN_VISITS = 2;
+const QUICK_ACCESS_MIN_SCORE = 2;
+const USAGE_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Each visit adds 1 to a score that halves every week, so recent visits count most.
+interface UsageEntry {
+  score: number;
+  updatedAt: number;
+}
+
+const decayedScore = (entry: UsageEntry, now: number) =>
+  entry.score * Math.pow(0.5, (now - entry.updatedAt) / USAGE_HALF_LIFE_MS);
+
+function addVisit(usage: Record<string, UsageEntry>, href: string): Record<string, UsageEntry> {
+  const now = Date.now();
+  return { ...usage, [href]: { score: (usage[href] ? decayedScore(usage[href], now) : 0) + 1, updatedAt: now } };
+}
+
+// Older versions stored plain visit counts; treat them as if they happened just now.
+function normalizeUsage(raw: Record<string, number | UsageEntry>): Record<string, UsageEntry> {
+  const now = Date.now();
+  return Object.fromEntries(
+    Object.entries(raw).map(([href, value]) => [
+      href,
+      typeof value === 'number' ? { score: value, updatedAt: now } : value,
+    ])
+  );
+}
 
 function readStoredJson<T>(key: string, fallback: T): T {
   try {
@@ -212,7 +238,11 @@ function AdminLayoutContent() {
   const newsDraftCount = useNewsDraftsBadge();
 
   const [favorites, setFavorites] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-favorites', []));
-  const [usage, setUsage] = useState<Record<string, number>>(() => readStoredJson<Record<string, number>>('admin-nav-usage', {}));
+  const [usage, setUsage] = useState<Record<string, UsageEntry>>(() =>
+    normalizeUsage(readStoredJson<Record<string, number | UsageEntry>>('admin-nav-usage', {}))
+  );
+  // Auto-pinned pages the user has manually removed from Quick Access.
+  const [dismissed, setDismissed] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-dismissed', []));
 
   const navLookup = useMemo(() => {
     const map = new Map<string, { item: NavigationItem; theme: GroupTheme }>();
@@ -222,18 +252,34 @@ function AdminLayoutContent() {
     return map;
   }, [visibleGroups]);
 
+  // Scores are ranked as of page load; they refresh on the next load.
+  const [loadedAt] = useState(() => Date.now());
+
   const quickAccessHrefs = useMemo(() => {
     const starred = favorites.filter(href => navLookup.has(href));
     const auto = Object.entries(usage)
-      .filter(([href, count]) => navLookup.has(href) && !starred.includes(href) && count >= QUICK_ACCESS_MIN_VISITS)
+      .map(([href, entry]) => [href, decayedScore(entry, loadedAt)] as const)
+      .filter(([href, score]) => navLookup.has(href) && !starred.includes(href) && !dismissed.includes(href) && score >= QUICK_ACCESS_MIN_SCORE)
       .sort((a, b) => b[1] - a[1])
       .map(([href]) => href);
     return [...starred, ...auto].slice(0, Math.max(QUICK_ACCESS_LIMIT, starred.length));
-  }, [favorites, usage, navLookup]);
+  }, [favorites, usage, dismissed, navLookup, loadedAt]);
 
+  // Star toggles a manual pin. On an auto-pinned page it removes it from Quick Access instead.
   const toggleFavorite = (href: string) => {
-    setFavorites(prev => (prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]));
+    if (favorites.includes(href)) {
+      setFavorites(prev => prev.filter(h => h !== href));
+    } else if (quickAccessHrefs.includes(href)) {
+      setDismissed(prev => [...prev, href]);
+    } else {
+      setFavorites(prev => [...prev, href]);
+      setDismissed(prev => prev.filter(h => h !== href));
+    }
   };
+
+  useEffect(() => {
+    localStorage.setItem('admin-nav-dismissed', JSON.stringify(dismissed));
+  }, [dismissed]);
 
   useEffect(() => {
     localStorage.setItem('admin-nav-favorites', JSON.stringify(favorites));
@@ -244,7 +290,7 @@ function AdminLayoutContent() {
   }, [usage]);
 
   const recordVisit = (href: string) => {
-    setUsage(prev => ({ ...prev, [href]: (prev[href] || 0) + 1 }));
+    setUsage(prev => addVisit(prev, href));
   };
 
   const getInitialExpandedState = (): Record<string, boolean> => {
@@ -361,6 +407,7 @@ function AdminLayoutContent() {
     const Icon = item.icon;
     const isActive = location.pathname === item.href;
     const isFavorite = favorites.includes(item.href);
+    const isAutoPinned = !isFavorite && quickAccessHrefs.includes(item.href);
     const badgeCount =
       item.name === 'Inquiries'
         ? unviewedCount
@@ -401,13 +448,24 @@ function AdminLayoutContent() {
         <button
           type="button"
           onClick={() => toggleFavorite(item.href)}
-          aria-label={isFavorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
+          aria-label={
+            isFavorite
+              ? `Unpin ${item.name}`
+              : isAutoPinned
+              ? `Remove ${item.name} from Quick Access`
+              : `Pin ${item.name} to Quick Access`
+          }
           aria-pressed={isFavorite}
+          title={isFavorite ? 'Unpin' : isAutoPinned ? 'Remove from Quick Access' : 'Pin to Quick Access'}
           className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity focus:opacity-100 ${
-            isFavorite ? 'opacity-100 text-amber-500' : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-amber-500'
+            isFavorite
+              ? 'opacity-100 text-amber-500'
+              : isAutoPinned
+              ? 'opacity-60 hover:opacity-100 text-amber-500'
+              : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-amber-500'
           }`}
         >
-          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : isAutoPinned ? 'fill-amber-100' : ''}`} />
         </button>
       </li>
     );
