@@ -30,12 +30,8 @@ import AdminDocumentUploadModal from './AdminDocumentUploadModal';
 import JobReminderCard from './JobReminderCard';
 import JobFollowupCard from './JobFollowupCard';
 import EmailPreviewActions from './EmailPreviewActions';
-import {
-  previewInvoiceEmail,
-  previewQuoteEmail,
-  sendInvoiceEmailTest,
-  sendQuoteEmailTest,
-} from '../../services/clientEmailService';
+import { previewInvoiceEmail, sendInvoiceEmailTest } from '../../services/clientEmailService';
+import { createQuoteFromJob } from '../../services/invoiceService';
 import { parseJobDate } from '../../services/analyticsCalculations';
 import InvoiceFormModal from './InvoiceFormModal';
 import JobFormModal from './JobFormModal';
@@ -112,7 +108,10 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
 
   const COOLDOWN_MS = 10 * 60 * 1000;
 
-  // Invoice email state
+  // Quote / invoice email state. Both go out through the same invoice record and
+  // the same email template; docMode only says which kind of record is in play.
+  const [docMode, setDocMode] = useState<'quote' | 'invoice'>('quote');
+  const [creatingQuote, setCreatingQuote] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string>('');
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   /**
@@ -137,10 +136,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   const [jobMessage, setJobMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const jobSectionRef = useRef<HTMLDivElement>(null);
 
-  // Quote email state
-  const [selectedQuoteJobId, setSelectedQuoteJobId] = useState<string>('');
-  const [quoteSending, setQuoteSending] = useState(false);
-  const [quoteMessage, setQuoteMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  // Quotes and invoices keep separate resend cooldowns, so sending one never holds back the other.
   const [quoteCooldownRemaining, setQuoteCooldownRemaining] = useState<number>(0);
   const quoteCooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -489,23 +485,34 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     }, 50);
   }
 
-  async function handleJobSelected(jobId: string) {
+  // The newest live record of the kind the toggle names: a quote is the job's
+  // 'estimate' invoice, an invoice is any other type.
+  async function findDocumentForJob(jobId: string, mode: 'quote' | 'invoice') {
+    const { supabase } = await import('../../lib/supabase');
+    let query = supabase
+      .from('invoices')
+      .select('*')
+      .eq('job_id', jobId)
+      .eq('is_active', true)
+      .not('status', 'in', '("cancelled")');
+    query = mode === 'quote'
+      ? query.eq('invoice_type', 'estimate')
+      : query.neq('invoice_type', 'estimate');
+    const { data } = await query
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return data;
+  }
+
+  async function handleJobSelected(jobId: string, mode: 'quote' | 'invoice' = docMode) {
     setSelectedJobId(jobId);
     setSelectedInvoiceId(null);
     setInvoiceForEdit(null);
     setInvoiceReviewed(false);
     setInvoiceMessage(null);
     if (!jobId) return;
-    const { supabase } = await import('../../lib/supabase');
-    const { data } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('job_id', jobId)
-      .eq('is_active', true)
-      .not('status', 'in', '("cancelled")')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const data = await findDocumentForJob(jobId, mode);
     if (data) {
       setSelectedInvoiceId(data.id);
       setInvoiceForEdit(data);
@@ -513,9 +520,49 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
     await resolveBusinessId();
   }
 
-  async function handleSendInvoiceEmail() {
+  function handleModeChange(mode: 'quote' | 'invoice') {
+    if (mode === docMode) return;
+    setDocMode(mode);
+    void handleJobSelected(selectedJobId, mode);
+  }
+
+  // A quote that does not exist yet is built from the job's own price, then
+  // opened for review like any other — so nothing goes out unseen.
+  async function openDocumentForm() {
+    await resolveBusinessId();
+    const job = history?.jobs.find((j: any) => j.id === selectedJobId);
+    if (docMode === 'quote' && !selectedInvoiceId && job?.quoted_price != null) {
+      setCreatingQuote(true);
+      setInvoiceMessage(null);
+      try {
+        const quote = await createQuoteFromJob(selectedJobId);
+        setSelectedInvoiceId(quote.id);
+        setInvoiceForEdit(quote);
+      } catch (err) {
+        setInvoiceMessage({
+          type: 'error',
+          text: err instanceof Error ? err.message : 'Could not create a quote from this job.',
+        });
+        return;
+      } finally {
+        setCreatingQuote(false);
+      }
+    }
+    setShowInvoiceForm(true);
+  }
+
+  const docNoun = docMode === 'quote' ? 'quote' : 'invoice';
+  const docNounTitle = docMode === 'quote' ? 'Quote' : 'Invoice';
+  const cooldownRemaining = docMode === 'quote' ? quoteCooldownRemaining : invoiceCooldownRemaining;
+  const lastSentAt = docMode === 'quote'
+    ? currentClient.last_quote_email_sent_at
+    : currentClient.last_invoice_email_sent_at;
+
+  async function handleSendEmail() {
     const emailToUse = currentClient.email || invoiceEmailOverride.trim();
-    if (!selectedInvoiceId || !invoiceReviewed || invoiceSending || invoiceCooldownRemaining > 0 || !emailToUse) return;
+    if (!selectedInvoiceId || !invoiceReviewed || invoiceSending || cooldownRemaining > 0 || !emailToUse) return;
+    const startCooldown = docMode === 'quote' ? startQuoteCooldownTimer : startInvoiceCooldownTimer;
+    const sentColumn = docMode === 'quote' ? 'last_quote_email_sent_at' : 'last_invoice_email_sent_at';
     setInvoiceSending(true);
     setInvoiceMessage(null);
     try {
@@ -541,48 +588,22 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       const json = await res.json();
       if (!res.ok || !json.success) {
         if (json.error === 'cooldown') {
-          startInvoiceCooldownTimer(new Date(Date.now() - (COOLDOWN_MS - json.remainingSeconds * 1000)).toISOString());
-          setInvoiceMessage({ type: 'error', text: 'Invoice email was sent recently. Please wait before sending again.' });
+          startCooldown(new Date(Date.now() - (COOLDOWN_MS - json.remainingSeconds * 1000)).toISOString());
+          setInvoiceMessage({ type: 'error', text: `A ${docNoun} email was sent recently. Please wait before sending again.` });
         } else {
-          setInvoiceMessage({ type: 'error', text: json.error ?? 'Failed to send invoice email.' });
+          setInvoiceMessage({ type: 'error', text: json.error ?? `Failed to send ${docNoun} email.` });
         }
         return;
       }
-      setCurrentClient((prev) => ({ ...prev, last_invoice_email_sent_at: json.sentAt }));
-      setInvoiceMessage({ type: 'success', text: 'Invoice email sent successfully.' });
+      setCurrentClient((prev) => ({ ...prev, [sentColumn]: json.sentAt }));
+      setInvoiceMessage({ type: 'success', text: `${docNounTitle} email sent successfully.` });
       setSelectedJobId('');
       setSelectedInvoiceId(null);
       setInvoiceReviewed(false);
     } catch {
-      setInvoiceMessage({ type: 'error', text: 'Failed to send invoice email. Please try again.' });
+      setInvoiceMessage({ type: 'error', text: `Failed to send ${docNoun} email. Please try again.` });
     } finally {
       setInvoiceSending(false);
-    }
-  }
-
-  async function handleSendQuoteEmail() {
-    if (!selectedQuoteJobId || !currentClient.email || quoteSending || quoteCooldownRemaining > 0) return;
-    setQuoteSending(true);
-    setQuoteMessage(null);
-    try {
-      const { sendQuoteEmail } = await import('../../services/quoteEmailService');
-      const result = await sendQuoteEmail(currentClient.id, currentClient.organization_id, selectedQuoteJobId);
-      if (!result.success) {
-        if (result.error === 'cooldown') {
-          startQuoteCooldownTimer(new Date(Date.now() - (COOLDOWN_MS - (result.remainingSeconds ?? 0) * 1000)).toISOString());
-          setQuoteMessage({ type: 'error', text: 'Quote email was sent recently. Please wait before sending again.' });
-        } else {
-          setQuoteMessage({ type: 'error', text: result.error ?? 'Failed to send quote email.' });
-        }
-        return;
-      }
-      setCurrentClient((prev) => ({ ...prev, last_quote_email_sent_at: result.sentAt ?? null }));
-      setQuoteMessage({ type: 'success', text: 'Quote email sent successfully.' });
-      setSelectedQuoteJobId('');
-    } catch {
-      setQuoteMessage({ type: 'error', text: 'Failed to send quote email. Please try again.' });
-    } finally {
-      setQuoteSending(false);
     }
   }
 
@@ -591,15 +612,6 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
   // identity each second would be a new fetch waiting to happen.
   const clientId = currentClient.id;
   const clientOrgId = currentClient.organization_id;
-
-  const loadQuotePreview = useCallback(
-    () => previewQuoteEmail(clientId, clientOrgId, selectedQuoteJobId),
-    [clientId, clientOrgId, selectedQuoteJobId],
-  );
-  const testQuoteEmail = useCallback(
-    () => sendQuoteEmailTest(clientId, clientOrgId, selectedQuoteJobId),
-    [clientId, clientOrgId, selectedQuoteJobId],
-  );
 
   // The override address only changes who the preview names as the recipient,
   // so it is read at fetch time rather than keyed on — re-keying would reset an
@@ -1232,84 +1244,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           </div>
         )}
 
-        {/* Send Quote Email */}
-        {currentClient.email && history && history.jobs.filter((j: any) => j.quoted_price != null).length > 0 && (
-          <div className="p-6 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-blue-600" />
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">Send Quote Email</h3>
-                <p className="text-sm text-gray-500 mt-0.5">Send a pricing quote for a selected job (valid 7 days)</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Select Job</label>
-                <div className="relative">
-                  <select
-                    value={selectedQuoteJobId}
-                    onChange={(e) => { setSelectedQuoteJobId(e.target.value); setQuoteMessage(null); }}
-                    disabled={quoteCooldownRemaining > 0}
-                    className="w-full appearance-none px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">— Choose a job with a quote —</option>
-                    {history.jobs.filter((j: any) => j.quoted_price != null).map((job: any) => (
-                      <option key={job.id} value={job.id}>
-                        {job.job_type || 'Job'} — ${Number(job.quoted_price).toFixed(0)} — {formatDate(job.created_at)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-1">
-                <button
-                  onClick={handleSendQuoteEmail}
-                  disabled={!selectedQuoteJobId || quoteSending || quoteCooldownRemaining > 0}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  {quoteSending
-                    ? 'Sending...'
-                    : quoteCooldownRemaining > 0
-                    ? `Available in ${quoteCooldownRemaining >= 60 ? `${Math.ceil(quoteCooldownRemaining / 60)}m` : `${quoteCooldownRemaining}s`}`
-                    : 'Send Quote'}
-                </button>
-              </div>
-
-              {quoteMessage && (
-                <div className={`px-3 py-2 rounded-lg text-sm ${quoteMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-                  {quoteMessage.text}
-                </div>
-              )}
-              {quoteCooldownRemaining > 0 && !quoteMessage && (
-                <p className="text-xs text-gray-500">
-                  Last sent {currentClient.last_quote_email_sent_at ? formatDateTime(currentClient.last_quote_email_sent_at) : ''}. Can resend after cooldown.
-                </p>
-              )}
-
-              <div className="pt-3 border-t border-gray-100">
-                <EmailPreviewActions
-                  label="Quote email"
-                  previewKey={`quote:${selectedQuoteJobId}`}
-                  loadPreview={loadQuotePreview}
-                  sendTest={testQuoteEmail}
-                  disabled={!selectedQuoteJobId}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Send Invoice by Email */}
+        {/* Send Quote / Invoice by Email */}
         <div ref={jobSectionRef} className="p-6 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-2 mb-4">
             <Receipt className="w-5 h-5 text-blue-600" />
             <div>
-              <h3 className="text-base font-semibold text-gray-900">Send Invoice by Email</h3>
-              <p className="text-sm text-gray-500 mt-0.5">Select a job, review or edit the invoice, then send a payment link</p>
+              <h3 className="text-base font-semibold text-gray-900">Send a Quote or Invoice</h3>
+              <p className="text-sm text-gray-500 mt-0.5">Pick a job, choose Quote or Invoice, review it, then email it to the customer</p>
             </div>
           </div>
 
@@ -1327,11 +1268,11 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           )}
 
           {history && history.jobs.length > 0 ? (
-            <div className="space-y-3">
-              {/* Job selector */}
+            <div className="space-y-4">
+              {/* Step 1: which job */}
               <div>
                 <div className="flex items-center justify-between gap-3 mb-1">
-                  <label className="block text-xs font-medium text-gray-600">Select Job</label>
+                  <label className="block text-xs font-medium text-gray-600">1. Select Job</label>
                   <button
                     onClick={openNewJobForm}
                     disabled={openingJobForm}
@@ -1345,13 +1286,14 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   <select
                     value={selectedJobId}
                     onChange={(e) => handleJobSelected(e.target.value)}
-                    disabled={invoiceCooldownRemaining > 0}
-                    className="w-full appearance-none px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full appearance-none px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
                   >
                     <option value="">— Choose a job —</option>
                     {history.jobs.map((job: any) => (
                       <option key={job.id} value={job.id}>
-                        {job.job_type || 'Job'} — {job.job_status} — {formatDate(job.created_at)}
+                        {job.job_type || 'Job'}
+                        {job.quoted_price != null ? ` — $${Number(job.quoted_price).toFixed(0)}` : ''}
+                        {` — ${job.job_status} — ${formatDate(job.created_at)}`}
                       </option>
                     ))}
                   </select>
@@ -1359,89 +1301,129 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 </div>
               </div>
 
-              {/* Invoice status hint */}
               {selectedJobId && (
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${selectedInvoiceId ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-                  <FileText className="w-4 h-4 flex-shrink-0" />
-                  {selectedInvoiceId
-                    ? 'Existing invoice found. Review or edit it before sending.'
-                    : 'No invoice found for this job. Create one using the Review / Edit Invoice button.'}
-                </div>
-              )}
+                <>
+                  {/* Step 2: quote or invoice */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">2. What are you sending?</label>
+                    <div role="tablist" aria-label="Document to send" className="inline-flex p-0.5 bg-gray-100 rounded-lg">
+                      {(['quote', 'invoice'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          role="tab"
+                          aria-selected={docMode === mode}
+                          onClick={() => handleModeChange(mode)}
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            docMode === mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          {mode === 'quote' ? 'Quote' : 'Invoice'}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-1.5 text-xs text-gray-500">
+                      {docMode === 'quote'
+                        ? 'A price offer. Nothing is due until the customer says yes.'
+                        : 'A bill with a secure payment link.'}
+                    </p>
+                  </div>
 
-              {/* Email override when no client email */}
-              {selectedJobId && !currentClient.email && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Recipient Email <span className="text-red-500">*</span>
-                    <span className="ml-1 text-gray-400 font-normal">(customer has no email on file)</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={invoiceEmailOverride}
-                    onChange={(e) => setInvoiceEmailOverride(e.target.value)}
-                    placeholder="customer@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
-              )}
+                  {/* Status of the record behind the email */}
+                  {(() => {
+                    const job = history.jobs.find((j: any) => j.id === selectedJobId);
+                    const buildable = docMode === 'quote' && !selectedInvoiceId && job?.quoted_price != null;
+                    return (
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${selectedInvoiceId ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                        <FileText className="w-4 h-4 flex-shrink-0" />
+                        {selectedInvoiceId
+                          ? `Existing ${docNoun} found. Review or edit it before sending.`
+                          : buildable
+                          ? `No quote yet. We'll build one from this job's $${Number(job.quoted_price).toFixed(0)} price for you to review.`
+                          : `No ${docNoun} found for this job. Create one to continue.`}
+                      </div>
+                    );
+                  })()}
 
-              {/* Action buttons */}
-              {selectedJobId && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={async () => { await resolveBusinessId(); setShowInvoiceForm(true); }}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    {selectedInvoiceId ? 'Review / Edit Invoice' : 'Create Invoice'}
-                  </button>
-                  {invoiceReviewed && (
-                    <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
-                      <Check className="w-3.5 h-3.5" />
-                      Invoice reviewed
-                    </span>
+                  {/* Email override when no client email */}
+                  {!currentClient.email && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Recipient Email <span className="text-red-500">*</span>
+                        <span className="ml-1 text-gray-400 font-normal">(customer has no email on file)</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={invoiceEmailOverride}
+                        onChange={(e) => setInvoiceEmailOverride(e.target.value)}
+                        placeholder="customer@example.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
                   )}
-                </div>
-              )}
 
-              {/* Send button */}
-              <div className="flex items-center gap-3 pt-1">
-                <button
-                  onClick={handleSendInvoiceEmail}
-                  disabled={
-                    !selectedInvoiceId ||
-                    !invoiceReviewed ||
-                    invoiceSending ||
-                    invoiceCooldownRemaining > 0 ||
-                    (!currentClient.email && !invoiceEmailOverride.trim())
-                  }
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  {invoiceSending
-                    ? 'Sending...'
-                    : invoiceCooldownRemaining > 0
-                    ? `Available in ${invoiceCooldownRemaining >= 60 ? `${Math.ceil(invoiceCooldownRemaining / 60)}m` : `${invoiceCooldownRemaining}s`}`
-                    : 'Send Invoice Email'}
-                </button>
-              </div>
+                  {/* Step 3: review, then send */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">3. Review, then send</label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={openDocumentForm}
+                        disabled={creatingQuote}
+                        className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        {creatingQuote
+                          ? 'Building quote...'
+                          : `${selectedInvoiceId ? 'Review / Edit' : 'Create'} ${docNounTitle}`}
+                      </button>
+                      <button
+                        onClick={handleSendEmail}
+                        disabled={
+                          !selectedInvoiceId ||
+                          !invoiceReviewed ||
+                          invoiceSending ||
+                          cooldownRemaining > 0 ||
+                          (!currentClient.email && !invoiceEmailOverride.trim())
+                        }
+                        className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        {invoiceSending
+                          ? 'Sending...'
+                          : cooldownRemaining > 0
+                          ? `Available in ${cooldownRemaining >= 60 ? `${Math.ceil(cooldownRemaining / 60)}m` : `${cooldownRemaining}s`}`
+                          : `Send ${docNounTitle} Email`}
+                      </button>
+                      {invoiceReviewed && (
+                        <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
+                          <Check className="w-3.5 h-3.5" />
+                          {docNounTitle} reviewed
+                        </span>
+                      )}
+                    </div>
+                    {selectedInvoiceId && !invoiceReviewed && (
+                      <p className="mt-1.5 text-xs text-gray-500">
+                        Open Review / Edit and save once to unlock sending.
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {invoiceMessage && (
                 <div className={`px-3 py-2 rounded-lg text-sm ${invoiceMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
                   {invoiceMessage.text}
                 </div>
               )}
-              {invoiceCooldownRemaining > 0 && !invoiceMessage && (
+              {selectedJobId && cooldownRemaining > 0 && !invoiceMessage && (
                 <p className="text-xs text-gray-500">
-                  Last sent {currentClient.last_invoice_email_sent_at ? formatDateTime(currentClient.last_invoice_email_sent_at) : ''}. Can resend after cooldown.
+                  Last {docNoun} sent {lastSentAt ? formatDateTime(lastSentAt) : ''}. Can resend after cooldown.
                 </p>
               )}
 
               <div className="pt-3 border-t border-gray-100">
                 <EmailPreviewActions
-                  label="Invoice email"
-                    previewKey={`invoice:${selectedInvoiceId ?? ''}:${invoiceRevision}`}
+                  label={`${docNounTitle} email`}
+                  previewKey={`${docMode}:${selectedInvoiceId ?? ''}:${invoiceRevision}`}
                   loadPreview={loadInvoicePreview}
                   sendTest={testInvoiceEmail}
                   disabled={!selectedInvoiceId}
@@ -1452,7 +1434,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <div className="flex flex-col items-start gap-3 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center sm:justify-between">
               <p className="flex items-start gap-2 text-sm text-gray-500">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                No jobs found for this client. Jobs are required to send an invoice email.
+                No jobs found for this client. A job is required to send a quote or invoice.
               </p>
               <button
                 onClick={openNewJobForm}
@@ -1909,6 +1891,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           businessId={businessId}
           invoice={invoiceForEdit}
           jobId={invoiceForEdit ? undefined : selectedJobId}
+          initialType={docMode === 'quote' ? 'estimate' : 'final'}
           initialData={invoiceForEdit ? undefined : {
             client_name: currentClient.name,
             client_email: currentClient.email ?? undefined,
@@ -1921,16 +1904,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             setInvoiceReviewed(true);
             setInvoiceRevision((revision) => revision + 1);
             if (selectedJobId) {
-              const { supabase } = await import('../../lib/supabase');
-              const { data } = await supabase
-                .from('invoices')
-                .select('*')
-                .eq('job_id', selectedJobId)
-                .eq('is_active', true)
-                .not('status', 'in', '("cancelled")')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+              const data = await findDocumentForJob(selectedJobId, docMode);
               if (data) {
                 setSelectedInvoiceId(data.id);
                 setInvoiceForEdit(data);

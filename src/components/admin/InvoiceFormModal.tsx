@@ -26,6 +26,8 @@ interface InvoiceFormModalProps {
   invoice?: Invoice | null;
   inquiryId?: string;
   jobId?: string;
+  /** What a new invoice starts as. Ignored when editing: the saved type wins. */
+  initialType?: 'estimate' | 'deposit' | 'progress' | 'final' | 'general';
   initialData?: {
     client_name?: string;
     client_email?: string;
@@ -106,6 +108,7 @@ export default function InvoiceFormModal({
   invoice,
   inquiryId,
   jobId,
+  initialType,
   initialData,
   onClose,
   onSaved,
@@ -124,7 +127,7 @@ export default function InvoiceFormModal({
   // inserting a duplicate invoice (the `invoice` prop never updates mid-session).
   const [savedInvoiceId, setSavedInvoiceId] = useState<string | null>(null);
 
-  const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>('estimate');
+  const [invoiceType, setInvoiceType] = useState<'estimate' | 'deposit' | 'progress' | 'final' | 'general'>(initialType ?? 'estimate');
   // Client profile picked from the saved-client list; null when the details are typed in.
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [pickedClient, setPickedClient] = useState<PickedClient | null>(null);

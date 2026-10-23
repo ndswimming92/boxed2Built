@@ -503,7 +503,7 @@ Deno.serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, last_invoice_email_sent_at, organization_id')
+      .select('id, name, email, last_invoice_email_sent_at, last_quote_email_sent_at, organization_id')
       .eq('id', body.clientId)
       .eq('organization_id', body.organizationId)
       .maybeSingle();
@@ -516,10 +516,6 @@ Deno.serve(async (req) => {
     }
 
     const recipientEmail: string | null = body.overrideEmail?.trim() || client.email?.trim() || null;
-    const cooldownRemaining = cooldownSecondsRemaining(
-      client.last_invoice_email_sent_at,
-      COOLDOWN_MS,
-    );
 
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
@@ -536,6 +532,12 @@ Deno.serve(async (req) => {
     }
 
     const settled = invoice.status === 'paid' || invoice.status === 'cancelled';
+
+    // A quote has its own cooldown: sending one must not hold back the invoice
+    // that follows it, nor the other way round.
+    const isQuote = invoiceLabels(invoice.invoice_type).isQuote;
+    const cooldownColumn = isQuote ? 'last_quote_email_sent_at' : 'last_invoice_email_sent_at';
+    const cooldownRemaining = cooldownSecondsRemaining(client[cooldownColumn], COOLDOWN_MS);
 
     const { data: lineItems } = await supabase
       .from('invoice_line_items')
@@ -645,7 +647,7 @@ Deno.serve(async (req) => {
     // A test copy went to the admin, not the client, so the invoice has not been
     // sent: the cooldown marker stays put and a draft stays a draft.
     if (!testRecipient) {
-      await supabase.from('clients').update({ last_invoice_email_sent_at: now }).eq('id', client.id);
+      await supabase.from('clients').update({ [cooldownColumn]: now }).eq('id', client.id);
 
       if (invoice.status === 'draft') {
         await supabase.from('invoices').update({ status: 'sent', sent_at: now }).eq('id', invoice.id);
