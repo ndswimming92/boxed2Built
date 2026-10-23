@@ -1901,14 +1901,25 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           onClose={() => setShowInvoiceForm(false)}
           onSaved={async () => {
             setShowInvoiceForm(false);
-            setInvoiceReviewed(true);
             setInvoiceRevision((revision) => revision + 1);
-            if (selectedJobId) {
-              const data = await findDocumentForJob(selectedJobId, docMode);
-              if (data) {
-                setSelectedInvoiceId(data.id);
-                setInvoiceForEdit(data);
-              }
+            if (!selectedJobId) return;
+            // The form lets the type be changed, so a saved quote can come back
+            // as an invoice (or the reverse). Only a record matching the toggle
+            // is sent from here; otherwise sending stays locked rather than
+            // mailing a different document than the button names.
+            const data = await findDocumentForJob(selectedJobId, docMode);
+            if (data) {
+              setSelectedInvoiceId(data.id);
+              setInvoiceForEdit(data);
+              setInvoiceReviewed(true);
+            } else {
+              setSelectedInvoiceId(null);
+              setInvoiceForEdit(null);
+              setInvoiceReviewed(false);
+              setInvoiceMessage({
+                type: 'error',
+                text: `That was saved as ${docMode === 'quote' ? 'an invoice' : 'a quote'}, so there is no ${docNoun} to send. Switch to ${docMode === 'quote' ? 'Invoice' : 'Quote'} above to send it.`,
+              });
             }
           }}
         />
