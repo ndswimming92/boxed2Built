@@ -25,10 +25,11 @@ export const PORTAL_DEFAULT_PATH = '/portal/dashboard';
  *  - anything containing `..`, which `startsWith('/portal')` alone would wave
  *    through: `/portal/../admin/dashboard` passes that test and normalises to
  *    an admin route in the browser before the router ever sees it
+ *  - backslashes, which some browsers and older router versions treat as `/`
  */
 export function getSafeNextPath(value: string | null | undefined): string {
   if (!value) return PORTAL_DEFAULT_PATH;
-  if (value.includes('..')) return PORTAL_DEFAULT_PATH;
+  if (value.includes('..') || value.includes('\\')) return PORTAL_DEFAULT_PATH;
   if (value !== '/portal' && !value.startsWith('/portal/')) return PORTAL_DEFAULT_PATH;
 
   return value;

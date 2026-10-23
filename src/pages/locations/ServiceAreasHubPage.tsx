@@ -18,6 +18,7 @@ import {
   locationPath,
   locationUrl,
 } from '../../constants/serviceLocations';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 const HUB_FAQS = [
   {
@@ -73,7 +74,7 @@ const ServiceAreasHubPage: React.FC = () => {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'ItemList',
             name: 'Boxed2Built Service Areas',

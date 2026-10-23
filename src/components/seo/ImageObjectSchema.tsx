@@ -1,4 +1,5 @@
 import React from 'react';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 export interface ImageObject {
   url: string;
@@ -36,7 +37,7 @@ const ImageObjectSchema: React.FC<ImageObjectSchemaProps> = ({ images }) => {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schemaData, null, 2)
+        __html: safeJsonLd(schemaData, 2)
       }}
     />
   );

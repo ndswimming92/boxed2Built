@@ -75,3 +75,7 @@ test('resolveNextPath lands on the dashboard when neither is usable', () => {
   assert.equal(resolveNextPath(null, null), PORTAL_DEFAULT_PATH);
   assert.equal(resolveNextPath('/admin', '//evil.com'), PORTAL_DEFAULT_PATH);
 });
+
+test('getSafeNextPath rejects backslashes', () => {
+  assert.equal(getSafeNextPath('/portal/\\evil.com'), PORTAL_DEFAULT_PATH);
+});

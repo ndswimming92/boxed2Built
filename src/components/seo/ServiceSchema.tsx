@@ -1,4 +1,5 @@
 import React from 'react';
+import { safeJsonLd } from '../../utils/safeJsonLd';
 
 export interface ServiceOffer {
   name: string;
@@ -78,7 +79,7 @@ const ServiceSchema: React.FC<ServiceSchemaProps> = ({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );
 };
