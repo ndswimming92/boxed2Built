@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
 import { Youtube } from '../ui/BrandIcons';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -25,15 +25,47 @@ interface NavigationGroup {
   name: string;
   icon: React.ElementType;
   defaultExpanded: boolean;
+  theme: string;
   items: NavigationItem[];
+}
+
+interface GroupTheme {
+  header: string;
+  headerActive: string;
+  badge: string;
+}
+
+// Full class strings so Tailwind can see them at build time.
+const groupThemes: Record<string, GroupTheme> = {
+  emerald: { header: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200', headerActive: 'ring-2 ring-emerald-500', badge: 'bg-emerald-100 text-emerald-700' },
+  blue: { header: 'bg-blue-100 text-blue-800 hover:bg-blue-200', headerActive: 'ring-2 ring-blue-500', badge: 'bg-blue-100 text-blue-700' },
+  violet: { header: 'bg-violet-100 text-violet-800 hover:bg-violet-200', headerActive: 'ring-2 ring-violet-500', badge: 'bg-violet-100 text-violet-700' },
+  orange: { header: 'bg-orange-100 text-orange-800 hover:bg-orange-200', headerActive: 'ring-2 ring-orange-500', badge: 'bg-orange-100 text-orange-700' },
+  rose: { header: 'bg-rose-100 text-rose-800 hover:bg-rose-200', headerActive: 'ring-2 ring-rose-500', badge: 'bg-rose-100 text-rose-700' },
+  slate: { header: 'bg-slate-200 text-slate-800 hover:bg-slate-300', headerActive: 'ring-2 ring-slate-500', badge: 'bg-slate-200 text-slate-700' },
+  cyan: { header: 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200', headerActive: 'ring-2 ring-cyan-500', badge: 'bg-cyan-100 text-cyan-700' },
+  amber: { header: 'bg-amber-100 text-amber-800', headerActive: 'ring-2 ring-amber-500', badge: 'bg-amber-100 text-amber-700' },
+};
+
+const QUICK_ACCESS_LIMIT = 5;
+const QUICK_ACCESS_MIN_VISITS = 2;
+
+function readStoredJson<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 const navigationGroups: NavigationGroup[] = [
   {
     id: 'core',
+    theme: 'emerald',
     name: 'Core Operations',
     icon: Zap,
-    defaultExpanded: true,
+    defaultExpanded: false,
     items: [
       { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
       { name: 'Goals', href: '/admin/goals', icon: Target },
@@ -47,9 +79,10 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'financial',
+    theme: 'blue',
     name: 'Financial Management',
     icon: DollarSign,
-    defaultExpanded: true,
+    defaultExpanded: false,
     items: [
       { name: 'Invoices', href: '/admin/invoices', icon: FileText },
       { name: 'Burn Rate', href: '/admin/burn-rate', icon: Flame },
@@ -64,6 +97,7 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'business',
+    theme: 'violet',
     name: 'Business Profile',
     icon: Building,
     defaultExpanded: false,
@@ -79,6 +113,7 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'store',
+    theme: 'orange',
     name: 'Print Shop',
     icon: ShoppingBag,
     defaultExpanded: false,
@@ -90,6 +125,7 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'marketing',
+    theme: 'rose',
     name: 'Marketing & Engagement',
     icon: TrendingUpIcon,
     defaultExpanded: false,
@@ -111,6 +147,7 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'system',
+    theme: 'slate',
     name: 'System & Tools',
     icon: Wrench,
     defaultExpanded: false,
@@ -131,6 +168,7 @@ const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'client-admin',
+    theme: 'cyan',
     name: 'Customer Admin',
     icon: Users,
     defaultExpanded: false,
@@ -173,8 +211,44 @@ function AdminLayoutContent() {
   const needsReplyMessageCount = useSocialMessagesBadge();
   const newsDraftCount = useNewsDraftsBadge();
 
+  const [favorites, setFavorites] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-favorites', []));
+  const [usage, setUsage] = useState<Record<string, number>>(() => readStoredJson<Record<string, number>>('admin-nav-usage', {}));
+
+  const navLookup = useMemo(() => {
+    const map = new Map<string, { item: NavigationItem; theme: GroupTheme }>();
+    visibleGroups.forEach(group =>
+      group.items.forEach(item => map.set(item.href, { item, theme: groupThemes[group.theme] }))
+    );
+    return map;
+  }, [visibleGroups]);
+
+  const quickAccessHrefs = useMemo(() => {
+    const starred = favorites.filter(href => navLookup.has(href));
+    const auto = Object.entries(usage)
+      .filter(([href, count]) => navLookup.has(href) && !starred.includes(href) && count >= QUICK_ACCESS_MIN_VISITS)
+      .sort((a, b) => b[1] - a[1])
+      .map(([href]) => href);
+    return [...starred, ...auto].slice(0, Math.max(QUICK_ACCESS_LIMIT, starred.length));
+  }, [favorites, usage, navLookup]);
+
+  const toggleFavorite = (href: string) => {
+    setFavorites(prev => (prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('admin-nav-favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('admin-nav-usage', JSON.stringify(usage));
+  }, [usage]);
+
+  const recordVisit = (href: string) => {
+    setUsage(prev => ({ ...prev, [href]: (prev[href] || 0) + 1 }));
+  };
+
   const getInitialExpandedState = (): Record<string, boolean> => {
-    const stored = localStorage.getItem('admin-nav-expanded');
+    const stored = localStorage.getItem('admin-nav-expanded-v2');
     if (stored) {
       try {
         return JSON.parse(stored);
@@ -182,21 +256,22 @@ function AdminLayoutContent() {
         return {};
       }
     }
-    return visibleGroups.reduce((acc, group) => {
-      acc[group.id] = group.defaultExpanded;
-      return acc;
-    }, {} as Record<string, boolean>);
+    // No saved choice yet: groups stay closed unless they hold the current page.
+    return {};
   };
 
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(getInitialExpandedState);
 
   useEffect(() => {
-    localStorage.setItem('admin-nav-expanded', JSON.stringify(expandedCategories));
+    localStorage.setItem('admin-nav-expanded-v2', JSON.stringify(expandedCategories));
   }, [expandedCategories]);
 
   useEffect(() => {
     localStorage.setItem('admin-sidebar-collapsed', String(sidebarCollapsed));
   }, [sidebarCollapsed]);
+
+  const isGroupActive = (groupId: string) =>
+    !!visibleGroups.find(group => group.id === groupId)?.items.some(item => item.href === location.pathname);
 
   const toggleCategory = (categoryId: string) => {
     // If sidebar is collapsed, expand it first, then expand the category
@@ -209,7 +284,7 @@ function AdminLayoutContent() {
     } else {
       setExpandedCategories(prev => ({
         ...prev,
-        [categoryId]: !prev[categoryId]
+        [categoryId]: !(prev[categoryId] ?? isGroupActive(categoryId))
       }));
     }
   };
@@ -282,6 +357,62 @@ function AdminLayoutContent() {
     await signOut();
   };
 
+  const renderNavItem = (item: NavigationItem, theme: GroupTheme) => {
+    const Icon = item.icon;
+    const isActive = location.pathname === item.href;
+    const isFavorite = favorites.includes(item.href);
+    const badgeCount =
+      item.name === 'Inquiries'
+        ? unviewedCount
+        : item.name === 'Social Comments'
+        ? unrepliedCommentCount
+        : item.name === 'Direct Messages'
+        ? needsReplyMessageCount
+        : item.name === 'News Feed'
+        ? newsDraftCount
+        : 0;
+    const showBadge = badgeCount > 0;
+
+    return (
+      <li key={item.href} className="relative group/item">
+        <Link
+          to={item.href}
+          onClick={() => {
+            recordVisit(item.href);
+            setSidebarOpen(false);
+          }}
+          aria-current={isActive ? 'page' : undefined}
+          className={`flex items-center gap-3 pl-2 pr-9 py-2 rounded-lg border transition-colors ${
+            isActive
+              ? 'bg-emerald-100 border-emerald-400 text-emerald-900 shadow-sm'
+              : 'bg-white border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300'
+          }`}
+        >
+          <span className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
+            <Icon className="w-4 h-4" />
+          </span>
+          <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.name}</span>
+          {showBadge && (
+            <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </span>
+          )}
+        </Link>
+        <button
+          type="button"
+          onClick={() => toggleFavorite(item.href)}
+          aria-label={isFavorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
+          aria-pressed={isFavorite}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity focus:opacity-100 ${
+            isFavorite ? 'opacity-100 text-amber-500' : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-amber-500'
+          }`}
+        >
+          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+        </button>
+      </li>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <CommandPalette
@@ -346,8 +477,29 @@ function AdminLayoutContent() {
           <nav className="flex-1 overflow-y-auto p-4">
             {/* Navigation Groups */}
             <div className="space-y-3">
+              {!sidebarCollapsed && (
+                <div>
+                  <div className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg ${groupThemes.amber.header}`}>
+                    <Star className="w-4 h-4 flex-shrink-0 fill-current" />
+                    <span>Quick Access</span>
+                  </div>
+                  {quickAccessHrefs.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {quickAccessHrefs.map(href => {
+                        const entry = navLookup.get(href);
+                        return entry ? renderNavItem(entry.item, entry.theme) : null;
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 px-3 text-xs text-slate-500">
+                      Star a page, or keep using the menu, and your most-used pages will show up here.
+                    </p>
+                  )}
+                </div>
+              )}
               {visibleGroups.map((group, groupIndex) => {
-                const isExpanded = expandedCategories[group.id];
+                const theme = groupThemes[group.theme];
+                const isExpanded = expandedCategories[group.id] ?? group.items.some(item => item.href === location.pathname);
                 const GroupIcon = group.icon;
                 const hasActiveItem = group.items.some(item => location.pathname === item.href);
 
@@ -363,8 +515,8 @@ function AdminLayoutContent() {
                         sidebarCollapsed ? 'lg:justify-center' : ''
                       } ${
                         hasActiveItem
-                          ? 'text-emerald-700 bg-emerald-50'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                          ? `${theme.header} ${theme.headerActive}`
+                          : theme.header
                       }`}
                     >
                       <GroupIcon className="w-4 h-4 flex-shrink-0" />
@@ -390,46 +542,8 @@ function AdminLayoutContent() {
 
                     {/* Category Items */}
                     {isExpanded && !sidebarCollapsed && (
-                      <ul className="mt-1 space-y-0.5 ml-1">
-                        {group.items.map((item) => {
-                          const Icon = item.icon;
-                          const isActive = location.pathname === item.href;
-                          const badgeCount =
-                            item.name === 'Inquiries'
-                              ? unviewedCount
-                              : item.name === 'Social Comments'
-                              ? unrepliedCommentCount
-                              : item.name === 'Direct Messages'
-                              ? needsReplyMessageCount
-                              : item.name === 'News Feed'
-                              ? newsDraftCount
-                              : 0;
-                          const showBadge = badgeCount > 0;
-
-                          return (
-                            <li key={item.name}>
-                              <Link
-                                to={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                aria-current={isActive ? 'page' : undefined}
-                                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors relative ${
-                                  isActive
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'text-slate-700 hover:bg-slate-50'
-                                }`}
-                              >
-                                <Icon className="w-4 h-4 flex-shrink-0" />
-                                <span className="font-medium text-sm">{item.name}</span>
-                                {showBadge && (
-                                  <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full min-w-[20px]">
-                                    {badgeCount > 99 ? '99+' : badgeCount}
-                                  </span>
-                                )}
-                                {isActive && !showBadge && <ChevronRight className="w-4 h-4 ml-auto" />}
-                              </Link>
-                            </li>
-                          );
-                        })}
+                      <ul className="mt-2 space-y-1.5">
+                        {group.items.map(item => renderNavItem(item, theme))}
                       </ul>
                     )}
 
