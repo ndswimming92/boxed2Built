@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { resendEventKey } from "../_shared/emailEventKey.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -147,8 +148,10 @@ Deno.serve(async (req: Request) => {
     const payload = JSON.parse(rawBody);
 
     const eventType: string = payload.type ?? "unknown";
-    const eventId: string | undefined = payload.id ?? payload.data?.email_id;
     const messageId: string | undefined = payload.data?.email_id;
+    // One key per event, stable across Resend's retries of it. Keying on the
+    // email ID instead made every event after the first for an email a "duplicate".
+    const eventId = resendEventKey(req.headers.get("svix-id"), eventType, messageId);
     const recipient: string | undefined =
       Array.isArray(payload.data?.to) ? payload.data.to[0] : payload.data?.to;
     const subject: string | undefined = payload.data?.subject;
