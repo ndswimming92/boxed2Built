@@ -53,7 +53,10 @@ as $$
         last_keyword = excluded.last_keyword,
         last_signal_at = excluded.last_signal_at,
         updated_at = now()
-    where s.last_signal_at <= excluded.last_signal_at;
+    -- Newer signal wins. Sent says signals in the same second are unordered,
+    -- so on a tie an opt-out wins: never re-enable texting on an ambiguous order.
+    where s.last_signal_at < excluded.last_signal_at
+       or (s.last_signal_at = excluded.last_signal_at and excluded.opted_out);
 $$;
 revoke all on function public.apply_sms_consent_signal(text, boolean, text, text, timestamptz) from public, anon, authenticated;
 grant execute on function public.apply_sms_consent_signal(text, boolean, text, text, timestamptz) to service_role;
