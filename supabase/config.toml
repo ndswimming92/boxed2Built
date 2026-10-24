@@ -26,6 +26,9 @@ verify_jwt = false
 [functions.resend-webhook]
 verify_jwt = false
 
+[functions.sent-webhook]
+verify_jwt = false
+
 [functions.gift-card-webhook]
 verify_jwt = false
 
