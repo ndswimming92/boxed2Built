@@ -8,6 +8,8 @@ import {
   headlineAmount,
   invoiceEmailSubject,
 } from '../_shared/invoiceLabels.ts';
+import { sendCustomerSms } from '../_shared/sentSms.ts';
+import { idempotencyKey } from '../_shared/smsConsent.ts';
 import {
   cooldownSecondsRemaining,
   describeCooldown,
@@ -503,7 +505,7 @@ Deno.serve(async (req) => {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, name, email, last_invoice_email_sent_at, last_quote_email_sent_at, organization_id')
+      .select('id, name, email, phone, last_invoice_email_sent_at, last_quote_email_sent_at, organization_id')
       .eq('id', body.clientId)
       .eq('organization_id', body.organizationId)
       .maybeSingle();
@@ -519,7 +521,7 @@ Deno.serve(async (req) => {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
-      .select('id, invoice_number, invoice_type, client_name, client_email, invoice_date, due_date, subtotal, tax_rate, tax_amount, total_amount, amount_paid, amount_due, notes, status, payment_terms, business_id, payment_access_token')
+      .select('id, invoice_number, invoice_type, client_name, client_email, client_phone, invoice_date, due_date, subtotal, tax_rate, tax_amount, total_amount, amount_paid, amount_due, notes, status, payment_terms, business_id, payment_access_token')
       .eq('id', body.invoiceId)
       .eq('is_active', true)
       .maybeSingle();
@@ -674,11 +676,28 @@ Deno.serve(async (req) => {
       },
     });
 
+    // A text with the link follows the client's email, never a test copy, and
+    // only to a number that opted in. The cooldown above keeps it to one per send.
+    const sms = testRecipient
+      ? undefined
+      : await sendCustomerSms(supabase, {
+          purpose: isQuote ? 'quote_ready' : 'invoice_ready',
+          phone: (invoice as { client_phone?: string | null }).client_phone || client.phone,
+          parameters: {
+            customerName: (client.name || invoice.client_name || '').trim().split(/\s+/)[0] || 'there',
+            documentNumber: invoice.invoice_number,
+            amount: formatCurrency(headlineAmount(invoice.invoice_type, invoice)),
+            viewLink: payUrl,
+          },
+          idempotencyKey: idempotencyKey(isQuote ? 'quote' : 'invoice', invoice.id, now),
+          context: { invoiceId: invoice.id, invoiceNumber: invoice.invoice_number, clientId: client.id },
+        });
+
     return new Response(
       JSON.stringify(
         testRecipient
           ? { success: true, test: true, to: sendTo }
-          : { success: true, sentAt: now, to: sendTo },
+          : { success: true, sentAt: now, to: sendTo, sms },
       ),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );

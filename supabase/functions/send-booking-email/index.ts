@@ -8,6 +8,8 @@ import {
   toIcsUtcStamp,
   zonedToUtc,
 } from '../_shared/ics.ts';
+import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
+import { describeAppointment, idempotencyKey } from '../_shared/smsConsent.ts';
 
 /**
  * Booking notifications: the owner hears about a new request, the customer
@@ -280,6 +282,21 @@ Deno.serve(async (req: Request) => {
   const from = `${businessName} <${FROM_EMAIL}>`;
   const when = `${formatLongDate(booking.booking_date)} at ${formatTime(booking.start_time)}`;
 
+  // A text follows the confirmation email, only to a number that opted in.
+  // Keyed on the booking and its time, so a rescheduled booking texts again
+  // but a repeated call for the same one cannot.
+  const textConfirmation = (): Promise<SmsOutcome> =>
+    sendCustomerSms(admin, {
+      purpose: 'booking_confirmed',
+      phone: booking.customer_phone,
+      parameters: {
+        customerName: booking.customer_name.trim().split(/\s+/)[0] || 'there',
+        appointmentTime: describeAppointment(formatLongDate(booking.booking_date), formatTime(booking.start_time)),
+      },
+      idempotencyKey: idempotencyKey('booking', booking.id, booking.booking_date, booking.start_time),
+      context: { bookingId: booking.id, reference: booking.reference },
+    });
+
   try {
     if (event === 'created') {
       // Deliberately does NOT fall back to FROM_EMAIL. That address is a
@@ -342,9 +359,13 @@ Deno.serve(async (req: Request) => {
             : undefined,
       });
 
+      // A pending hold is not a confirmation, so it gets no text.
+      const sms = booking.status === 'confirmed' ? await textConfirmation() : undefined;
+
       return json({
         success: true,
         notified: [ownerInbox, booking.customer_email].filter(Boolean),
+        ...(sms ? { sms } : {}),
       });
     }
 
@@ -369,7 +390,8 @@ Deno.serve(async (req: Request) => {
         ],
       });
 
-      return json({ success: true, notified: [booking.customer_email] });
+      const sms = await textConfirmation();
+      return json({ success: true, notified: [booking.customer_email], sms });
     }
 
     await sendEmail({
