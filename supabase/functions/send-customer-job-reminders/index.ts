@@ -9,10 +9,14 @@ import {
   type ReminderSkipReason,
 } from '../_shared/customerReminder.ts';
 import {
+  describeArrival,
   renderCustomerReminder,
+  resolveLocation,
   type ReminderBusiness,
   type ReminderJob,
 } from '../_shared/customerReminderEmail.ts';
+import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
+import { idempotencyKey } from '../_shared/smsConsent.ts';
 
 
 /**
@@ -82,6 +86,7 @@ interface JobRow extends ReminderJob {
   business_id: string;
   date_scheduled: string;
   client_email: string | null;
+  client_phone: string | null;
   job_status: string | null;
   is_active: boolean;
   customer_reminder_for: string | null;
@@ -91,7 +96,7 @@ interface JobRow extends ReminderJob {
 }
 
 const JOB_COLUMNS =
-  'id, business_id, client_name, client_email, client_address, service_address, job_type, ' +
+  'id, business_id, client_name, client_email, client_phone, client_address, service_address, job_type, ' +
   'job_description, date_scheduled, scheduled_start_time, scheduled_end_time, location_city, ' +
   'quoted_price, job_status, is_active, customer_reminder_for, customer_reminder_start_time, ' +
   'customer_reminder_sent_at, customer_reminder_ics_sequence, customer_reminder_cancelled_at';
@@ -133,6 +138,8 @@ interface SendOutcome {
   reason?: ReminderSkipReason | 'send_failed' | 'dry_run';
   to?: string;
   subject?: string;
+  /** The text that followed the email, when one was attempted. */
+  sms?: SmsOutcome;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -279,7 +286,22 @@ async function sendReminder(
     console.error('send-customer-job-reminders: failed to record reminder state', job.id, error);
   }
 
-  return { jobId: job.id, sent: true, to: recipient, subject: email.subject };
+  // The text rides on the email: it goes only once the customer's email is out,
+  // so the markers above keep it to one per job date and time. The key repeats
+  // that guard on Sent's side in case this sweep is retried.
+  const sms = await sendCustomerSms(supabase, {
+    purpose: 'job_reminder',
+    phone: job.client_phone,
+    parameters: {
+      customerName: job.client_name.trim().split(/\s+/)[0] || 'there',
+      appointmentTime: describeArrival(job, business.timeZone, now).arrival,
+      serviceAddress: resolveLocation(job) || 'the address on file',
+    },
+    idempotencyKey: idempotencyKey('reminder', job.id, job.date_scheduled, job.scheduled_start_time),
+    context: { jobId: job.id },
+  });
+
+  return { jobId: job.id, sent: true, to: recipient, subject: email.subject, sms };
 }
 
 Deno.serve(async (req: Request) => {
