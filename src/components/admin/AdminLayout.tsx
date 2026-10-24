@@ -170,6 +170,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'UTM Link Builder', href: '/admin/utm-link-builder', icon: LinkIcon },
       { name: 'Notification Bar', href: '/admin/notification-bar', icon: Megaphone },
       { name: 'SMS Opt-In', href: '/admin/sms-opt-in', icon: MessageCircle },
+      { name: 'SMS Consent Log', href: '/admin/sms-consent-log', icon: ScrollText },
     ],
   },
   {

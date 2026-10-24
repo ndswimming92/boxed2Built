@@ -48,6 +48,9 @@ verify_jwt = false
 [functions.sales-subscription]
 verify_jwt = false
 
+[functions.log-sms-consent]
+verify_jwt = false
+
 # ── OAuth callbacks: the provider redirects the browser here, no bearer ─────
 [functions.google-business-oauth-callback]
 verify_jwt = false
