@@ -69,7 +69,9 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (error || !inquiry) return json({ success: false, error: 'Inquiry not found' }, 404);
-  if (!inquiry.sms_opt_in || !inquiry.client_phone) return json({ success: true, logged: false });
+  const serviceTexts = inquiry.sms_opt_in === true;
+  const marketingTexts = inquiry.sms_marketing_opt_in === true;
+  if ((!serviceTexts && !marketingTexts) || !inquiry.client_phone) return json({ success: true, logged: false });
   if (Date.now() - new Date(inquiry.created_at).getTime() > MAX_AGE_MS) {
     return json({ success: false, error: 'Inquiry too old' }, 400);
   }
@@ -90,8 +92,8 @@ Deno.serve(async (req) => {
     email: inquiry.client_email,
     phone: inquiry.client_phone,
     phone_digits: String(inquiry.client_phone).replace(/\D/g, '').slice(-10),
-    service_texts: true,
-    marketing_texts: inquiry.sms_marketing_opt_in === true,
+    service_texts: serviceTexts,
+    marketing_texts: marketingTexts,
     consent_text: inquiry.sms_consent_text,
     consent_version: clip(body.consent_version, 40),
     consent_given_at: inquiry.sms_consent_timestamp,

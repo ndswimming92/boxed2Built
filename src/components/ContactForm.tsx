@@ -569,7 +569,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
       const marketingTexts = smsOptInEnabled && smsMarketingOptIn;
       const anyTexts = serviceTexts || marketingTexts;
       const smsConsent = {
-        sms_opt_in: anyTexts,
+        sms_opt_in: serviceTexts,
         sms_marketing_opt_in: marketingTexts,
         sms_consent_text: anyTexts
           ? [serviceTexts && SMS_SERVICE_CONSENT_TEXT, marketingTexts && SMS_MARKETING_CONSENT_TEXT]
@@ -630,7 +630,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
       // Audit row with the IP and browser, which only the server can see. The
       // consent itself is already saved on the inquiry, so a failure is logged
       // and does not block the submission.
-      if (smsConsent.sms_opt_in) {
+      if (anyTexts) {
         fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-sms-consent`, {
           method: 'POST',
           headers: {
@@ -743,6 +743,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       // Reset form AFTER showing modal
       reset();
+      setSmsServiceOptIn(false);
+      setSmsMarketingOptIn(false);
       setQty(emptyQty());
       setOtherText('');
       setItemsTouched(false);

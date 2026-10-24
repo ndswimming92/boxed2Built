@@ -35,7 +35,8 @@ const formatWhen = (iso: string) =>
 
 const kindLabel = (row: ConsentRow) => {
   if (row.event_type === 'opt_out') return 'Opted out';
-  return row.marketing_texts ? 'Service + promo' : 'Service';
+  if (row.service_texts && row.marketing_texts) return 'Service + promo';
+  return row.marketing_texts ? 'Promo' : 'Service';
 };
 
 const csvCell = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
