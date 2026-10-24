@@ -39,7 +39,13 @@ const kindLabel = (row: ConsentRow) => {
   return row.marketing_texts ? 'Promo' : 'Service';
 };
 
-const csvCell = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+// Customer-typed values can start with = + - @ and would run as formulas in a
+// spreadsheet, so those get a leading apostrophe before the usual quoting.
+const csvCell = (value: unknown) => {
+  const text = String(value ?? '');
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${safe.replace(/"/g, '""')}"`;
+};
 
 export default function SmsConsentLogPage() {
   const [rows, setRows] = useState<ConsentRow[]>([]);
