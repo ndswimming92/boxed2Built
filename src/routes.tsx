@@ -59,6 +59,7 @@ const InvoiceSettingsPage = React.lazy(() => import('./pages/admin/InvoiceSettin
 const ForecastingPage = React.lazy(() => import('./pages/admin/ForecastingPage'));
 const BurnRatePage = React.lazy(() => import('./pages/admin/BurnRatePage'));
 const NotificationBarPage = React.lazy(() => import('./pages/admin/NotificationBarPage'));
+const SmsOptInPage = React.lazy(() => import('./pages/admin/SmsOptInPage'));
 const TaxSettingsPage = React.lazy(() => import('./pages/admin/TaxSettingsPage'));
 const MileageSettingsPage = React.lazy(() => import('./pages/admin/MileageSettingsPage'));
 const GoalsPage = React.lazy(() => import('./pages/admin/GoalsPage'));
@@ -208,6 +209,7 @@ export const routes: RouteRecord[] = [
           { path: 'tax-settings', Component: TaxSettingsPage },
           { path: 'mileage-settings', Component: MileageSettingsPage },
           { path: 'notification-bar', Component: NotificationBarPage },
+          { path: 'sms-opt-in', Component: SmsOptInPage },
           { path: 'activity-logs', Component: ActivityLogsPage },
           { path: 'changelog', Component: ChangelogPage },
           { path: 'test-identifiers', Component: TestIdentifiersPage },

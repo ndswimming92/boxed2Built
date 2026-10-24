@@ -31,6 +31,10 @@ export interface CreateInquiryData {
   furniture_photo_url?: string;
   furniture_image_path?: string;
   client_type?: 'residential' | 'business';
+  sms_opt_in?: boolean;
+  sms_marketing_opt_in?: boolean;
+  sms_consent_text?: string;
+  sms_consent_timestamp?: string;
   is_test?: boolean;
 }
 
@@ -91,6 +95,10 @@ export async function createInquiry(data: CreateInquiryData): Promise<FormInquir
     furniture_photo_url: data.furniture_photo_url || null,
     furniture_image_path: data.furniture_image_path || null,
     client_type: data.client_type || 'residential',
+    sms_opt_in: data.sms_opt_in ?? false,
+    sms_marketing_opt_in: data.sms_marketing_opt_in ?? false,
+    sms_consent_text: data.sms_consent_text || null,
+    sms_consent_timestamp: data.sms_consent_timestamp || null,
   };
 
   const { error } = await supabase

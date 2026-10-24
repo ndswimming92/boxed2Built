@@ -73,6 +73,7 @@ export type BusinessInfo = {
   total_client_hours_saved: number | null;
   hours_counter_duration_ms: number | null;
   hours_counter_frame_ms: number | null;
+  sms_opt_in_enabled?: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -480,6 +481,10 @@ export type FormInquiry = {
   furniture_photo_url: string | null;
   furniture_image_path: string | null;
   client_type: 'residential' | 'business' | null;
+  sms_opt_in?: boolean;
+  sms_marketing_opt_in?: boolean;
+  sms_consent_text?: string | null;
+  sms_consent_timestamp?: string | null;
   is_test: boolean;
   is_active: boolean;
   created_at: string;

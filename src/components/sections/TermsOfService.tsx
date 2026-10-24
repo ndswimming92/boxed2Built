@@ -16,7 +16,7 @@ const TermsOfService = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2">Terms of Service - Boxed2Built Furniture Assembly</h1>
       <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
-      <p className="text-sm text-gray-500 mb-8">Last Updated: October 14, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: October 24, 2026</p>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">1. Acceptance of Terms</h2>
@@ -141,6 +141,19 @@ const TermsOfService = () => {
         <p className="text-sm text-gray-600">
           You may withdraw your marketing communication consent at any time by replying to any marketing email, calling us, or using the preference management link included in our communications. Withdrawing marketing consent does not affect transactional communications related to active or upcoming services.
         </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">SMS / Text Message Terms</h2>
+        <ul className="list-disc pl-6 mb-4 space-y-1">
+          <li><strong>Program:</strong> Boxed2Built sends text messages about your service request, such as quotes, appointment confirmations and reminders, and build-day updates. If you separately opt in, we also send occasional promotional texts such as offers and discounts.</li>
+          <li><strong>How to join:</strong> Check the text message consent box on our service request form. Consent is not a condition of purchase.</li>
+          <li><strong>Frequency and cost:</strong> Message frequency varies. Message and data rates may apply.</li>
+          <li><strong>Opt out:</strong> Reply STOP at any time to cancel. You will receive one confirmation text, then no further messages.</li>
+          <li><strong>Help:</strong> Reply HELP for help, or call or email us using the contact details below.</li>
+          <li><strong>Carriers:</strong> Carriers are not liable for delayed or undelivered messages.</li>
+          <li><strong>Privacy:</strong> See our <a href="/privacy-policy" className="text-blue-700 hover:text-blue-800 underline">Privacy Policy</a>. We do not share mobile information with third parties or affiliates for marketing or promotional purposes.</li>
+        </ul>
       </section>
 
       <section className="mb-8">

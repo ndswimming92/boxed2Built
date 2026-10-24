@@ -96,6 +96,13 @@ const FurnitureIcon: React.FC<{ id: FurnitureId }> = ({ id }) => {
   }
 };
 
+// The exact wording shown beside each box. It is saved with the submission as
+// proof of consent, so changing it here changes what is recorded.
+const SMS_SERVICE_CONSENT_TEXT =
+  'I agree to receive text messages from Boxed2Built at the mobile number above about my service request, such as quotes, appointment confirmations and reminders, and build-day updates. Consent is not a condition of purchase.';
+const SMS_MARKETING_CONSENT_TEXT =
+  'I also agree to receive occasional promotional text messages from Boxed2Built, such as offers and discounts, at this number. Consent is not a condition of purchase.';
+
 const initialValues: Record<string, string> = {
   name: '',
   email: '',
@@ -220,6 +227,22 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
   const [qty, setQty] = useState<Record<FurnitureId, number>>(emptyQty);
   const [otherText, setOtherText] = useState('');
   const [itemsTouched, setItemsTouched] = useState(false);
+  const [smsServiceOptIn, setSmsServiceOptIn] = useState(false);
+  const [smsMarketingOptIn, setSmsMarketingOptIn] = useState(false);
+  // Admin switch (Admin > SMS Opt-In). Stays hidden until it is known to be on.
+  const [smsOptInEnabled, setSmsOptInEnabled] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from('business_info')
+      .select('sms_opt_in_enabled')
+      .eq('is_active', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setSmsOptInEnabled(data?.sms_opt_in_enabled === true);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const [showScheduling, setShowScheduling] = useState(false);
   const [showReference, setShowReference] = useState(false);
@@ -539,7 +562,22 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
 
       // No ZIP is asked for any more, so user_city is left empty (the column
       // is nullable) and the emails and confirmation simply omit the city row.
+      const serviceTexts = smsOptInEnabled && smsServiceOptIn;
+      const marketingTexts = smsOptInEnabled && smsMarketingOptIn;
+      const anyTexts = serviceTexts || marketingTexts;
+      const smsConsent = {
+        sms_opt_in: anyTexts,
+        sms_marketing_opt_in: marketingTexts,
+        sms_consent_text: anyTexts
+          ? [serviceTexts && SMS_SERVICE_CONSENT_TEXT, marketingTexts && SMS_MARKETING_CONSENT_TEXT]
+              .filter(Boolean)
+              .join('\n')
+          : undefined,
+        sms_consent_timestamp: anyTexts ? new Date().toISOString() : undefined,
+      };
+
       const inquiry = await createInquiry({
+        ...smsConsent,
         business_id: businessInfo.id,
         organization_id: businessInfo.organization_id,
         client_name: values.name,
@@ -567,6 +605,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
       });
 
       const savedRequest = await createSavedRequest({
+        ...smsConsent,
         business_id: businessInfo.id,
         organization_id: businessInfo.organization_id,
         inquiry_id: inquiry.id,
@@ -1053,6 +1092,41 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   )}
                   {fieldError('phone')}
                 </div>
+                {smsOptInEnabled && (
+                <fieldset className="sm:col-span-2 space-y-3 rounded-xl bg-[#FBF8F1] border border-[#ECE3D2] p-4">
+                  <legend className="sr-only">Text message preferences</legend>
+                  <label htmlFor="smsServiceOptIn" className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      id="smsServiceOptIn"
+                      name="smsServiceOptIn"
+                      type="checkbox"
+                      checked={smsServiceOptIn}
+                      onChange={(e) => setSmsServiceOptIn(e.target.checked)}
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 accent-[#0E2748]"
+                    />
+                    <span className="text-[13px] leading-snug text-[#0E2748]">{SMS_SERVICE_CONSENT_TEXT}</span>
+                  </label>
+                  <label htmlFor="smsMarketingOptIn" className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      id="smsMarketingOptIn"
+                      name="smsMarketingOptIn"
+                      type="checkbox"
+                      checked={smsMarketingOptIn}
+                      onChange={(e) => setSmsMarketingOptIn(e.target.checked)}
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 accent-[#0E2748]"
+                    />
+                    <span className="text-[13px] leading-snug text-[#0E2748]">{SMS_MARKETING_CONSENT_TEXT}</span>
+                  </label>
+                  <p className="text-xs leading-snug text-gray-500">
+                    Message frequency varies. Message and data rates may apply. Reply STOP to cancel at any time or HELP for help.
+                    Mobile information will not be shared with third parties or affiliates for marketing or promotional purposes.
+                    See our{' '}
+                    <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">Privacy Policy</a>
+                    {' '}and{' '}
+                    <a href="/terms-of-service" target="_blank" rel="noopener noreferrer" className="underline">Terms of Service</a>.
+                  </p>
+                </fieldset>
+                )}
               </div>
             </section>
 
