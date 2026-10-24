@@ -103,6 +103,9 @@ const SMS_SERVICE_CONSENT_TEXT =
 const SMS_MARKETING_CONSENT_TEXT =
   'I also agree to receive occasional promotional text messages from Boxed2Built, such as offers and discounts, at this number. Consent is not a condition of purchase.';
 
+// Bump when either consent text above changes; stored with each audit row.
+const SMS_CONSENT_VERSION = '2026-10-24';
+
 const initialValues: Record<string, string> = {
   name: '',
   email: '',
@@ -623,6 +626,24 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
         furniture_image_path: uploadedImagePath,
         is_test: isTest,
       });
+
+      // Audit row with the IP and browser, which only the server can see. The
+      // consent itself is already saved on the inquiry, so a failure is logged
+      // and does not block the submission.
+      if (smsConsent.sms_opt_in) {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/log-sms-consent`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inquiry_id: inquiry.id,
+            page_url: window.location.href,
+            consent_version: SMS_CONSENT_VERSION,
+          }),
+        }).catch((err) => console.error('[ContactForm] SMS consent log failed:', err));
+      }
 
       // The customer sees every item they picked, not just the primary type.
       const confirmData = {
