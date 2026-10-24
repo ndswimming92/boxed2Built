@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-2">Privacy Policy - Boxed2Built Furniture Assembly</h1>
       <p className="text-sm text-gray-500 mb-1">Effective Date: March 3, 2026</p>
-      <p className="text-sm text-gray-500 mb-8">Last Updated: October 20, 2026</p>
+      <p className="text-sm text-gray-500 mb-8">Last Updated: October 24, 2026</p>
 
       <p className="mb-8">
         This Privacy Policy is provided by {LEGAL_NAME}, doing business as {DBA_NAME} ("{DBA_NAME}," "we," "us," or "our").
@@ -61,6 +61,19 @@ const PrivacyPolicy = () => {
         </ul>
         <p className="mt-4 text-sm text-gray-600">
           <strong>Transactional vs. Marketing Communications:</strong> Appointment confirmations, service updates, quotes, and invoice notifications are transactional and are sent regardless of marketing preferences. Promotional offers and newsletters are marketing communications and are only sent if you have explicitly opted in.
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">SMS / Text Messaging</h2>
+        <p className="mb-4">
+          If you check the text message consent box on our service request form, we collect your mobile number and a record of your consent (the wording you agreed to and the date and time) so we can text you about your service request and, if you separately agreed, occasional promotions.
+        </p>
+        <p className="mb-4">
+          <strong>We do not sell, rent, or share mobile phone numbers or SMS opt-in consent with third parties or affiliates for marketing or promotional purposes.</strong> Text messaging opt-in data and consent are never shared with any third parties. We use messaging service providers only to deliver our texts.
+        </p>
+        <p className="text-sm text-gray-600">
+          Message frequency varies. Message and data rates may apply. Reply STOP at any time to cancel, or HELP for help. Consent to receive texts is not a condition of purchase.
         </p>
       </section>
 
