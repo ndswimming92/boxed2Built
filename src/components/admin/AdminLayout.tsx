@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
-import { DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent, Modifier } from '@dnd-kit/core';
+import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, GripVertical, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent, Modifier } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Youtube } from '../ui/BrandIcons';
@@ -217,6 +217,7 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 
 
 interface SortableProps {
   setNodeRef: (node: HTMLElement | null) => void;
+  setActivatorNodeRef: (node: HTMLElement | null) => void;
   style: React.CSSProperties;
   attributes: Record<string, any>;
   listeners: Record<string, any> | undefined;
@@ -224,14 +225,14 @@ interface SortableProps {
 }
 
 function SortableQuickItem({ id, children }: { id: string; children: (props: SortableProps) => React.ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 10 : undefined,
     position: 'relative',
   };
-  return <>{children({ setNodeRef, style, attributes, listeners, isDragging })}</>;
+  return <>{children({ setNodeRef, setActivatorNodeRef, style, attributes, listeners, isDragging })}</>;
 }
 
 function AdminLayoutContent() {
@@ -274,7 +275,6 @@ function AdminLayoutContent() {
   const [quickOrder, setQuickOrder] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-quick-order', []));
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -477,16 +477,27 @@ function AdminLayoutContent() {
         key={item.href}
         ref={sortable?.setNodeRef}
         style={sortable?.style}
-        {...sortable?.attributes}
-        {...sortable?.listeners}
         className={`group/item flex items-center rounded-md border transition-colors ${
-          sortable ? 'cursor-grab active:cursor-grabbing touch-manipulation ' : ''
-        }${sortable?.isDragging ? 'shadow-lg opacity-90 ' : ''}${
+          sortable?.isDragging ? 'shadow-lg opacity-90 ' : ''}${
           isActive
             ? 'bg-emerald-100 border-emerald-400 text-emerald-900'
             : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
         }`}
       >
+        {sortable && (
+          <button
+            type="button"
+            ref={sortable.setActivatorNodeRef}
+            {...sortable.attributes}
+            {...sortable.listeners}
+            aria-label={`Reorder ${item.name}`}
+            title="Drag to reorder"
+            style={{ touchAction: 'none' }}
+            className="flex-shrink-0 ml-1 p-0.5 rounded cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+        )}
         <Link
           to={item.href}
           draggable={false}
@@ -495,7 +506,7 @@ function AdminLayoutContent() {
             setSidebarOpen(false);
           }}
           aria-current={isActive ? 'page' : undefined}
-          className="flex flex-1 min-w-0 items-center gap-2 pl-1.5 pr-1 py-1"
+          className={`flex flex-1 min-w-0 items-center gap-2 ${sortable ? 'pl-1' : 'pl-1.5'} pr-1 py-1`}
         >
           <span className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
             <Icon className="w-3.5 h-3.5" />
