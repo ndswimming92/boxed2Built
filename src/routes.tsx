@@ -61,6 +61,7 @@ const BurnRatePage = React.lazy(() => import('./pages/admin/BurnRatePage'));
 const NotificationBarPage = React.lazy(() => import('./pages/admin/NotificationBarPage'));
 const SmsOptInPage = React.lazy(() => import('./pages/admin/SmsOptInPage'));
 const SmsConsentLogPage = React.lazy(() => import('./pages/admin/SmsConsentLogPage'));
+const SmsTemplatesPage = React.lazy(() => import('./pages/admin/SmsTemplatesPage'));
 const TaxSettingsPage = React.lazy(() => import('./pages/admin/TaxSettingsPage'));
 const MileageSettingsPage = React.lazy(() => import('./pages/admin/MileageSettingsPage'));
 const GoalsPage = React.lazy(() => import('./pages/admin/GoalsPage'));
@@ -212,6 +213,7 @@ export const routes: RouteRecord[] = [
           { path: 'notification-bar', Component: NotificationBarPage },
           { path: 'sms-opt-in', Component: SmsOptInPage },
           { path: 'sms-consent-log', Component: SmsConsentLogPage },
+          { path: 'sms-templates', Component: SmsTemplatesPage },
           { path: 'activity-logs', Component: ActivityLogsPage },
           { path: 'changelog', Component: ChangelogPage },
           { path: 'test-identifiers', Component: TestIdentifiersPage },
