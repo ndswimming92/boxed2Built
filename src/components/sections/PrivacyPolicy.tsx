@@ -70,7 +70,7 @@ const PrivacyPolicy = () => {
           If you check the text message consent box on our service request form, we collect your mobile number and a record of your consent (the wording you agreed to, the date and time, and your IP address and browser type) so we can text you about your service request and, if you separately agreed, occasional promotions.
         </p>
         <p className="mb-4">
-          <strong>We do not sell, rent, or share mobile phone numbers or SMS opt-in consent with third parties or affiliates for marketing or promotional purposes.</strong> Text messaging opt-in data and consent are never shared with any third parties. We use messaging service providers only to deliver our texts.
+          <strong>We do not sell, rent, or share mobile phone numbers or SMS opt-in consent with third parties or affiliates for marketing or promotional purposes.</strong> Text messaging opt-in data and consent are never shared with any third parties. We use messaging service providers, currently Sent (sent.dm), only to deliver our texts.
         </p>
         <p className="text-sm text-gray-600">
           Message frequency varies. Message and data rates may apply. Reply STOP at any time to cancel, or HELP for help. Consent to receive texts is not a condition of purchase.
