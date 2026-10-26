@@ -6,6 +6,8 @@ import { getRecentInquiries, getInquiryStats, getAvgResponseTime, type ResponseT
 import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
 import { getReferralStats } from '../../services/clientService';
 import { calculateClientTimeSaved } from '../../services/analyticsService';
+import NextJobBanner from '../../components/admin/NextJobBanner';
+import { findNextJob } from '../../utils/nextJob';
 import { listScheduledEmails, type ScheduledEmailRow } from '../../services/scheduledEmailsService';
 import type { Goal } from '../../lib/supabase';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -97,6 +99,8 @@ export default function DashboardPage() {
   const [responseTimeStats, setResponseTimeStats] = useState<ResponseTimeStats | null>(null);
   const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmailRow[]>([]);
   const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
+
+  const nextJob = findNextJob(realtimeJobs);
 
   useEffect(() => {
     fetchStats();
@@ -363,6 +367,8 @@ export default function DashboardPage() {
           {businessName ? `Managing ${businessName}` : 'Manage your business content'}
         </p>
       </div>
+
+      {nextJob && <NextJobBanner job={nextJob} />}
 
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">

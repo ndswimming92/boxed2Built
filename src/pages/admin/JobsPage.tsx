@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase, Job, JobStatus } from '../../lib/supabase';
 import { Plus, CreditCard as Edit2, Trash2, AlertCircle, CheckCircle, Briefcase, DollarSign, Clock, TrendingUp, Search, Filter, Download, Upload, Copy, CheckCircle2, FileText, Link as LinkIcon, XCircle, Ban, Info, Gift, Building2, MapPin, Calendar, ChevronDown, Phone, Mail, Home } from 'lucide-react';
 import {
@@ -50,6 +50,8 @@ export default function JobsPage() {
   const { currentOrganization } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const linkedJobId = searchParams.get('job');
   const locationState = location.state as JobsPageLocationState | null;
   const createJobFromInvoice = locationState?.createJobFromInvoice;
 
@@ -95,6 +97,15 @@ export default function JobsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Deep link from the dashboard's next-job banner: open that job's card and bring it into view.
+  useEffect(() => {
+    if (!linkedJobId || !filteredJobs.some((job) => job.id === linkedJobId)) return;
+    setExpandedJobIds((prev) => new Set(prev).add(linkedJobId));
+    requestAnimationFrame(() => {
+      document.getElementById(`job-${linkedJobId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [linkedJobId, filteredJobs]);
 
   useEffect(() => {
     applyFilters();
@@ -535,7 +546,7 @@ export default function JobsPage() {
             const separateWorkAddress = hasSeparateWorkAddress(job);
 
             return (
-              <div key={job.id} className={`bg-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow overflow-hidden ${isInactive ? 'opacity-60' : ''}`}>
+              <div key={job.id} id={`job-${job.id}`} className={`bg-white rounded-xl border border-slate-200 hover:shadow-md transition-shadow overflow-hidden ${isInactive ? 'opacity-60' : ''}`}>
                 <button
                   type="button"
                   onClick={() => toggleJobExpanded(job.id)}
