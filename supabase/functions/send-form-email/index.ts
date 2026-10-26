@@ -67,6 +67,12 @@ interface ContactFormPayload {
   // taken off; these describe where the difference went.
   couponCode?: string;
   couponDiscountLabel?: string;
+  // False when the SMS checkboxes were switched off in admin, so the form
+  // never showed them. Distinguishes "not offered" from "declined".
+  smsOptInEnabled?: boolean;
+  smsServiceOptIn?: boolean;
+  smsMarketingOptIn?: boolean;
+  smsConsentTimestamp?: string;
 }
 
 interface QuickContactPayload {
@@ -120,6 +126,36 @@ function formatDate(dateStr?: string): string {
   if (!dateStr) return "Not specified";
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+}
+
+function smsOptInSection(p: ContactFormPayload): string {
+  const label = "color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;";
+  const choice = (text: string, optedIn: boolean) => `<tr>
+        <td style="padding:4px 0;color:#111827;font-size:14px;">${text}</td>
+        <td style="padding:4px 0;text-align:right;font-size:14px;font-weight:700;color:${optedIn ? "#15803d" : "#b91c1c"};">${optedIn ? "&#10003; Opted in" : "&#10007; Not opted in"}</td>
+      </tr>`;
+  let body: string;
+  if (p.smsOptInEnabled === false) {
+    body = `<span style="color:#6b7280;font-size:13px;">SMS opt-in was not offered on the form.</span>`;
+  } else if (p.smsOptInEnabled === undefined && p.smsServiceOptIn === undefined && p.smsMarketingOptIn === undefined) {
+    body = `<span style="color:#6b7280;font-size:13px;">No SMS opt-in data recorded.</span>`;
+  } else {
+    let when = "";
+    if (p.smsConsentTimestamp) {
+      const stamp = new Date(p.smsConsentTimestamp).toLocaleString("en-US", { timeZone: "America/Chicago" });
+      when = `<div style="color:#6b7280;font-size:12px;margin-top:6px;">Consent recorded ${escapeHtml(stamp)} CT</div>`;
+    }
+    body = `<table width="100%" cellpadding="0" cellspacing="0">
+      ${choice("Service texts (booking &amp; job updates)", p.smsServiceOptIn === true)}
+      ${choice("Promotional texts (offers &amp; deals)", p.smsMarketingOptIn === true)}
+    </table>${when}`;
+  }
+  return `<tr>
+            <td colspan="2" style="padding:12px 0;border-bottom:1px solid #e5e7eb;">
+              <span style="${label}display:block;margin-bottom:6px;">SMS Opt-In</span>
+              ${body}
+            </td>
+          </tr>`;
 }
 
 function ownerNotificationContact(p: ContactFormPayload): string {
@@ -215,6 +251,7 @@ function ownerNotificationContact(p: ContactFormPayload): string {
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;"><span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Uploaded Photo</span></td>
             <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;"><a href="${escapeHtml(Deno.env.get("SUPABASE_URL") ?? "")}/storage/v1/object/public/furniture-photos/${escapeHtml(p.furnitureImagePath)}" style="color:#1d4ed8;font-size:14px;" target="_blank">View Photo</a></td>
           </tr>` : ""}
+          ${smsOptInSection(p)}
           ${safeReferralCode ? `<tr>
             <td colspan="2" style="padding:12px 0;">
               <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px 14px;">
