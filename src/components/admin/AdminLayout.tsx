@@ -219,8 +219,8 @@ interface SortableProps {
   setNodeRef: (node: HTMLElement | null) => void;
   setActivatorNodeRef: (node: HTMLElement | null) => void;
   style: React.CSSProperties;
-  attributes: Record<string, any>;
-  listeners: Record<string, any> | undefined;
+  attributes: ReturnType<typeof useSortable>['attributes'];
+  listeners: ReturnType<typeof useSortable>['listeners'];
   isDragging: boolean;
 }
 
