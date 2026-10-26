@@ -698,6 +698,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           couponCode: appliedCoupon ? appliedCoupon.code : undefined,
           couponDiscountLabel: appliedCoupon ? describeDiscount(appliedCoupon) : undefined,
           clientType,
+          smsOptInEnabled,
+          smsServiceOptIn: serviceTexts,
+          smsMarketingOptIn: marketingTexts,
+          smsConsentTimestamp: smsConsent.sms_consent_timestamp,
         }),
       }).then(async (res) => {
         const data = await res.json().catch(() => ({}));
