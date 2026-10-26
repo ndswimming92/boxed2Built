@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, GripVertical, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent, Modifier } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Youtube } from '../ui/BrandIcons';
 import { supabase } from '../../lib/supabase';
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
@@ -210,6 +213,28 @@ const navigationGroups: NavigationGroup[] = [
   },
 ];
 
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+
+interface SortableProps {
+  setNodeRef: (node: HTMLElement | null) => void;
+  setActivatorNodeRef: (node: HTMLElement | null) => void;
+  style: React.CSSProperties;
+  attributes: ReturnType<typeof useSortable>['attributes'];
+  listeners: ReturnType<typeof useSortable>['listeners'];
+  isDragging: boolean;
+}
+
+function SortableQuickItem({ id, children }: { id: string; children: (props: SortableProps) => React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    position: 'relative',
+  };
+  return <>{children({ setNodeRef, setActivatorNodeRef, style, attributes, listeners, isDragging })}</>;
+}
+
 function AdminLayoutContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -246,6 +271,12 @@ function AdminLayoutContent() {
   );
   // Auto-pinned pages the user has manually removed from Quick Access.
   const [dismissed, setDismissed] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-dismissed', []));
+  // Custom drag-and-drop order of Quick Access items.
+  const [quickOrder, setQuickOrder] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-quick-order', []));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const navLookup = useMemo(() => {
     const map = new Map<string, { item: NavigationItem; theme: GroupTheme }>();
@@ -265,8 +296,26 @@ function AdminLayoutContent() {
       .filter(([href, score]) => navLookup.has(href) && !starred.includes(href) && !dismissed.includes(href) && score >= QUICK_ACCESS_MIN_SCORE)
       .sort((a, b) => b[1] - a[1])
       .map(([href]) => href);
-    return [...starred, ...auto].slice(0, Math.max(QUICK_ACCESS_LIMIT, starred.length));
-  }, [favorites, usage, dismissed, navLookup, loadedAt]);
+    const shown = [...starred, ...auto].slice(0, Math.max(QUICK_ACCESS_LIMIT, starred.length));
+    const rank = (href: string) => {
+      const i = quickOrder.indexOf(href);
+      return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+    };
+    // Array.sort is stable, so items without a saved position keep their default order.
+    return [...shown].sort((a, b) => rank(a) - rank(b));
+  }, [favorites, usage, dismissed, quickOrder, navLookup, loadedAt]);
+
+  const handleQuickDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const from = quickAccessHrefs.indexOf(String(active.id));
+    const to = quickAccessHrefs.indexOf(String(over.id));
+    if (from === -1 || to === -1) return;
+    setQuickOrder(arrayMove(quickAccessHrefs, from, to));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('admin-nav-quick-order', JSON.stringify(quickOrder));
+  }, [quickOrder]);
 
   // Star toggles a manual pin. On an auto-pinned page it removes it from Quick Access instead.
   const toggleFavorite = (href: string) => {
@@ -406,7 +455,7 @@ function AdminLayoutContent() {
     await signOut();
   };
 
-  const renderNavItem = (item: NavigationItem, theme: GroupTheme) => {
+  const renderNavItem = (item: NavigationItem, theme: GroupTheme, sortable?: SortableProps) => {
     const Icon = item.icon;
     const isActive = location.pathname === item.href;
     const isFavorite = favorites.includes(item.href);
@@ -426,20 +475,38 @@ function AdminLayoutContent() {
     return (
       <li
         key={item.href}
+        ref={sortable?.setNodeRef}
+        style={sortable?.style}
         className={`group/item flex items-center rounded-md border transition-colors ${
+          sortable?.isDragging ? 'shadow-lg opacity-90 ' : ''}${
           isActive
             ? 'bg-emerald-100 border-emerald-400 text-emerald-900'
             : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
         }`}
       >
+        {sortable && (
+          <button
+            type="button"
+            ref={sortable.setActivatorNodeRef}
+            {...sortable.attributes}
+            {...sortable.listeners}
+            aria-label={`Reorder ${item.name}`}
+            title="Drag to reorder"
+            style={{ touchAction: 'none' }}
+            className="flex-shrink-0 ml-1 p-0.5 rounded cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+        )}
         <Link
           to={item.href}
+          draggable={false}
           onClick={() => {
             recordVisit(item.href);
             setSidebarOpen(false);
           }}
           aria-current={isActive ? 'page' : undefined}
-          className="flex flex-1 min-w-0 items-center gap-2 pl-1.5 pr-1 py-1"
+          className={`flex flex-1 min-w-0 items-center gap-2 ${sortable ? 'pl-1' : 'pl-1.5'} pr-1 py-1`}
         >
           <span className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
             <Icon className="w-3.5 h-3.5" />
@@ -548,12 +615,25 @@ function AdminLayoutContent() {
                     <span>Quick Access</span>
                   </div>
                   {quickAccessHrefs.length > 0 ? (
-                    <ul className="mt-1.5 space-y-1">
-                      {quickAccessHrefs.map(href => {
-                        const entry = navLookup.get(href);
-                        return entry ? renderNavItem(entry.item, entry.theme) : null;
-                      })}
-                    </ul>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      modifiers={[restrictToVerticalAxis]}
+                      onDragEnd={handleQuickDragEnd}
+                    >
+                      <SortableContext items={quickAccessHrefs} strategy={verticalListSortingStrategy}>
+                        <ul className="mt-1.5 space-y-1">
+                          {quickAccessHrefs.map(href => {
+                            const entry = navLookup.get(href);
+                            return entry ? (
+                              <SortableQuickItem key={href} id={href}>
+                                {sortable => renderNavItem(entry.item, entry.theme, sortable)}
+                              </SortableQuickItem>
+                            ) : null;
+                          })}
+                        </ul>
+                      </SortableContext>
+                    </DndContext>
                   ) : (
                     <p className="mt-2 px-3 text-xs text-slate-500">
                       Star a page, or keep using the menu, and your most-used pages will show up here.
