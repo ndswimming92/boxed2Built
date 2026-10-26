@@ -100,12 +100,12 @@ export default function JobsPage() {
 
   // Deep link from the dashboard's next-job banner: open that job's card and bring it into view.
   useEffect(() => {
-    if (!linkedJobId || !filteredJobs.some((job) => job.id === linkedJobId)) return;
+    if (loading || !linkedJobId || !filteredJobs.some((job) => job.id === linkedJobId)) return;
     setExpandedJobIds((prev) => new Set(prev).add(linkedJobId));
     requestAnimationFrame(() => {
       document.getElementById(`job-${linkedJobId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, [linkedJobId, filteredJobs]);
+  }, [linkedJobId, filteredJobs, loading]);
 
   useEffect(() => {
     applyFilters();
