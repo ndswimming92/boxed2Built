@@ -424,7 +424,14 @@ function AdminLayoutContent() {
     const showBadge = badgeCount > 0;
 
     return (
-      <li key={item.href} className="relative group/item">
+      <li
+        key={item.href}
+        className={`group/item flex items-center rounded-md border transition-colors ${
+          isActive
+            ? 'bg-emerald-100 border-emerald-400 text-emerald-900'
+            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+        }`}
+      >
         <Link
           to={item.href}
           onClick={() => {
@@ -432,14 +439,10 @@ function AdminLayoutContent() {
             setSidebarOpen(false);
           }}
           aria-current={isActive ? 'page' : undefined}
-          className={`flex items-center gap-3 pl-2 pr-9 py-2 rounded-lg border transition-colors ${
-            isActive
-              ? 'bg-emerald-100 border-emerald-400 text-emerald-900 shadow-sm'
-              : 'bg-white border-slate-200 text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300'
-          }`}
+          className="flex flex-1 min-w-0 items-center gap-2 pl-1.5 pr-1 py-1"
         >
-          <span className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
-            <Icon className="w-4 h-4" />
+          <span className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
+            <Icon className="w-3.5 h-3.5" />
           </span>
           <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.name}</span>
           {showBadge && (
@@ -460,7 +463,7 @@ function AdminLayoutContent() {
           }
           aria-pressed={isFavorite}
           title={isFavorite ? 'Unpin' : isAutoPinned ? 'Remove from Quick Access' : 'Pin to Quick Access'}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-opacity focus:opacity-100 ${
+          className={`flex-shrink-0 mr-1 p-1 rounded transition-opacity focus:opacity-100 ${
             isFavorite
               ? 'opacity-100 text-amber-500'
               : isAutoPinned
@@ -468,7 +471,7 @@ function AdminLayoutContent() {
               : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-amber-500'
           }`}
         >
-          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : isAutoPinned ? 'fill-amber-100' : ''}`} />
+          <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : isAutoPinned ? 'fill-amber-100' : ''}`} />
         </button>
       </li>
     );
@@ -545,7 +548,7 @@ function AdminLayoutContent() {
                     <span>Quick Access</span>
                   </div>
                   {quickAccessHrefs.length > 0 ? (
-                    <ul className="mt-2 space-y-1.5">
+                    <ul className="mt-1.5 space-y-1">
                       {quickAccessHrefs.map(href => {
                         const entry = navLookup.get(href);
                         return entry ? renderNavItem(entry.item, entry.theme) : null;
@@ -603,7 +606,7 @@ function AdminLayoutContent() {
 
                     {/* Category Items */}
                     {isExpanded && !sidebarCollapsed && (
-                      <ul className="mt-2 space-y-1.5">
+                      <ul className="mt-1.5 space-y-1">
                         {group.items.map(item => renderNavItem(item, theme))}
                       </ul>
                     )}
