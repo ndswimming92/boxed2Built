@@ -73,7 +73,10 @@
   },
   "overrides": {
     "esbuild": "$esbuild",
-    "rollup": "^4.52.0"
+    "rollup": "^4.52.0",
+    "@emnapi/core": "2.0.0-beta.2",
+    "@emnapi/runtime": "2.0.0-beta.2",
+    "@rolldown/binding-wasm32-wasi": "1.2.15"
   },
   "optionalDependencies": {
     "@rolldown/binding-wasm32-wasi": "1.2.15"
