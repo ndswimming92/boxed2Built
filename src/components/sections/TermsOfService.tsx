@@ -146,11 +146,12 @@ const TermsOfService = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">SMS / Text Message Terms</h2>
         <ul className="list-disc pl-6 mb-4 space-y-1">
+          <li><strong>Program name:</strong> Boxed2Built Customer Text Messages, operated by Boxed2Built LLC, Spring Hill, TN. Every text begins with &ldquo;Boxed2Built:&rdquo; so you know who it is from.</li>
           <li><strong>Program:</strong> Boxed2Built sends text messages about your service request, such as quotes, appointment confirmations and reminders, and build-day updates. If you separately opt in, we also send occasional promotional texts such as offers and discounts.</li>
           <li><strong>How to join:</strong> Check the text message consent box on our service request form. Consent is not a condition of purchase.</li>
           <li><strong>Frequency and cost:</strong> Message frequency varies. Message and data rates may apply.</li>
           <li><strong>Opt out:</strong> Reply STOP at any time to cancel. You will receive one confirmation text, then no further messages.</li>
-          <li><strong>Help:</strong> Reply HELP for help, or call or email us using the contact details below.</li>
+          <li><strong>Help:</strong> Reply HELP for help, or call <a href="tel:+16154034538" className="text-blue-700 hover:text-blue-800 underline">(615) 403-4538</a> or email <a href="mailto:nicholas.davidson@boxed2built.com" className="text-blue-700 hover:text-blue-800 underline">nicholas.davidson@boxed2built.com</a>.</li>
           <li><strong>Carriers:</strong> Carriers are not liable for delayed or undelivered messages.</li>
           <li><strong>Privacy:</strong> See our <a href="/privacy-policy" className="text-blue-700 hover:text-blue-800 underline">Privacy Policy</a>. We do not share mobile information with third parties or affiliates for marketing or promotional purposes.</li>
         </ul>
