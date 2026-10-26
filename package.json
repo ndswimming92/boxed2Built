@@ -74,5 +74,8 @@
   "overrides": {
     "esbuild": "$esbuild",
     "rollup": "^4.52.0"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-wasm32-wasi": "1.2.15"
   }
 }
