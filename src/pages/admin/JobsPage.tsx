@@ -8,6 +8,7 @@ import {
   formatCurrency,
   formatDate,
   formatHours,
+  calculateFinishedJobTimes,
 } from '../../utils/jobCalculations';
 import { getDirectionsUrl, hasSeparateWorkAddress, normalizeAddress, resolveWorkAddress } from '../../utils/jobAddress';
 import JobFormModal from '../../components/admin/JobFormModal';
@@ -81,6 +82,28 @@ export default function JobsPage() {
   const [showMissingHoursOnly, setShowMissingHoursOnly] = useState(false);
   const [invoiceToConvert, setInvoiceToConvert] = useState<JobsPageLocationState['createJobFromInvoice'] | null>(null);
   const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
+
+  // Stamps end time, completion date and hours worked from the scheduled start,
+  // then hands the job to the completion wizard with those already filled in.
+  const handleFinishedJob = async (job: Job) => {
+    const times = calculateFinishedJobTimes(job);
+    if ('error' in times) {
+      setMessage({ type: 'error', text: times.error });
+      setTimeout(() => setMessage(null), 5000);
+      return;
+    }
+
+    const { error } = await supabase.from('jobs').update(times).eq('id', job.id);
+    if (error) {
+      setMessage({ type: 'error', text: `Could not save the finish time: ${error.message}` });
+      setTimeout(() => setMessage(null), 5000);
+      return;
+    }
+
+    const finishedJob = { ...job, ...times };
+    setJobs((prev) => prev.map((j) => (j.id === job.id ? finishedJob : j)));
+    setCompletingJob(finishedJob);
+  };
 
   const toggleJobExpanded = (jobId: string) => {
     setExpandedJobIds((prev) => {
@@ -637,6 +660,16 @@ export default function JobsPage() {
                     <div className="flex flex-wrap items-center justify-end gap-2 mb-4 pt-4">
                       {!isInactive && (
                         <>
+                          {job.date_scheduled && !job.date_completed && !job.has_signature && (
+                            <button
+                              onClick={() => handleFinishedJob(job)}
+                              className="px-3 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2 text-sm"
+                              title="Record end time, date and hours worked from the scheduled start, then complete the job"
+                            >
+                              <Clock className="w-4 h-4" />
+                              Finished Job
+                            </button>
+                          )}
                           {(job.date_scheduled || job.date_completed) && !job.has_signature && (
                             <button
                               onClick={() => setCompletingJob(job)}

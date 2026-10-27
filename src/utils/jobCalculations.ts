@@ -105,6 +105,49 @@ export function formatDate(dateString: string | null): string {
   });
 }
 
+export type FinishedJobTimes = {
+  scheduled_end_time: string;
+  date_completed: string;
+  hours_worked: number;
+};
+
+/**
+ * End time, completion date and hours worked for a job finished at `now`,
+ * measured from its scheduled start. Hours round to the nearest 0.1 and never
+ * drop below 0.1, since a completed job needs positive hours.
+ * Returns an error message instead when there is no usable start to measure
+ * from: no scheduled date or start time, a start still in the future, or a
+ * start more than a day back (a multi-day job whose hours must be entered).
+ */
+export function calculateFinishedJobTimes(
+  job: Pick<Job, 'date_scheduled' | 'scheduled_start_time'>,
+  now: Date = new Date()
+): FinishedJobTimes | { error: string } {
+  const start = /^(\d{1,2}):(\d{2})/.exec(job.scheduled_start_time ?? '');
+  if (!job.date_scheduled || !start) {
+    return { error: 'Set a scheduled date and start time on this job so the hours can be calculated.' };
+  }
+
+  const startedAt = parseCalendarDay(job.date_scheduled);
+  startedAt.setHours(Number(start[1]), Number(start[2]), 0, 0);
+
+  const elapsedHours = (now.getTime() - startedAt.getTime()) / 3_600_000;
+  if (elapsedHours <= 0) {
+    return { error: 'The scheduled start time is still in the future, so the hours cannot be calculated.' };
+  }
+  if (elapsedHours > 24) {
+    return { error: 'This job started more than a day ago. Enter the end time and hours worked by hand.' };
+  }
+
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  return {
+    scheduled_end_time: `${hh}:${mm}`,
+    date_completed: toLocalDateString(now),
+    hours_worked: Math.max(0.1, Math.round(elapsedHours * 10) / 10),
+  };
+}
+
 export function formatHours(hours: number | null): string {
   if (hours === null || hours === undefined) return '0 hrs';
   return `${hours.toFixed(2)} hrs`;
