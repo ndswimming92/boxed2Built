@@ -18,8 +18,13 @@ test('never returns fewer than 0.1 hours', () => {
   assert.equal((calculateFinishedJobTimes(job, now) as any).hours_worked, 0.1);
 });
 
-test('errors without a start time, before the start, or after a day', () => {
+test('errors without a start time or before the start', () => {
   assert.ok('error' in calculateFinishedJobTimes({ ...job, scheduled_start_time: null }));
   assert.ok('error' in calculateFinishedJobTimes(job, new Date(2026, 9, 26, 17, 0)));
+});
+
+test('errors when the finish falls on a different day than scheduled', () => {
+  const overnight = { date_scheduled: '2026-10-26', scheduled_start_time: '23:00' };
+  assert.ok('error' in calculateFinishedJobTimes(overnight, new Date(2026, 9, 27, 1, 0)));
   assert.ok('error' in calculateFinishedJobTimes(job, new Date(2026, 9, 28, 9, 0)));
 });

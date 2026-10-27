@@ -117,7 +117,8 @@ export type FinishedJobTimes = {
  * drop below 0.1, since a completed job needs positive hours.
  * Returns an error message instead when there is no usable start to measure
  * from: no scheduled date or start time, a start still in the future, or a
- * start more than a day back (a multi-day job whose hours must be entered).
+ * finish on a different calendar day than the scheduled one (overnight and
+ * multi-day jobs, whose end time and hours must be entered by hand).
  */
 export function calculateFinishedJobTimes(
   job: Pick<Job, 'date_scheduled' | 'scheduled_start_time'>,
@@ -135,8 +136,10 @@ export function calculateFinishedJobTimes(
   if (elapsedHours <= 0) {
     return { error: 'The scheduled start time is still in the future, so the hours cannot be calculated.' };
   }
-  if (elapsedHours > 24) {
-    return { error: 'This job started more than a day ago. Enter the end time and hours worked by hand.' };
+  // scheduled_end_time is read on date_scheduled everywhere (calendar emails,
+  // follow-ups), so an end on another day cannot be stored as a bare time.
+  if (toLocalDateString(now) !== toLocalDateString(startedAt)) {
+    return { error: 'This job did not finish on its scheduled day. Enter the end time, date and hours worked by hand.' };
   }
 
   const hh = String(now.getHours()).padStart(2, '0');
