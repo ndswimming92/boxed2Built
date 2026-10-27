@@ -267,6 +267,8 @@ export type Job = {
   /** Local start time on date_scheduled. null leaves the whole day blocked for bookings. */
   scheduled_start_time: string | null;
   scheduled_end_time: string | null;
+  /** Local time the job really finished on date_completed; scheduled_end_time stays the planned end. */
+  actual_end_time: string | null;
   /** The public booking this job came from, if any. */
   booking_id: string | null;
   is_active: boolean;
