@@ -7,7 +7,7 @@ const job = { date_scheduled: '2026-10-26', scheduled_start_time: '18:00:00' };
 test('stamps end time, local date and hours rounded to 0.1', () => {
   const now = new Date(2026, 9, 26, 18, 32);
   assert.deepEqual(calculateFinishedJobTimes(job, now), {
-    scheduled_end_time: '18:32',
+    actual_end_time: '18:32',
     date_completed: '2026-10-26',
     hours_worked: 0.5,
   });

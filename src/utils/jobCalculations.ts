@@ -106,14 +106,15 @@ export function formatDate(dateString: string | null): string {
 }
 
 export type FinishedJobTimes = {
-  scheduled_end_time: string;
+  actual_end_time: string;
   date_completed: string;
   hours_worked: number;
 };
 
 /**
- * End time, completion date and hours worked for a job finished at `now`,
- * measured from its scheduled start. Hours round to the nearest 0.1 and never
+ * Actual end time, completion date and hours worked for a job finished at
+ * `now`, measured from its scheduled start. The planned scheduled_end_time is
+ * left alone, since customer emails quote it. Hours round to the nearest 0.1 and never
  * drop below 0.1, since a completed job needs positive hours.
  * Returns an error message instead when there is no usable start to measure
  * from: no scheduled date or start time, a start still in the future, or a
@@ -136,8 +137,8 @@ export function calculateFinishedJobTimes(
   if (elapsedHours <= 0) {
     return { error: 'The scheduled start time is still in the future, so the hours cannot be calculated.' };
   }
-  // scheduled_end_time is read on date_scheduled everywhere (calendar emails,
-  // follow-ups), so an end on another day cannot be stored as a bare time.
+  // The end is a bare time of day, read on the job's own day, so an end on
+  // another day cannot be stored.
   if (toLocalDateString(now) !== toLocalDateString(startedAt)) {
     return { error: 'This job did not finish on its scheduled day. Enter the end time, date and hours worked by hand.' };
   }
@@ -145,7 +146,7 @@ export function calculateFinishedJobTimes(
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   return {
-    scheduled_end_time: `${hh}:${mm}`,
+    actual_end_time: `${hh}:${mm}`,
     date_completed: toLocalDateString(now),
     hours_worked: Math.max(0.1, Math.round(elapsedHours * 10) / 10),
   };
