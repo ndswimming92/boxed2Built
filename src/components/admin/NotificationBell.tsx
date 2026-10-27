@@ -38,7 +38,8 @@ export default function NotificationBell() {
 
   const load = async () => {
     const data = await getRecentNotifications(30);
-    setNotifications(data);
+    // A failed refresh keeps what is already showing rather than emptying the bell.
+    if (data) setNotifications(data);
   };
 
   useEffect(() => {
