@@ -27,7 +27,8 @@ export async function getUnreadNotifications(): Promise<AdminNotification[]> {
   return data ?? [];
 }
 
-export async function getRecentNotifications(limit = 30): Promise<AdminNotification[]> {
+/** Null when the query fails, so a caller can tell that apart from "no notifications". */
+export async function getRecentNotifications(limit = 30): Promise<AdminNotification[] | null> {
   const { data, error } = await supabase
     .from('admin_notifications')
     .select('*')
@@ -36,7 +37,7 @@ export async function getRecentNotifications(limit = 30): Promise<AdminNotificat
 
   if (error) {
     console.error('Failed to fetch notifications:', error);
-    return [];
+    return null;
   }
   return data ?? [];
 }

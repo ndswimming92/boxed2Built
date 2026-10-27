@@ -38,11 +38,29 @@ export default function NotificationBell() {
 
   const load = async () => {
     const data = await getRecentNotifications(30);
-    setNotifications(data);
+    // A failed refresh keeps what is already showing rather than emptying the bell.
+    if (data) setNotifications(data);
   };
 
   useEffect(() => {
     load();
+  }, []);
+
+  // The live channel below drops silently on a sleeping tab or a flaky
+  // connection, and the schedule email lands a few seconds after a job save, so
+  // also refetch when the tab regains focus and on a slow timer.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    const timer = window.setInterval(refresh, 30000);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+      window.clearInterval(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -52,7 +70,10 @@ export default function NotificationBell() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'admin_notifications' },
         (payload) => {
-          setNotifications((prev) => [payload.new as AdminNotification, ...prev].slice(0, 30));
+          const incoming = payload.new as AdminNotification;
+          setNotifications((prev) =>
+            prev.some((x) => x.id === incoming.id) ? prev : [incoming, ...prev].slice(0, 30),
+          );
         },
       )
       .subscribe();
