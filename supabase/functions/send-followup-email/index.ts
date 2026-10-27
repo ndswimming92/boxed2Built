@@ -48,7 +48,11 @@ const REPLY_TO_EMAIL = 'replies@reply.boxed2built.com';
 const BCC_EMAIL = 'nicholas.davidson@boxed2built.com';
 const WEBSITE_URL = 'https://boxed2built.com';
 const CONTACT_URL = 'https://boxed2built.com/contact';
-const REVIEW_URL = 'https://g.page/r/CW-qaf93r1ZuEAI/review';
+// Opens on the Deals tab, with the subscribe form at the top. The UTM tags let
+// analytics attribute visits (and the sign-ups that follow) to this email.
+const DEALS_URL =
+  'https://boxed2built.com/news?utm_source=thank_you_email&utm_medium=email&utm_campaign=post_job_followup';
+const REVIEW_URL ='https://g.page/r/CW-qaf93r1ZuEAI/review';
 const CONTACT_EMAIL = 'nicholas.davidson@boxed2built.com';
 
 /** Used when the business has no booking settings row to read a timezone from. */
@@ -192,6 +196,14 @@ function buildHtml(clientName: string, referralCode: string | null): string {
           </div>
         </div>
 
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+          <p style="margin:0 0 6px;color:#92400e;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Get Furniture Deals in Your Inbox</p>
+          <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.7;">I keep an eye on furniture sales around Spring Hill and Franklin and post the good ones on my deals page. Subscribe and I'll email you when new sales show up, so you can save on your next piece.</p>
+          <div style="text-align:center;">
+            <a href="${DEALS_URL}" style="display:inline-block;background:#1e3a5f;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:6px;">See Deals &amp; Subscribe &rarr;</a>
+          </div>
+        </div>
+
         ${buildReferralBlock(referralCode)}
         <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7;">Feel free to save my number in case you need help again down the road: <span style="color:#111827;font-weight:600;">(615) 403-4538</span></p>
         <p style="margin:0 0 4px;color:#374151;font-size:15px;font-weight:600;">Nicholas Davidson</p>
@@ -237,6 +249,10 @@ function buildPlainText(clientName: string, referralCode: string | null): string
     '--- Need help again down the road? ---',
     'Whether it\'s another piece of furniture, a TV to mount, or anything else you need set up — just reply to this email or request a quote anytime:',
     CONTACT_URL,
+    '',
+    '--- Get Furniture Deals in Your Inbox ---',
+    'I keep an eye on furniture sales around Spring Hill and Franklin and post the good ones on my deals page. Subscribe and I\'ll email you when new sales show up, so you can save on your next piece:',
+    DEALS_URL,
     '',
   ];
 
