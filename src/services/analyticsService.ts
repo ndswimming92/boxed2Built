@@ -9,6 +9,7 @@ export async function fetchJobsData(businessId: string): Promise<Job[]> {
     .select('*')
     .eq('business_id', businessId)
     .eq('is_active', true)
+    .eq('is_test', false)
     .order('date_completed', { ascending: false });
 
   if (error) {

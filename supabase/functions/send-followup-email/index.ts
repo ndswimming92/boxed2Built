@@ -461,6 +461,7 @@ Deno.serve(async (req: Request) => {
   } else {
     query = query
       .eq('is_active', true)
+      .eq('is_test', false)
       .in('job_status', ['scheduled', 'accepted', 'in_progress', 'completed'])
       .gte('date_scheduled', utcDateOffset(now, -LOOKBACK_DAYS))
       .lte('date_scheduled', utcDateOffset(now, 0));

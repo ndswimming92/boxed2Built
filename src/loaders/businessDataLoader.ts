@@ -180,7 +180,7 @@ async function fetchBusinessDataAtBuildTime(): Promise<CompleteBusinessData> {
       client.from('social_media').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('display_order', { ascending: true }),
       client.from('customer_reviews').select('*').eq('business_id', businessInfo.id).eq('is_active', true).order('date_published', { ascending: false }),
       client.from('business_attributes').select('*').eq('business_id', businessInfo.id),
-      client.from('jobs').select('hours_worked').eq('business_id', businessInfo.id).eq('is_active', true).not('date_completed', 'is', null)
+      client.from('jobs').select('hours_worked').eq('business_id', businessInfo.id).eq('is_active', true).eq('is_test', false).not('date_completed', 'is', null)
     ]);
 
     // Calculate live hours saved from completed jobs (overrides the stored field)

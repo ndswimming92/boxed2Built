@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
 import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock, Tag } from 'lucide-react';
-import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, convertToJob as convertInquiryToJob, markAsConverted, markAsReachedOut } from '../../services/inquiryService';
+import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, getInquiryById, deleteAllTestInquiries, convertToJob as convertInquiryToJob, markAsConverted, markAsReachedOut } from '../../services/inquiryService';
 import {
   hasReachedOut,
   isAwaitingOutreach,
@@ -12,6 +12,7 @@ import {
 import { useRealtimeInquiries } from '../../hooks/useRealtimeInquiries';
 import InquiryDetailModal from '../../components/admin/InquiryDetailModal';
 import JobFormModal from '../../components/admin/JobFormModal';
+import TestInquiryModal from '../../components/admin/TestInquiryModal';
 import { logAction } from '../../services/auditLogService';
 import { describeDiscount, formatMoney } from '../../utils/coupon';
 
@@ -40,6 +41,7 @@ export default function InquiriesPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [showTestData, setShowTestData] = useState(false);
+  const [showTestModal, setShowTestModal] = useState(false);
 
   const { inquiries, refresh } = useRealtimeInquiries({ businessId, includeTestData: showTestData });
 
@@ -74,11 +76,45 @@ export default function InquiriesPage() {
   const fetchStats = async () => {
     if (!businessId) return;
     try {
-      const data = await getInquiryStats(businessId, showTestData);
+      const data = await getInquiryStats(businessId);
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
+  };
+
+  const handleTestSubmitted = async (inquiryId: string) => {
+    setShowTestModal(false);
+    setShowTestData(true);
+    try {
+      await refresh();
+      const created = await getInquiryById(inquiryId);
+      if (created) {
+        setSelectedInquiry(created);
+        setShowDetailModal(true);
+      }
+      setMessage({ type: 'success', text: 'Test inquiry submitted. It is flagged TEST and excluded from all metrics.' });
+    } catch (error) {
+      console.error('Error opening test inquiry:', error);
+      setMessage({ type: 'success', text: 'Test inquiry submitted. Turn on Show Tests to see it.' });
+    }
+    setTimeout(() => setMessage(null), 5000);
+  };
+
+  const handleDeleteAllTests = async () => {
+    if (!businessId) return;
+    if (!window.confirm('Delete ALL test inquiries, along with the test jobs, estimates and test customers they created? Real data is not affected. This cannot be undone.')) {
+      return;
+    }
+    try {
+      const removed = await deleteAllTestInquiries(businessId);
+      await refresh();
+      setMessage({ type: 'success', text: `Deleted ${removed} test inquir${removed === 1 ? 'y' : 'ies'}.` });
+    } catch (error) {
+      console.error('Error deleting test inquiries:', error);
+      setMessage({ type: 'error', text: 'Could not delete test inquiries. Please try again.' });
+    }
+    setTimeout(() => setMessage(null), 5000);
   };
 
   const handleManualRefresh = async () => {
@@ -427,6 +463,24 @@ export default function InquiriesPage() {
               <FlaskConical className="w-4 h-4" />
               <span>{showTestData ? 'Hide Tests' : 'Show Tests'}</span>
             </button>
+            <button
+              onClick={() => setShowTestModal(true)}
+              className="px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm bg-amber-600 border-amber-600 text-white hover:bg-amber-700"
+              title="Submit a test inquiry as if a customer used the website form"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>Submit Test</span>
+            </button>
+            {showTestData && (
+              <button
+                onClick={handleDeleteAllTests}
+                className="px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm border-red-300 text-red-700 hover:bg-red-50"
+                title="Delete every test inquiry and the test data it created"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Tests</span>
+              </button>
+            )}
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing}
@@ -870,6 +924,12 @@ export default function InquiriesPage() {
           </div>
         )}
       </div>
+
+      <TestInquiryModal
+        isOpen={showTestModal}
+        onClose={() => setShowTestModal(false)}
+        onSubmitted={handleTestSubmitted}
+      />
 
       {showDetailModal && selectedInquiry && (
         <InquiryDetailModal

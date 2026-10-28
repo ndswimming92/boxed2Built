@@ -98,7 +98,7 @@ export function useRealtimeInquiries({
           if (payload.eventType === 'INSERT') {
             const newInquiry = payload.new as FormInquiry;
 
-            if (enableNotifications) {
+            if (enableNotifications && !newInquiry.is_test) {
               console.log('Triggering notification for new inquiry:', newInquiry);
               showNewInquiryNotification(newInquiry);
             }

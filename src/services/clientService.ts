@@ -141,6 +141,7 @@ export async function getClientHistory(clientId: string, clientEmail: string | n
     .from('jobs')
     .select('*')
     .eq('client_id', clientId)
+    .eq('is_test', false)
     .order('created_at', { ascending: false });
 
   history.jobs = jobs || [];
@@ -150,6 +151,7 @@ export async function getClientHistory(clientId: string, clientEmail: string | n
     .from('invoices')
     .select('*')
     .eq('client_id', clientId)
+    .eq('is_test', false)
     .order('created_at', { ascending: false });
 
   history.invoices = invoices || [];

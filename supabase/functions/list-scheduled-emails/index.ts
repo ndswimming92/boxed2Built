@@ -213,6 +213,7 @@ Deno.serve(async (req: Request) => {
     .from('jobs')
     .select(JOB_COLUMNS)
     .eq('is_active', true)
+    .eq('is_test', false)
     .in('job_status', JOB_STATUSES)
     .gte('date_scheduled', utcDateOffset(now, -LOOKBACK_DAYS))
     .lte('date_scheduled', utcDateOffset(now, LOOKAHEAD_DAYS))
