@@ -73,7 +73,12 @@ BEGIN
   SET
     last_contact_date  = now(),
     first_contact_date = COALESCE(first_contact_date, now()),
-    is_test = CASE WHEN COALESCE(NEW.is_test, false) AND NOT v_existed THEN true ELSE is_test END
+    -- A test creates its own test client. A real inquiry that reuses that email
+    -- promotes it to a real client so the customer is not hidden from the lists.
+    is_test = CASE
+      WHEN COALESCE(NEW.is_test, false) THEN (is_test OR NOT v_existed)
+      ELSE false
+    END
   WHERE id = v_client_id;
 
   IF NEW.furniture_type = 'General Question' THEN
@@ -146,12 +151,16 @@ BEGIN
       v_coupon_line
     );
 
-    SELECT id INTO v_customer_id
-    FROM customers
-    WHERE organization_id = NEW.organization_id
-      AND lower(email) = lower(NEW.client_email)
-    ORDER BY created_at ASC
-    LIMIT 1;
+    -- A test never belongs to a portal customer, so a real customer whose email
+    -- is used in a test cannot see it in their portal.
+    IF NOT v_is_test THEN
+      SELECT id INTO v_customer_id
+      FROM customers
+      WHERE organization_id = NEW.organization_id
+        AND lower(email) = lower(NEW.client_email)
+      ORDER BY created_at ASC
+      LIMIT 1;
+    END IF;
 
     INSERT INTO jobs (
       business_id, organization_id, client_id, customer_id,
@@ -443,3 +452,24 @@ $$;
 
 REVOKE ALL ON FUNCTION public.delete_test_inquiries(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.delete_test_inquiries(uuid) TO authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Portal customers never see test rows, whatever customer_id later triggers
+-- fill in from the email. Business members still see them (e.g. on the test
+-- inquiry), as do the service role and the SECURITY DEFINER functions.
+-- ---------------------------------------------------------------------------
+DROP POLICY IF EXISTS "Test jobs are visible to org members only" ON public.jobs;
+CREATE POLICY "Test jobs are visible to org members only"
+  ON public.jobs
+  AS RESTRICTIVE
+  FOR SELECT
+  TO authenticated
+  USING (is_test = false OR public.can_view_org_data(organization_id));
+
+DROP POLICY IF EXISTS "Test invoices are visible to org members only" ON public.invoices;
+CREATE POLICY "Test invoices are visible to org members only"
+  ON public.invoices
+  AS RESTRICTIVE
+  FOR SELECT
+  TO authenticated
+  USING (is_test = false OR public.can_view_org_data(organization_id));
