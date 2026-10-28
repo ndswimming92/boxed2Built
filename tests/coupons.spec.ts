@@ -57,7 +57,7 @@ async function openForm(page: Page) {
   // The form pulls business details and writes analytics; neither decides a price.
   await page.route('**/rest/v1/services*', (route) => route.fulfill({ json: [] }));
   await page.goto('/tests/harness/coupons.html');
-  await expect(page.getByRole('button', { name: 'IKEA Flat-Pack', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^IKEA Flat-Pack/ })).toBeVisible();
 }
 
 /** The navy ballpark-estimate bar under the picker. */
@@ -65,7 +65,7 @@ const estimate = (page: Page) => page.getByTestId('quote-estimate');
 
 /** IKEA at $185 a piece is the cheapest way to get a known number on screen. */
 async function quoteOnePiece(page: Page) {
-  await page.getByRole('button', { name: 'IKEA Flat-Pack', exact: true }).click();
+  await page.getByRole('button', { name: /^IKEA Flat-Pack/ }).click();
   await expect(estimate(page)).toContainText('$185');
 }
 
