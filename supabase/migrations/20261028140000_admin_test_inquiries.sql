@@ -286,6 +286,14 @@ DECLARE
   v_client_email text;
   v_followup_sent_at timestamptz;
 BEGIN
+  -- Caller guard from 20261006130920_guard_invoice_number_and_client_metrics_functions.
+  IF pg_trigger_depth() = 0 AND auth.uid() IS NOT NULL AND NOT (
+    public.is_platform_admin()
+    OR EXISTS (SELECT 1 FROM public.clients c WHERE c.id = client_id_input AND public.can_manage_org_settings(c.organization_id))
+  ) THEN
+    RAISE EXCEPTION 'Not authorized to update client metrics' USING ERRCODE = '42501';
+  END IF;
+
   SELECT email, last_followup_email_sent_at
   INTO v_client_email, v_followup_sent_at
   FROM clients
