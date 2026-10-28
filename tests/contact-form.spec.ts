@@ -110,7 +110,9 @@ async function openForm(page: Page, query = '') {
   await expect(page.getByLabel('Your Name')).toBeVisible();
 }
 
-const tile = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
+// Tile names start with the label and may append a price/subtitle ("Bed Frames from $295").
+const tile = (page: Page, name: string) =>
+  page.getByRole('button', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( |$)`) });
 
 /** Picks a furniture tile and steps it up to `count`. */
 async function pick(page: Page, name: string, count = 1) {
