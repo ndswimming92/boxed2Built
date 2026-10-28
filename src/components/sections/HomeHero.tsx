@@ -158,7 +158,6 @@ const HomeHero: React.FC = () => {
                   type="button"
                   onClick={handleQuoteButtonClick}
                   className="group inline-flex w-full sm:w-auto min-h-[56px] items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-[#D9A441] hover:bg-[#E9BE6A] text-[#0E2748] px-7 md:px-8 py-4 text-base md:text-lg font-extrabold shadow-[0_10px_24px_rgba(217,164,65,0.28)] hover:shadow-[0_14px_30px_rgba(217,164,65,0.4)] hover:-translate-y-px transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E2748]"
-                  aria-label="Get a free furniture assembly quote in Spring Hill TN"
                 >
                   Get My Free Quote
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -229,18 +228,22 @@ const HomeHero: React.FC = () => {
                         </p>
                       )}
                       {heroImages.length > 1 && (
-                        <div className="flex gap-2 ml-auto">
+                        <div className="flex ml-auto">
                           {heroImages.map((_, idx) => (
                             <button
                               key={idx}
                               onClick={() => goToIndex(idx)}
                               aria-label={`Show image ${idx + 1}`}
-                              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                                idx === activeIndex
-                                  ? 'bg-[#D9A441] scale-110'
-                                  : 'bg-white/60 hover:bg-white/85'
-                              }`}
-                            />
+                              className="group flex h-6 w-6 items-center justify-center"
+                            >
+                              <span
+                                className={`block w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                                  idx === activeIndex
+                                    ? 'bg-[#D9A441] scale-110'
+                                    : 'bg-white/60 group-hover:bg-white/85'
+                                }`}
+                              />
+                            </button>
                           ))}
                         </div>
                       )}

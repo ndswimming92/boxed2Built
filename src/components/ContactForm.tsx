@@ -951,7 +951,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                       <button
                         type="button"
                         aria-pressed={on}
-                        aria-label={f.label}
                         className={`block w-full text-left rounded-[14px] px-3.5 pt-4 ${on ? 'pb-0' : 'pb-3.5'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9A441]`}
                       >
                         {on && (
@@ -963,7 +962,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                           <FurnitureIcon id={f.id} />
                         </span>
                         <span className="block text-[15px] font-bold text-[#0E2748] leading-tight">{f.label}</span>
-                        <span className="block text-xs text-gray-400 mt-0.5">{f.sub ?? `from $${f.price}`}</span>
+                        <span className="block text-xs text-gray-600 mt-0.5">{f.sub ?? `from $${f.price}`}</span>
                       </button>
 
                       {on && (
@@ -1027,7 +1026,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                 <span className={stepBadgeCls} aria-hidden="true">2</span>
                 <h3 id="quote-contact-title" className="text-[19px] font-bold text-[#0E2748] m-0">Where do we send the quote?</h3>
                 {isValidating && <Loader2 size={16} className="animate-spin text-[#D9A441]" />}
-                <span className="ml-auto text-xs text-gray-400"><span className="text-[#B45309] font-bold">*</span> required</span>
+                <span className="ml-auto text-xs text-gray-600"><span className="text-[#B45309] font-bold">*</span> required</span>
               </div>
 
               <div className="flex justify-center mb-5">
@@ -1049,7 +1048,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     aria-checked={clientType === 'business'}
                     onClick={() => setClientType('business')}
                     className={`inline-flex items-center gap-[7px] px-5 py-[9px] rounded-full text-sm font-bold transition-all duration-200 ${
-                      clientType === 'business' ? 'bg-[#D9A441] text-[#0E2748]' : 'bg-transparent text-[#8A6D2F]'
+                      clientType === 'business' ? 'bg-[#D9A441] text-[#0E2748]' : 'bg-transparent text-[#7A5F22]'
                     }`}
                   >
                     <Building2 size={16} aria-hidden /> Business
@@ -1171,7 +1170,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   <span className={disclosureIconCls}><Calendar size={19} aria-hidden /></span>
                   <span>
                     <span className="block text-[15px] font-bold text-[#0E2748]">Scheduling preferences</span>
-                    <span className="block text-[12.5px] font-semibold text-[#D9A441]">Optional — tell us when works best for you</span>
+                    <span className="block text-[12.5px] font-semibold text-[#7A5F22]">Optional — tell us when works best for you</span>
                   </span>
                 </span>
                 <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showScheduling ? 'rotate-180' : ''}`} />
@@ -1194,7 +1193,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                       {...getFieldProps('preferredDate')}
                     />
                     {showFieldError('preferredDate') ? fieldError('preferredDate') : (
-                      <p className="mt-1.5 text-xs text-gray-400">At least 2 days out — weekends welcome.</p>
+                      <p className="mt-1.5 text-xs text-gray-600">At least 2 days out — weekends welcome.</p>
                     )}
                   </div>
                   <div>
@@ -1244,7 +1243,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                   <span className={disclosureIconCls}><ImageIcon size={19} aria-hidden /></span>
                   <span>
                     <span className="block text-[15px] font-bold text-[#0E2748]">Add a photo or product link</span>
-                    <span className="block text-[12.5px] font-semibold text-[#D9A441]">Optional — helps us give a sharper quote</span>
+                    <span className="block text-[12.5px] font-semibold text-[#7A5F22]">Optional — helps us give a sharper quote</span>
                   </span>
                 </span>
                 <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showReference ? 'rotate-180' : ''}`} />
@@ -1294,7 +1293,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                         </span>
                         <span>
                           <span className="block text-sm font-semibold text-[#0E2748]">Click to choose a photo</span>
-                          <span className="block text-xs text-gray-400">JPG, PNG or WEBP · up to 10 MB</span>
+                          <span className="block text-xs text-gray-600">JPG, PNG or WEBP · up to 10 MB</span>
                         </span>
                         <input
                           id="furniturePhoto"
@@ -1402,7 +1401,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     </p>
                   )}
                   {!appliedCoupon && !prefilledReferral && !couponChecking && !couponRejected && !showFieldError('referralCode') && (
-                    <p className="mt-1.5 text-xs text-gray-400">A friend's code earns them $25 credit.</p>
+                    <p className="mt-1.5 text-xs text-gray-600">A friend's code earns them $25 credit.</p>
                   )}
                 </div>
 
@@ -1444,7 +1443,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     onChange={(e) => handleFieldChange('giftCardCode', formatGiftCardCodeInput(e.target.value))}
                   />
                   {fieldError('giftCardCode')}
-                  <p className="mt-1.5 text-xs text-gray-400">
+                  <p className="mt-1.5 text-xs text-gray-600">
                     Balances never expire and roll over.{' '}
                     <a href="/redeem-gift-card" className="text-[#047857] hover:text-[#065F46] underline font-medium">
                       Check balance

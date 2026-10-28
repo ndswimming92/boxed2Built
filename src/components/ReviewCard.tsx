@@ -58,7 +58,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, elevated = false, class
                   rel="noopener noreferrer ugc"
                   onClick={handleGoogleLinkClick}
                   className="mt-0.5 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-gray-600 no-underline transition-colors hover:text-blue-700"
-                  aria-label={`View ${review.author}'s review on Google`}
                 >
                   <BadgeCheck className="text-blue-600" size={14} />
                   Verified on Google

@@ -251,7 +251,6 @@ const Testimonials: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-700 hover:text-blue-800 underline font-medium text-sm"
-                    aria-label="Read more reviews on Google"
                   >
                     Read more on Google
                   </a>

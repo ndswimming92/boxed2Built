@@ -322,7 +322,7 @@ const Footer: React.FC = () => {
               <a
                 href={`mailto:${email}?subject=Contact%20-%20Footer&body=Source:%20Website%20Footer`}
                 className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Email Boxed2Built"
+                aria-label={`Email Boxed2Built at ${email}`}
                 onClick={() => handleSocialClick('email')}
               >
                 <Mail size={20} />
@@ -364,7 +364,7 @@ const Footer: React.FC = () => {
                   </li>
                 )}
                 {closedDays.length > 0 && (
-                  <li className="text-gray-500 italic text-xs pt-1">
+                  <li className="text-gray-400 italic text-xs pt-1">
                     Closed: {closedDays.map((h) => h.day_of_week).join(', ')}
                   </li>
                 )}
@@ -403,7 +403,7 @@ const Footer: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <p className="text-[11px] text-gray-500 mt-1 italic">Payment due upon completion.</p>
+              <p className="text-[11px] text-gray-400 mt-1 italic">Payment due upon completion.</p>
             </div>
           </div>
 
@@ -433,6 +433,7 @@ const Footer: React.FC = () => {
               {reviewStats.totalReviews > 0 && (
                 <div
                   className="flex gap-[3px] text-yellow-400"
+                  role="img"
                   aria-label={`${reviewStats.averageRating.toFixed(1)} out of 5 stars`}
                 >
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -475,7 +476,6 @@ const Footer: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-white text-gray-800 text-sm font-semibold rounded-lg shadow-sm hover:bg-slate-50 hover:shadow-xl transition"
-                aria-label="Review Boxed2Built on Google"
                 onClick={handleReviewClick}
               >
                 <GoogleGIcon />
@@ -622,7 +622,7 @@ const Footer: React.FC = () => {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs text-gray-500 mb-5">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 text-xs text-gray-400 mb-5">
             <p>&copy; {currentYear} {LEGAL_NOTICE}. All rights reserved.</p>
             <p className="text-center md:text-right">
               Local furniture assembly near you — serving {locality}, {region} and nearby areas.{' '}
@@ -639,13 +639,13 @@ const Footer: React.FC = () => {
 
           {/* Sitemap */}
           <div className="pt-4 border-t border-gray-800">
-            <p className="text-xs text-gray-600 mb-2 text-center">Sitemap</p>
+            <p className="text-xs text-gray-400 mb-2 text-center">Sitemap</p>
             <div className="flex flex-wrap justify-center gap-y-1">
               {visibleSitemapLinks.map((link, index) => (
                 <React.Fragment key={link.href}>
                   <a
                     href={link.href}
-                    className="text-xs text-gray-600 underline hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
+                    className="text-xs text-gray-400 underline hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-1"
                     onClick={() =>
                       trackEvent('link_click', 'footer', {
                         event_category: 'navigation',
