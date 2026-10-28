@@ -54,6 +54,7 @@ export function job(overrides: Row = {}): Row {
     has_signature: true,
     is_free: false,
     is_active: true,
+    is_test: false,
     repeat_client: false,
     created_at: '2026-09-11T12:00:00Z',
     updated_at: '2026-09-26T12:00:00Z',
@@ -88,6 +89,7 @@ export function invoice(overrides: Row = {}): Row {
     total_amount: 300,
     amount_due: 300,
     is_active: true,
+    is_test: false,
     created_at: '2026-09-26T12:00:00Z',
     ...overrides,
   };
@@ -320,6 +322,7 @@ export async function stubNetwork(page: Page, stubs: Stubs): Promise<Mounted> {
       const created = (Array.isArray(body) ? body : [body ?? {}]).map((row) => ({
         id: `new-${table}-${nextId++}`,
         is_active: true,
+        is_test: false,
         created_at: new Date().toISOString(),
         ...row,
       }));

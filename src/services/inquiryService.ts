@@ -547,3 +547,21 @@ export async function getRecentInquiries(
 
   return inquiries as FormInquiry[];
 }
+
+/**
+ * Removes every test inquiry and everything a test submission created: its
+ * saved request, job, draft estimate and test client. Returns how many
+ * inquiries were removed. Real data is never touched.
+ */
+export async function deleteAllTestInquiries(businessId: string): Promise<number> {
+  const { data, error } = await supabase.rpc('delete_test_inquiries', {
+    p_business_id: businessId,
+  });
+
+  if (error) {
+    console.error('Error deleting test inquiries:', error);
+    throw new Error(`Failed to delete test inquiries: ${error.message}`);
+  }
+
+  return Number(data ?? 0);
+}

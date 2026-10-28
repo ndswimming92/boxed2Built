@@ -58,6 +58,9 @@ interface ContactFormPayload {
   estimatedTime?: string;
   confirmationCode: string;
   isTest?: boolean;
+  // Admin-portal test submissions: the owner still gets the notification
+  // (with its TEST banner) but the made-up customer is not emailed.
+  skipCustomerEmail?: boolean;
   furniturePhotoUrl?: string;
   furnitureImagePath?: string;
   referralCodeUsed?: string;
@@ -595,18 +598,20 @@ Deno.serve(async (req: Request) => {
         console.error("Owner notification email failed:", err);
       }
 
-      try {
-        await sendEmail(
-          p.email,
-          `Your Boxed2Built request is confirmed — Code: ${p.confirmationCode}`,
-          customerConfirmationContact(p),
-          REPLY_TO_EMAIL
-        );
-        emailResults.client = true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("Customer confirmation email failed:", msg);
-        emailResults.clientError = msg;
+      if (!(p.isTest && p.skipCustomerEmail)) {
+        try {
+          await sendEmail(
+            p.email,
+            `Your Boxed2Built request is confirmed — Code: ${p.confirmationCode}`,
+            customerConfirmationContact(p),
+            REPLY_TO_EMAIL
+          );
+          emailResults.client = true;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error("Customer confirmation email failed:", msg);
+          emailResults.clientError = msg;
+        }
       }
     } else if (payload.formType === "quick_contact") {
       const p = payload as QuickContactPayload;

@@ -166,6 +166,7 @@ Deno.serve(async (req: Request) => {
     )
     .eq('organization_id', feedToken.organization_id)
     .eq('is_active', true)
+    .eq('is_test', false)
     .not('date_scheduled', 'is', null)
     .gte('date_scheduled', addDays(today, -DAYS_BACK))
     .lte('date_scheduled', addDays(today, DAYS_AHEAD))

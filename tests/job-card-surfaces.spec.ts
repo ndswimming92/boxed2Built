@@ -147,6 +147,7 @@ test.describe('privacy mode', () => {
           total_amount: 300,
           amount_due: 300,
           is_active: true,
+          is_test: false,
           created_at: '2026-09-26T12:00:00Z',
         },
       ],

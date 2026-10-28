@@ -169,6 +169,7 @@ export default function JobsPage() {
           .select('*')
           .eq('business_id', bizData.id)
           .eq('is_active', true)
+          .eq('is_test', false)
           .order('created_at', { ascending: false });
 
         if (data) {

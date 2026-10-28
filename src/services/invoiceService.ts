@@ -306,6 +306,7 @@ export async function getAllInvoices(businessId: string): Promise<Invoice[]> {
     .select('*')
     .eq('business_id', businessId)
     .eq('is_active', true)
+    .eq('is_test', false)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -339,6 +340,7 @@ export async function getInvoicesByCustomer(businessId: string, email: string): 
     .eq('business_id', businessId)
     .eq('client_email', email)
     .eq('is_active', true)
+    .eq('is_test', false)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -396,6 +398,7 @@ export async function getUnattachedInvoices(businessId: string): Promise<Invoice
     .eq('business_id', businessId)
     .is('job_id', null)
     .eq('is_active', true)
+    .eq('is_test', false)
     .order('created_at', { ascending: false });
 
   if (error) {

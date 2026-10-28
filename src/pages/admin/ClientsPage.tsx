@@ -85,7 +85,8 @@ export default function ClientsPage() {
       .from('jobs')
       .select('client_id, final_price, quoted_price')
       .in('client_id', clientIds)
-      .eq('job_status', 'completed');
+      .eq('job_status', 'completed')
+      .eq('is_test', false);
 
     if (error) {
       console.error('Error loading live customer revenue from jobs:', error);
