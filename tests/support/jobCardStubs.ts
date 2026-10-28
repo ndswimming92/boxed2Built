@@ -322,6 +322,7 @@ export async function stubNetwork(page: Page, stubs: Stubs): Promise<Mounted> {
       const created = (Array.isArray(body) ? body : [body ?? {}]).map((row) => ({
         id: `new-${table}-${nextId++}`,
         is_active: true,
+        is_test: false,
         created_at: new Date().toISOString(),
         ...row,
       }));
