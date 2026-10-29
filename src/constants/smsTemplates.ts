@@ -37,6 +37,7 @@ export interface TemplateDefault {
 }
 
 const CONTACT = 'Call (615) 403-4538 or email nicholas.davidson@boxed2built.com.';
+const CALL = 'Call (615) 403-4538.';
 const STOP = 'Reply STOP to opt out.';
 
 const text = (id: number, name: string, sample: string): TemplateVariable => ({ id, name, variableType: 'text', sample });
@@ -46,6 +47,9 @@ const link = (id: number, name: string, sample: string): TemplateVariable => ({ 
 const SAMPLE_PAY_LINK =
   'https://www.boxed2built.com/pay/8f3c2a1e-5b7d-4c9a-9e21-3d6f7a1b2c4d/1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed';
 
+// Opens the site's request lookup with the booking reference and email filled in.
+const SAMPLE_BOOKING_LINK = 'https://boxed2built.com/lookup-request?code=BK-66BB65&email=jamie.smith%40gmail.com';
+
 export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
   {
     key: 'booking_confirmed',
@@ -53,12 +57,14 @@ export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
     description: 'Sent right after a customer books a time.',
     secret: 'SENT_TEMPLATE_BOOKING_CONFIRMED',
     category: 'UTILITY',
-    body: `Boxed2Built: Hi {{0:variable}}, your {{1:variable}} is confirmed for {{2:variable}}. Booking ref: {{3:variable}}. Need to reschedule or have questions? ${CONTACT} ${STOP}`,
+    // Phone only: with the booking link, adding the email address pushes it to three segments.
+    body: `Boxed2Built: Hi {{0:variable}}, your {{1:variable}} is confirmed for {{2:variable}}. Booking ref: {{3:variable}}. View your booking: {{4:variable}} Need to reschedule? ${CALL} ${STOP}`,
     variables: [
       text(0, 'customerName', 'Jamie'),
       text(1, 'serviceName', 'Furniture Assembly'),
       text(2, 'appointmentTime', 'Saturday, October 25 at 10:00 AM'),
       text(3, 'bookingReference', 'BK-66BB65'),
+      link(4, 'bookingLink', SAMPLE_BOOKING_LINK),
     ],
     wiredToSender: true,
   },

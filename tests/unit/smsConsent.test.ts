@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   type ConsentLogRow,
   decideSmsConsent,
+  bookingLookupLink,
   describeAppointment,
   idempotencyKey,
   phoneDigits,
@@ -133,4 +134,21 @@ test('idempotencyKey keeps only characters Sent accepts', () => {
 test('describeAppointment adds the time only when there is one', () => {
   assert.equal(describeAppointment('Saturday, October 25', '10:00 AM'), 'Saturday, October 25 at 10:00 AM');
   assert.equal(describeAppointment('Saturday, October 25', null), 'Saturday, October 25');
+});
+
+test('bookingLookupLink opens the lookup page with the reference and email filled in', () => {
+  assert.equal(
+    bookingLookupLink('https://boxed2built.com', 'bk-66bb65', ' Jamie.Smith@Gmail.com '),
+    'https://boxed2built.com/lookup-request?code=BK-66BB65&email=jamie.smith%40gmail.com',
+  );
+  // A trailing slash on the site address does not double up.
+  assert.equal(
+    bookingLookupLink('https://boxed2built.com/', 'BK-66BB65', 'a+b@example.com'),
+    'https://boxed2built.com/lookup-request?code=BK-66BB65&email=a%2Bb%40example.com',
+  );
+});
+
+test('bookingLookupLink still works without an email', () => {
+  assert.equal(bookingLookupLink('https://boxed2built.com', 'BK-66BB65', null), 'https://boxed2built.com/lookup-request?code=BK-66BB65');
+  assert.equal(bookingLookupLink('https://boxed2built.com', 'BK-66BB65', '  '), 'https://boxed2built.com/lookup-request?code=BK-66BB65');
 });

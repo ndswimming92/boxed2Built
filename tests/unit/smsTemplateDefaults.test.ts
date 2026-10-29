@@ -13,7 +13,7 @@ import { validateTemplate as validateOnServer } from '../../supabase/functions/_
 // What each sender passes today (send-booking-email, send-customer-job-reminders,
 // send-invoice-email). A rename on either side breaks the text, so this pins them.
 const SENDER_PARAMETERS: Record<string, string[]> = {
-  booking_confirmed: ['customerName', 'serviceName', 'appointmentTime', 'bookingReference'],
+  booking_confirmed: ['customerName', 'serviceName', 'appointmentTime', 'bookingReference', 'bookingLink'],
   job_reminder: ['customerName', 'appointmentTime', 'serviceName', 'serviceAddress'],
   quote_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
   invoice_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],

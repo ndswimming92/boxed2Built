@@ -30,12 +30,13 @@ const link = (id, name, sample) => ({ id, name, type: 'variable', props: { varia
 const TEMPLATES = [
   {
     secret: 'SENT_TEMPLATE_BOOKING_CONFIRMED',
-    template: `Boxed2Built: Hi {{0:variable}}, your {{1:variable}} is confirmed for {{2:variable}}. Booking ref: {{3:variable}}. Need to reschedule or have questions? ${CONTACT} ${STOP}`,
+    template: `Boxed2Built: Hi {{0:variable}}, your {{1:variable}} is confirmed for {{2:variable}}. Booking ref: {{3:variable}}. View your booking: {{4:variable}} Need to reschedule? Call (615) 403-4538. ${STOP}`,
     variables: [
       text(0, 'customerName', 'Jamie'),
       text(1, 'serviceName', 'Furniture Assembly'),
       text(2, 'appointmentTime', 'Saturday, October 25 at 10:00 AM'),
       text(3, 'bookingReference', 'BK-66BB65'),
+      link(4, 'bookingLink', 'https://boxed2built.com/lookup-request?code=BK-66BB65&email=jamie.smith%40gmail.com'),
     ],
   },
   {

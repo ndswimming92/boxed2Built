@@ -113,6 +113,17 @@ export function idempotencyKey(...parts: Array<string | number | null | undefine
     .slice(0, 255);
 }
 
+/**
+ * The site's request lookup page, opened with a booking's reference and the
+ * customer's email already filled in (it finds a BK- reference too). A missing
+ * email still gives a working link; the customer types it in.
+ */
+export function bookingLookupLink(siteUrl: string, reference: string, email?: string | null): string {
+  const base = siteUrl.replace(/\/+$/, '');
+  const emailPart = email?.trim() ? `&email=${encodeURIComponent(email.trim().toLowerCase())}` : '';
+  return `${base}/lookup-request?code=${encodeURIComponent(reference.trim().toUpperCase())}${emailPart}`;
+}
+
 /** "Saturday, October 25" + " at 10:00 AM" when there is a time. */
 export function describeAppointment(dateLabel: string, timeLabel: string | null | undefined): string {
   return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;
