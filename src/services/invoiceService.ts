@@ -300,14 +300,22 @@ export async function getInvoice(invoiceId: string): Promise<InvoiceWithDetails 
   };
 }
 
-export async function getAllInvoices(businessId: string): Promise<Invoice[]> {
-  const { data, error } = await supabase
+/** Test invoices are left out unless asked for, so no total can include one. */
+export async function getAllInvoices(
+  businessId: string,
+  options: { includeTest?: boolean } = {}
+): Promise<Invoice[]> {
+  let query = supabase
     .from('invoices')
     .select('*')
     .eq('business_id', businessId)
-    .eq('is_active', true)
-    .eq('is_test', false)
-    .order('created_at', { ascending: false });
+    .eq('is_active', true);
+
+  if (!options.includeTest) {
+    query = query.eq('is_test', false);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching invoices:', error);

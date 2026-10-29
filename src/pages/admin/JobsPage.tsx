@@ -64,8 +64,9 @@ export default function JobsPage() {
   const [businessInfo, setBusinessInfo] = useState<any>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<JobStatus | 'All'>('All');
+  const [statusFilter, setStatusFilter] = useState<JobStatus | 'All' | 'Test'>('All');
   const [locationFilter, setLocationFilter] = useState<string>('All');
+  const [testJobs, setTestJobs] = useState<Job[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<JobStats>({ totalJobs: 0, totalRevenue: 0, totalProfit: 0, avgHourlyRate: 0 });
   const [contractorTotals, setContractorTotals] = useState<Record<string, number>>({});
@@ -132,7 +133,7 @@ export default function JobsPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [jobs, searchTerm, statusFilter, locationFilter, showInactiveJobs, showMissingHoursOnly]);
+  }, [jobs, testJobs, searchTerm, statusFilter, locationFilter, showInactiveJobs, showMissingHoursOnly]);
 
   useEffect(() => {
     if (!createJobFromInvoice) {
@@ -169,14 +170,17 @@ export default function JobsPage() {
           .select('*')
           .eq('business_id', bizData.id)
           .eq('is_active', true)
-          .eq('is_test', false)
           .order('created_at', { ascending: false });
 
         if (data) {
-          setJobs(data);
+          // Test jobs live in their own list, so nothing that totals, exports or
+          // schedules jobs can pick one up.
+          const real = data.filter((job) => !job.is_test);
+          setJobs(real);
+          setTestJobs(data.filter((job) => job.is_test));
           const totals = await getJobContractorTotals(bizData.id);
           setContractorTotals(totals);
-          calculateStats(data, totals);
+          calculateStats(real, totals);
         }
       }
     } catch (error) {
@@ -207,9 +211,14 @@ export default function JobsPage() {
   };
 
   const applyFilters = () => {
-    let filtered = [...jobs];
+    const testOnly = statusFilter === 'Test';
+    // Test jobs are listed (newest first, badged) but kept out of `jobs`, which
+    // every total, export and schedule is built from.
+    let filtered = testOnly
+      ? [...testJobs]
+      : [...jobs, ...testJobs].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
 
-    if (!showInactiveJobs) {
+    if (!showInactiveJobs && !testOnly) {
       filtered = filtered.filter(job =>
         job.job_status !== 'lost' && job.job_status !== 'cancelled'
       );
@@ -227,7 +236,7 @@ export default function JobsPage() {
       );
     }
 
-    if (statusFilter !== 'All') {
+    if (statusFilter !== 'All' && !testOnly) {
       filtered = filtered.filter(job => job.job_status === statusFilter.toLowerCase());
     }
 
@@ -475,7 +484,7 @@ export default function JobsPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
                 <select name="statusFilter"
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as JobStatus | 'All')}
+                  onChange={(e) => setStatusFilter(e.target.value as JobStatus | 'All' | 'Test')}
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="All">All Statuses</option>
@@ -484,6 +493,7 @@ export default function JobsPage() {
                   <option value="Scheduled">Scheduled</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
+                  <option value="Test">Test</option>
                   {showInactiveJobs && (
                     <>
                       <option value="Lost">Lost</option>
@@ -585,6 +595,9 @@ export default function JobsPage() {
                       <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusColor}`}>
                         {statusLabel}
                       </span>
+                      {job.is_test && (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300">TEST</span>
+                      )}
                       {job.job_status === 'lost' && job.lost_reason_category && (
                         <span className="px-3 py-1 text-xs rounded-full border bg-gray-100 text-gray-700 border-gray-200 flex items-center gap-1" title={job.lost_reason_notes || job.lost_reason_category}>
                           <Info className="w-3 h-3" />

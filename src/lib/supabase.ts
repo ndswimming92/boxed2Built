@@ -272,6 +272,7 @@ export type Job = {
   /** The public booking this job came from, if any. */
   booking_id: string | null;
   is_active: boolean;
+  is_test?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -611,6 +612,7 @@ export type Invoice = {
   // A link built without it does not match the route and 404s.
   payment_access_token: string;
   is_active: boolean;
+  is_test?: boolean;
   created_at: string;
   updated_at: string;
 };
