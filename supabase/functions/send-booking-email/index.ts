@@ -9,7 +9,7 @@ import {
   zonedToUtc,
 } from '../_shared/ics.ts';
 import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
-import { describeAppointment, idempotencyKey } from '../_shared/smsConsent.ts';
+import { bookingLookupLink, describeAppointment, idempotencyKey } from '../_shared/smsConsent.ts';
 
 /**
  * Booking notifications: the owner hears about a new request, the customer
@@ -294,6 +294,7 @@ Deno.serve(async (req: Request) => {
         serviceName: booking.service_name?.trim() || 'furniture assembly',
         appointmentTime: describeAppointment(formatLongDate(booking.booking_date), formatTime(booking.start_time)),
         bookingReference: booking.reference,
+        bookingLink: bookingLookupLink(SITE_URL, booking.reference, booking.customer_email),
       },
       idempotencyKey: idempotencyKey('booking', booking.id, booking.booking_date, booking.start_time),
       context: { bookingId: booking.id, reference: booking.reference },

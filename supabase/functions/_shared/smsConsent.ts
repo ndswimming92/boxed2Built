@@ -17,6 +17,8 @@
 export interface ConsentLogRow {
   event_type: 'opt_in' | 'opt_out' | string;
   service_texts: boolean | null;
+  /** The promotional box. Only consulted for promotional texts; absent rows count as unticked. */
+  marketing_texts?: boolean | null;
   /** When the person agreed, if the row carries it; otherwise when it was logged. */
   consent_given_at: string | null;
   created_at: string;
@@ -36,13 +38,18 @@ const time = (iso: string | null | undefined): number => {
   return Number.isFinite(ms) ? ms : NaN;
 };
 
+export type ConsentKind = 'service' | 'marketing';
+
 /**
- * Whether a number may get service texts (confirmations, reminders, quotes,
- * invoices). Marketing consent is a separate box and is not consulted here.
+ * Whether a number may get a text of this kind. Service texts (confirmations,
+ * reminders, quotes, invoices) need the service box; promotional texts (offers,
+ * and the referral code that carries a discount) need the separate promotional
+ * box, and a service opt-in alone never covers them. A STOP ends both.
  */
 export function decideSmsConsent(
   log: ConsentLogRow[],
   keywordStatus: KeywordStatusRow[],
+  kind: ConsentKind = 'service',
 ): ConsentDecision {
   let lastOptIn = NaN;
   let lastOptOut = NaN;
@@ -50,7 +57,8 @@ export function decideSmsConsent(
   for (const row of log) {
     const at = time(row.consent_given_at) || time(row.created_at);
     if (!Number.isFinite(at)) continue;
-    if (row.event_type === 'opt_in' && row.service_texts === true) {
+    const agreed = kind === 'marketing' ? row.marketing_texts === true : row.service_texts === true;
+    if (row.event_type === 'opt_in' && agreed) {
       lastOptIn = Number.isFinite(lastOptIn) ? Math.max(lastOptIn, at) : at;
     } else if (row.event_type === 'opt_out') {
       lastOptOut = Number.isFinite(lastOptOut) ? Math.max(lastOptOut, at) : at;
@@ -76,6 +84,18 @@ export function decideSmsConsent(
     return { allowed: false, reason: 'opted_out' };
   }
   return { allowed: true };
+}
+
+/**
+ * Whether it is a reasonable hour to text someone: from `startHour` up to, not
+ * including, `endHour` in the business's own time zone (8am to 9pm by default,
+ * the window the rules for promotional texts allow).
+ */
+export function withinTextingHours(now: Date, timeZone: string, startHour = 8, endHour = 21): boolean {
+  const hour = Number(
+    new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', hourCycle: 'h23' }).format(now),
+  );
+  return hour >= startHour && hour < endHour;
 }
 
 /** "(615) 403-4538", "615.403.4538", "+1 615 403 4538" -> "+16154034538". US numbers only. */
@@ -111,6 +131,17 @@ export function idempotencyKey(...parts: Array<string | number | null | undefine
     .map((part) => String(part).replace(/[^A-Za-z0-9_-]+/g, '-'))
     .join('_')
     .slice(0, 255);
+}
+
+/**
+ * The site's request lookup page, opened with a booking's reference and the
+ * customer's email already filled in (it finds a BK- reference too). A missing
+ * email still gives a working link; the customer types it in.
+ */
+export function bookingLookupLink(siteUrl: string, reference: string, email?: string | null): string {
+  const base = siteUrl.replace(/\/+$/, '');
+  const emailPart = email?.trim() ? `&email=${encodeURIComponent(email.trim().toLowerCase())}` : '';
+  return `${base}/lookup-request?code=${encodeURIComponent(reference.trim().toUpperCase())}${emailPart}`;
 }
 
 /** "Saturday, October 25" + " at 10:00 AM" when there is a time. */
