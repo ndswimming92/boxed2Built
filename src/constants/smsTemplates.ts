@@ -147,7 +147,8 @@ export function findNonGsmCharacters(text: string): string[] {
 export function countSegments(text: string): { length: number; segments: number; unicode: boolean } {
   const unicode = findNonGsmCharacters(text).length > 0;
   if (unicode) {
-    const length = [...text].length;
+    // Unicode SMS counts UTF-16 units, so an emoji is two; string length counts exactly that.
+    const length = text.length;
     return { length, segments: length <= 70 ? 1 : Math.ceil(length / 67), unicode };
   }
   const length = [...text].reduce((total, ch) => total + (GSM_DOUBLE.has(ch) ? 2 : 1), 0);

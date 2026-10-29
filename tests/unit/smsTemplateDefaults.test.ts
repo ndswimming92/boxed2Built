@@ -67,6 +67,8 @@ test('countSegments follows the 160 and 153 rule, and the 70 and 67 rule for spe
   assert.equal(countSegments('a'.repeat(307)).segments, 3);
   assert.deepEqual(countSegments(`${'a'.repeat(69)}’`), { length: 70, segments: 1, unicode: true });
   assert.equal(countSegments(`${'a'.repeat(70)}’`).segments, 2);
+  // An emoji is two UTF-16 units: 69 + 2 = 71, one over the single-segment limit.
+  assert.deepEqual(countSegments(`${'a'.repeat(69)}\u{1F600}`), { length: 71, segments: 2, unicode: true });
   // [ ] { } cost two characters each in the standard alphabet.
   assert.equal(countSegments(`${'a'.repeat(159)}[`).segments, 2);
 });
