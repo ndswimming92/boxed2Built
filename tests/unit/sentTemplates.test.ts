@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   type TemplateDraft,
   buildSentPayload,
+  normalizeApiKey,
   placeholderIds,
   validateTemplate,
 } from '../../supabase/functions/_shared/sentTemplates.ts';
@@ -89,4 +90,22 @@ test('the Sent payload matches what create-sent-templates.mjs sends', () => {
     type: 'variable',
     props: { variableType: 'text', sample: 'Saturday at 10:00 AM' },
   });
+});
+
+test('normalizeApiKey strips the slips that come from pasting a secret', () => {
+  assert.equal(normalizeApiKey('abc123'), 'abc123');
+  assert.equal(normalizeApiKey('  abc123\n'), 'abc123');
+  assert.equal(normalizeApiKey('"abc123"'), 'abc123');
+  assert.equal(normalizeApiKey("'abc123'"), 'abc123');
+  assert.equal(normalizeApiKey('Bearer abc123'), 'abc123');
+  assert.equal(normalizeApiKey(' " bearer  abc123 " '), 'abc123');
+  // Quotes that are part of the value, not a matching pair around it, are left alone.
+  assert.equal(normalizeApiKey('abc"123'), 'abc"123');
+});
+
+test('normalizeApiKey gives nothing for a missing or blank key', () => {
+  assert.equal(normalizeApiKey(undefined), undefined);
+  assert.equal(normalizeApiKey(null), undefined);
+  assert.equal(normalizeApiKey('   '), undefined);
+  assert.equal(normalizeApiKey('""'), undefined);
 });

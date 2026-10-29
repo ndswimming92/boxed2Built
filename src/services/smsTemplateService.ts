@@ -20,7 +20,11 @@ export interface SavedSmsTemplate {
 }
 
 export interface TemplatesResponse {
-  keyMode: 'live' | 'test' | 'missing' | 'unknown';
+  keyMode: 'test' | 'missing' | 'other';
+  /** Which Supabase secret the key came from; sent with every answer. */
+  keySource?: 'Sent_API_Key' | 'SENT_DM_API_KEY' | null;
+  /** Whether Sent accepted the key; only a refresh asks, so a submit leaves it out. */
+  keyCheck?: 'accepted' | 'rejected' | 'unverified' | null;
   refreshError?: string | null;
   templates: SavedSmsTemplate[];
   sent_template_id?: string;

@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
-import { sentApiKey } from '../_shared/sentApiKey.ts';
+import { sentApiKeyInfo } from '../_shared/sentApiKey.ts';
 import {
   type TemplateCategory,
   type TemplateVariable,
@@ -19,9 +19,10 @@ import {
  *   POST { action: 'refresh' }
  *        asks Sent for the current review status of every recorded template.
  *
- * Both answer { keyMode, templates } so the page can warn when the key is
- * still a test key. Uses the same Sent API key secret the texting code uses
- * (see sentApiKey.ts). Platform admins only.
+ * Both answer { keyMode, keySource, templates }; a refresh also asks Sent
+ * whether it accepts the key (keyCheck), so the page can say so instead of
+ * guessing from how the key starts. Uses the same Sent API key secret the
+ * texting code uses (see sentApiKey.ts). Platform admins only.
  */
 
 const corsHeaders = {
@@ -52,8 +53,22 @@ function describeError(body: unknown, status: number): string {
   return `Sent refused it (HTTP ${status}).`;
 }
 
+// Only a test key is recognisable by its start; anything else is judged by whether Sent accepts it.
 const keyMode = (apiKey: string | undefined) =>
-  !apiKey ? 'missing' : apiKey.startsWith('sk_live_') ? 'live' : apiKey.startsWith('sk_test_') ? 'test' : 'unknown';
+  !apiKey ? 'missing' : apiKey.startsWith('sk_test_') ? 'test' : 'other';
+
+type KeyCheck = 'accepted' | 'rejected' | 'unverified';
+
+/** Asks Sent whether it accepts the key, by reading one page of templates. */
+async function checkKey(apiKey: string): Promise<KeyCheck> {
+  try {
+    const response = await fetch(`${SENT_TEMPLATES_URL}?pageSize=1`, { headers: sentHeaders(apiKey) });
+    if (response.ok) return 'accepted';
+    return response.status === 401 || response.status === 403 ? 'rejected' : 'unverified';
+  } catch {
+    return 'unverified';
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
@@ -69,7 +84,7 @@ Deno.serve(async (req) => {
     return json({ success: false, error: 'Invalid JSON' }, 400);
   }
 
-  const apiKey = sentApiKey();
+  const { key: apiKey, source: keySource } = sentApiKeyInfo();
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const listTemplates = async () => {
@@ -146,8 +161,10 @@ Deno.serve(async (req) => {
     if (body.action === 'refresh') {
       let templates = await listTemplates();
       let refreshError: string | null = null;
+      let keyCheck: KeyCheck | null = null;
 
       if (apiKey) {
+        const keyResult = checkKey(apiKey);
         await Promise.all(
           templates.map(async (t) => {
             try {
@@ -171,10 +188,14 @@ Deno.serve(async (req) => {
             }
           }),
         );
+        keyCheck = await keyResult;
         templates = await listTemplates();
       }
 
-      return json({ success: true, keyMode: keyMode(apiKey), refreshError, templates });
+      // A refused key explains every per-template failure, so the page says it once, on its key notice.
+      if (keyCheck === 'rejected') refreshError = null;
+
+      return json({ success: true, keyMode: keyMode(apiKey), keySource, keyCheck, refreshError, templates });
     }
 
     return json({ success: false, error: 'Unsupported action' }, 400);

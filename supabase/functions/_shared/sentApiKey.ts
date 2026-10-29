@@ -1,8 +1,16 @@
+import { normalizeApiKey } from './sentTemplates.ts';
+
 /**
- * The Sent (sent.dm) API key from the Supabase secrets. The canonical name is
- * SENT_DM_API_KEY; the key was also stored as Sent_API_Key, and secret names are
- * case-sensitive, so either one is accepted.
+ * The Sent (sent.dm) API key from the Supabase secrets. The key is stored as
+ * Sent_API_Key; SENT_DM_API_KEY is the older name, so either is accepted. Secret
+ * names are case-sensitive, and Sent_API_Key wins when both are set so a stale
+ * value under the old name cannot hide the live key.
  */
-export function sentApiKey(): string | undefined {
-  return Deno.env.get('SENT_DM_API_KEY')?.trim() || Deno.env.get('Sent_API_Key')?.trim() || undefined;
+export function sentApiKeyInfo(): { key: string | undefined; source: 'Sent_API_Key' | 'SENT_DM_API_KEY' | null } {
+  const preferred = normalizeApiKey(Deno.env.get('Sent_API_Key'));
+  if (preferred) return { key: preferred, source: 'Sent_API_Key' };
+  const legacy = normalizeApiKey(Deno.env.get('SENT_DM_API_KEY'));
+  return legacy ? { key: legacy, source: 'SENT_DM_API_KEY' } : { key: undefined, source: null };
 }
+
+export const sentApiKey = (): string | undefined => sentApiKeyInfo().key;

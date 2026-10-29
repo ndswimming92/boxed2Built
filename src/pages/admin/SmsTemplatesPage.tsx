@@ -35,6 +35,8 @@ export default function SmsTemplatesPage() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>(initialDrafts);
   const [saved, setSaved] = useState<SavedSmsTemplate[]>([]);
   const [keyMode, setKeyMode] = useState<TemplatesResponse['keyMode'] | null>(null);
+  const [keySource, setKeySource] = useState<TemplatesResponse['keySource']>(null);
+  const [keyCheck, setKeyCheck] = useState<TemplatesResponse['keyCheck']>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -44,7 +46,34 @@ export default function SmsTemplatesPage() {
   const apply = (response: TemplatesResponse) => {
     setSaved(response.templates);
     setKeyMode(response.keyMode);
+    if (response.keySource !== undefined) setKeySource(response.keySource);
+    if (response.keyCheck !== undefined) setKeyCheck(response.keyCheck);
   };
+
+  // What the page can honestly say about the Sent API key: only a test key is told by its start,
+  // so anything else is judged by whether Sent itself accepted it.
+  const keyNotice = ((): { tone: 'warn' | 'ok'; text: string } | null => {
+    if (keyMode === 'missing') {
+      return { tone: 'warn', text: 'The Sent API key is not set in Supabase (Sent_API_Key), so nothing can be submitted yet.' };
+    }
+    if (keyCheck === 'rejected') {
+      return {
+        tone: 'warn',
+        text: `Sent did not accept the API key stored as ${keySource}. Create a new key in the Sent dashboard, save it in Supabase as Sent_API_Key, then refresh this page.`,
+      };
+    }
+    if (keyMode === 'test') {
+      return { tone: 'warn', text: 'The Sent API key is a test key (it starts with sk_test_). Templates made with it are not real. Use your live key.' };
+    }
+    if (keyCheck === 'unverified') {
+      return {
+        tone: 'warn',
+        text: `Could not confirm with Sent that the API key stored as ${keySource} works. You can still submit; Sent will say if it refuses the key.`,
+      };
+    }
+    if (keyCheck === 'accepted') return { tone: 'ok', text: `Connected to Sent. Using the API key stored as ${keySource}.` };
+    return null;
+  })();
 
   const refresh = async () => {
     setRefreshing(true);
@@ -144,16 +173,18 @@ export default function SmsTemplatesPage() {
         </div>
       )}
 
-      {keyMode && keyMode !== 'live' && (
-        <div className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-amber-50 border border-amber-200">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-900">
-            {keyMode === 'missing'
-              ? 'The Sent API key is not set in Supabase, so nothing can be submitted yet.'
-              : keyMode === 'test'
-                ? 'The Sent API key is still a test key (sk_test_). Templates made with it are not real. Switch it to your live key once the campaign is approved.'
-                : 'The Sent API key does not start with sk_live_ or sk_test_. Check the secret in Supabase.'}
-          </p>
+      {keyNotice && (
+        <div
+          className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+            keyNotice.tone === 'ok' ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'
+          }`}
+        >
+          {keyNotice.tone === 'ok' ? (
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          )}
+          <p className={`text-sm ${keyNotice.tone === 'ok' ? 'text-emerald-800' : 'text-amber-900'}`}>{keyNotice.text}</p>
         </div>
       )}
 
