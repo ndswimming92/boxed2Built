@@ -46,6 +46,15 @@ test('a marker with no defined variable, and a variable never used, are both cau
   assert.ok(problems.some((p) => p.startsWith('Variable 1 is defined')));
 });
 
+test('a curly apostrophe, long dash or emoji is refused, a plain one is not', () => {
+  const curly = validateTemplate(
+    draft({ body: 'Boxed2Built: Hi {{0:variable}}, you’re confirmed for {{1:variable}}. Reply STOP to opt out.' }),
+  );
+  assert.equal(curly.length, 1);
+  assert.match(curly[0], /standard SMS alphabet/);
+  assert.deepEqual(validateTemplate(draft()), []);
+});
+
 test('a variable used twice is refused', () => {
   const problems = validateTemplate(
     draft({ body: 'Boxed2Built: {{0:variable}} {{0:variable}} {{1:variable}} Reply STOP to opt out.' }),

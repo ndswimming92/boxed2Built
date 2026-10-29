@@ -5,6 +5,7 @@ import {
   TEMPLATE_DEFAULTS,
   type TemplateDefault,
   type TemplateVariable,
+  countSegments,
   renderPreview,
   validateTemplate,
 } from '../../constants/smsTemplates';
@@ -148,10 +149,10 @@ export default function SmsTemplatesPage() {
           <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-sm text-amber-900">
             {keyMode === 'missing'
-              ? 'SENT_DM_API_KEY is not set in Supabase, so nothing can be submitted yet.'
+              ? 'The Sent API key is not set in Supabase, so nothing can be submitted yet.'
               : keyMode === 'test'
-                ? 'SENT_DM_API_KEY is still a test key (sk_test_). Templates made with it are not real. Switch it to your live key once the campaign is approved.'
-                : 'SENT_DM_API_KEY does not look like a Sent key. Check the secret in Supabase.'}
+                ? 'The Sent API key is still a test key (sk_test_). Templates made with it are not real. Switch it to your live key once the campaign is approved.'
+                : 'The Sent API key does not start with sk_live_ or sk_test_. Check the secret in Supabase.'}
           </p>
         </div>
       )}
@@ -160,6 +161,7 @@ export default function SmsTemplatesPage() {
         {TEMPLATE_DEFAULTS.map((template) => {
           const draft = drafts[template.key];
           const problems = validateTemplate(draft.body, draft.variables);
+          const estimate = countSegments(renderPreview(draft.body, draft.variables));
           const alreadySubmitted = saved.some((s) => s.secret_name === template.secret);
           const edited =
             draft.body !== template.body ||
@@ -225,6 +227,12 @@ export default function SmsTemplatesPage() {
               <div className="mt-4 rounded-lg bg-slate-50 border border-slate-200 p-3">
                 <p className="text-xs font-medium text-slate-500 mb-1">Preview</p>
                 <p className="text-sm text-slate-900 whitespace-pre-wrap">{renderPreview(draft.body, draft.variables)}</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  {estimate.length} characters with these samples, about {estimate.segments} text segment
+                  {estimate.segments === 1 ? '' : 's'} per customer
+                  {estimate.unicode ? ' (special characters make each segment shorter)' : ''}. Real names, addresses and links vary,
+                  so edit the samples to test a long one.
+                </p>
               </div>
 
               {problems.length > 0 && (

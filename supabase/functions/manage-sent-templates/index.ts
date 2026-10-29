@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import { sentApiKey } from '../_shared/sentApiKey.ts';
 import {
   type TemplateCategory,
   type TemplateVariable,
@@ -19,8 +20,8 @@ import {
  *        asks Sent for the current review status of every recorded template.
  *
  * Both answer { keyMode, templates } so the page can warn when the key is
- * still a test key. Uses SENT_DM_API_KEY, the same secret the texting code
- * uses. Platform admins only.
+ * still a test key. Uses the same Sent API key secret the texting code uses
+ * (see sentApiKey.ts). Platform admins only.
  */
 
 const corsHeaders = {
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
     return json({ success: false, error: 'Invalid JSON' }, 400);
   }
 
-  const apiKey = Deno.env.get('SENT_DM_API_KEY')?.trim();
+  const apiKey = sentApiKey();
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const listTemplates = async () => {
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
 
   try {
     if (body.action === 'submit') {
-      if (!apiKey) return json({ success: false, error: 'SENT_DM_API_KEY is not set in Supabase secrets.' }, 400);
+      if (!apiKey) return json({ success: false, error: 'The Sent API key is not set in Supabase secrets (SENT_DM_API_KEY or Sent_API_Key).' }, 400);
 
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 100) : '';
       const category: TemplateCategory | null =

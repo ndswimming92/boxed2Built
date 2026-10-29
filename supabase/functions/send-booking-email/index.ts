@@ -291,7 +291,9 @@ Deno.serve(async (req: Request) => {
       phone: booking.customer_phone,
       parameters: {
         customerName: booking.customer_name.trim().split(/\s+/)[0] || 'there',
+        serviceName: booking.service_name?.trim() || 'furniture assembly',
         appointmentTime: describeAppointment(formatLongDate(booking.booking_date), formatTime(booking.start_time)),
+        bookingReference: booking.reference,
       },
       idempotencyKey: idempotencyKey('booking', booking.id, booking.booking_date, booking.start_time),
       context: { bookingId: booking.id, reference: booking.reference },

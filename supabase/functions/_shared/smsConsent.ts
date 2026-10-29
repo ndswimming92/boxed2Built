@@ -95,11 +95,13 @@ export function phoneDigits(e164: string): string {
 
 /**
  * A template value Sent will accept: no newlines or tabs, no runs of spaces
- * (VALIDATION_008), and short enough not to blow up the SMS segment count.
+ * (VALIDATION_008), and short enough not to blow up the SMS segment count. A cut
+ * value ends in three plain dots: a single "…" is outside the standard SMS
+ * alphabet and would make the whole message bill at 70 characters a segment.
  */
 export function smsValue(value: string | null | undefined, maxLength = 120): string {
   const flat = (value ?? '').replace(/\s+/g, ' ').trim();
-  return flat.length > maxLength ? `${flat.slice(0, maxLength - 1).trimEnd()}…` : flat;
+  return flat.length > maxLength ? `${flat.slice(0, maxLength - 3).trimEnd()}...` : flat;
 }
 
 /** Sent ignores an Idempotency-Key with other characters or over 255 long. */

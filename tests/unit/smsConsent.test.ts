@@ -118,7 +118,7 @@ test('phoneDigits matches the ten digits consent rows are keyed on', () => {
 test('smsValue removes what Sent rejects and caps length', () => {
   assert.equal(smsValue('123 Main St\nApt 4\t  Spring Hill'), '123 Main St Apt 4 Spring Hill');
   assert.equal(smsValue(null), '');
-  assert.equal(smsValue('x'.repeat(200), 10), `${'x'.repeat(9)}…`);
+  assert.equal(smsValue('x'.repeat(200), 10), `${'x'.repeat(7)}...`);
 });
 
 test('idempotencyKey keeps only characters Sent accepts', () => {
