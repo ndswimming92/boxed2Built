@@ -17,8 +17,8 @@ import {
  * record (see smsConsent.ts).
  *
  * Configuration (Supabase -> Edge Functions -> Secrets):
- *   SENT_DM_API_KEY          sk_test_... for now, sk_live_... once the campaign is approved
- *                            (a secret named Sent_API_Key works too; see sentApiKey.ts)
+ *   Sent_API_Key             the live API key (the older name SENT_DM_API_KEY still works;
+ *                            see sentApiKey.ts)
  *   SENT_SMS_LIVE            "true" to really send; anything else sends in sandbox mode,
  *                            which Sent validates and answers but never delivers
  *   SENT_TEMPLATE_*          the template ID for each purpose (see TEMPLATE_ENV)

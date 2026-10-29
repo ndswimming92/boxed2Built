@@ -25,6 +25,18 @@ export interface TemplateDraft {
 
 export const MAX_BODY_LENGTH = 600;
 
+/**
+ * An API key as pasted into a secret: surrounding spaces, a pair of quotes, or a
+ * "Bearer " prefix are common slips that make Sent refuse an otherwise good key.
+ */
+export function normalizeApiKey(raw: string | null | undefined): string | undefined {
+  let key = (raw ?? '').trim();
+  const quoted = /^(["'`])(.*)\1$/s.exec(key);
+  if (quoted) key = quoted[2].trim();
+  key = key.replace(/^bearer\s+/i, '').trim();
+  return key || undefined;
+}
+
 const PLACEHOLDER = /\{\{(\d+):variable\}\}/g;
 
 /** Variable positions used in the body, in order of appearance. */
