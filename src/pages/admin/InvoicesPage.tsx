@@ -139,6 +139,8 @@ export default function InvoicesPage() {
           invoiceId: invoice.id,
           sourceInvoiceNumber: invoice.invoice_number,
           initialData: {
+            // A job made from a test invoice is a test job too.
+            ...(invoice.is_test ? { is_test: true } : {}),
             client_id: invoice.client_id,
             client_name: invoice.client_name,
             client_email: invoice.client_email || '',

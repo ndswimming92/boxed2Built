@@ -207,6 +207,14 @@ export async function updateInvoiceSettings(
   return data;
 }
 
+async function isTestSource(jobId?: string | null, inquiryId?: string | null): Promise<boolean> {
+  const [job, inquiry] = await Promise.all([
+    jobId ? supabase.from('jobs').select('is_test').eq('id', jobId).maybeSingle() : null,
+    inquiryId ? supabase.from('form_inquiries').select('is_test').eq('id', inquiryId).maybeSingle() : null,
+  ]);
+  return job?.data?.is_test === true || inquiry?.data?.is_test === true;
+}
+
 export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
   const invoiceNumber = await generateInvoiceNumber(data.business_id);
   const organizationId = await getBusinessOrganizationId(data.business_id);
@@ -216,11 +224,16 @@ export async function createInvoice(data: CreateInvoiceData): Promise<Invoice> {
 
   const { customer_id, client_id } = await resolveCustomerAndClientIds(organizationId, data.client_email);
 
+  // An invoice made from a test job or inquiry is a test too, so it stays out of
+  // the totals and is swept up by the test clean-up.
+  const isTest = await isTestSource(data.job_id, data.inquiry_id);
+
   const { data: invoice, error } = await supabase
     .from('invoices')
     .insert({
       organization_id: organizationId,
       business_id: data.business_id,
+      is_test: isTest,
       inquiry_id: data.inquiry_id || null,
       job_id: data.job_id || null,
       invoice_number: invoiceNumber,
