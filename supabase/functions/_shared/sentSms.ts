@@ -1,5 +1,6 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import {
+  type ConsentKind,
   type ConsentLogRow,
   type KeywordStatusRow,
   decideSmsConsent,
@@ -13,8 +14,8 @@ import {
  *
  * Every text rides alongside an email that already went out, so this never
  * throws: a text that cannot go is reported in the outcome and logged, and the
- * caller carries on. Nothing is sent to a number without a service opt-in on
- * record (see smsConsent.ts).
+ * caller carries on. Nothing is sent to a number without the opt-in its kind
+ * needs on record, the service box or the promotional box (see smsConsent.ts).
  *
  * Configuration (Supabase -> Edge Functions -> Secrets):
  *   Sent_API_Key             the live API key (the older name SENT_DM_API_KEY still works;
@@ -26,13 +27,26 @@ import {
  * one at a time.
  */
 
-export type SmsPurpose = 'booking_confirmed' | 'job_reminder' | 'quote_ready' | 'invoice_ready';
+export type SmsPurpose = 'booking_confirmed' | 'job_reminder' | 'quote_ready' | 'invoice_ready' | 'job_followup';
 
 const TEMPLATE_ENV: Record<SmsPurpose, string> = {
   booking_confirmed: 'SENT_TEMPLATE_BOOKING_CONFIRMED',
   job_reminder: 'SENT_TEMPLATE_JOB_REMINDER',
   quote_ready: 'SENT_TEMPLATE_QUOTE_READY',
   invoice_ready: 'SENT_TEMPLATE_INVOICE_READY',
+  job_followup: 'SENT_TEMPLATE_JOB_FOLLOWUP',
+};
+
+/**
+ * Which consent box a purpose needs. The post-job text carries the referral
+ * code, a $25-off offer, so it is promotional and needs the promotional box.
+ */
+const PURPOSE_CONSENT: Record<SmsPurpose, ConsentKind> = {
+  booking_confirmed: 'service',
+  job_reminder: 'service',
+  quote_ready: 'service',
+  invoice_ready: 'service',
+  job_followup: 'marketing',
 };
 
 export type SmsSkipReason =
@@ -81,7 +95,7 @@ export async function sendCustomerSms(admin: SupabaseClient, request: SmsRequest
     const [logResult, statusResult] = await Promise.all([
       admin
         .from('sms_consent_log')
-        .select('event_type, service_texts, consent_given_at, created_at')
+        .select('event_type, service_texts, marketing_texts, consent_given_at, created_at')
         .eq('phone_digits', digits)
         .returns<ConsentLogRow[]>(),
       admin
@@ -95,7 +109,7 @@ export async function sendCustomerSms(admin: SupabaseClient, request: SmsRequest
       return { sent: false, reason: 'consent_lookup_failed' };
     }
 
-    const consent = decideSmsConsent(logResult.data ?? [], statusResult.data ?? []);
+    const consent = decideSmsConsent(logResult.data ?? [], statusResult.data ?? [], PURPOSE_CONSENT[request.purpose]);
     if (!consent.allowed) return { sent: false, reason: consent.reason };
 
     const sandbox = Deno.env.get('SENT_SMS_LIVE')?.trim().toLowerCase() !== 'true';

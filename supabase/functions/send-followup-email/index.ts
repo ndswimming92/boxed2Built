@@ -2,6 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
 import { decideFollowup, isSendableEmail, type FollowupSkipReason } from '../_shared/customerFollowup.ts';
+import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
+import { idempotencyKey, withinTextingHours } from '../_shared/smsConsent.ts';
 
 /**
  * The post-job thank-you: a Google review ask, a way back to a quote, and the
@@ -23,6 +25,13 @@ import { decideFollowup, isSendableEmail, type FollowupSkipReason } from '../_sh
  *   third party. A test leaves the job's markers alone, so the client is
  *   still owed theirs.
  * POST {"dryRun": true} renders everything and sends nothing.
+ *
+ * A text goes with the email: the same thank-you in short, with the Google
+ * review link and the referral code. It carries a $25-off offer, so it goes only
+ * to a number that ticked the promotional box (see sentSms.ts), only between 8am
+ * and 9pm in the business's time zone, and only the first time a job date's
+ * follow-up goes out, so a resend from the job card never texts twice. A test
+ * send or a dry run never texts.
  */
 
 const corsHeaders = {
@@ -73,6 +82,7 @@ interface JobRow {
   client_id: string | null;
   client_name: string | null;
   client_email: string | null;
+  client_phone: string | null;
   job_status: string | null;
   is_active: boolean;
   date_scheduled: string | null;
@@ -84,7 +94,7 @@ interface JobRow {
 }
 
 const JOB_COLUMNS =
-  'id, business_id, client_id, client_name, client_email, job_status, is_active, ' +
+  'id, business_id, client_id, client_name, client_email, client_phone, job_status, is_active, ' +
   'date_scheduled, scheduled_end_time, follow_up_for_date, follow_up_for_end_time, follow_up_sent_at, ' +
   'follow_up_cancelled_at';
 
@@ -124,6 +134,8 @@ interface SendOutcome {
   reason?: FollowupSkipReason | 'send_failed' | 'dry_run';
   to?: string;
   subject?: string;
+  /** What happened to the text that rides on a real send; absent when none was tried. */
+  sms?: SmsOutcome | { sent: false; reason: 'resend' | 'no_referral_code' | 'outside_hours' };
 }
 
 function json(body: unknown, status = 200): Response {
@@ -305,6 +317,35 @@ async function loadReferralCode(supabase: SupabaseClient, clientId: string | nul
     .eq('id', clientId)
     .maybeSingle<{ referral_code: string | null }>();
   return data?.referral_code ?? null;
+}
+
+/**
+ * The text that goes with the email. Every skip is reported in the outcome so a
+ * missing text can be explained; a text that cannot go never fails the email.
+ */
+async function textFollowup(
+  supabase: SupabaseClient,
+  job: JobRow,
+  referralCode: string | null,
+  timeZone: string,
+  now: Date,
+  firstFollowup: boolean,
+): Promise<NonNullable<SendOutcome['sms']>> {
+  if (!firstFollowup) return { sent: false, reason: 'resend' };
+  if (!referralCode) return { sent: false, reason: 'no_referral_code' };
+  if (!withinTextingHours(now, timeZone)) return { sent: false, reason: 'outside_hours' };
+
+  return sendCustomerSms(supabase, {
+    purpose: 'job_followup',
+    phone: job.client_phone,
+    parameters: {
+      customerName: (job.client_name ?? '').trim().split(/\s+/)[0] || 'there',
+      reviewLink: REVIEW_URL,
+      referralCode,
+    },
+    idempotencyKey: idempotencyKey('followup', job.id, job.date_scheduled, job.scheduled_end_time),
+    context: { jobId: job.id },
+  });
 }
 
 async function sendFollowup(
@@ -548,16 +589,28 @@ Deno.serve(async (req: Request) => {
     }
 
     const referralCode = await loadReferralCode(supabase, job.client_id);
-    outcomes.push(
-      await sendFollowup(
-        supabase,
-        job,
-        referralCode,
-        now,
-        payload.dryRun === true,
-        payload.test ? auth.user!.email! : undefined,
-      ),
+
+    // Read before sending: the send advances these markers. A follow-up for a
+    // date and end time that never had one is the one that gets the text.
+    const firstFollowup =
+      job.follow_up_sent_at === null ||
+      job.follow_up_for_date !== job.date_scheduled ||
+      job.follow_up_for_end_time !== job.scheduled_end_time;
+
+    const outcome = await sendFollowup(
+      supabase,
+      job,
+      referralCode,
+      now,
+      payload.dryRun === true,
+      payload.test ? auth.user!.email! : undefined,
     );
+
+    // A test copy goes to the admin and a dry run sends nothing, so neither texts a client.
+    if (outcome.sent && !payload.test && !payload.dryRun) {
+      outcome.sms = await textFollowup(supabase, job, referralCode, timeZone, now, firstFollowup);
+    }
+    outcomes.push(outcome);
   }
 
   const sent = outcomes.filter((outcome) => outcome.sent).length;

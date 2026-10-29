@@ -114,6 +114,21 @@ export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
     wiredToSender: true,
   },
   {
+    key: 'job_followup',
+    label: 'Job follow-up',
+    description:
+      'Sent with the post-job thank-you email: the Google review link and the customer\'s referral code ($25 off for both). Only customers who ticked the promotional box get it, and only between 8am and 9pm.',
+    secret: 'SENT_TEMPLATE_JOB_FOLLOWUP',
+    category: 'MARKETING',
+    body: `Boxed2Built: Thanks for choosing us, {{0:variable}}! If we earned it, a quick Google review means a lot: {{1:variable}} Know someone who needs a hand? Share your code {{2:variable}} and you both get $25 off. Msg&data rates may apply. ${STOP}`,
+    variables: [
+      text(0, 'customerName', 'Jamie'),
+      link(1, 'reviewLink', 'https://g.page/r/CW-qaf93r1ZuEAI/review'),
+      text(2, 'referralCode', 'B2B-TANIA-54E6'),
+    ],
+    wiredToSender: true,
+  },
+  {
     key: 'promotion',
     label: 'Promotion',
     description: 'A starter for offers and discounts. Only customers who ticked the promotional box may receive it.',

@@ -17,6 +17,7 @@ const SENDER_PARAMETERS: Record<string, string[]> = {
   job_reminder: ['customerName', 'appointmentTime', 'serviceName', 'serviceAddress'],
   quote_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
   invoice_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
+  job_followup: ['customerName', 'reviewLink', 'referralCode'],
 };
 
 for (const template of TEMPLATE_DEFAULTS) {
@@ -34,10 +35,14 @@ for (const template of TEMPLATE_DEFAULTS) {
     assert.ok(segments <= 2, `${template.key} would bill ${segments} segments`);
   });
 
-  test(`${template.key}: names the business, the way to opt out and a phone number`, () => {
+  test(`${template.key}: names the business and the way to opt out`, () => {
     assert.match(template.body, /^Boxed2Built: /);
     assert.match(template.body, /Reply STOP to opt out\./);
-    assert.match(template.body, /\(615\) 403-4538/);
+  });
+
+  test(`${template.key}: ${template.category === 'UTILITY' ? 'gives a phone number' : 'says message and data rates may apply'}`, () => {
+    if (template.category === 'UTILITY') assert.match(template.body, /\(615\) 403-4538/);
+    else assert.match(template.body, /Msg&data rates may apply\./);
   });
 
   test(`${template.key}: variables are numbered in the order they appear`, () => {
@@ -54,10 +59,19 @@ for (const [key, names] of Object.entries(SENDER_PARAMETERS)) {
   });
 }
 
-test('the promotion is marketing and says message and data rates may apply', () => {
-  const promotion = TEMPLATE_DEFAULTS.find((t) => t.key === 'promotion');
-  assert.equal(promotion?.category, 'MARKETING');
-  assert.match(promotion?.body ?? '', /Msg&data rates may apply\./);
+test('the promotion and the job follow-up are marketing; the rest are utility', () => {
+  const marketing = TEMPLATE_DEFAULTS.filter((t) => t.category === 'MARKETING').map((t) => t.key).sort();
+  assert.deepEqual(marketing, ['job_followup', 'promotion']);
+});
+
+test('the job follow-up carries the review link and the referral code', () => {
+  const followup = TEMPLATE_DEFAULTS.find((t) => t.key === 'job_followup');
+  assert.ok(followup);
+  const link = followup.variables.find((v) => v.name === 'reviewLink');
+  assert.equal(link?.variableType, 'link');
+  assert.match(link?.sample ?? '', /^https:\/\/g\.page\/r\//);
+  assert.ok(followup.variables.some((v) => v.name === 'referralCode'));
+  assert.match(followup.body, /\$25 off/);
 });
 
 test('countSegments follows the 160 and 153 rule, and the 70 and 67 rule for special characters', () => {

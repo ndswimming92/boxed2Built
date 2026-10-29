@@ -10,6 +10,7 @@ import {
   phoneDigits,
   smsValue,
   toUsE164,
+  withinTextingHours,
 } from '../../supabase/functions/_shared/smsConsent.ts';
 
 const optIn = (at: string, serviceTexts = true): ConsentLogRow => ({
@@ -151,4 +152,35 @@ test('bookingLookupLink opens the lookup page with the reference and email fille
 test('bookingLookupLink still works without an email', () => {
   assert.equal(bookingLookupLink('https://boxed2built.com', 'BK-66BB65', null), 'https://boxed2built.com/lookup-request?code=BK-66BB65');
   assert.equal(bookingLookupLink('https://boxed2built.com', 'BK-66BB65', '  '), 'https://boxed2built.com/lookup-request?code=BK-66BB65');
+});
+
+test('promotional texts need the promotional box; the service box alone does not cover them', () => {
+  const both: ConsentLogRow = { ...optIn('2026-10-01T12:00:00Z'), marketing_texts: true };
+  const serviceOnly = optIn('2026-10-01T12:00:00Z');
+  const marketingOnly: ConsentLogRow = { ...optIn('2026-10-01T12:00:00Z', false), marketing_texts: true };
+
+  assert.deepEqual(decideSmsConsent([both], [], 'marketing'), { allowed: true });
+  assert.deepEqual(decideSmsConsent([serviceOnly], [], 'marketing'), { allowed: false, reason: 'no_opt_in' });
+  assert.deepEqual(decideSmsConsent([marketingOnly], [], 'marketing'), { allowed: true });
+  // The promotional box does not stand in for the service box either.
+  assert.deepEqual(decideSmsConsent([marketingOnly], [], 'service'), { allowed: false, reason: 'no_opt_in' });
+  assert.deepEqual(decideSmsConsent([both], []), { allowed: true });
+});
+
+test('a later opt-out stops promotional texts too', () => {
+  const log: ConsentLogRow[] = [
+    { ...optIn('2026-10-01T12:00:00Z'), marketing_texts: true },
+    optOut('2026-10-05T12:00:00Z'),
+  ];
+  assert.deepEqual(decideSmsConsent(log, [], 'marketing'), { allowed: false, reason: 'opted_out' });
+});
+
+test('withinTextingHours is 8am up to 9pm in the business time zone', () => {
+  // 2026-10-29 is in daylight time: Chicago is UTC-5.
+  const at = (utc: string) => withinTextingHours(new Date(utc), 'America/Chicago');
+  assert.equal(at('2026-10-29T12:59:00Z'), false); // 7:59am
+  assert.equal(at('2026-10-29T13:00:00Z'), true); // 8:00am
+  assert.equal(at('2026-10-30T01:59:00Z'), true); // 8:59pm
+  assert.equal(at('2026-10-30T02:00:00Z'), false); // 9:00pm
+  assert.equal(at('2026-10-29T05:00:00Z'), false); // midnight
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Creates the four customer SMS templates in Sent (sent.dm) and submits them
+ * Creates the customer SMS templates in Sent (sent.dm) and submits them
  * for review, then prints the Supabase secrets to set from their IDs.
  *
  *   SENT_DM_API_KEY=sk_live_... node scripts/create-sent-templates.mjs
@@ -69,15 +69,25 @@ const TEMPLATES = [
       link(3, 'viewLink', SAMPLE_PAY_LINK),
     ],
   },
+  {
+    secret: 'SENT_TEMPLATE_JOB_FOLLOWUP',
+    category: 'MARKETING',
+    template: `Boxed2Built: Thanks for choosing us, {{0:variable}}! If we earned it, a quick Google review means a lot: {{1:variable}} Know someone who needs a hand? Share your code {{2:variable}} and you both get $25 off. Msg&data rates may apply. ${STOP}`,
+    variables: [
+      text(0, 'customerName', 'Jamie'),
+      link(1, 'reviewLink', 'https://g.page/r/CW-qaf93r1ZuEAI/review'),
+      text(2, 'referralCode', 'B2B-TANIA-54E6'),
+    ],
+  },
 ];
 
 const secrets = [];
-for (const { secret, template, variables } of TEMPLATES) {
+for (const { secret, template, variables, category = 'UTILITY' } of TEMPLATES) {
   const response = await fetch('https://api.sent.dm/v3/templates', {
     method: 'POST',
     headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      category: 'UTILITY',
+      category,
       language: 'en_US',
       submit_for_review: true,
       definition: { body: { multiChannel: { type: 'text', template, variables } } },
