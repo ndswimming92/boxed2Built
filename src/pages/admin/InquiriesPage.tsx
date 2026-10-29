@@ -289,6 +289,8 @@ export default function InquiriesPage() {
 
   const handleConvertToJob = (inquiry: FormInquiry) => {
     const initialData: Partial<Job> = {
+      // A job made from a test inquiry is a test job too.
+      ...(inquiry.is_test ? { is_test: true } : {}),
       client_id: inquiry.client_id,
       client_name: inquiry.client_name,
       client_email: inquiry.client_email,
