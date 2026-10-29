@@ -81,6 +81,56 @@ function StatCard({ label, value, icon: Icon, color, active, onClick }: { label:
   );
 }
 
+// Resend free-plan limits. Update these if the plan changes.
+const DAILY_LIMIT = 100;
+const MONTHLY_LIMIT = 3000;
+// Resend's monthly quota resets on the billing-cycle day (UTC), not the 1st.
+const BILLING_DAY = 4;
+const BILLING_HOUR_UTC = 16;
+const BILLING_MINUTE_UTC = 51;
+
+function usagePeriods(now = new Date()) {
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  let cycleStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), BILLING_DAY, BILLING_HOUR_UTC, BILLING_MINUTE_UTC));
+  if (cycleStart > now) {
+    cycleStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, BILLING_DAY, BILLING_HOUR_UTC, BILLING_MINUTE_UTC));
+  }
+  const cycleEnd = new Date(Date.UTC(cycleStart.getUTCFullYear(), cycleStart.getUTCMonth() + 1, BILLING_DAY, BILLING_HOUR_UTC, BILLING_MINUTE_UTC));
+  return { dayStart, dayEnd, cycleStart, cycleEnd };
+}
+
+function UsageGauge({ label, used, limit, resetsAt }: { label: string; used: number; limit: number; resetsAt: Date }) {
+  const pct = Math.min(100, (used / limit) * 100);
+  const bar = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500';
+  const resets = resetsAt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="flex items-baseline justify-between mb-3">
+        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <p className="text-sm text-slate-500">
+          <span className="text-lg font-bold text-slate-900">{used.toLocaleString()}</span> / {limit.toLocaleString()}
+        </p>
+      </div>
+      <div
+        className="h-2.5 rounded-full bg-slate-100 overflow-hidden"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={limit}
+        aria-valuenow={used}
+        aria-label={`${label} email usage`}
+      >
+        <div className={`h-full rounded-full transition-all ${bar}`} style={{ width: `${pct}%` }} />
+      </div>
+      <div className="flex justify-between mt-2 text-xs text-slate-400">
+        <span>{(limit - used).toLocaleString()} remaining</span>
+        <span>Resets {resets}</span>
+      </div>
+    </div>
+  );
+}
+
 function groupIntoThreads(events: EmailEvent[]): EmailThread[] {
   const map = new Map<string, EmailEvent[]>();
 
@@ -112,6 +162,7 @@ export default function EmailActivityPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [usage, setUsage] = useState<{ daily: number; monthly: number } | null>(null);
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
 
   const fetchEvents = useCallback(async (silent = false) => {
@@ -125,6 +176,18 @@ export default function EmailActivityPage() {
       .limit(500);
 
     if (!error && data) setEvents(data as EmailEvent[]);
+
+    const { dayStart, cycleStart } = usagePeriods();
+    const countSince = (since: Date) =>
+      supabase
+        .from('email_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('event_type', 'email.sent')
+        .gte('occurred_at', since.toISOString());
+    const [daily, monthly] = await Promise.all([countSince(dayStart), countSince(cycleStart)]);
+    if (!daily.error && !monthly.error) {
+      setUsage({ daily: daily.count ?? 0, monthly: monthly.count ?? 0 });
+    }
 
     setLoading(false);
     setRefreshing(false);
@@ -185,6 +248,17 @@ export default function EmailActivityPage() {
           Refresh
         </button>
       </div>
+
+      {/* Sending limits */}
+      {usage && (() => {
+        const { dayEnd, cycleEnd } = usagePeriods();
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UsageGauge label="Daily sending limit" used={usage.daily} limit={DAILY_LIMIT} resetsAt={dayEnd} />
+            <UsageGauge label="Monthly sending limit" used={usage.monthly} limit={MONTHLY_LIMIT} resetsAt={cycleEnd} />
+          </div>
+        );
+      })()}
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
