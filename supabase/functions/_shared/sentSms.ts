@@ -18,6 +18,7 @@ import {
  *
  * Configuration (Supabase -> Edge Functions -> Secrets):
  *   SENT_DM_API_KEY          sk_test_... for now, sk_live_... once the campaign is approved
+ *                            (a secret named Sent_API_Key works too; see sentApiKey.ts)
  *   SENT_SMS_LIVE            "true" to really send; anything else sends in sandbox mode,
  *                            which Sent validates and answers but never delivers
  *   SENT_TEMPLATE_*          the template ID for each purpose (see TEMPLATE_ENV)
@@ -68,7 +69,7 @@ const SENT_MESSAGES_URL = 'https://api.sent.dm/v3/messages';
 export async function sendCustomerSms(admin: SupabaseClient, request: SmsRequest): Promise<SmsOutcome> {
   const tag = `[sms:${request.purpose}]`;
   try {
-    const apiKey = Deno.env.get('SENT_DM_API_KEY')?.trim();
+    const apiKey = sentApiKey();
     const templateId = Deno.env.get(TEMPLATE_ENV[request.purpose])?.trim();
     if (!apiKey || !templateId) return { sent: false, reason: 'not_configured' };
 

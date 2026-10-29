@@ -295,6 +295,7 @@ async function sendReminder(
     parameters: {
       customerName: job.client_name.trim().split(/\s+/)[0] || 'there',
       appointmentTime: describeArrival(job, business.timeZone, now).arrival,
+      serviceName: job.job_type?.trim() || 'furniture assembly',
       serviceAddress: resolveLocation(job) || 'the address on file',
     },
     idempotencyKey: idempotencyKey('reminder', job.id, job.date_scheduled, job.scheduled_start_time),
