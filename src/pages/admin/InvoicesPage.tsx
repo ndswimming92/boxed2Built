@@ -78,7 +78,7 @@ export default function InvoicesPage() {
           website: 'www.boxed2built.com',
         });
         const [invoicesData, statsData, jobsData] = await Promise.all([
-          getAllInvoices(bizData.id),
+          getAllInvoices(bizData.id, { includeTest: true }),
           getInvoiceStats(bizData.id),
           supabase.from('jobs').select('*').eq('business_id', bizData.id).eq('is_active', true),
         ]);
@@ -113,7 +113,11 @@ export default function InvoicesPage() {
       );
     }
 
-    if (statusFilter !== 'all') {
+    // Test invoices are listed with a TEST badge; the totals above are computed
+    // without them. The Test filter shows only those.
+    if (statusFilter === 'test') {
+      filtered = filtered.filter((inv) => inv.is_test);
+    } else if (statusFilter !== 'all') {
       filtered = filtered.filter((inv) => inv.status === statusFilter);
     }
 
@@ -438,6 +442,7 @@ ${invoice.notes}` : ''}`,
                 <option value="paid">Paid</option>
                 <option value="overdue">Overdue</option>
                 <option value="cancelled">Cancelled</option>
+                <option value="test">Test</option>
               </select>
             </div>
           </div>
@@ -501,6 +506,9 @@ ${invoice.notes}` : ''}`,
                       >
                         {invoice.invoice_number}
                       </button>
+                      {invoice.is_test && (
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-800 border border-amber-300 align-middle">TEST</span>
+                      )}
                       <p className="text-xs text-slate-500 mt-0.5">{invoiceLabels(invoice.invoice_type).type}</p>
                     </td>
                     <td className="px-6 py-4">
