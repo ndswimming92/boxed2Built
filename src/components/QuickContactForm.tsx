@@ -169,6 +169,7 @@ const QuickContactForm: React.FC = () => {
             name: formData.name,
             email: formData.email,
             message: formData.message,
+            isTest: isTestLead,
           }),
         }).then(async (res) => {
           const data = await res.json().catch(() => ({}));
