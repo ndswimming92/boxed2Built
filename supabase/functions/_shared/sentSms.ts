@@ -1,4 +1,5 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
+import { sentApiKey } from './sentApiKey.ts';
 import {
   type ConsentKind,
   type ConsentLogRow,
