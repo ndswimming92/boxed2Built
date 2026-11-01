@@ -129,6 +129,32 @@ export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
     wiredToSender: true,
   },
   {
+    key: 'request_received',
+    label: 'Request received',
+    description:
+      'Sent to the customer right after they submit the service request form with the service text box ticked, with their confirmation code. At most one per request and one per number a day.',
+    secret: 'SENT_TEMPLATE_REQUEST_RECEIVED',
+    category: 'UTILITY',
+    body: `Boxed2Built: Hi {{0:variable}}, thanks for your request! We've received it and will be in touch soon. Your confirmation code is {{1:variable}}. Questions? ${CONTACT} ${STOP}`,
+    variables: [text(0, 'customerName', 'Jamie'), text(1, 'confirmationCode', 'SR-M5NQSCBDCM')],
+    wiredToSender: true,
+  },
+  {
+    key: 'new_request_alert',
+    label: 'New request alert (to you)',
+    description:
+      'Sent to your own number whenever someone submits the service request form or the quick contact form. The number comes from the SENT_OWNER_ALERT_PHONE secret in Supabase.',
+    secret: 'SENT_TEMPLATE_NEW_REQUEST_ALERT',
+    category: 'UTILITY',
+    body: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. Details are in your email. ${STOP}`,
+    variables: [
+      text(0, 'customerName', 'Jamie Smith'),
+      text(1, 'requestSummary', 'Bookcase, 2 pcs'),
+      text(2, 'customerPhone', '(615) 555-0142'),
+    ],
+    wiredToSender: true,
+  },
+  {
     key: 'promotion',
     label: 'Promotion',
     description: 'A starter for offers and discounts. Only customers who ticked the promotional box may receive it.',

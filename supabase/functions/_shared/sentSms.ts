@@ -3,6 +3,7 @@ import {
   type ConsentKind,
   type ConsentLogRow,
   type KeywordStatusRow,
+  decideOwnerAlert,
   decideSmsConsent,
   phoneDigits,
   smsValue,
@@ -27,7 +28,14 @@ import {
  * one at a time.
  */
 
-export type SmsPurpose = 'booking_confirmed' | 'job_reminder' | 'quote_ready' | 'invoice_ready' | 'job_followup';
+export type SmsPurpose =
+  | 'booking_confirmed'
+  | 'job_reminder'
+  | 'quote_ready'
+  | 'invoice_ready'
+  | 'job_followup'
+  | 'request_received'
+  | 'new_request_alert';
 
 const TEMPLATE_ENV: Record<SmsPurpose, string> = {
   booking_confirmed: 'SENT_TEMPLATE_BOOKING_CONFIRMED',
@@ -35,18 +43,23 @@ const TEMPLATE_ENV: Record<SmsPurpose, string> = {
   quote_ready: 'SENT_TEMPLATE_QUOTE_READY',
   invoice_ready: 'SENT_TEMPLATE_INVOICE_READY',
   job_followup: 'SENT_TEMPLATE_JOB_FOLLOWUP',
+  request_received: 'SENT_TEMPLATE_REQUEST_RECEIVED',
+  new_request_alert: 'SENT_TEMPLATE_NEW_REQUEST_ALERT',
 };
 
 /**
  * Which consent box a purpose needs. The post-job text carries the referral
  * code, a $25-off offer, so it is promotional and needs the promotional box.
  */
-const PURPOSE_CONSENT: Record<SmsPurpose, ConsentKind> = {
+const PURPOSE_CONSENT: Record<SmsPurpose, ConsentKind | 'owner'> = {
   booking_confirmed: 'service',
   job_reminder: 'service',
   quote_ready: 'service',
   invoice_ready: 'service',
   job_followup: 'marketing',
+  request_received: 'service',
+  // Goes to the owner's own number (SENT_OWNER_ALERT_PHONE), not a customer's.
+  new_request_alert: 'owner',
 };
 
 export type SmsSkipReason =
@@ -109,7 +122,11 @@ export async function sendCustomerSms(admin: SupabaseClient, request: SmsRequest
       return { sent: false, reason: 'consent_lookup_failed' };
     }
 
-    const consent = decideSmsConsent(logResult.data ?? [], statusResult.data ?? [], PURPOSE_CONSENT[request.purpose]);
+    const kind = PURPOSE_CONSENT[request.purpose];
+    const consent =
+      kind === 'owner'
+        ? decideOwnerAlert(statusResult.data ?? [])
+        : decideSmsConsent(logResult.data ?? [], statusResult.data ?? [], kind);
     if (!consent.allowed) return { sent: false, reason: consent.reason };
 
     const sandbox = Deno.env.get('SENT_SMS_LIVE')?.trim().toLowerCase() !== 'true';

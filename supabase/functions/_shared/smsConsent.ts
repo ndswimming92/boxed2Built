@@ -87,6 +87,15 @@ export function decideSmsConsent(
 }
 
 /**
+ * Whether the business owner's own number may get an internal alert (a new
+ * request came in). It is the owner's number, so there is no opt-in to find, but
+ * a STOP from it is still honoured.
+ */
+export function decideOwnerAlert(keywordStatus: KeywordStatusRow[]): ConsentDecision {
+  return keywordStatus.some((row) => row.opted_out) ? { allowed: false, reason: 'opted_out' } : { allowed: true };
+}
+
+/**
  * Whether it is a reasonable hour to text someone: from `startHour` up to, not
  * including, `endHour` in the business's own time zone (8am to 9pm by default,
  * the window the rules for promotional texts allow).

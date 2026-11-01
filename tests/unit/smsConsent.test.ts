@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   type ConsentLogRow,
+  decideOwnerAlert,
   decideSmsConsent,
   bookingLookupLink,
   describeAppointment,
@@ -183,4 +184,13 @@ test('withinTextingHours is 8am up to 9pm in the business time zone', () => {
   assert.equal(at('2026-10-30T01:59:00Z'), true); // 8:59pm
   assert.equal(at('2026-10-30T02:00:00Z'), false); // 9:00pm
   assert.equal(at('2026-10-29T05:00:00Z'), false); // midnight
+});
+
+test('an owner alert needs no opt-in on file, but a STOP from the owner stops it', () => {
+  assert.deepEqual(decideOwnerAlert([]), { allowed: true });
+  assert.deepEqual(decideOwnerAlert([{ opted_out: false, last_signal_at: '2026-10-01T12:00:00Z' }]), { allowed: true });
+  assert.deepEqual(decideOwnerAlert([{ opted_out: true, last_signal_at: '2026-10-01T12:00:00Z' }]), {
+    allowed: false,
+    reason: 'opted_out',
+  });
 });

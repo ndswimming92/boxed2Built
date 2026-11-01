@@ -18,6 +18,8 @@ const SENDER_PARAMETERS: Record<string, string[]> = {
   quote_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
   invoice_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
   job_followup: ['customerName', 'reviewLink', 'referralCode'],
+  request_received: ['customerName', 'confirmationCode'],
+  new_request_alert: ['customerName', 'requestSummary', 'customerPhone'],
 };
 
 for (const template of TEMPLATE_DEFAULTS) {
@@ -41,6 +43,8 @@ for (const template of TEMPLATE_DEFAULTS) {
   });
 
   test(`${template.key}: ${template.category === 'UTILITY' ? 'gives a phone number' : 'says message and data rates may apply'}`, () => {
+    // The alert goes to the owner, who needs no number to call.
+    if (template.key === 'new_request_alert') return;
     if (template.category === 'UTILITY') assert.match(template.body, /\(615\) 403-4538/);
     else assert.match(template.body, /Msg&data rates may apply\./);
   });
