@@ -5,6 +5,7 @@ import {
   type ConsentLogRow,
   decideOwnerAlert,
   decideSmsConsent,
+  adminInquiryLink,
   bookingLookupLink,
   describeAppointment,
   idempotencyKey,
@@ -12,6 +13,7 @@ import {
   smsValue,
   toUsE164,
   withinTextingHours,
+  withoutLinks,
 } from '../../supabase/functions/_shared/smsConsent.ts';
 
 const optIn = (at: string, serviceTexts = true): ConsentLogRow => ({
@@ -193,4 +195,27 @@ test('an owner alert needs no opt-in on file, but a STOP from the owner stops it
     allowed: false,
     reason: 'opted_out',
   });
+});
+
+test('adminInquiryLink opens the Inquiries page on one request, only for a real id', () => {
+  const id = '8F3C2A1E-5B7D-4C9A-9E21-3D6F7A1B2C4D';
+  assert.equal(
+    adminInquiryLink('https://boxed2built.com/', id),
+    'https://boxed2built.com/admin/inquiries?open=8f3c2a1e-5b7d-4c9a-9e21-3d6f7a1b2c4d',
+  );
+  const list = 'https://boxed2built.com/admin/inquiries';
+  assert.equal(adminInquiryLink('https://boxed2built.com', undefined), list);
+  assert.equal(adminInquiryLink('https://boxed2built.com', ''), list);
+  // The id comes from the public form, so anything that is not a UUID never reaches the link.
+  assert.equal(adminInquiryLink('https://boxed2built.com', 'x&redirect=https://evil.test'), list);
+  assert.equal(adminInquiryLink('https://boxed2built.com', `${id}/../../x`), list);
+});
+
+test('withoutLinks takes web addresses out of customer-typed text', () => {
+  assert.equal(withoutLinks('Jamie Smith'), 'Jamie Smith');
+  assert.equal(withoutLinks('Click https://evil.test/login now'), 'Click now');
+  assert.equal(withoutLinks('Visit WWW.evil.test/a?b=1 or http://x.y'), 'Visit or');
+  assert.equal(withoutLinks('  spaced \n out  '), 'spaced out');
+  assert.equal(withoutLinks(null), '');
+  assert.equal(withoutLinks('https://only.test'), '');
 });

@@ -107,6 +107,7 @@ const QuickContactForm: React.FC = () => {
 
     let supabaseSuccess = false;
     let isTestLead = false;
+    let inquiryId: string | undefined;
     const errors: string[] = [];
 
     try {
@@ -136,7 +137,7 @@ const QuickContactForm: React.FC = () => {
         } else {
           console.log('Creating inquiry with business_id:', businessInfo.id, 'organization_id:', businessInfo.organization_id);
 
-          await createInquiry({
+          const inquiry = await createInquiry({
             business_id: businessInfo.id,
             organization_id: businessInfo.organization_id,
             client_name: formData.name,
@@ -148,6 +149,7 @@ const QuickContactForm: React.FC = () => {
             is_test: isTest,
           });
 
+          inquiryId = inquiry.id;
           supabaseSuccess = true;
           console.log('Supabase inquiry created successfully');
         }
@@ -169,6 +171,7 @@ const QuickContactForm: React.FC = () => {
             name: formData.name,
             email: formData.email,
             message: formData.message,
+            inquiryId,
             isTest: isTestLead,
           }),
         }).then(async (res) => {

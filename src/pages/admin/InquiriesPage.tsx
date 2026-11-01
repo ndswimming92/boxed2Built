@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase, FormInquiry, Job } from '../../lib/supabase';
 import { Inbox, Search, Filter, Archive, CheckCircle, AlertCircle, Mail, MessageSquare, ExternalLink, Trash2, RefreshCw, FlaskConical, Image, Building2, Clock, Tag } from 'lucide-react';
 import { markAsViewed, archiveInquiry, deleteInquiry, getInquiryStats, getInquiryById, deleteAllTestInquiries, convertToJob as convertInquiryToJob, markAsConverted, markAsReachedOut } from '../../services/inquiryService';
@@ -15,6 +16,8 @@ import JobFormModal from '../../components/admin/JobFormModal';
 import TestInquiryModal from '../../components/admin/TestInquiryModal';
 import { logAction } from '../../services/auditLogService';
 import { describeDiscount, formatMoney } from '../../utils/coupon';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface InquiryStats {
   total: number;
@@ -48,6 +51,41 @@ export default function InquiriesPage() {
   useEffect(() => {
     fetchBusinessId();
   }, []);
+
+  // A link such as /admin/inquiries?open=<id>, the one in the new-request text, opens that
+  // request. It is fetched by id rather than found in the list, so it opens whatever the
+  // filters or paging, and the address is tidied afterwards so a refresh does not reopen it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openId = searchParams.get('open');
+  useEffect(() => {
+    if (!openId) return;
+    let cancelled = false;
+    const openFromLink = async () => {
+      try {
+        const found = UUID_PATTERN.test(openId) ? await getInquiryById(openId) : null;
+        if (cancelled) return;
+        // Deleting an inquiry only switches it off (is_active), and the list leaves those out,
+        // so an old link to one is treated as not found rather than opened with its actions.
+        if (found && found.is_active !== false) {
+          if (found.is_test) setShowTestData(true);
+          setSelectedInquiry(found);
+          setShowDetailModal(true);
+          if (!found.viewed) await markAsViewed(found.id);
+        } else {
+          setMessage({ type: 'error', text: 'That request could not be found. It may have been deleted.' });
+        }
+      } catch (error) {
+        console.error('Error opening inquiry from link:', error);
+        if (!cancelled) setMessage({ type: 'error', text: 'Could not open that request.' });
+      } finally {
+        if (!cancelled) setSearchParams({}, { replace: true });
+      }
+    };
+    openFromLink();
+    return () => {
+      cancelled = true;
+    };
+  }, [openId, setSearchParams]);
 
   useEffect(() => {
     if (businessId) {

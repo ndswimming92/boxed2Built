@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Lock, Mail, AlertCircle, KeyRound } from 'lucide-react';
 import { isPasskeySupported } from '../../services/passkeyService';
+import { readAdminReturnPath } from '../../utils/adminReturnPath';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate(getHomeRouteForUser(user), { replace: true });
+      // An admin who was sent here from a deep link goes back to it; the guard clears it on arrival.
+      const home = getHomeRouteForUser(user);
+      navigate(home.startsWith('/admin') ? (readAdminReturnPath() ?? home) : home, { replace: true });
     }
   }, [user, navigate, getHomeRouteForUser]);
 
@@ -62,9 +65,10 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      navigate('/admin/dashboard');
     }
+    // On success the redirect effect above takes over once the session lands, as it does
+    // for passkey and Google sign-ins. A second navigation here could run after the guard
+    // had already cleared the remembered path and send the owner to the dashboard instead.
   };
 
   const handlePasskeySignIn = async () => {
