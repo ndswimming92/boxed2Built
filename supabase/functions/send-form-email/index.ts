@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { sendCustomerSms } from "../_shared/sentSms.ts";
-import { idempotencyKey } from "../_shared/smsConsent.ts";
+import { adminInquiryLink, idempotencyKey, withoutLinks } from "../_shared/smsConsent.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,6 +59,8 @@ interface ContactFormPayload {
   estimatedPrice?: string;
   estimatedTime?: string;
   confirmationCode: string;
+  // The saved inquiry, so the owner's alert text can link straight to it.
+  inquiryId?: string;
   isTest?: boolean;
   // Admin-portal test submissions: the owner still gets the notification
   // (with its TEST banner) but the made-up customer is not emailed.
@@ -85,6 +87,7 @@ interface QuickContactPayload {
   name: string;
   email: string;
   message: string;
+  inquiryId?: string;
   isTest?: boolean;
 }
 
@@ -537,7 +540,7 @@ const OWNER_TEXTS_PER_HOUR = 10;
 
 async function textOwner(
   admin: SupabaseClient,
-  request: { name: string; summary: string; phone?: string; key: string },
+  request: { name: string; summary: string; phone?: string; key: string; inquiryId?: string },
 ): Promise<void> {
   try {
     const ownerPhone = Deno.env.get("SENT_OWNER_ALERT_PHONE")?.trim();
@@ -555,9 +558,11 @@ async function textOwner(
       purpose: "new_request_alert",
       phone: ownerPhone,
       parameters: {
-        customerName: request.name,
-        requestSummary: request.summary,
-        customerPhone: request.phone?.trim() || "not given",
+        // Customer-typed, so stripped of web addresses: the one link in this text is ours.
+        customerName: withoutLinks(request.name) || "someone",
+        requestSummary: withoutLinks(request.summary) || "New request",
+        customerPhone: withoutLinks(request.phone) || "not given",
+        inquiryLink: adminInquiryLink(Deno.env.get("SITE_URL") ?? "https://boxed2built.com", request.inquiryId),
       },
       idempotencyKey: idempotencyKey("owner-alert", request.key),
       context: { key: request.key },
@@ -647,6 +652,7 @@ Deno.serve(async (req: Request) => {
           summary: `${p.furnitureType}, ${p.pieces} pc${p.pieces !== 1 ? "s" : ""}`,
           phone: p.phone,
           key: `contact-${p.confirmationCode}`,
+          inquiryId: p.inquiryId,
         });
       }
 
@@ -686,6 +692,7 @@ Deno.serve(async (req: Request) => {
           name: p.name,
           summary: "Quick contact message",
           key: `quick-${crypto.randomUUID()}`,
+          inquiryId: p.inquiryId,
         });
       }
 

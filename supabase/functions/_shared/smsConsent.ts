@@ -153,6 +153,28 @@ export function bookingLookupLink(siteUrl: string, reference: string, email?: st
   return `${base}/lookup-request?code=${encodeURIComponent(reference.trim().toUpperCase())}${emailPart}`;
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Where the owner's alert text sends them: the Admin Inquiries page, opened on
+ * one request when its id is a real UUID (the form supplies it, so anything else
+ * is dropped rather than put into a link), or on the list when there is none.
+ */
+export function adminInquiryLink(siteUrl: string, inquiryId?: string | null): string {
+  const base = siteUrl.replace(/\/+$/, '');
+  const id = inquiryId?.trim();
+  return id && UUID.test(id) ? `${base}/admin/inquiries?open=${id.toLowerCase()}` : `${base}/admin/inquiries`;
+}
+
+/**
+ * A customer-typed value with any web address taken out. The owner's alert now
+ * carries a link they are meant to tap, so a name like "Click http://..." must
+ * not be able to put a second one in the same text.
+ */
+export function withoutLinks(value: string | null | undefined): string {
+  return (value ?? '').replace(/(?:https?:\/\/|www\.)\S+/gi, '').replace(/\s+/g, ' ').trim();
+}
+
 /** "Saturday, October 25" + " at 10:00 AM" when there is a time. */
 export function describeAppointment(dateLabel: string, timeLabel: string | null | undefined): string {
   return timeLabel ? `${dateLabel} at ${timeLabel}` : dateLabel;

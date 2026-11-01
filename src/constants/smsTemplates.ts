@@ -50,6 +50,9 @@ const SAMPLE_PAY_LINK =
 // Opens the site's request lookup with the booking reference and email filled in.
 const SAMPLE_BOOKING_LINK = 'https://boxed2built.com/lookup-request?code=BK-66BB65&email=jamie.smith%40gmail.com';
 
+// Opens the Admin Inquiries page on one request; the id is that request's.
+const SAMPLE_ADMIN_LINK = 'https://boxed2built.com/admin/inquiries?open=8f3c2a1e-5b7d-4c9a-9e21-3d6f7a1b2c4d';
+
 export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
   {
     key: 'booking_confirmed',
@@ -143,14 +146,15 @@ export const TEMPLATE_DEFAULTS: TemplateDefault[] = [
     key: 'new_request_alert',
     label: 'New request alert (to you)',
     description:
-      'Sent to your own number whenever someone submits the service request form or the quick contact form. The number comes from the SENT_OWNER_ALERT_PHONE secret in Supabase.',
+      'Sent to your own number whenever someone submits the service request form or the quick contact form, with a link that opens the request in your admin. The number comes from the SENT_OWNER_ALERT_PHONE secret in Supabase.',
     secret: 'SENT_TEMPLATE_NEW_REQUEST_ALERT',
     category: 'UTILITY',
-    body: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. Details are in your email. ${STOP}`,
+    body: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. View all the details: {{3:variable}} ${STOP}`,
     variables: [
       text(0, 'customerName', 'Jamie Smith'),
       text(1, 'requestSummary', 'Bookcase, 2 pcs'),
       text(2, 'customerPhone', '(615) 555-0142'),
+      link(3, 'inquiryLink', SAMPLE_ADMIN_LINK),
     ],
     wiredToSender: true,
   },

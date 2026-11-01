@@ -19,7 +19,7 @@ const SENDER_PARAMETERS: Record<string, string[]> = {
   invoice_ready: ['customerName', 'documentNumber', 'amount', 'viewLink'],
   job_followup: ['customerName', 'reviewLink', 'referralCode'],
   request_received: ['customerName', 'confirmationCode'],
-  new_request_alert: ['customerName', 'requestSummary', 'customerPhone'],
+  new_request_alert: ['customerName', 'requestSummary', 'customerPhone', 'inquiryLink'],
 };
 
 for (const template of TEMPLATE_DEFAULTS) {

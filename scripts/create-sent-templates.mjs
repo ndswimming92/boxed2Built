@@ -76,11 +76,12 @@ const TEMPLATES = [
   },
   {
     secret: 'SENT_TEMPLATE_NEW_REQUEST_ALERT',
-    template: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. Details are in your email. ${STOP}`,
+    template: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. View all the details: {{3:variable}} ${STOP}`,
     variables: [
       text(0, 'customerName', 'Jamie Smith'),
       text(1, 'requestSummary', 'Bookcase, 2 pcs'),
       text(2, 'customerPhone', '(615) 555-0142'),
+      link(3, 'inquiryLink', 'https://boxed2built.com/admin/inquiries?open=8f3c2a1e-5b7d-4c9a-9e21-3d6f7a1b2c4d'),
     ],
   },
   {

@@ -674,6 +674,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           estimatedPrice: quotedPrice || undefined,
           estimatedTime: estimatedTime || undefined,
           confirmationCode: savedRequest.confirmation_code,
+          inquiryId: inquiry.id,
           isTest,
           furniturePhotoUrl: savedRequest.furniture_photo_url || undefined,
           furnitureImagePath: savedRequest.furniture_image_path || undefined,
