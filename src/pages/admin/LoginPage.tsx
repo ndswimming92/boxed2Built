@@ -65,9 +65,10 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      navigate(readAdminReturnPath() ?? '/admin/dashboard');
     }
+    // On success the redirect effect above takes over once the session lands, as it does
+    // for passkey and Google sign-ins. A second navigation here could run after the guard
+    // had already cleared the remembered path and send the owner to the dashboard instead.
   };
 
   const handlePasskeySignIn = async () => {

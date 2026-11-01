@@ -64,7 +64,9 @@ export default function InquiriesPage() {
       try {
         const found = UUID_PATTERN.test(openId) ? await getInquiryById(openId) : null;
         if (cancelled) return;
-        if (found) {
+        // Deleting an inquiry only switches it off (is_active), and the list leaves those out,
+        // so an old link to one is treated as not found rather than opened with its actions.
+        if (found && found.is_active !== false) {
           if (found.is_test) setShowTestData(true);
           setSelectedInquiry(found);
           setShowDetailModal(true);
