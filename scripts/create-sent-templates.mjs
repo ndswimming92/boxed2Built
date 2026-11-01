@@ -70,6 +70,20 @@ const TEMPLATES = [
     ],
   },
   {
+    secret: 'SENT_TEMPLATE_REQUEST_RECEIVED',
+    template: `Boxed2Built: Hi {{0:variable}}, thanks for your request! We've received it and will be in touch soon. Your confirmation code is {{1:variable}}. Questions? ${CONTACT} ${STOP}`,
+    variables: [text(0, 'customerName', 'Jamie'), text(1, 'confirmationCode', 'SR-M5NQSCBDCM')],
+  },
+  {
+    secret: 'SENT_TEMPLATE_NEW_REQUEST_ALERT',
+    template: `Boxed2Built: New request from {{0:variable}}. {{1:variable}}. Phone: {{2:variable}}. Details are in your email. ${STOP}`,
+    variables: [
+      text(0, 'customerName', 'Jamie Smith'),
+      text(1, 'requestSummary', 'Bookcase, 2 pcs'),
+      text(2, 'customerPhone', '(615) 555-0142'),
+    ],
+  },
+  {
     secret: 'SENT_TEMPLATE_JOB_FOLLOWUP',
     category: 'MARKETING',
     template: `Boxed2Built: Thanks for choosing us, {{0:variable}}! If we earned it, a quick Google review means a lot: {{1:variable}} Know someone who needs a hand? Share your code {{2:variable}} and you both get $25 off. Msg&data rates may apply. ${STOP}`,

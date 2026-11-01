@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { sendCustomerSms } from "../_shared/sentSms.ts";
+import { idempotencyKey } from "../_shared/smsConsent.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -526,6 +528,46 @@ async function recordSubmission(
   }
 }
 
+// A text to the owner that a request came in: a backup for the notification email,
+// which has gone missing before (see OWNER_RECIPIENTS). It goes to the number in
+// the SENT_OWNER_ALERT_PHONE secret, and is skipped when that is not set. This
+// endpoint is open to the public, so it sends at most OWNER_TEXTS_PER_HOUR of
+// these an hour, and it never throws: the request itself has already been saved.
+const OWNER_TEXTS_PER_HOUR = 10;
+
+async function textOwner(
+  admin: SupabaseClient,
+  request: { name: string; summary: string; phone?: string; key: string },
+): Promise<void> {
+  try {
+    const ownerPhone = Deno.env.get("SENT_OWNER_ALERT_PHONE")?.trim();
+    if (!ownerPhone) return;
+
+    const { count, error } = await admin
+      .from("sent_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "message.requested")
+      .filter("payload->>purpose", "eq", "new_request_alert")
+      .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString());
+    if (error || (count ?? 0) >= OWNER_TEXTS_PER_HOUR) return;
+
+    const outcome = await sendCustomerSms(admin, {
+      purpose: "new_request_alert",
+      phone: ownerPhone,
+      parameters: {
+        customerName: request.name,
+        requestSummary: request.summary,
+        customerPhone: request.phone?.trim() || "not given",
+      },
+      idempotencyKey: idempotencyKey("owner-alert", request.key),
+      context: { key: request.key },
+    });
+    if (!outcome.sent) console.log(`Owner text not sent: ${outcome.reason ?? "unknown"}`);
+  } catch (err) {
+    console.error("Owner text failed:", err);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -598,6 +640,16 @@ Deno.serve(async (req: Request) => {
         console.error("Owner notification email failed:", err);
       }
 
+      // Admin test submissions do not need a text.
+      if (!p.isTest) {
+        await textOwner(rateLimitSupabase, {
+          name: p.name,
+          summary: `${p.furnitureType}, ${p.pieces} pc${p.pieces !== 1 ? "s" : ""}`,
+          phone: p.phone,
+          key: `contact-${p.confirmationCode}`,
+        });
+      }
+
       if (!(p.isTest && p.skipCustomerEmail)) {
         try {
           await sendEmail(
@@ -627,6 +679,12 @@ Deno.serve(async (req: Request) => {
       } catch (err) {
         console.error("Owner notification email failed:", err);
       }
+
+      await textOwner(rateLimitSupabase, {
+        name: p.name,
+        summary: "Quick contact message",
+        key: `quick-${crypto.randomUUID()}`,
+      });
 
       try {
         await sendEmail(
