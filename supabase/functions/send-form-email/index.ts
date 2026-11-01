@@ -680,11 +680,14 @@ Deno.serve(async (req: Request) => {
         console.error("Owner notification email failed:", err);
       }
 
-      await textOwner(rateLimitSupabase, {
-        name: p.name,
-        summary: "Quick contact message",
-        key: `quick-${crypto.randomUUID()}`,
-      });
+      // A test identifier's submission (flagged by the form) does not text the owner either.
+      if (!p.isTest) {
+        await textOwner(rateLimitSupabase, {
+          name: p.name,
+          summary: "Quick contact message",
+          key: `quick-${crypto.randomUUID()}`,
+        });
+      }
 
       try {
         await sendEmail(

@@ -50,8 +50,7 @@ function clientIp(req: Request): string | null {
 }
 
 // Anyone can type any number into the form and tick the box, so a number gets at
-// most one of these a day, and one address cannot set off a run of them.
-const NUMBER_WINDOW_MS = 24 * 60 * 60 * 1000;
+// most one of these a day (a UTC day), and one address cannot set off a run of them.
 const IP_WINDOW_MS = 60 * 60 * 1000;
 const IP_OPT_INS_PER_WINDOW = 3;
 
@@ -72,15 +71,33 @@ async function textRequestReceived(
   const to = toUsE164(inquiry.client_phone);
   if (!to) return 'skipped: invalid phone';
 
-  const { count: toNumber, error: numberError } = await admin
-    .from('sent_events')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_type', 'message.requested')
-    .eq('contact_phone', to)
-    .filter('payload->>purpose', 'eq', 'request_received')
-    .gte('created_at', new Date(Date.now() - NUMBER_WINDOW_MS).toISOString());
-  if (numberError) return 'skipped: could not check the number limit';
-  if ((toNumber ?? 0) > 0) return 'skipped: number already texted today';
+  // Reserve the number's slot for the day with one insert on a unique key, before
+  // anything is sent, so submissions arriving at the same moment cannot all pass a
+  // check and then all send. The owner's own number is exempt, so testing is not
+  // held to a day. A reservation that ends in no text is released again.
+  const exempt = toUsE164(Deno.env.get('SENT_OWNER_ALERT_PHONE')) === to;
+  const reservationId = `reserve-request_received-${to.replace(/\D/g, '')}-${new Date().toISOString().slice(0, 10)}`;
+  if (!exempt) {
+    const { error: reserveError } = await admin.from('sent_events').insert({
+      sent_event_id: reservationId,
+      field: 'message',
+      event_type: 'request_received.reserved',
+      contact_phone: to,
+      channel: 'sms',
+      status: 'RESERVED',
+      occurred_at: new Date().toISOString(),
+      payload: { source: 'app', purpose: 'request_received', reservation: true, inquiryId: inquiry.id },
+    });
+    // 23505: another request already holds this number's slot today.
+    if (reserveError) {
+      return reserveError.code === '23505'
+        ? 'skipped: number already texted today'
+        : 'skipped: could not reserve the number';
+    }
+  }
+  const release = async () => {
+    if (!exempt) await admin.from('sent_events').delete().eq('sent_event_id', reservationId);
+  };
 
   if (ip) {
     // The opt-in just logged counts itself, so more than the limit means this one is over it.
@@ -90,8 +107,14 @@ async function textRequestReceived(
       .eq('event_type', 'opt_in')
       .eq('ip_address', ip)
       .gte('created_at', new Date(Date.now() - IP_WINDOW_MS).toISOString());
-    if (ipError) return 'skipped: could not check the address limit';
-    if ((fromIp ?? 0) > IP_OPT_INS_PER_WINDOW) return 'skipped: too many sign-ups from one address';
+    if (ipError) {
+      await release();
+      return 'skipped: could not check the address limit';
+    }
+    if ((fromIp ?? 0) > IP_OPT_INS_PER_WINDOW) {
+      await release();
+      return 'skipped: too many sign-ups from one address';
+    }
   }
 
   const outcome = await sendCustomerSms(admin, {
@@ -104,6 +127,7 @@ async function textRequestReceived(
     idempotencyKey: idempotencyKey('request', inquiry.id),
     context: { inquiryId: inquiry.id },
   });
+  if (!outcome.sent) await release();
   return outcome.sent ? `sent${outcome.sandbox ? ' (test mode)' : ''}` : `not sent: ${outcome.reason ?? 'unknown'}`;
 }
 
