@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Letter Fun</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; transition: background .2s; background: #fff7d6; color: #333;
+    user-select: none; -webkit-user-select: none;
+  }
+  #hint { font-size: 2rem; margin: 0 1rem; }
+  #show { display: none; }
+  .row { display: flex; gap: 6vw; justify-content: center; align-items: baseline; }
+  .big { font-size: min(38vw, 50vh); font-weight: 700; line-height: 1; color: #fff;
+         text-shadow: 0 .04em 0 rgba(0,0,0,.25); }
+  .pop { animation: pop .35s ease-out; }
+  @keyframes pop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  #word { font-size: min(8vw, 6vh); margin-top: 1vh; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+  button { margin-top: 2rem; font-size: 1.4rem; padding: .6rem 1.4rem; border: 0; border-radius: 999px;
+           background: #fff; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+  <p id="hint">⌨️ Press any letter key!</p>
+  <div id="show">
+    <div class="row"><span class="big" id="upper"></span><span class="big" id="lower"></span></div>
+    <div id="word"></div>
+  </div>
+  <button id="start">Tap here, then press a key 🔊</button>
+
+<script>
+// Example word for each letter, used for the "sound" (A says ah, like apple)
+const WORDS = {
+  a:["ah","apple"], b:["buh","ball"], c:["kuh","cat"], d:["duh","dog"], e:["eh","egg"],
+  f:["fff","fish"], g:["guh","goat"], h:["huh","hat"], i:["ih","igloo"], j:["juh","jam"],
+  k:["kuh","kite"], l:["lll","lion"], m:["mmm","moon"], n:["nnn","nest"], o:["oh","octopus"],
+  p:["puh","pig"], q:["kwuh","queen"], r:["rrr","rabbit"], s:["sss","sun"], t:["tuh","top"],
+  u:["uh","umbrella"], v:["vvv","van"], w:["wuh","web"], x:["ks","box"], y:["yuh","yo-yo"],
+  z:["zzz","zebra"]
+};
+const COLORS = ["#ef476f","#f78c1f","#e0a800","#06a77d","#118ab2","#7b5cd6","#d6409f"];
+const $ = id => document.getElementById(id);
+let lastColor = -1;
+
+function speak(letter) {
+  if (!("speechSynthesis" in window)) return;
+  const [sound, word] = WORDS[letter];
+  speechSynthesis.cancel();
+  // Say the name, then the sound, then an example word
+  const text = `${letter}. ${sound}. ${letter} is for ${word}.`;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.8; u.pitch = 1.2;
+  speechSynthesis.speak(u);
+}
+
+function show(letter) {
+  $("hint").style.display = "none";
+  $("start").style.display = "none";
+  $("show").style.display = "block";
+  $("upper").textContent = letter.toUpperCase();
+  $("lower").textContent = letter.toLowerCase();
+  $("word").textContent = `${letter.toUpperCase()} is for ${WORDS[letter][1]}`;
+  let c; do { c = Math.floor(Math.random() * COLORS.length); } while (c === lastColor);
+  lastColor = c;
+  document.body.style.background = COLORS[c];
+  const el = $("show"); el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  speak(letter);
+}
+
+window.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k.length === 1 && k >= "a" && k <= "z") { e.preventDefault(); show(k); }
+});
+// Button just helps browsers allow sound and gives the page focus
+$("start").addEventListener("click", () => { $("start").textContent = "Great! Now press a letter ⌨️"; speechSynthesis && speechSynthesis.speak(new SpeechSynthesisUtterance("")); });
+</script>
+</body>
+</html>
