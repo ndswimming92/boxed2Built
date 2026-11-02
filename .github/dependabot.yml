@@ -19,6 +19,12 @@ updates:
       # widens the range.
       - dependency-name: "beasties"
         versions: [">=0.2.0"]
+      # vite-react-ssg@0.9.x (latest) declares peerOptional
+      # react-router-dom@^6.14.1 and relies on the v6 static-rendering APIs, so
+      # react-router-dom@7 fails `npm ci` with ERESOLVE. Lift this once
+      # vite-react-ssg supports React Router 7.
+      - dependency-name: "react-router-dom"
+        update-types: ["version-update:semver-major"]
     groups:
       # Packages whose peerDependencies pin each other's major version. Bumped
       # separately, every PR fails `npm ci` with ERESOLVE (e.g. react-stripe-js@7
