@@ -76,16 +76,18 @@ interface JobRow {
   customer_reminder_for: string | null;
   customer_reminder_start_time: string | null;
   customer_reminder_cancelled_at: string | null;
+  customer_reminder_dismissed_at: string | null;
   follow_up_for_date: string | null;
   follow_up_for_end_time: string | null;
   follow_up_cancelled_at: string | null;
+  follow_up_dismissed_at: string | null;
 }
 
 const JOB_COLUMNS =
   'id, business_id, client_name, client_email, job_type, job_description, job_status, is_active, ' +
   'date_scheduled, scheduled_start_time, scheduled_end_time, customer_reminder_for, ' +
   'customer_reminder_start_time, customer_reminder_cancelled_at, follow_up_for_date, ' +
-  'follow_up_for_end_time, follow_up_cancelled_at';
+  'follow_up_for_end_time, follow_up_cancelled_at, customer_reminder_dismissed_at, follow_up_dismissed_at';
 
 interface WelcomeRow {
   id: string;
@@ -248,7 +250,7 @@ Deno.serve(async (req: Request) => {
     };
     const reminderDecision = decideReminder(reminderFacts, { now, timeZone });
     const reminderStatus = reminderRowStatus(reminderDecision);
-    if (reminderStatus) {
+    if (reminderStatus && !(reminderStatus === 'cancelled' && job.customer_reminder_dismissed_at)) {
       rows.push({
         id: `reminder:${job.id}`,
         kind: 'reminder',
@@ -276,7 +278,7 @@ Deno.serve(async (req: Request) => {
     };
     const followupDecision = decideFollowup(followupFacts, { now, timeZone });
     const followupStatus = followupRowStatus(followupDecision);
-    if (followupStatus) {
+    if (followupStatus && !(followupStatus === 'cancelled' && job.follow_up_dismissed_at)) {
       rows.push({
         id: `followup:${job.id}`,
         kind: 'followup',

@@ -108,3 +108,33 @@ export async function resumeWelcomeEmail(queueId: string): Promise<void> {
     .eq('id', queueId);
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Removes a cancelled email from the list. A reminder/follow-up has no row of
+ * its own, so it is hidden via a dismissed-at marker on its job; a welcome
+ * step is a real queue row and is deleted outright.
+ */
+export async function deleteJobReminder(jobId: string): Promise<void> {
+  const { error } = await supabase
+    .from('jobs')
+    .update({ customer_reminder_dismissed_at: new Date().toISOString() })
+    .eq('id', jobId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteJobFollowup(jobId: string): Promise<void> {
+  const { error } = await supabase
+    .from('jobs')
+    .update({ follow_up_dismissed_at: new Date().toISOString() })
+    .eq('id', jobId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteWelcomeEmail(queueId: string): Promise<void> {
+  const { error } = await supabase
+    .from('portal_welcome_email_queue')
+    .delete()
+    .eq('id', queueId)
+    .eq('status', 'cancelled');
+  if (error) throw new Error(error.message);
+}
