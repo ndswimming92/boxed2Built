@@ -142,8 +142,9 @@ test('customer content never leaks the internal email vocabulary', () => {
     assert.doesNotMatch(body, /Quoted/);
   }
   // Pricing is for the customer's own email, but never for a calendar entry
-  // they might share.
-  assert.doesNotMatch(ics, /285/);
+  // they might share. DTSTAMP is the current clock time, so it can contain
+  // "285" by chance (e.g. 22:28:52) and is left out of the check.
+  assert.doesNotMatch(ics.replace(/^DTSTAMP:.*$/m, ''), /285/);
 });
 
 test('hostile field values cannot break out into markup', () => {

@@ -8,6 +8,7 @@ import {
   Mail,
   RefreshCw,
   RotateCcw,
+  Trash2,
   Search,
   Send,
   UserRound,
@@ -16,6 +17,9 @@ import {
   cancelJobFollowup,
   cancelJobReminder,
   cancelWelcomeEmail,
+  deleteJobFollowup,
+  deleteJobReminder,
+  deleteWelcomeEmail,
   listScheduledEmails,
   resumeJobFollowup,
   resumeJobReminder,
@@ -195,13 +199,35 @@ export default function ScheduledEmailsPage() {
     [fetchRows, showToast],
   );
 
+  const handleDelete = useCallback(
+    async (row: ScheduledEmailRow) => {
+      const who = row.recipientName || row.recipientEmail || 'this recipient';
+      if (!confirm(`Delete the cancelled ${KIND_LABELS[row.kind].toLowerCase()} email to ${who}? This can't be undone.`)) {
+        return;
+      }
+      setBusyId(row.id);
+      try {
+        if (row.kind === 'reminder' && row.jobId) await deleteJobReminder(row.jobId);
+        else if (row.kind === 'followup' && row.jobId) await deleteJobFollowup(row.jobId);
+        else if (row.kind === 'welcome' && row.queueId) await deleteWelcomeEmail(row.queueId);
+        showToast({ type: 'success', message: 'Email deleted.' });
+        await fetchRows(true);
+      } catch (err) {
+        showToast({ type: 'error', message: err instanceof Error ? err.message : 'Could not delete this email' });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [fetchRows, showToast],
+  );
+
   return (
     <div className="max-w-6xl">
       <div className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">Scheduled Emails</h1>
           <p className="text-sm sm:text-base text-slate-600">
-            Every appointment reminder, follow-up, and portal welcome email waiting to go out — cancel or resume any one.
+            Every appointment reminder, follow-up, and portal welcome email waiting to go out — cancel, resume, or delete any one.
           </p>
         </div>
         <button
@@ -339,6 +365,16 @@ export default function ScheduledEmailsPage() {
                         >
                           <Ban className="w-3.5 h-3.5" />
                           {busyId === row.id ? 'Cancelling…' : 'Cancel'}
+                        </button>
+                      )}
+                      {row.status === 'cancelled' && (
+                        <button
+                          onClick={() => handleDelete(row)}
+                          disabled={busyId === row.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
                         </button>
                       )}
                       {row.status === 'cancelled' && (
