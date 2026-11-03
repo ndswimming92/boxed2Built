@@ -33,13 +33,14 @@ test('fully funded caps at 100% and reports surplus', () => {
   assert.equal(p.fullyFunded, true);
 });
 
-test('nothing owed counts as funded; negative balance is treated as zero', () => {
+test('nothing owed counts as funded; negative balance adds to the shortfall', () => {
   const none = summarizeFunding([], 0, 'year-end', TODAY);
   assert.equal(none.fraction, 1);
   assert.equal(none.fullyFunded, true);
   const neg = summarizeFunding([{ amount: 10 }], -50, 'year-end', TODAY);
   assert.equal(neg.fraction, 0);
-  assert.equal(neg.shortfall, 10);
+  assert.equal(neg.balance, -50);
+  assert.equal(neg.shortfall, 60);
 });
 
 test('cushion is added on top of scheduled charges', () => {

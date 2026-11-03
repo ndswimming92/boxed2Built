@@ -46,17 +46,18 @@ export function summarizeFunding(
   const scheduled = round(charges.reduce((sum, c) => sum + c.amount, 0));
   const safeCushion = Math.max(0, round(cushion));
   const required = round(scheduled + safeCushion);
-  const safeBalance = Math.max(0, balance);
-  const fraction = required <= 0 ? 1 : Math.min(1, safeBalance / required);
-  const shortfall = Math.max(0, Math.round((required - safeBalance) * 100) / 100);
-  const surplus = Math.max(0, Math.round((safeBalance - required) * 100) / 100);
+  // Only the progress fraction is clamped; a negative balance still counts in full
+  // toward the shortfall (you must cover the overdraft too).
+  const fraction = required <= 0 ? 1 : Math.min(1, Math.max(0, balance / required));
+  const shortfall = Math.max(0, round(required - balance));
+  const surplus = Math.max(0, round(balance - required));
   return {
     period,
     periodEnd,
     scheduled,
     cushion: safeCushion,
     required,
-    balance: safeBalance,
+    balance,
     fraction,
     shortfall,
     surplus,
