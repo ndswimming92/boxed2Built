@@ -1,4 +1,15 @@
 import { supabase } from '../lib/supabase';
+import {
+  fundingPeriodEnd,
+  summarizeFunding,
+  type FundingPeriod,
+  type FundingProgress,
+} from './fundingProgress';
+
+export type { FundingPeriod, FundingProgress };
+
+/** Safety buffer: this many months of average burn on top of scheduled charges. */
+export const FUNDING_CUSHION_MONTHS = 2;
 
 /** ────────────────────────────────────────────────────────────────────────────
  *  Burn-Rate & Subscription service
@@ -245,6 +256,24 @@ export function enumerateCharges(
   }
 
   return events;
+}
+
+/**
+ * Funding progress for the current balance against charges still due in the
+ * period (see fundingProgress.ts). Uses the real charge schedule, not an
+ * averaged monthly figure.
+ */
+export function fundingProgress(
+  subscriptions: Subscription[],
+  balance: number,
+  period: FundingPeriod = 'next-12-months',
+  today: Date = todayDateOnly(),
+  cushionMonths = FUNDING_CUSHION_MONTHS
+): FundingProgress {
+  const periodEnd = fundingPeriodEnd(period, today);
+  const charges = subscriptions.flatMap((sub) => enumerateCharges(sub, today, periodEnd));
+  const cushion = cushionMonths * subscriptions.reduce((sum, sub) => sum + monthlyAmount(sub), 0);
+  return summarizeFunding(charges, balance, period, periodEnd, cushion);
 }
 
 export interface BurnMetrics {
