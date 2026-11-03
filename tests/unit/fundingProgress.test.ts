@@ -41,3 +41,18 @@ test('nothing owed counts as funded; negative balance is treated as zero', () =>
   assert.equal(neg.fraction, 0);
   assert.equal(neg.shortfall, 10);
 });
+
+test('cushion is added on top of scheduled charges', () => {
+  const p = summarizeFunding([{ amount: 10 }, { amount: 10 }], 15, 'next-12-months', TODAY, 10);
+  assert.equal(p.scheduled, 20);
+  assert.equal(p.cushion, 10);
+  assert.equal(p.required, 30);
+  assert.equal(p.fraction, 0.5);
+  assert.equal(p.shortfall, 15);
+});
+
+test('a cushion alone still needs funding when no charges remain', () => {
+  const p = summarizeFunding([], 0, 'year-end', TODAY, 20);
+  assert.equal(p.required, 20);
+  assert.equal(p.fullyFunded, false);
+});

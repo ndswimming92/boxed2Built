@@ -8,6 +8,9 @@ import {
 
 export type { FundingPeriod, FundingProgress };
 
+/** Safety buffer: this many months of average burn on top of scheduled charges. */
+export const FUNDING_CUSHION_MONTHS = 2;
+
 /** ────────────────────────────────────────────────────────────────────────────
  *  Burn-Rate & Subscription service
  *
@@ -263,12 +266,14 @@ export function enumerateCharges(
 export function fundingProgress(
   subscriptions: Subscription[],
   balance: number,
-  period: FundingPeriod = 'year-end',
-  today: Date = todayDateOnly()
+  period: FundingPeriod = 'next-12-months',
+  today: Date = todayDateOnly(),
+  cushionMonths = FUNDING_CUSHION_MONTHS
 ): FundingProgress {
   const periodEnd = fundingPeriodEnd(period, today);
   const charges = subscriptions.flatMap((sub) => enumerateCharges(sub, today, periodEnd));
-  return summarizeFunding(charges, balance, period, periodEnd);
+  const cushion = cushionMonths * subscriptions.reduce((sum, sub) => sum + monthlyAmount(sub), 0);
+  return summarizeFunding(charges, balance, period, periodEnd, cushion);
 }
 
 export interface BurnMetrics {

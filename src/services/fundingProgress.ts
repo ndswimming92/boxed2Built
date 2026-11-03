@@ -5,7 +5,11 @@ export type FundingPeriod = 'year-end' | 'next-12-months';
 export interface FundingProgress {
   period: FundingPeriod;
   periodEnd: Date;
-  /** Total of every charge scheduled from today through periodEnd. */
+  /** Charges scheduled from today through periodEnd. */
+  scheduled: number;
+  /** Extra buffer added on top of the scheduled charges. */
+  cushion: number;
+  /** scheduled + cushion: the amount the balance is measured against. */
   required: number;
   balance: number;
   /** balance / required, clamped to 0..1. 1 when nothing is owed. */
@@ -35,9 +39,13 @@ export function summarizeFunding(
   charges: { amount: number }[],
   balance: number,
   period: FundingPeriod,
-  periodEnd: Date
+  periodEnd: Date,
+  cushion = 0
 ): FundingProgress {
-  const required = Math.round(charges.reduce((sum, c) => sum + c.amount, 0) * 100) / 100;
+  const round = (n: number) => Math.round(n * 100) / 100;
+  const scheduled = round(charges.reduce((sum, c) => sum + c.amount, 0));
+  const safeCushion = Math.max(0, round(cushion));
+  const required = round(scheduled + safeCushion);
   const safeBalance = Math.max(0, balance);
   const fraction = required <= 0 ? 1 : Math.min(1, safeBalance / required);
   const shortfall = Math.max(0, Math.round((required - safeBalance) * 100) / 100);
@@ -45,6 +53,8 @@ export function summarizeFunding(
   return {
     period,
     periodEnd,
+    scheduled,
+    cushion: safeCushion,
     required,
     balance: safeBalance,
     fraction,

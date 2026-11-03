@@ -37,6 +37,7 @@ import {
   recordBalance,
   computeBurnMetrics,
   fundingProgress,
+  FUNDING_CUSHION_MONTHS,
   type FundingPeriod,
   projectBurndown,
   upcomingPayments,
@@ -71,7 +72,7 @@ export default function BurnRatePage() {
   const [showSubModal, setShowSubModal] = useState(false);
   const [editingSub, setEditingSub] = useState<Subscription | null>(null);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
-  const [fundingPeriod, setFundingPeriod] = useState<FundingPeriod>('year-end');
+  const [fundingPeriod, setFundingPeriod] = useState<FundingPeriod>('next-12-months');
 
   useEffect(() => {
     const fetchBusinessId = async () => {
@@ -338,7 +339,16 @@ export default function BurnRatePage() {
         )}
 
         {/* Stat tiles */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+          <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
+            <p className="text-[11px] text-slate-500">Costs Funded</p>
+            <p className={`text-base font-bold leading-tight ${funding.fullyFunded ? 'text-emerald-600' : funding.fraction >= 0.5 ? 'text-amber-600' : 'text-red-600'}`}>
+              {maskFinancialValue(`${Math.floor(funding.fraction * 100)}%`)}
+            </p>
+            <p className="text-[11px] text-slate-400 truncate">
+              {funding.period === 'year-end' ? 'thru Dec 31' : 'next 12 mo'} + cushion
+            </p>
+          </div>
           <div className="bg-white rounded-lg border border-slate-200 px-3 py-2 shadow-sm">
             <p className="text-[11px] text-slate-500">Current Balance</p>
             <p className="text-base font-bold text-slate-900 leading-tight">
@@ -421,13 +431,14 @@ export default function BurnRatePage() {
             <p className="text-sm text-slate-500 mt-0.5">
               Balance vs. every charge due from today through{' '}
               {funding.period === 'year-end' ? 'Dec 31' : formatDate(funding.periodEnd)}
-              {' '}({funding.chargeCount} payment{funding.chargeCount === 1 ? '' : 's'}).
+              {' '}({funding.chargeCount} payment{funding.chargeCount === 1 ? '' : 's'}) plus a{' '}
+              {FUNDING_CUSHION_MONTHS}-month cushion.
             </p>
           </div>
           <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium" role="group" aria-label="Funding period">
             {([
-              ['year-end', 'Rest of year'],
               ['next-12-months', 'Next 12 months'],
+              ['year-end', 'Rest of year'],
             ] as const).map(([value, label]) => (
               <button
                 key={value}
@@ -471,7 +482,11 @@ export default function BurnRatePage() {
             style={{ width: `${funding.fraction * 100}%` }}
           />
         </div>
-        <p className="text-sm text-slate-600 mt-3">
+        <p className="text-xs text-slate-500 mt-2">
+          Scheduled payments {formatCurrency(funding.scheduled, { decimals: true })} + cushion{' '}
+          {formatCurrency(funding.cushion, { decimals: true })} = {formatCurrency(funding.required, { decimals: true })}
+        </p>
+        <p className="text-sm text-slate-600 mt-2">
           {funding.required <= 0
             ? 'No charges are scheduled in this period.'
             : funding.fullyFunded
