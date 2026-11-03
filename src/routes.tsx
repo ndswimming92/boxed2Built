@@ -87,6 +87,7 @@ const AdminNewsPage = React.lazy(() => import('./pages/admin/NewsPage'));
 const AdminSalesSubscribersPage = React.lazy(() => import('./pages/admin/SalesSubscribersPage'));
 const GrantsPage = React.lazy(() => import('./pages/admin/GrantsPage'));
 const CompetitorsPage = React.lazy(() => import('./pages/admin/CompetitorsPage'));
+const PartnerLeadsPage = React.lazy(() => import('./pages/admin/PartnerLeadsPage'));
 const StoreProductsPage = React.lazy(() => import('./pages/admin/StoreProductsPage'));
 const StoreOrdersPage = React.lazy(() => import('./pages/admin/StoreOrdersPage'));
 const ModelStudioPage = React.lazy(() => import('./pages/admin/ModelStudioPage'));
@@ -225,6 +226,7 @@ export const routes: RouteRecord[] = [
           { path: 'news', Component: AdminNewsPage },
           { path: 'sales-subscribers', Component: AdminSalesSubscribersPage },
           { path: 'competitors', Component: CompetitorsPage },
+          { path: 'partner-leads', Component: PartnerLeadsPage },
           { path: 'gallery', Component: GalleryAdminPage },
           { path: 'qr-codes', Component: QRCodesPage },
           { path: 'qr-codes/:id', Component: QRCodeDetailPage },

@@ -82,3 +82,6 @@ verify_jwt = false
 
 [functions.check-social-post-status]
 verify_jwt = false
+
+[functions.send-partner-outreach-email]
+verify_jwt = false

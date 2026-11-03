@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, GripVertical, HandCoins, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
+import { Activity, BarChart3, Binoculars, Boxes, Briefcase, Building, Building2, Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock, CreditCard, DollarSign, Eye, EyeOff, ExternalLink, FileText, Flame, FlaskConical, FolderOpen, Gift, GripVertical, HandCoins, Handshake, HardHat, History, Image, Inbox, KeyRound, LayoutDashboard, Link as LinkIcon, LogOut, Mail, MapPin, Maximize2, Megaphone, Menu, MessageCircle, MessageSquare, Minimize2, Navigation, Newspaper, Palette, Plug, QrCode, Receipt, ScrollText, Search, Send, Settings, ShieldCheck, Share2, ShoppingBag, Star, Target, Ticket, TrendingUp, TrendingUp as TrendingUpIcon, Users, Wand2, Wrench, X, Zap, CalendarCheck, CalendarClock } from 'lucide-react';
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, DragEndEvent, Modifier } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -164,6 +164,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'News Feed', href: '/admin/news', icon: Newspaper },
       { name: 'Sales Subscribers', href: '/admin/sales-subscribers', icon: Mail },
       { name: 'Competitor Watch', href: '/admin/competitors', icon: Binoculars },
+      { name: 'Partner Leads', href: '/admin/partner-leads', icon: Handshake },
       { name: 'QR Codes', href: '/admin/qr-codes', icon: QrCode },
       { name: 'Social Media', href: '/admin/social-media', icon: Share2 },
       { name: 'Social Metrics', href: '/admin/social-metrics', icon: Activity },
