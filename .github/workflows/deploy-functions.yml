@@ -74,7 +74,11 @@ jobs:
       # verify_jwt comes from supabase/config.toml. Without those entries the
       # CLI would deploy the public webhooks and the anonymous contact form with
       # JWT verification ON and break them, so that file is load-bearing here.
+      #
+      # --yes: newer CLI versions ask for confirmation before a multi-function
+      # deploy, and with no terminal they exit 1 having deployed nothing. Without
+      # it every deploy since that CLI release failed silently on main.
       - name: Deploy functions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --yes
