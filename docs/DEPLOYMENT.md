@@ -59,12 +59,31 @@ loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404
 
 ### Switching the domain
 
-1. Add `boxed2built.com` (and `www`) under the Pages project's **Custom
+1. Before moving nameservers, copy every DNS record into Cloudflare by hand
+   and check it against the old provider. The import scan misses uncommon
+   names. The ones that matter here:
+   - root `MX` (Google Workspace) plus its `google._domainkey` and SPF `TXT`
+   - `MX` on `reply.boxed2built.com`: Resend receiving for customer replies
+     (see `supabase/functions/resend-webhook`)
+   - Resend sending records (`resend._domainkey`, `send.*`) and `_dmarc`
+   Email records stay **DNS only** (grey cloud).
+2. Add `boxed2built.com` and `www` under the Pages project's **Custom
    domains** and follow the DNS steps it shows.
-2. Turn on **SSL/TLS → Edge Certificates → Always Use HTTPS**. This replaces
+3. Turn on **SSL/TLS → Edge Certificates → Always Use HTTPS**. This replaces
    the HTTP→HTTPS redirect in `netlify.toml`.
-3. Test sign-in, checkout, gift cards and the client portal on the live domain.
-4. Once it has run cleanly for a day or two, disconnect Netlify and cancel Bolt.
+4. Add **Rules → Redirect Rules → "Redirect from WWW to root"** (301, keep the
+   path and query). Pages can't redirect between hostnames, and invoice, gift
+   card and shop checkout links send customers to `www.boxed2built.com`
+   while canonicals point at the bare domain.
+5. Turn off **Scrape Shield → Email Address Obfuscation** and leave **Rocket
+   Loader** off. Both rewrite the pre-rendered HTML; Rocket Loader would also
+   break the hashed inline scripts the CSP allows.
+6. Under **Settings → Builds → Branch control**, set preview branches to
+   **None**. Preview builds have no Supabase variables, so they fail and use
+   up the monthly build allowance.
+7. Test sign-in, checkout, gift cards, the client portal, a text message and
+   a reply to a site email on the live domain.
+8. Once it has run cleanly for a day or two, disconnect Netlify and cancel Bolt.
 
 ## Edge functions
 
