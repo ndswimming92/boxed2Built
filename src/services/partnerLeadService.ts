@@ -92,20 +92,28 @@ export function previewOutreach(leadId: string, subject: string, body: string): 
 }
 
 /** Sends the email to the signed-in admin only. */
-export function sendOutreachTest(leadId: string, subject: string, body: string): Promise<{ sent: true; to: string }> {
-  return callOutreach({ leadId, subject, body, mode: 'test' });
+export function sendOutreachTest(
+  leadId: string,
+  subject: string,
+  body: string,
+  attemptId: string,
+): Promise<{ sent: true; to: string }> {
+  return callOutreach({ leadId, subject, body, mode: 'test', attemptId });
 }
 
 /**
  * Sends the reviewed email to the lead. `confirmTo` is the address shown in the
  * review step; the server refuses the send if the saved address differs.
+ * `attemptId` is made once per review step: a retry within it sends once, and
+ * a new review step is a new, deliberate send.
  */
 export function sendOutreach(
   leadId: string,
   subject: string,
   body: string,
   confirmTo: string,
+  attemptId: string,
   sendAgain = false,
-): Promise<{ sent: true; to: string; sentAt: string }> {
-  return callOutreach({ leadId, subject, body, mode: 'send', confirmTo, sendAgain });
+): Promise<{ sent: true; to: string; sentAt?: string; alreadySent?: boolean }> {
+  return callOutreach({ leadId, subject, body, mode: 'send', confirmTo, attemptId, sendAgain });
 }

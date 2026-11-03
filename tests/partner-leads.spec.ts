@@ -213,6 +213,7 @@ test('an email is sent only from the review step, to the address shown there', a
   const sends = calls.filter((call) => call.body?.mode === 'send');
   expect(sends).toHaveLength(1);
   expect(sends[0].body).toMatchObject({ leadId: 'lead-1', confirmTo: 'office@example-movers.test' });
+  expect(String(sends[0].body?.attemptId)).toMatch(/^[0-9a-f-]{36}$/);
   await expect(page.getByRole('tab', { name: /Contacted/ })).toContainText('1');
 });
 

@@ -173,6 +173,8 @@ function ReviewDialog({
   const [sendAgain, setSendAgain] = useState(false);
   const [busy, setBusy] = useState<'send' | 'test' | null>(null);
   const [testSentTo, setTestSentTo] = useState<string | null>(null);
+  // One id for this review step, shared by its send, its test and any retry.
+  const [attemptId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     let cancelled = false;
@@ -189,7 +191,7 @@ function ReviewDialog({
     setBusy('send');
     setError(null);
     try {
-      await sendOutreach(lead.id, subject, body, preview.to, sendAgain);
+      await sendOutreach(lead.id, subject, body, preview.to, attemptId, sendAgain);
       onSent();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'The email was not sent');
@@ -202,7 +204,7 @@ function ReviewDialog({
     setBusy('test');
     setError(null);
     try {
-      const result = await sendOutreachTest(lead.id, subject, body);
+      const result = await sendOutreachTest(lead.id, subject, body, attemptId);
       setTestSentTo(result.to);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'The test was not sent');

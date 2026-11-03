@@ -56,6 +56,12 @@ interface Payload {
   mode?: unknown;
   confirmTo?: unknown;
   sendAgain?: unknown;
+  /**
+   * One id per review step, made by the page. A retry or double click within
+   * that step reuses it, so Resend sends once; opening the review step again
+   * makes a new one, so a deliberate second email is not mistaken for a retry.
+   */
+  attemptId?: unknown;
 }
 
 function json(body: unknown, status = 200): Response {
@@ -146,9 +152,14 @@ Deno.serve(async (req) => {
     recipient = to;
   }
 
+  const attemptId = typeof payload.attemptId === 'string' && UUID.test(payload.attemptId) ? payload.attemptId : null;
+  // Resend replays the first response for a repeated key for 24 hours without
+  // sending. The content is always part of the key, so an edited email is a
+  // new send; the attempt id separates a deliberate resend of the same text
+  // from a retry of the same click.
   const key = await idempotencyKey(
     lead.id,
-    `${mode}:${recipient}`,
+    `${mode}:${attemptId ?? 'no-attempt'}:${recipient}`,
     normalizeSubject(subject),
     normalizeBody(body),
   );
@@ -180,29 +191,57 @@ Deno.serve(async (req) => {
   if (mode === 'test') return json({ sent: true, to: recipient, test: true });
 
   const sentAt = new Date().toISOString();
-  const { error: logError } = await db.from('partner_lead_emails').insert({
-    organization_id: lead.organization_id,
-    lead_id: lead.id,
-    to_email: recipient,
-    subject: rendered.subject,
-    body: rendered.text,
-    resend_id: sent.id ?? null,
-    sent_by: auth.user.id,
-    sent_at: sentAt,
-  });
-  if (logError) console.error('send-partner-outreach-email: could not log the send', lead.id, logError);
 
+  // A replayed response carries the id of the email already logged. The unique
+  // index on resend_id makes the log insert a no-op then, and nothing else is
+  // touched, so a retry can never add a second history row or count.
+  const { data: logged, error: logError } = await db
+    .from('partner_lead_emails')
+    .upsert(
+      {
+        organization_id: lead.organization_id,
+        lead_id: lead.id,
+        to_email: recipient,
+        subject: rendered.subject,
+        body: rendered.text,
+        resend_id: sent.id ?? null,
+        sent_by: auth.user.id,
+        sent_at: sentAt,
+      },
+      { onConflict: 'resend_id', ignoreDuplicates: true },
+    )
+    .select('id');
+  if (logError) console.error('send-partner-outreach-email: could not log the send', lead.id, logError);
+  if (!logError && (logged ?? []).length === 0) {
+    return json({ sent: true, to: recipient, alreadySent: true, resendId: sent.id ?? null });
+  }
+
+  const { count } = await db
+    .from('partner_lead_emails')
+    .select('id', { count: 'exact', head: true })
+    .eq('lead_id', lead.id);
+
+  // Send bookkeeping only; status is handled separately below.
   const { error: updateError } = await db
     .from('partner_leads')
     .update({
       last_emailed_at: sentAt,
-      emails_sent: (lead.emails_sent ?? 0) + 1,
+      emails_sent: count ?? (lead.emails_sent ?? 0) + 1,
       draft_subject: rendered.subject,
       draft_body: normalizeBody(body),
-      ...(lead.status === 'new' ? { status: 'contacted' } : {}),
     })
     .eq('id', lead.id);
   if (updateError) console.error('send-partner-outreach-email: could not update the lead', lead.id, updateError);
+
+  // New -> Contacted only if the row is still New now. Judged by the database
+  // at update time, not by the snapshot read before sending, so a status set
+  // while the email was in flight (Do not contact, say) is never overwritten.
+  const { error: statusError } = await db
+    .from('partner_leads')
+    .update({ status: 'contacted' })
+    .eq('id', lead.id)
+    .eq('status', 'new');
+  if (statusError) console.error('send-partner-outreach-email: could not mark the lead contacted', lead.id, statusError);
 
   return json({ sent: true, to: recipient, sentAt, resendId: sent.id ?? null });
 });
