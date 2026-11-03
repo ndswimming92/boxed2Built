@@ -62,7 +62,7 @@ If someone replies asking not to be contacted, set them to **Do not contact**.
 
 | Piece | Where |
 | --- | --- |
-| Tables, RLS, trigger | `supabase/migrations/20261103220655_create_partner_leads.sql` |
+| Tables, RLS, trigger | `supabase/migrations/20261103220655_create_partner_leads.sql`, `20261103222921_partner_lead_emails_unique_resend_id.sql` |
 | Send function | `supabase/functions/send-partner-outreach-email/index.ts` |
 | Email rendering (shared, tested) | `supabase/functions/_shared/partnerOutreach.ts` |
 | Admin page | `src/pages/admin/PartnerLeadsPage.tsx` |
@@ -85,7 +85,14 @@ If someone replies asking not to be contacted, set them to **Do not contact**.
 - **Refused:** leads marked Not a fit or Do not contact, and a lead emailed in
   the last seven days unless "send again" is ticked in the review step.
 - **No double sends.** Each send carries a Resend idempotency key built from the
-  lead, recipient and content, so a double click or retry sends one email.
+  lead, recipient, content and an attempt id made once per review step, so a
+  double click or retry sends one email while reopening the review step to send
+  again on purpose gets a new key. A replayed response is caught by the unique
+  index on `partner_lead_emails.resend_id`, so it never adds a second history
+  row or count.
+- **Status never goes backwards.** Sending marks a lead Contacted only if it is
+  still New at that moment (checked in the update itself), so a Do not contact
+  set while an email was in flight is kept.
 - **Plain on purpose.** A short one-to-one note, not a newsletter template.
 - **Owners and admins only**, via `can_manage_org_settings`, filtered by the
   selected organization as well as RLS.

@@ -138,7 +138,7 @@ export function daysSince(iso: string | null, now: Date = new Date()): number | 
   return (now.getTime() - then) / 86_400_000;
 }
 
-/** A stable key so a double click, or a retry, sends one email rather than two. */
+/** A stable key so a double click, or a retry, sends one email rather than two. The caller folds an attempt id into `to` so a deliberate resend gets its own key. */
 export async function idempotencyKey(leadId: string, to: string, subject: string, body: string): Promise<string> {
   const data = new TextEncoder().encode(`${leadId}\n${to.toLowerCase()}\n${subject}\n${body}`);
   const digest = await crypto.subtle.digest('SHA-256', data);
