@@ -10,6 +10,7 @@ import {
   draftPromoMessage,
   type CouponPromoRow,
 } from '../_shared/couponPromo.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -187,7 +188,7 @@ function buildEmailHtml(facts: ReminderFacts): string {
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 Deno.serve(async (req) => {

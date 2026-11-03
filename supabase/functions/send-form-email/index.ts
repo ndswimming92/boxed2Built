@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { sendCustomerSms } from "../_shared/sentSms.ts";
 import { adminInquiryLink, idempotencyKey, withoutLinks } from "../_shared/smsConsent.ts";
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -287,7 +288,7 @@ function ownerNotificationContact(p: ContactFormPayload): string {
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 function customerConfirmationContact(p: ContactFormPayload): string {
@@ -413,7 +414,7 @@ function customerConfirmationContact(p: ContactFormPayload): string {
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml('dark')}</body></html>`;
 }
 
 function ownerNotificationQuick(p: QuickContactPayload): string {
@@ -490,7 +491,7 @@ function customerConfirmationQuick(p: QuickContactPayload): string {
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;

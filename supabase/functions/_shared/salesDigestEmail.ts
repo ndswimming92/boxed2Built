@@ -7,6 +7,8 @@
  * email in send-form-email (navy ground, gold accents, rounded cards).
  */
 
+import { socialFooterHtml } from './emailSocialFooter.ts';
+
 export interface DigestSale {
   id: string;
   title: string;
@@ -96,7 +98,7 @@ ${inner}
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml('dark')}</body></html>`;
 }
 
 function logoRow(siteUrl: string): string {

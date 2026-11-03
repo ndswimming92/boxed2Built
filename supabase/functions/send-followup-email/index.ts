@@ -4,6 +4,7 @@ import { authorizeAdminOrService } from '../_shared/authorize.ts';
 import { decideFollowup, isSendableEmail, type FollowupSkipReason } from '../_shared/customerFollowup.ts';
 import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
 import { idempotencyKey, withinTextingHours } from '../_shared/smsConsent.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 /**
  * The post-job thank-you: a Google review ask, a way back to a quote, and the
@@ -241,7 +242,7 @@ function buildHtml(clientName: string, referralCode: string | null): string {
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 function buildPlainText(clientName: string, referralCode: string | null): string {
