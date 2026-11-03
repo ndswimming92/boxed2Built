@@ -168,6 +168,8 @@ export default function GalleryPage() {
   useEffect(() => () => stopProgressTimer(), []);
 
   const handlePostToSocial = async (item: GalleryItem) => {
+    // Progress state and timer are shared, so only one post can run at a time.
+    if (publishingId !== null) return;
     try {
       setPublishingId(item.id);
       const platforms: SocialPlatform[] = postTarget === 'both' ? ['facebook', 'instagram'] : [postTarget];
@@ -678,7 +680,7 @@ export default function GalleryPage() {
                   <div className="w-full mb-1.5 flex gap-1.5">
                     <button
                       onClick={() => handlePostToSocial(item)}
-                      disabled={publishingId === item.id}
+                      disabled={publishingId !== null}
                       className="flex-1 px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       <Share2 size={12} />
