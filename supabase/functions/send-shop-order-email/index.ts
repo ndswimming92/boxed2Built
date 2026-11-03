@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -179,7 +180,7 @@ function buildHtml(
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 function buildText(order: OrderRow, items: ItemRow[], contactPhone: string | null): string {

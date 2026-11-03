@@ -18,6 +18,7 @@ import {
 } from '../_shared/scheduleLabels.ts';
 import { resolveLeaveBy, resolveWorkAddress, type LeaveBy } from '../_shared/travel.ts';
 import { loadLaborDescriptionsForJob } from '../_shared/laborLineItems.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -258,7 +259,7 @@ function buildEmailHtml(
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 Deno.serve(async (req: Request) => {

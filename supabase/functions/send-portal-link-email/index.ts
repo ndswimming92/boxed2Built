@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,7 +81,7 @@ function buildVerificationEmailHtml(linkUrl: string, expiresAt?: string | null):
         </td>
       </tr>
     </table>
-  </body>
+  ${socialFooterHtml()}</body>
 </html>`;
 }
 

@@ -10,6 +10,7 @@ import {
 } from '../_shared/ics.ts';
 import { sendCustomerSms, type SmsOutcome } from '../_shared/sentSms.ts';
 import { bookingLookupLink, describeAppointment, idempotencyKey } from '../_shared/smsConsent.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 /**
  * Booking notifications: the owner hears about a new request, the customer
@@ -162,7 +163,7 @@ function bookingSummaryHtml(booking: BookingRow): string {
     .join('')}</table>`;
 }
 
-function wrap(title: string, intro: string, body: string, footer = ''): string {
+function wrap(title: string, intro: string, body: string, footer = '', customerFacing = true): string {
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:28px">
     <h1 style="margin:0 0 8px;font-size:20px;color:#0f172a">${escapeHtml(title)}</h1>
@@ -170,7 +171,7 @@ function wrap(title: string, intro: string, body: string, footer = ''): string {
     ${body}
     ${footer ? `<p style="margin:20px 0 0;font-size:13px;color:#64748b">${escapeHtml(footer)}</p>` : ''}
   </div>
-</body></html>`;
+${customerFacing ? socialFooterHtml() : ''}</body></html>`;
 }
 
 async function sendEmail(payload: Record<string, unknown>): Promise<void> {
@@ -327,6 +328,7 @@ Deno.serve(async (req: Request) => {
               : 'It is already on your Jobs calendar.',
             bookingSummaryHtml(booking),
             `Open ${SITE_URL}/admin/bookings to act on it.`,
+            false,
           ),
           reply_to: booking.customer_email,
         });

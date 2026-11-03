@@ -16,6 +16,7 @@ import {
   testRecipientFrom,
   type EmailPreviewPayload,
 } from '../_shared/adminEmailModes.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 /**
  * The invoice or estimate, with its line items and a link that takes payment.
@@ -405,7 +406,7 @@ export function buildHtml(
     </tr>
   </table>
 </div>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 export function buildPlainText(clientName: string, invoice: Invoice, lineItems: LineItem[], payUrl: string): string {

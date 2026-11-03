@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { getBusinessContactPhone } from '../_shared/businessContact.ts';
 import { authorizeAdminOrService } from '../_shared/authorize.ts';
+import { socialFooterHtml } from '../_shared/emailSocialFooter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -107,7 +108,7 @@ function buildRecipientHtml(card: GiftCardRow, redeemUrl: string, contactPhone: 
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string, contactPhone: string | null) {
@@ -154,7 +155,7 @@ function buildPurchaserHtml(card: GiftCardRow, redeemUrl: string, contactPhone: 
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 function buildPlainText(card: GiftCardRow, redeemUrl: string, toRecipient: boolean, contactPhone: string | null) {

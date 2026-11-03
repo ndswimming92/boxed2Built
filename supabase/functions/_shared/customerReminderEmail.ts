@@ -20,6 +20,7 @@ import {
   formatScheduleWhen,
   normalizeScheduleTime,
 } from './scheduleLabels.ts';
+import { socialFooterHtml } from './emailSocialFooter.ts';
 
 /** The job fields the email actually reads. A `date_scheduled` is a precondition. */
 export interface ReminderJob {
@@ -330,7 +331,7 @@ function buildHtml(
     </table>
   </td></tr>
 </table>
-</body></html>`;
+${socialFooterHtml()}</body></html>`;
 }
 
 /** The customer's own calendar entry — no pricing, no internal links. */
