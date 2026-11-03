@@ -80,6 +80,6 @@
     "@napi-rs/wasm-runtime": "1.2.5"
   },
   "optionalDependencies": {
-    "@rolldown/binding-wasm32-wasi": "1.2.16"
+    "@rolldown/binding-wasm32-wasi": "1.2.15"
   }
 }
