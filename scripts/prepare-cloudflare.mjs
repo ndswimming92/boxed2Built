@@ -53,6 +53,14 @@ const ruleCount = headers
   .filter(line => line.length > 0 && !/^\s/.test(line) && !line.startsWith('#')).length;
 if (ruleCount > 100) fail(`_headers has ${ruleCount} rules; Cloudflare allows 100.`);
 
+// Cloudflare caps each _headers line at 2,000 characters. The CSP line grows
+// with every inline-script hash apply-csp.mjs adds, and a line over the cap
+// would stop the policy being applied, so fail the build instead.
+const longLine = headers.split('\n').find(line => line.length > 2000);
+if (longLine) {
+  fail(`a _headers line is ${longLine.length} characters; Cloudflare allows 2,000: ${longLine.slice(0, 60)}…`);
+}
+
 writeFileSync(join(dist, '_headers'), headers);
 
 console.log(`[prepare-cloudflare] wrote dist/_redirects and dist/_headers (${ruleCount} header rules)`);
