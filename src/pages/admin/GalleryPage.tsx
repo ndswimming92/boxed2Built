@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Image, Video, Plus, CreditCard as Edit2, Trash2, Eye, EyeOff, Upload, Search, ArrowUpDown, Share2, CheckCircle2, AlertCircle, ShieldAlert, Clock, X } from 'lucide-react';
 import { Facebook, Instagram, Youtube } from '../../components/ui/BrandIcons';
 import { useGalleryItems } from '../../hooks/useGalleryItems';
 import { GalleryService } from '../../services/galleryService';
 import type { GalleryItem } from '../../services/galleryService';
 import { publishGalleryPhoto, checkSocialPostStatus, SocialPlatform, YoutubeUploadResult } from '../../services/socialPublishService';
+import type { PublishGalleryPhotoResult } from '../../services/socialPublishService';
 import { OptimizedImage } from '../../utils/imageOptimizationUpload';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
@@ -13,6 +14,23 @@ import BatchImageDetailsForm from '../../components/admin/BatchImageDetailsForm'
 import GalleryItemModal from '../../components/admin/GalleryItemModal';
 import GalleryReorderGrid from '../../components/admin/GalleryReorderGrid';
 import YoutubeUploadModal from '../../components/admin/YoutubeUploadModal';
+
+const PLATFORM_LABEL: Record<SocialPlatform, string> = { facebook: 'Facebook', instagram: 'Instagram' };
+
+interface PostProgress {
+  itemId: string;
+  percent: number;
+  label: string;
+  status: 'running' | 'success' | 'partial' | 'error';
+  fading?: boolean;
+}
+
+const PROGRESS_BAR_COLOR: Record<PostProgress['status'], string> = {
+  running: 'bg-slate-900',
+  success: 'bg-emerald-500',
+  partial: 'bg-amber-500',
+  error: 'bg-red-500',
+};
 
 const isPostedToFacebook = (item: GalleryItem) => Boolean(item.facebook_posted_at);
 const isPostedToInstagram = (item: GalleryItem) => Boolean(item.instagram_posted_at);
@@ -55,6 +73,8 @@ export default function GalleryPage() {
   const [publishingId, setPublishingId] = useState<string | null>(null);
   const [postTarget, setPostTarget] = useState<'both' | SocialPlatform>('both');
   const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [postProgress, setPostProgress] = useState<PostProgress | null>(null);
+  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const [scheduleValue, setScheduleValue] = useState('');
   const [schedulingBusyId, setSchedulingBusyId] = useState<string | null>(null);
@@ -138,11 +158,55 @@ export default function GalleryPage() {
     }
   };
 
+  const stopProgressTimer = () => {
+    if (progressTimer.current) {
+      clearInterval(progressTimer.current);
+      progressTimer.current = null;
+    }
+  };
+
+  useEffect(() => () => stopProgressTimer(), []);
+
   const handlePostToSocial = async (item: GalleryItem) => {
     try {
       setPublishingId(item.id);
       const platforms: SocialPlatform[] = postTarget === 'both' ? ['facebook', 'instagram'] : [postTarget];
-      const result = await publishGalleryPhoto(item.id, platforms);
+      const result: PublishGalleryPhotoResult = {
+        facebook: { success: false, skipped: true },
+        instagram: { success: false, skipped: true },
+      };
+
+      // Post one platform at a time so the bar reflects real progress.
+      // Within each step the bar eases toward 90% of that step, then snaps to the step's end when it returns.
+      const span = 100 / platforms.length;
+      for (let i = 0; i < platforms.length; i++) {
+        const platform = platforms[i];
+        const start = i * span;
+        const ceiling = start + span * 0.9;
+
+        stopProgressTimer();
+        setPostProgress({ itemId: item.id, percent: start, label: `Posting to ${PLATFORM_LABEL[platform]}…`, status: 'running' });
+        progressTimer.current = setInterval(() => {
+          setPostProgress((prev) =>
+            prev && prev.status === 'running' ? { ...prev, percent: prev.percent + (ceiling - prev.percent) * 0.08 } : prev,
+          );
+        }, 200);
+
+        try {
+          const stepResult = await publishGalleryPhoto(item.id, [platform]);
+          result[platform] = stepResult[platform];
+          if (platform === 'instagram') {
+            result.instagram_reformatted = stepResult.instagram_reformatted;
+            result.instagram_reformat_note = stepResult.instagram_reformat_note;
+          }
+        } catch (err) {
+          result[platform] = { success: false, error: err instanceof Error ? err.message : 'failed' };
+        }
+
+        stopProgressTimer();
+        setPostProgress((prev) => (prev ? { ...prev, percent: start + span } : prev));
+      }
+
       const parts: string[] = [];
       if (!result.facebook.skipped) {
         if (result.facebook.success) parts.push('Facebook: posted');
@@ -160,6 +224,17 @@ export default function GalleryPage() {
         }
       }
 
+      const succeeded = platforms.filter((p) => result[p].success);
+      const status: PostProgress['status'] =
+        succeeded.length === platforms.length ? 'success' : succeeded.length > 0 ? 'partial' : 'error';
+      const label =
+        status === 'success'
+          ? 'Posted'
+          : status === 'partial'
+            ? `Posted to ${succeeded.map((p) => PLATFORM_LABEL[p]).join(' & ')} only`
+            : 'Posting failed';
+      setPostProgress({ itemId: item.id, percent: 100, label, status });
+
       setPublishMessage({
         type: result.facebook.success || result.instagram.success ? 'success' : 'error',
         text: parts.join(' · '),
@@ -167,9 +242,14 @@ export default function GalleryPage() {
       await refresh();
     } catch (err) {
       console.error('Error posting to social:', err);
+      stopProgressTimer();
+      setPostProgress({ itemId: item.id, percent: 100, label: 'Posting failed', status: 'error' });
       setPublishMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to post to social media.' });
     } finally {
       setPublishingId(null);
+      // Hold the full bar briefly, fade it out, then remove it.
+      setTimeout(() => setPostProgress((p) => (p && p.itemId === item.id ? { ...p, fading: true } : p)), 600);
+      setTimeout(() => setPostProgress((p) => (p && p.itemId === item.id ? null : p)), 900);
       setTimeout(() => setPublishMessage(null), 6000);
     }
   };
@@ -611,6 +691,32 @@ export default function GalleryPage() {
                       <Clock size={12} />
                       Schedule
                     </button>
+                  </div>
+                )}
+
+                {postProgress?.itemId === item.id && (
+                  <div
+                    className={`w-full mb-1.5 transition-opacity duration-300 ${postProgress.fading ? 'opacity-0' : 'opacity-100'}`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="flex items-center justify-between text-[11px] leading-tight text-slate-500 mb-1">
+                      <span className="truncate">{postProgress.label}</span>
+                      <span className="tabular-nums ml-2">{Math.round(postProgress.percent)}%</span>
+                    </div>
+                    <div
+                      className="h-1 w-full rounded-full bg-slate-200 overflow-hidden"
+                      role="progressbar"
+                      aria-label="Posting progress"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(postProgress.percent)}
+                    >
+                      <div
+                        className={`h-full rounded-full transition-[width,background-color] duration-200 ease-out ${PROGRESS_BAR_COLOR[postProgress.status]}`}
+                        style={{ width: `${postProgress.percent}%` }}
+                      />
+                    </div>
                   </div>
                 )}
 
