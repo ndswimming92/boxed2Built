@@ -14,23 +14,35 @@ interface Props {
   onConverted?: () => void;
 }
 
-/** Every email already on a regular customer, lowercased, read in pages. */
-async function fetchCustomerEmails(organizationId: string): Promise<Set<string>> {
+const phoneDigits = (phone: string | null | undefined) => (phone ?? '').replace(/\D/g, '').slice(-10);
+
+interface CustomerContacts {
+  emails: Set<string>;
+  phones: Set<string>;
+}
+
+/** Every email and phone already on a regular customer, read in pages. */
+async function fetchCustomerContacts(organizationId: string): Promise<CustomerContacts> {
   const emails = new Set<string>();
+  const phones = new Set<string>();
   const size = 1000;
   for (let request = 0; request < 50; request += 1) {
     const { data, error } = await supabase
       .from('clients')
-      .select('id, email')
+      .select('id, email, phone')
       .eq('organization_id', organizationId)
       .order('id')
       .range(request * size, request * size + size - 1);
     if (error) throw new Error(`Failed to load customers: ${error.message}`);
     const page = data || [];
-    for (const row of page) if (row.email) emails.add(row.email.trim().toLowerCase());
+    for (const row of page) {
+      if (row.email) emails.add(row.email.trim().toLowerCase());
+      const digits = phoneDigits(row.phone);
+      if (digits.length >= 7) phones.add(digits);
+    }
     if (page.length < size) break;
   }
-  return emails;
+  return { emails, phones };
 }
 
 function wasReachedOut(lead: PartnerLead): boolean {
@@ -45,7 +57,7 @@ function wasReachedOut(lead: PartnerLead): boolean {
 export default function PartnerLeadProfiles({ organizationId, onConverted }: Props) {
   const [leads, setLeads] = useState<PartnerLead[]>([]);
   const [codes, setCodes] = useState<Map<string, PartnerCode>>(new Map());
-  const [customerEmails, setCustomerEmails] = useState<Set<string>>(new Set());
+  const [customerContacts, setCustomerContacts] = useState<CustomerContacts>({ emails: new Set(), phones: new Set() });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -59,15 +71,15 @@ export default function PartnerLeadProfiles({ organizationId, onConverted }: Pro
     let cancelled = false;
     (async () => {
       try {
-        const [allLeads, emails] = await Promise.all([
+        const [allLeads, contacts] = await Promise.all([
           getPartnerLeads(organizationId),
-          fetchCustomerEmails(organizationId),
+          fetchCustomerContacts(organizationId),
         ]);
         const reached = allLeads.filter(wasReachedOut);
         const couponRows = await getPartnerCodes(reached.map((lead) => lead.coupon_id ?? '')).catch(() => []);
         if (cancelled) return;
         setLeads(reached);
-        setCustomerEmails(emails);
+        setCustomerContacts(contacts);
         setCodes(new Map(couponRows.map((coupon) => [coupon.id, coupon])));
         setError(null);
       } catch (err) {
@@ -83,8 +95,12 @@ export default function PartnerLeadProfiles({ organizationId, onConverted }: Pro
 
   const { profiles, hiddenAsCustomers } = useMemo(() => {
     // A lead whose email is already a regular customer is that customer, not a second profile.
-    const isCustomer = (lead: PartnerLead) =>
-      Boolean(lead.email) && customerEmails.has(lead.email!.trim().toLowerCase());
+    // A lead with an email is matched on it; a phone-only lead is matched on its phone.
+    const isCustomer = (lead: PartnerLead) => {
+      if (lead.email) return customerContacts.emails.has(lead.email.trim().toLowerCase());
+      const digits = phoneDigits(lead.phone);
+      return digits.length >= 7 && customerContacts.phones.has(digits);
+    };
     const visible = leads.filter((lead) => !isCustomer(lead));
     const term = search.trim().toLowerCase();
     const matches = term
@@ -95,7 +111,7 @@ export default function PartnerLeadProfiles({ organizationId, onConverted }: Pro
         )
       : visible;
     return { profiles: matches, hiddenAsCustomers: leads.length - visible.length };
-  }, [leads, customerEmails, codes, search]);
+  }, [leads, customerContacts, codes, search]);
 
   async function copyCode(code: string) {
     try {
