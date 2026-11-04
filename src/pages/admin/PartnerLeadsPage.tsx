@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { OutreachEditor } from '../../components/admin/OutreachEditor';
 import {
   getPartnerLeadEmails,
   getPartnerLeads,
@@ -536,18 +537,10 @@ function LeadCard({
                       onChange={(event) => setSubject(event.target.value)}
                     />
                   </label>
-                  <label className="block text-xs font-semibold text-slate-600">
-                    Message
-                    <textarea
-                      className={`${inputClass} mt-1 min-h-[14rem] leading-relaxed`}
-                      value={body}
-                      maxLength={5000}
-                      onChange={(event) => setBody(event.target.value)}
-                    />
-                  </label>
-                  <p className="text-xs text-slate-500">
-                    Your signature and a one-line opt-out are added below the message when it is sent.
-                  </p>
+                  <div>
+                    <span className="block text-xs font-semibold text-slate-600 mb-1">Message</span>
+                    <OutreachEditor subject={subject} body={body} maxLength={5000} onChange={setBody} />
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"

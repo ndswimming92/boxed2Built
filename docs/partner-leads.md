@@ -37,18 +37,46 @@ email was found on is saved in `email_source_url` and linked on the card as
   already sent to them, and status and notes. **Edit contact** corrects the
   email, name or role.
 
+## Writing the email
+
+The message editor has a toolbar — **bold**, *italic*, underline, link,
+bulleted and numbered lists, and an **Insert button** (a brand-coloured button
+that links wherever you choose, with one-click picks for the Website, Book,
+Gift cards, Partners and Services pages). Beside it, a **live preview** shows
+the finished, branded email as you type: the Boxed2Built logo and navy-and-gold
+rule at the top, your text, a contact card with the website link, the social
+icons, and the opt-out line.
+
+The toolbar writes a small, safe markup into the message text that the server
+turns into HTML:
+
+```
+**bold**   *italic*   __underline__   [words](https://link)
+- a bullet line         1. a numbered line
+[button: Book online](https://boxed2built.com/book)   (on its own line)
+```
+
+Only `http(s)`, `mailto:` and `tel:` links become links; anything else stays as
+plain text, so a draft can never inject HTML or a script. End the message with
+your own closing (e.g. "Thanks for your time,"). If you don't, the standard
+closing (your name and Boxed2Built) is added for you — and if you already sign
+off with your name, nothing is added, so the closing never shows twice.
+
 ## Sending
 
 1. Edit the subject and message on the card (**Save draft** keeps them).
 2. **Review & send** opens the email exactly as it will go out, rendered by the
    `send-partner-outreach-email` function rather than the browser, with the To,
-   From and Reply-to addresses.
+   From and Reply-to addresses. (The live preview uses the same renderer, so it
+   matches; only the footer's full mailing address is filled in server-side.)
 3. **Send me a test** sends it to the signed-in admin only.
 4. Tick that it has been checked, then **Send to …**.
 
 The email goes from and replies to `nicholas.davidson@boxed2built.com` through
-Resend. The function adds the signature and a footer with a one-line opt-out
-and the business's mailing address.
+Resend. It is laid out in the Boxed2Built brand — logo, navy-and-gold accent,
+a contact card linking to boxed2built.com, and the social-icon footer shared
+with the other customer emails (`_shared/emailSocialFooter.ts`) — then a footer
+with a one-line opt-out and the business's mailing address.
 
 **Set the mailing address:** add an `OUTREACH_POSTAL_ADDRESS` secret to the
 edge function (Supabase dashboard > Edge Functions > Secrets), e.g.
@@ -64,8 +92,10 @@ If someone replies asking not to be contacted, set them to **Do not contact**.
 | --- | --- |
 | Tables, RLS, trigger | `supabase/migrations/20261103220655_create_partner_leads.sql`, `20261103222921_partner_lead_emails_unique_resend_id.sql` |
 | Send function | `supabase/functions/send-partner-outreach-email/index.ts` |
-| Email rendering (shared, tested) | `supabase/functions/_shared/partnerOutreach.ts` |
+| Email rendering + markup (shared, tested; imported by the page too) | `supabase/functions/_shared/partnerOutreach.ts` |
+| Shared social footer | `supabase/functions/_shared/emailSocialFooter.ts` |
 | Admin page | `src/pages/admin/PartnerLeadsPage.tsx` |
+| Message editor + live preview | `src/components/admin/OutreachEditor.tsx` |
 | Queries and calls | `src/services/partnerLeadService.ts` |
 | Labels, sorting, search, link checks | `src/utils/partnerLeads.ts` |
 | Types | `src/types/partnerLeads.ts` |
@@ -93,7 +123,22 @@ If someone replies asking not to be contacted, set them to **Do not contact**.
 - **Status never goes backwards.** Sending marks a lead Contacted only if it is
   still New at that moment (checked in the update itself), so a Do not contact
   set while an email was in flight is kept.
-- **Plain on purpose.** A short one-to-one note, not a newsletter template.
+- **One renderer, two places.** The page imports `renderOutreach` from the
+  function's shared module and renders the live preview in the browser, so what
+  you see while typing is the same code the server sends with — they cannot
+  drift. The Review step re-renders server-side as the final authority (and is
+  where the real mailing address appears).
+- **Markup is safe by construction.** The body is stored as plain text with a
+  little markup. Everything is HTML-escaped; only `http(s)`, `mailto:` and
+  `tel:` links are turned into links or buttons. A `javascript:`/`data:` or
+  relative URL stays inert text.
+- **Branded, but light on purpose.** Logo, a navy-and-gold rule, brand links
+  and buttons, and the social footer — but a white page and a one-to-one tone,
+  not a full newsletter template, which keeps cold outreach out of Promotions
+  more often.
+- **The closing is the sender's.** The message ends with whatever closing is
+  typed; a standard one is added only when there isn't one, and never a second
+  time when the name is already there.
 - **Owners and admins only**, via `can_manage_org_settings`, filtered by the
   selected organization as well as RLS.
 

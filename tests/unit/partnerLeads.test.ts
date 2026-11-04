@@ -5,10 +5,15 @@ import {
   checkOutreach,
   daysSince,
   idempotencyKey,
+  inlineHtml,
+  inlineText,
+  isSafeLinkUrl,
   isSendableAddress,
   normalizeBody,
   normalizeSubject,
+  parseBlocks,
   renderOutreach,
+  withClosing,
 } from '../../supabase/functions/_shared/partnerOutreach.ts';
 import {
   canEmail,
@@ -41,16 +46,21 @@ test('empty or oversized emails are refused', () => {
   assert.equal(checkOutreach('Hi', 'Hello there'), null);
 });
 
-test('the rendered email escapes what was typed and adds signature and opt-out', () => {
+test('the rendered email escapes what was typed and adds the closing, card and opt-out', () => {
   const out = renderOutreach({
     subject: 'Partnering on move-ins',
-    body: 'Hi <b>Sam</b>,\n\nA second paragraph & more.',
+    body: 'Hi <b>Sam</b>,\n\nA second paragraph & more.\n\nThanks for your time,\nNicholas Davidson\nBoxed2Built',
     postalAddress: 'PO Box 1, Spring Hill, TN 37174',
   });
   assert.match(out.html, /Hi &lt;b&gt;Sam&lt;\/b&gt;,/);
   assert.doesNotMatch(out.html, /<b>Sam<\/b>/);
   assert.match(out.html, /A second paragraph &amp; more\./);
-  assert.match(out.text, /Nicholas Davidson\nOwner, Boxed2Built/);
+  // The branded contact card and the social footer.
+  assert.match(out.html, /boxed2built_logo_email\.png/);
+  assert.match(out.html, /Furniture assembly &amp; TV mounting/);
+  assert.match(out.html, /boxed2built\.com\//);
+  assert.match(out.html, /email-icons\/facebook\.png/);
+  assert.match(out.text, /Thanks for your time,\nNicholas Davidson\nBoxed2Built/);
   assert.match(out.text, /won't email you again/);
   assert.match(out.text, /PO Box 1, Spring Hill, TN 37174/);
   assert.equal(out.html.includes('<script'), false);
@@ -59,6 +69,58 @@ test('the rendered email escapes what was typed and adds signature and opt-out',
 test('without a postal address the footer falls back to the town', () => {
   const out = renderOutreach({ subject: 'Hi', body: 'Hello', postalAddress: null });
   assert.match(out.text, /Boxed2Built LLC, Spring Hill, TN$/);
+});
+
+test('the closing is added only when the body lacks one', () => {
+  // No sign-off: the whole closing is appended.
+  assert.match(withClosing('Hi there,\n\nLet me know.'), /Let me know\.\n\nThanks for your time,\nNicholas Davidson\nBoxed2Built$/);
+  // A bare sign-off line gets the name block.
+  assert.equal(withClosing('Hi there,\n\nThanks,'), 'Hi there,\n\nThanks,\nNicholas Davidson\nBoxed2Built');
+  // Already signed by Nicholas: left as written, no second closing.
+  const signed = 'Hi,\n\nTalk soon,\nNicholas Davidson\nBoxed2Built';
+  assert.equal(withClosing(signed), signed);
+  // An empty body stays empty (checkOutreach rejects it upstream).
+  assert.equal(withClosing('   '), '');
+});
+
+test('only http(s), mailto and tel links are treated as links', () => {
+  for (const ok of ['https://boxed2built.com/book', 'http://example.com', 'mailto:nick@boxed2built.com', 'tel:+16154034538']) {
+    assert.equal(isSafeLinkUrl(ok), true, ok);
+  }
+  for (const bad of ['javascript:alert(1)', 'data:text/html,x', '/book', 'ftp://x.com', 'https://nodot', 'mailto:bad']) {
+    assert.equal(isSafeLinkUrl(bad), false, bad);
+  }
+});
+
+test('inline markup makes safe links and emphasis, and escapes everything else', () => {
+  const html = inlineHtml('See **our** [deals](https://boxed2built.com/deals) and <tags>.');
+  assert.match(html, /<strong>our<\/strong>/);
+  assert.match(html, /<a href="https:\/\/boxed2built\.com\/deals"[^>]*>deals<\/a>/);
+  assert.match(html, /&lt;tags&gt;/);
+  // An unsafe link URL is never turned into an anchor.
+  const unsafe = inlineHtml('[click](javascript:alert(1))');
+  assert.doesNotMatch(unsafe, /href="javascript/);
+  assert.doesNotMatch(unsafe, /<a /);
+  assert.doesNotMatch(unsafe, /<script/);
+  // Plain-text form spells the link out and drops the markers.
+  assert.equal(inlineText('See **our** [deals](https://boxed2built.com/deals).'), 'See our deals (https://boxed2built.com/deals).');
+});
+
+test('blocks become paragraphs, lists and a button', () => {
+  const blocks = parseBlocks('Intro line.\n\n- first\n- second\n\n1. one\n2. two\n\n[button: Book online](https://boxed2built.com/book)');
+  assert.deepEqual(blocks.map((b) => b.kind), ['paragraph', 'bullets', 'numbers', 'button']);
+  const out = renderOutreach({ subject: 'Hi', body: 'Intro.\n\n- a\n- b\n\n[button: Book online](https://boxed2built.com/book)', postalAddress: null });
+  assert.match(out.html, /<ul[^>]*>.*<li[^>]*>a<\/li>/s);
+  assert.match(out.html, /<a href="https:\/\/boxed2built\.com\/book"[^>]*>Book online<\/a>/);
+  assert.match(out.text, /- a\n- b/);
+  assert.match(out.text, /Book online: https:\/\/boxed2built\.com\/book/);
+});
+
+test('a button line with an unsafe url is not rendered as a button', () => {
+  const blocks = parseBlocks('[button: Hack](javascript:alert(1))');
+  assert.notEqual(blocks[0].kind, 'button');
+  const out = renderOutreach({ subject: 'Hi', body: '[button: Hack](javascript:alert(1))', postalAddress: null });
+  assert.doesNotMatch(out.html, /href="javascript/);
 });
 
 test('the idempotency key is stable for the same email and changes with it', async () => {
