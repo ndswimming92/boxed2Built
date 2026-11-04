@@ -103,7 +103,7 @@ as $$
        'email.delivered', 'email.opened', 'email.clicked',
        'email.bounced', 'email.complained', 'email.delivery_delayed'
      )
-   order by ev.occurred_at;
+   order by ev.occurred_at, e.id, ev.event_type, ev.id;
 $$;
 
 revoke all on function public.get_partner_lead_email_activity(uuid) from public, anon;
