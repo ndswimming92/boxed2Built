@@ -59,18 +59,38 @@ turns into HTML:
 Only `http(s)`, `mailto:` and `tel:` links become links; anything else stays as
 plain text, so a draft can never inject HTML or a script.
 
-**Button clicks show in GA4.** Every button that links to boxed2built.com gets
-UTM tags added when the email is rendered:
-`utm_source=partner_outreach`, `utm_medium=email`, `utm_campaign=partner_leads`,
-`utm_content=button_<button text>` (e.g. `button_book_online`) and
+**Clicks show in GA4.** Every link to boxed2built.com in the email (buttons,
+text links, the logo and the contact card's website link) gets UTM tags added
+when the email is rendered: `utm_source=partner_outreach`, `utm_medium=email`,
+`utm_campaign=partner_leads`, `utm_content` for what was clicked
+(`button_book_online`, `link_our_partner_page`, `logo`, `card_website`) and
 `utm_term=<business emailed>` (e.g. `grand_welcome_of_franklin`). In GA4, look
 under Reports > Acquisition > Traffic acquisition (session source / medium
 `partner_outreach / email`), or add "Session manual term" and "Session manual
-ad content" to see which business and which button. Links to other sites are
-left alone, and a utm_ value you type into a link yourself is kept. End the message with
-your own closing (e.g. "Thanks for your time,"). If you don't, the standard
-closing (your name and Boxed2Built) is added for you — and if you already sign
-off with your name, nothing is added, so the closing never shows twice.
+ad content" to see which business and which link. Links to other sites are
+left alone, and a utm_ value you type into a link yourself is kept.
+
+## Partner codes
+
+Each card has a **Partner code** section. **Create code** makes a coupon for
+that partner (suggested from their name, e.g. `GRANDWELCOME`, $25 off by
+default) through `create_partner_lead_code`, and links it to the lead. It is an
+ordinary coupon, so it also appears under Admin > Coupons, where it can be
+edited or turned off. Customers the partner sends type the code on the request
+form, or arrive from the booking link (`/contact?coupon=CODE`), and get the
+discount; the card shows how many times it was used. **Add code to email**
+puts a line and a "Book with code" button above your closing.
+
+## Opens, clicks and bounces
+
+Open and click tracking is on for the boxed2built.com sending domain in Resend
+(it applies to every email sent from that domain). Resend's webhook events land
+in `email_events`, and `get_partner_lead_email_activity` returns the ones for
+partner outreach emails to owners and admins. Each sent email on a card shows
+Delivered, Opened, Clicked (hover for the links) or Bounced, and the collapsed
+card shows "Opened your email", "Clicked your email" or "Email bounced" for the
+latest one. Some mail apps (Apple Mail especially) load images automatically,
+so "Opened" can appear when nobody read it; a click is the stronger signal.
 
 ## Sending
 
@@ -89,7 +109,7 @@ with the other customer emails (`_shared/emailSocialFooter.ts`) — then a foote
 with a one-line opt-out and the business's mailing address.
 
 **Mailing address:** the footer reads "Boxed2Built LLC, 163 Bess Blvd, Spring
-Hill, TN" (`OUTREACH_POSTAL_ADDRESS` in `_shared/partnerOutreach.ts`), which
+Hill, TN 37174" (`OUTREACH_POSTAL_ADDRESS` in `_shared/partnerOutreach.ts`), which
 business email rules (CAN-SPAM) call for. To use a different address without a
 code change, set an `OUTREACH_POSTAL_ADDRESS` secret on the edge function
 (Supabase dashboard > Edge Functions > Secrets); it overrides the default.
@@ -101,6 +121,7 @@ If someone replies asking not to be contacted, set them to **Do not contact**.
 | Piece | Where |
 | --- | --- |
 | Tables, RLS, trigger | `supabase/migrations/20261103220655_create_partner_leads.sql`, `20261103222921_partner_lead_emails_unique_resend_id.sql` |
+| Partner codes, email activity | `supabase/migrations/20261104193000_partner_lead_codes_and_email_activity.sql` |
 | Send function | `supabase/functions/send-partner-outreach-email/index.ts` |
 | Email rendering + markup (shared, tested; imported by the page too) | `supabase/functions/_shared/partnerOutreach.ts` |
 | Shared social footer | `supabase/functions/_shared/emailSocialFooter.ts` |

@@ -80,21 +80,44 @@ const PASSED: Row = {
 };
 
 interface Call {
-  kind: 'rest' | 'function';
+  kind: 'rest' | 'function' | 'rpc';
   method: string;
   body: Record<string, unknown> | null;
 }
 
-async function stub(page: Page, leads: Row[]) {
+async function stub(page: Page, leads: Row[], extra: { emails?: Row[]; activity?: Row[] } = {}) {
   const calls: Call[] = [];
   const rows = leads.map((row) => ({ ...row }));
+  const coupons: Row[] = [];
+
+  await page.route(/\/rest\/v1\/rpc\/(get_partner_lead_email_activity|create_partner_lead_code)/, async (route) => {
+    const request = route.request();
+    const body = request.postDataJSON();
+    calls.push({ kind: 'rpc', method: 'RPC', body });
+    if (request.url().includes('get_partner_lead_email_activity')) return route.fulfill({ json: extra.activity ?? [] });
+    const coupon = {
+      id: `coupon-${coupons.length + 1}`,
+      code: body.p_code,
+      discount_type: body.p_discount_type,
+      discount_value: body.p_discount_value,
+      is_active: true,
+      times_used: 0,
+      last_used_at: null,
+    };
+    coupons.push(coupon);
+    const lead = rows.find((row) => row.id === body.p_lead_id);
+    if (lead) lead.coupon_id = coupon.id;
+    return route.fulfill({ json: coupon });
+  });
+
+  await page.route(/\/rest\/v1\/coupons(\?|$)/, (route) => route.fulfill({ json: coupons }));
 
   await page.route(/\/rest\/v1\/(partner_leads|partner_lead_emails)(\?|$)/, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const table = url.pathname.split('/').pop();
     if (request.method() === 'GET') {
-      if (table === 'partner_lead_emails') return route.fulfill({ json: [] });
+      if (table === 'partner_lead_emails') return route.fulfill({ json: url.searchParams.get('offset') && Number(url.searchParams.get('offset')) > 0 ? [] : (extra.emails ?? []) });
       const offset = Number(url.searchParams.get('offset') ?? 0);
       return route.fulfill({ json: offset > 0 ? [] : rows });
     }
@@ -252,4 +275,55 @@ test('a lead marked do not contact cannot be emailed', async ({ page }) => {
   await lead.getByRole('button', { name: 'Example Realty' }).click();
   await expect(lead.getByRole('button', { name: /Review & send/ })).toHaveCount(0);
   await expect(lead).toContainText('cannot be emailed');
+});
+
+test('a partner code is created from the card and added above the closing', async ({ page }) => {
+  const calls = await stub(page, [{ ...MOVER, name: 'Grand Welcome of Franklin', draft_body: 'Hi Josh,\n\nA note.\n\nThanks for your time,' }]);
+  await open(page);
+  const lead = card(page, 'Grand Welcome of Franklin');
+  await lead.getByRole('button', { name: 'Grand Welcome of Franklin' }).click();
+
+  await expect(lead.getByLabel('Code')).toHaveValue('GRANDWELCOME');
+  await expect(lead.getByLabel('Dollars off')).toHaveValue('25');
+  await lead.getByRole('button', { name: 'Create code' }).click();
+
+  await expect(lead.getByText('Used 0 times')).toBeVisible();
+  const rpc = calls.find((call) => call.method === 'RPC' && call.body?.p_code);
+  expect(rpc?.body).toMatchObject({ p_lead_id: 'lead-1', p_code: 'GRANDWELCOME', p_discount_type: 'fixed', p_discount_value: 25 });
+
+  await lead.getByRole('button', { name: 'Add code to email' }).click();
+  const message = await lead.getByLabel('Message').inputValue();
+  expect(message).toContain('[button: Book with code GRANDWELCOME](https://boxed2built.com/contact?coupon=GRANDWELCOME)');
+  expect(message.trim().endsWith('Thanks for your time,')).toBe(true);
+});
+
+test('sent emails show delivery, opens, clicks and bounces', async ({ page }) => {
+  await stub(page, [{ ...MOVER, status: 'contacted', last_emailed_at: NOW.toISOString(), emails_sent: 1 }], {
+    emails: [
+      {
+        id: 'email-1',
+        organization_id: 'org-1',
+        lead_id: 'lead-1',
+        to_email: 'office@example-movers.test',
+        subject: 'Helping your customers settle in',
+        body: 'Hi Dana',
+        resend_id: 're_1',
+        sent_by: null,
+        sent_at: '2026-11-03T17:00:00Z',
+      },
+    ],
+    activity: [
+      { email_id: 'email-1', event_type: 'email.delivered', occurred_at: '2026-11-03T17:00:02Z', link: null },
+      { email_id: 'email-1', event_type: 'email.opened', occurred_at: '2026-11-03T17:30:00Z', link: null },
+      { email_id: 'email-1', event_type: 'email.clicked', occurred_at: '2026-11-03T17:31:00Z', link: 'https://boxed2built.com/book?utm_source=partner_outreach' },
+    ],
+  });
+  await open(page);
+  await page.getByRole('tab', { name: /Contacted/ }).click();
+  const lead = card(page, 'Example Movers');
+  await expect(lead).toContainText('Clicked your email');
+  await lead.getByRole('button', { name: 'Example Movers' }).click();
+  await expect(lead.getByText('Delivered', { exact: true })).toBeVisible();
+  await expect(lead.getByText('Opened', { exact: true })).toBeVisible();
+  await expect(lead.getByText('Clicked', { exact: true })).toHaveAttribute('title', 'boxed2built.com/book');
 });

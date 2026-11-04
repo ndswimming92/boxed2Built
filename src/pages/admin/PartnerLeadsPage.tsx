@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type ElementType, type ReactNode } from 'react';
 import {
   AlertCircle,
+  Copy,
+  Tag,
   CalendarClock,
   CheckCircle2,
   ChevronDown,
@@ -19,6 +21,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { OutreachEditor } from '../../components/admin/OutreachEditor';
 import {
+  createPartnerCode,
+  getPartnerCodes,
+  getPartnerEmailActivity,
   getPartnerLeadEmails,
   getPartnerLeads,
   previewOutreach,
@@ -31,8 +36,17 @@ import {
   PARTNER_CATEGORY_LABELS,
   PARTNER_STATUS_LABELS,
   STATUS_TABS,
+  PARTNER_CODE_PATTERN,
   canEmail,
+  clickedLinkLabel,
+  describePartnerDiscount,
   foundLabel,
+  insertBeforeClosing,
+  normalizePartnerCode,
+  partnerCodeLink,
+  partnerCodeSnippet,
+  suggestPartnerCode,
+  summarizeEmailActivity,
   isPlainEmail,
   matchesLeadSearch,
   partnerLinks,
@@ -43,6 +57,8 @@ import { toPoints } from '../../utils/grants';
 import { centralToday, formatEndsOn, safeExternalUrl } from '../../utils/news';
 import type {
   OutreachPreview,
+  PartnerCode,
+  PartnerEmailEvent,
   PartnerCategory,
   PartnerLead,
   PartnerLeadEdit,
@@ -54,6 +70,8 @@ interface Loaded {
   organizationId: string;
   leads: PartnerLead[];
   emails: PartnerLeadEmail[];
+  codes: PartnerCode[];
+  activity: PartnerEmailEvent[];
   error: string | null;
 }
 
@@ -138,6 +156,163 @@ function Contact({
           <span className="text-slate-800">{value}</span>
         )}
       </dd>
+    </div>
+  );
+}
+
+/** Delivered / Opened / Clicked / Bounced chips for one sent email, from Resend's events. */
+function ActivityChips({ events }: { events: PartnerEmailEvent[] }) {
+  if (events.length === 0) return null;
+  const summary = summarizeEmailActivity(events);
+  const chip = (label: string, tone: string, title?: string) => (
+    <span key={label} title={title} className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${tone}`}>
+      {label}
+    </span>
+  );
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1 ml-1 align-middle">
+      {summary.bounced && chip('Bounced', 'bg-red-100 text-red-800', 'The address rejected the email. Check it or call instead.')}
+      {summary.complained && chip('Marked as spam', 'bg-red-100 text-red-800')}
+      {!summary.bounced && summary.delivered && chip('Delivered', 'bg-slate-100 text-slate-700')}
+      {summary.opened &&
+        chip(
+          'Opened',
+          'bg-blue-100 text-blue-800',
+          summary.lastOpenedAt ? `Last opened ${formatInstant(summary.lastOpenedAt)}` : undefined,
+        )}
+      {summary.clicks.length > 0 &&
+        chip(
+          `Clicked${summary.clicks.length > 1 ? ` ${summary.clicks.length} links` : ''}`,
+          'bg-emerald-100 text-emerald-800',
+          summary.clicks.map(clickedLinkLabel).join(', '),
+        )}
+    </span>
+  );
+}
+
+/**
+ * The partner's own discount code. Customers they send type it on the request
+ * form, or arrive from the link, and get the discount; the card counts them.
+ */
+function PartnerCodeSection({
+  lead,
+  code,
+  onCreated,
+  onInsert,
+  canInsert,
+}: {
+  lead: PartnerLead;
+  code: PartnerCode | null;
+  onCreated: (code: PartnerCode) => void;
+  onInsert: (snippet: string) => void;
+  canInsert: boolean;
+}) {
+  const [draft, setDraft] = useState(() => suggestPartnerCode(lead.name));
+  const [amount, setAmount] = useState('25');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  if (code) {
+    const discount = describePartnerDiscount(code.discount_type, code.discount_value);
+    const link = partnerCodeLink(code.code);
+    return (
+      <div className="space-y-2 text-sm">
+        <p className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 border border-amber-200 font-mono font-bold text-amber-900">
+            <Tag className="w-3.5 h-3.5" aria-hidden="true" />
+            {code.code}
+          </span>
+          <span className="text-slate-700">{discount}</span>
+          <span className="text-slate-500">
+            · Used {code.times_used} {code.times_used === 1 ? 'time' : 'times'}
+            {code.last_used_at ? `, last ${formatInstant(code.last_used_at)}` : ''}
+          </span>
+          {!code.is_active && <span className="text-amber-800">· Turned off in Coupons</span>}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={secondaryButton}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(link);
+                setCopied(true);
+              } catch {
+                setCopied(false);
+              }
+            }}
+          >
+            <Copy className="w-4 h-4" aria-hidden="true" /> {copied ? 'Link copied' : 'Copy booking link'}
+          </button>
+          {canInsert && (
+            <button type="button" className={secondaryButton} onClick={() => onInsert(partnerCodeSnippet(code.code, discount))}>
+              Add code to email
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-slate-500 break-all">{link}</p>
+      </div>
+    );
+  }
+
+  const normalized = normalizePartnerCode(draft);
+  const value = Number(amount);
+  const valid = PARTNER_CODE_PATTERN.test(normalized) && Number.isFinite(value) && value > 0 && value <= 500;
+
+  return (
+    <div className="space-y-2 text-sm">
+      <p className="text-slate-600">
+        Give {lead.name} a code to hand out. Customers who use it get the discount, and this card shows how many did.
+      </p>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="text-xs font-semibold text-slate-600">
+          Code
+          <input
+            className={`${inputClass} mt-1 w-44 font-mono uppercase`}
+            value={draft}
+            maxLength={30}
+            onChange={(event) => setDraft(normalizePartnerCode(event.target.value))}
+          />
+        </label>
+        <label className="text-xs font-semibold text-slate-600">
+          Dollars off
+          <input
+            type="number"
+            min={1}
+            max={500}
+            className={`${inputClass} mt-1 w-24`}
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          className={primaryButton}
+          disabled={!valid || busy}
+          onClick={async () => {
+            setBusy(true);
+            setError(null);
+            try {
+              onCreated(await createPartnerCode(lead.id, normalized, 'fixed', value));
+            } catch (cause) {
+              setError(cause instanceof Error ? cause.message : 'Could not create the code');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <Tag className="w-4 h-4" aria-hidden="true" /> {busy ? 'Creating…' : 'Create code'}
+        </button>
+      </div>
+      {!PARTNER_CODE_PATTERN.test(normalized) && (
+        <p className="text-xs text-red-700">3 to 30 letters, numbers or dashes.</p>
+      )}
+      {error && (
+        <p role="alert" className="text-xs text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -333,17 +508,23 @@ function ReviewDialog({
 function LeadCard({
   lead,
   emails,
+  code,
+  activity,
   today,
   saving,
   onSave,
   onSent,
+  onCodeCreated,
 }: {
   lead: PartnerLead;
   emails: PartnerLeadEmail[];
+  code: PartnerCode | null;
+  activity: Map<string, PartnerEmailEvent[]>;
   today: string;
   saving: boolean;
   onSave: (lead: PartnerLead, changes: PartnerLeadEdit) => Promise<boolean>;
   onSent: (lead: PartnerLead) => void;
+  onCodeCreated: (lead: PartnerLead, code: PartnerCode) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [subject, setSubject] = useState(lead.draft_subject ?? '');
@@ -374,6 +555,12 @@ function LeadCard({
   const notesChanged = notes !== (lead.notes ?? '');
   const emailable = canEmail(lead.status);
   const contactEmailValid = contact.email.trim() === '' || isPlainEmail(contact.email);
+  // The newest sent email's tracking, for the badge on the collapsed card.
+  const latestEmail = emails.reduce<PartnerLeadEmail | null>(
+    (newest, email) => (!newest || email.sent_at > newest.sent_at ? email : newest),
+    null,
+  );
+  const latestSummary = latestEmail ? summarizeEmailActivity(activity.get(latestEmail.id) ?? []) : null;
 
   const saveContact = async () => {
     const ok = await onSave(lead, {
@@ -396,6 +583,18 @@ function LeadCard({
           </span>
           {!isPlainEmail(lead.email) && (
             <span className="px-2 py-1 bg-amber-100 text-amber-800 font-semibold rounded">No email found</span>
+          )}
+          {latestSummary?.bounced ? (
+            <span className="px-2 py-1 bg-red-100 text-red-800 font-semibold rounded">Email bounced</span>
+          ) : latestSummary?.clicks.length ? (
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded">Clicked your email</span>
+          ) : latestSummary?.opened ? (
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 font-semibold rounded">Opened your email</span>
+          ) : null}
+          {code && (
+            <span className="px-2 py-1 bg-amber-50 text-amber-900 font-semibold rounded inline-flex items-center gap-1">
+              <Tag className="w-3 h-3" aria-hidden="true" /> {code.code} · used {code.times_used}
+            </span>
           )}
           <span className="text-slate-500">{foundLabel(lead.found_on, today)}</span>
         </div>
@@ -525,6 +724,19 @@ function LeadCard({
               </Section>
             )}
 
+            <Section title="Partner code">
+              <PartnerCodeSection
+                lead={lead}
+                code={code}
+                canInsert={emailable}
+                onCreated={(created) => onCodeCreated(lead, created)}
+                onInsert={(snippet) => {
+                  setExpanded(true);
+                  setBody((current) => insertBeforeClosing(current, snippet));
+                }}
+              />
+            </Section>
+
             <Section title="Outreach email">
               {emailable ? (
                 <div className="space-y-3">
@@ -584,6 +796,7 @@ function LeadCard({
                         <summary className="cursor-pointer text-slate-800">
                           <span className="font-semibold">{email.subject}</span>
                           <span className="text-slate-500"> · {formatInstant(email.sent_at)} · {email.to_email}</span>
+                          <ActivityChips events={activity.get(email.id) ?? []} />
                         </summary>
                         <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm text-slate-700 bg-slate-50 rounded-lg p-3">
                           {email.body}
@@ -659,9 +872,15 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
   useEffect(() => {
     if (!organizationId) return;
     let cancelled = false;
-    Promise.all([getPartnerLeads(organizationId), getPartnerLeadEmails(organizationId)])
-      .then(([leads, emails]) => {
-        if (!cancelled) setLoaded({ organizationId, leads, emails, error: null });
+    Promise.all([
+      getPartnerLeads(organizationId),
+      getPartnerLeadEmails(organizationId),
+      getPartnerEmailActivity(organizationId),
+    ])
+      .then(async ([leads, emails, activity]) => {
+        // Codes are extra; a failure to read them leaves the cards without one.
+        const codes = await getPartnerCodes(leads.map((lead) => lead.coupon_id ?? '')).catch(() => []);
+        if (!cancelled) setLoaded({ organizationId, leads, emails, codes, activity, error: null });
       })
       .catch((cause) => {
         if (cancelled) return;
@@ -669,6 +888,8 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
           organizationId,
           leads: [],
           emails: [],
+          codes: [],
+          activity: [],
           error: cause instanceof Error ? cause.message : 'Failed to load Partner Leads',
         });
       });
@@ -711,6 +932,16 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
       const list = map.get(email.lead_id) ?? [];
       list.push(email);
       map.set(email.lead_id, list);
+    }
+    return map;
+  }, [current]);
+  const codesById = useMemo(() => new Map((current?.codes ?? []).map((code) => [code.id, code])), [current]);
+  const activityByEmail = useMemo(() => {
+    const map = new Map<string, PartnerEmailEvent[]>();
+    for (const event of current?.activity ?? []) {
+      const list = map.get(event.email_id) ?? [];
+      list.push(event);
+      map.set(event.email_id, list);
     }
     return map;
   }, [current]);
@@ -863,6 +1094,21 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
                   key={lead.id}
                   lead={lead}
                   emails={emailsByLead.get(lead.id) ?? []}
+                  code={(lead.coupon_id && codesById.get(lead.coupon_id)) || null}
+                  activity={activityByEmail}
+                  onCodeCreated={(codeLead, created) =>
+                    setLoaded((previous) =>
+                      previous && previous.organizationId === organizationId
+                        ? {
+                            ...previous,
+                            codes: [...previous.codes.filter((row) => row.id !== created.id), created],
+                            leads: previous.leads.map((row) =>
+                              row.id === codeLead.id ? { ...row, coupon_id: created.id } : row,
+                            ),
+                          }
+                        : previous,
+                    )
+                  }
                   today={today}
                   saving={savingIds.has(lead.id)}
                   onSave={save}

@@ -117,3 +117,122 @@ export function matchesLeadSearch(lead: PartnerLead, query: string): boolean {
     .filter(Boolean)
     .some((field) => String(field).toLowerCase().includes(q));
 }
+
+// ---------------------------------------------------------------------------
+// Partner codes
+
+/** Coupon codes are 3–30 of A–Z, 0–9 and dashes, starting with a letter or digit. */
+export const PARTNER_CODE_PATTERN = /^[A-Z0-9][A-Z0-9-]{2,29}$/;
+
+const CODE_FILLER = new Set(['THE', 'OF', 'AND', 'AT', 'LLC', 'INC', 'CO', 'TN', 'GROUP', 'COMPANY', 'SERVICES', 'TEAM']);
+
+/** "Grand Welcome of Franklin" -> "GRANDWELCOME"; short, typeable, from the first two words that matter. */
+export function suggestPartnerCode(name: string): string {
+  const words = name
+    .toUpperCase()
+    .normalize('NFKD')
+    .replace(/[^A-Z0-9 ]+/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word && !CODE_FILLER.has(word));
+  const code = words.slice(0, 2).join('').slice(0, 16);
+  return code.length >= 3 ? code : 'PARTNER';
+}
+
+/** Typed code tidied the way the database stores it. */
+export function normalizePartnerCode(value: string): string {
+  return value.toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9-]/g, '');
+}
+
+/** The request form link that applies the code for the customer. */
+export function partnerCodeLink(code: string): string {
+  return `https://boxed2built.com/contact?coupon=${encodeURIComponent(code)}`;
+}
+
+/** "$25 off" / "10% off". */
+export function describePartnerDiscount(type: 'fixed' | 'percentage', value: number): string {
+  if (type === 'percentage') return `${Number.isInteger(value) ? value : value.toFixed(1)}% off`;
+  return `$${Number.isInteger(value) ? value : value.toFixed(2)} off`;
+}
+
+/** The lines the editor adds to an email for a partner's code. */
+export function partnerCodeSnippet(code: string, discount: string): string {
+  return `Anyone you send our way can use code **${code}** for ${discount} their furniture assembly or TV mounting.\n\n[button: Book with code ${code}](${partnerCodeLink(code)})`;
+}
+
+/**
+ * Puts a snippet just above the sign-off ("Thanks for your time," and the name
+ * under it) so the closing stays last. With no recognisable sign-off the
+ * snippet goes at the end.
+ */
+export function insertBeforeClosing(body: string, snippet: string): string {
+  const text = body.replace(/\s+$/, '');
+  if (!text) return snippet;
+  const paragraphs = text.split(/\n{2,}/);
+  const last = paragraphs[paragraphs.length - 1];
+  const firstLine = last.split('\n')[0].trim();
+  const isClosing = paragraphs.length > 1 && firstLine.length <= 40 && /,$/.test(firstLine) && !/[.!?]/.test(firstLine);
+  if (!isClosing) return `${text}\n\n${snippet}`;
+  return [...paragraphs.slice(0, -1), snippet, last].join('\n\n');
+}
+
+// ---------------------------------------------------------------------------
+// Email activity
+
+export interface EmailActivitySummary {
+  delivered: boolean;
+  opened: boolean;
+  bounced: boolean;
+  complained: boolean;
+  /** Links clicked, most recent first, without duplicates. */
+  clicks: string[];
+  lastOpenedAt: string | null;
+  lastClickedAt: string | null;
+}
+
+export function summarizeEmailActivity(events: Array<{ event_type: string; occurred_at: string; link: string | null }>): EmailActivitySummary {
+  const summary: EmailActivitySummary = {
+    delivered: false,
+    opened: false,
+    bounced: false,
+    complained: false,
+    clicks: [],
+    lastOpenedAt: null,
+    lastClickedAt: null,
+  };
+  const sorted = [...events].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+  for (const event of sorted) {
+    switch (event.event_type) {
+      case 'email.delivered':
+        summary.delivered = true;
+        break;
+      case 'email.opened':
+        summary.opened = true;
+        summary.lastOpenedAt ??= event.occurred_at;
+        break;
+      case 'email.clicked':
+        // A click means it was opened, even when the open pixel was blocked.
+        summary.opened = true;
+        summary.lastClickedAt ??= event.occurred_at;
+        if (event.link && !summary.clicks.includes(event.link)) summary.clicks.push(event.link);
+        break;
+      case 'email.bounced':
+        summary.bounced = true;
+        break;
+      case 'email.complained':
+        summary.complained = true;
+        break;
+    }
+  }
+  return summary;
+}
+
+/** A clicked link as a short label: the page path, without the tracking tags. */
+export function clickedLinkLabel(link: string): string {
+  try {
+    const url = new URL(link);
+    const path = url.pathname.replace(/\/$/, '') || '/';
+    return url.hostname.replace(/^www\./, '') === 'boxed2built.com' ? `boxed2built.com${path === '/' ? '' : path}` : `${url.hostname}${path === '/' ? '' : path}`;
+  } catch {
+    return link;
+  }
+}
