@@ -490,27 +490,9 @@ export default function InquiriesPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Form Inquiries</h1>
             <p className="text-sm sm:text-base text-slate-600">Manage customer inquiries from your website contact form</p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => setShowTestData(!showTestData)}
-              className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm ${
-                showTestData
-                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
-                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
-              }`}
-              title={showTestData ? 'Hide test submissions' : 'Show test submissions'}
-            >
-              <FlaskConical className="w-4 h-4" />
-              <span>{showTestData ? 'Hide Tests' : 'Show Tests'}</span>
-            </button>
-            <button
-              onClick={() => setShowTestModal(true)}
-              className="px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm bg-amber-600 border-amber-600 text-white hover:bg-amber-700"
-              title="Submit a test inquiry as if a customer used the website form"
-            >
-              <FlaskConical className="w-4 h-4" />
-              <span>Submit Test</span>
-            </button>
+          <div className="flex items-center justify-end flex-wrap gap-2 flex-shrink-0">
+            {/* Delete Tests sits to the LEFT of the toggle so the right-aligned
+                group grows leftward and the toggle never moves under the cursor. */}
             {showTestData && (
               <button
                 onClick={handleDeleteAllTests}
@@ -521,6 +503,40 @@ export default function InquiriesPage() {
                 <span>Delete Tests</span>
               </button>
             )}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showTestData}
+              onClick={() => setShowTestData(!showTestData)}
+              className={`px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 border text-sm ${
+                showTestData
+                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+              }`}
+              title={showTestData ? 'Hide test submissions' : 'Show test submissions'}
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>Show Tests</span>
+              <span
+                className={`relative inline-block w-8 h-4 rounded-full transition-colors ${
+                  showTestData ? 'bg-amber-500' : 'bg-slate-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform ${
+                    showTestData ? 'translate-x-4' : ''
+                  }`}
+                />
+              </span>
+            </button>
+            <button
+              onClick={() => setShowTestModal(true)}
+              className="px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 border text-sm bg-amber-600 border-amber-600 text-white hover:bg-amber-700"
+              title="Submit a test inquiry as if a customer used the website form"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>Submit Test</span>
+            </button>
             <button
               onClick={handleManualRefresh}
               disabled={isRefreshing}
