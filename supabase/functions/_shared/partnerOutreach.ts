@@ -259,7 +259,7 @@ function blockHtml(block: Block): string {
       return `<${tag} style="margin:0 0 16px;padding-left:24px;color:${INK};font-size:15px;line-height:1.6;">${items}</${tag}>`;
     }
     case 'button':
-      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 20px;"><tr><td style="background:${NAVY};border-radius:8px;"><a href="${escapeHtml(block.url.trim())}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;border-bottom:3px solid ${GOLD};">${escapeHtml(block.label)}</a></td></tr></table>`;
+      return `<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:4px auto 20px;"><tr><td align="center" style="background:${NAVY};border-radius:8px;"><a href="${escapeHtml(block.url.trim())}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;border-bottom:3px solid ${GOLD};">${escapeHtml(block.label)}</a></td></tr></table>`;
   }
 }
 
