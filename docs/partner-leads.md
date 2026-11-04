@@ -88,11 +88,11 @@ a contact card linking to boxed2built.com, and the social-icon footer shared
 with the other customer emails (`_shared/emailSocialFooter.ts`) — then a footer
 with a one-line opt-out and the business's mailing address.
 
-**Set the mailing address:** add an `OUTREACH_POSTAL_ADDRESS` secret to the
-edge function (Supabase dashboard > Edge Functions > Secrets), e.g.
-`PO Box 123, Spring Hill, TN 37174`. Until it is set the footer reads
-"Boxed2Built LLC, Spring Hill, TN" and the review step says so. Business email
-rules (CAN-SPAM) call for a valid postal address; a P.O. box is fine.
+**Mailing address:** the footer reads "Boxed2Built LLC, 163 Bess Blvd, Spring
+Hill, TN" (`OUTREACH_POSTAL_ADDRESS` in `_shared/partnerOutreach.ts`), which
+business email rules (CAN-SPAM) call for. To use a different address without a
+code change, set an `OUTREACH_POSTAL_ADDRESS` secret on the edge function
+(Supabase dashboard > Edge Functions > Secrets); it overrides the default.
 
 If someone replies asking not to be contacted, set them to **Do not contact**.
 
