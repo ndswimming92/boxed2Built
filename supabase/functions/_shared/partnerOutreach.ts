@@ -126,7 +126,7 @@ export function withClosing(body: string): string {
 export interface OutreachInput {
   subject: string;
   body: string;
-  /** Where the footer says the business is. Set OUTREACH_POSTAL_ADDRESS on the function. */
+  /** Overrides the footer's mailing address (OUTREACH_POSTAL_ADDRESS); null uses the default. */
   postalAddress: string | null;
   /** The business being emailed; tagged as utm_term on button links so GA4 shows who clicked. */
   leadName?: string | null;
@@ -343,9 +343,15 @@ function blockText(block: Block, leadName: string | null): string {
 const OPT_OUT_LINE =
   "Not the right fit? Just reply and let me know, and I won't email you again.";
 
+/**
+ * The business's mailing address for the footer (CAN-SPAM). An
+ * OUTREACH_POSTAL_ADDRESS secret on the function overrides it.
+ */
+export const OUTREACH_POSTAL_ADDRESS = '163 Bess Blvd, Spring Hill, TN';
+
 function footerAddress(postalAddress: string | null): string {
-  const address = postalAddress?.trim();
-  return address ? `Boxed2Built LLC, ${address}` : 'Boxed2Built LLC, Spring Hill, TN';
+  const address = postalAddress?.trim() || OUTREACH_POSTAL_ADDRESS;
+  return `Boxed2Built LLC, ${address}`;
 }
 
 const CARD_TAGLINE = 'Furniture assembly & TV mounting · Spring Hill, TN';

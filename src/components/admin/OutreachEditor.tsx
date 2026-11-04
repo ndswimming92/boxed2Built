@@ -25,7 +25,7 @@ import {
  *
  * The preview is rendered by the very function the server sends with
  * (`renderOutreach`), so what Nicholas sees as he types is what goes out — only
- * the footer's full mailing address is filled in server-side, which the Review
+ * the footer address can be overridden by a server secret, which the Review
  * step shows. Nothing here sends; it only edits the draft text.
  */
 
@@ -284,9 +284,9 @@ export function OutreachEditor({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-slate-500 max-w-prose">
-          Your Boxed2Built contact card, website link, social icons and a one-line opt-out are added automatically. End
-          with your own closing (e.g. “Thanks for your time,”); if you don’t, one is added for you. The mailing address
-          in the footer is filled in when you send.
+          Your Boxed2Built contact card, website link, social icons, a one-line opt-out and your mailing address are
+          added automatically. End with your own closing (e.g. “Thanks for your time,”); if you don’t, one is added
+          for you.
         </p>
         <span className={`text-xs ${remaining < 200 ? 'text-amber-700' : 'text-slate-400'}`}>{remaining} left</span>
       </div>

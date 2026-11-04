@@ -68,9 +68,10 @@ test('the rendered email escapes what was typed and adds the closing, card and o
   assert.equal(out.html.includes('<script'), false);
 });
 
-test('without a postal address the footer falls back to the town', () => {
+test('without an override the footer uses the business mailing address', () => {
   const out = renderOutreach({ subject: 'Hi', body: 'Hello', postalAddress: null });
-  assert.match(out.text, /Boxed2Built LLC, Spring Hill, TN$/);
+  assert.match(out.text, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN$/);
+  assert.match(out.html, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN/);
 });
 
 test('the closing is added only when the body lacks one', () => {

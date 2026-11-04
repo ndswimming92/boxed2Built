@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       blocked,
       recentlyEmailed,
       lastEmailedAt: lead.last_emailed_at,
-      postalAddressSet: Boolean(POSTAL_ADDRESS?.trim()),
+      postalAddressSet: true,
     });
   }
 
