@@ -317,14 +317,12 @@ export function renderOutreach({ subject, body, postalAddress }: OutreachInput):
   ].join('\n');
 
   // The logo is drawn for a dark background (as in the customer emails), so it
-  // sits on a navy banner with a gold rule under it; on white its edge is lost.
+  // sits alone on a navy banner with a gold rule under it; on white its edge
+  // is lost.
   const header = `<tr><td style="padding:0 0 24px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${NAVY};border-radius:10px;">
     <tr><td style="padding:16px 20px;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="vertical-align:middle;padding-right:14px;"><a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="56" height="56" alt="Boxed2Built" style="display:block;width:56px;height:56px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a></td>
-        <td style="vertical-align:middle;"><a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.3px;">Boxed2Built</a><div style="color:#93c5fd;font-size:13px;margin-top:2px;">Furniture assembly &amp; TV mounting</div></td>
-      </tr></table>
+      <a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="64" height="64" alt="Boxed2Built" style="display:block;width:64px;height:64px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a>
     </td></tr>
     <tr><td style="height:4px;line-height:4px;font-size:0;background:${GOLD};border-radius:0 0 10px 10px;">&nbsp;</td></tr>
   </table>
