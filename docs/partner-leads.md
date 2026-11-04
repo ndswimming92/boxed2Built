@@ -57,7 +57,17 @@ turns into HTML:
 ```
 
 Only `http(s)`, `mailto:` and `tel:` links become links; anything else stays as
-plain text, so a draft can never inject HTML or a script. End the message with
+plain text, so a draft can never inject HTML or a script.
+
+**Button clicks show in GA4.** Every button that links to boxed2built.com gets
+UTM tags added when the email is rendered:
+`utm_source=partner_outreach`, `utm_medium=email`, `utm_campaign=partner_leads`,
+`utm_content=button_<button text>` (e.g. `button_book_online`) and
+`utm_term=<business emailed>` (e.g. `grand_welcome_of_franklin`). In GA4, look
+under Reports > Acquisition > Traffic acquisition (session source / medium
+`partner_outreach / email`), or add "Session manual term" and "Session manual
+ad content" to see which business and which button. Links to other sites are
+left alone, and a utm_ value you type into a link yourself is kept. End the message with
 your own closing (e.g. "Thanks for your time,"). If you don't, the standard
 closing (your name and Boxed2Built) is added for you — and if you already sign
 off with your name, nothing is added, so the closing never shows twice.

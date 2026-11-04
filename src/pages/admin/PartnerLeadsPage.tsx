@@ -539,7 +539,7 @@ function LeadCard({
                   </label>
                   <div>
                     <span className="block text-xs font-semibold text-slate-600 mb-1">Message</span>
-                    <OutreachEditor subject={subject} body={body} maxLength={5000} onChange={setBody} />
+                    <OutreachEditor subject={subject} body={body} leadName={lead.name} maxLength={5000} onChange={setBody} />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
