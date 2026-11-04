@@ -94,7 +94,13 @@ async function stub(page: Page, leads: Row[], extra: { emails?: Row[]; activity?
     const request = route.request();
     const body = request.postDataJSON();
     calls.push({ kind: 'rpc', method: 'RPC', body });
-    if (request.url().includes('get_partner_lead_email_activity')) return route.fulfill({ json: extra.activity ?? [] });
+    if (request.url().includes('get_partner_lead_email_activity')) {
+      // Serve in pages the way PostgREST does, capped at 1,000 rows.
+      const url = new URL(request.url());
+      const offset = Number(url.searchParams.get('offset') ?? 0);
+      const limit = Math.min(Number(url.searchParams.get('limit') ?? 1000), 1000);
+      return route.fulfill({ json: (extra.activity ?? []).slice(offset, offset + limit) });
+    }
     const coupon = {
       id: `coupon-${coupons.length + 1}`,
       code: body.p_code,
@@ -326,4 +332,34 @@ test('sent emails show delivery, opens, clicks and bounces', async ({ page }) =>
   await expect(lead.getByText('Delivered', { exact: true })).toBeVisible();
   await expect(lead.getByText('Opened', { exact: true })).toBeVisible();
   await expect(lead.getByText('Clicked', { exact: true })).toHaveAttribute('title', 'boxed2built.com/book');
+});
+
+test('activity past the first 1,000 events still reaches the card', async ({ page }) => {
+  const email = (id: string, sentAt: string) => ({
+    id,
+    organization_id: 'org-1',
+    lead_id: 'lead-1',
+    to_email: 'office@example-movers.test',
+    subject: 'Helping your customers settle in',
+    body: 'Hi Dana',
+    resend_id: `re_${id}`,
+    sent_by: null,
+    sent_at: sentAt,
+  });
+  const old = Array.from({ length: 1200 }, (_, index) => ({
+    email_id: 'email-old',
+    event_type: 'email.opened',
+    occurred_at: new Date(Date.parse('2026-10-01T00:00:00Z') + index * 60_000).toISOString(),
+    link: null,
+  }));
+  await stub(page, [{ ...MOVER, status: 'contacted', last_emailed_at: NOW.toISOString(), emails_sent: 2 }], {
+    emails: [email('email-new', '2026-11-03T17:00:00Z'), email('email-old', '2026-10-01T00:00:00Z')],
+    activity: [
+      ...old,
+      { email_id: 'email-new', event_type: 'email.bounced', occurred_at: '2026-11-03T17:00:05Z', link: null },
+    ],
+  });
+  await open(page);
+  await page.getByRole('tab', { name: /Contacted/ }).click();
+  await expect(card(page, 'Example Movers')).toContainText('Email bounced');
 });
