@@ -18,6 +18,7 @@ import ClientQRCodeModal from '../../components/admin/ClientQRCodeModal';
 import ExportClientsModal from '../../components/admin/ExportClientsModal';
 import MergeClientsModal from '../../components/admin/MergeClientsModal';
 import ClientFormModal from '../../components/admin/ClientFormModal';
+import PartnerLeadProfiles from '../../components/admin/PartnerLeadProfiles';
 import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
@@ -49,6 +50,7 @@ export default function ClientsPage() {
   const [selectedSegment, setSelectedSegment] = useState<SegmentType>(() =>
     segmentFromParam(searchParams.get('segment'))
   );
+  const showPartnerLeads = searchParams.get('view') === 'partner-leads';
   const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<keyof Client>('last_contact_date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -133,6 +135,18 @@ export default function ClientsPage() {
         const params = new URLSearchParams(prev);
         if (next === 'all') params.delete('segment');
         else params.set('segment', next);
+        return params;
+      },
+      { replace: true }
+    );
+  }
+
+  function changeView(partnerLeads: boolean) {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        if (partnerLeads) params.set('view', 'partner-leads');
+        else params.delete('view');
         return params;
       },
       { replace: true }
@@ -415,6 +429,42 @@ export default function ClientsPage() {
     );
   }
 
+  const viewToggle = (
+    <div className="inline-flex p-1 bg-gray-100 rounded-lg" role="group" aria-label="Customer list">
+      {[
+        { partnerLeads: false, label: 'Customers' },
+        { partnerLeads: true, label: 'Partner leads' },
+      ].map((option) => (
+        <button
+          key={option.label}
+          type="button"
+          onClick={() => changeView(option.partnerLeads)}
+          aria-pressed={showPartnerLeads === option.partnerLeads}
+          className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md ${
+            showPartnerLeads === option.partnerLeads ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (showPartnerLeads) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Partner leads</h1>
+            <p className="mt-1 text-sm text-gray-600">Businesses you have emailed about referring customers</p>
+          </div>
+          {viewToggle}
+        </div>
+        <PartnerLeadProfiles organizationId={organizationId} onConverted={() => loadData(true)} />
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -433,7 +483,8 @@ export default function ClientsPage() {
             Manage your client relationships and marketing campaigns
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
+          {viewToggle}
           <button
             onClick={() => {
               setCreatedMessage(null);
