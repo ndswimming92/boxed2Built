@@ -59,6 +59,8 @@ export interface PartnerLead {
   status_changed_by: string | null;
   last_emailed_at: string | null;
   emails_sent: number;
+  /** The coupon made for this partner, set by create_partner_lead_code. Absent until that migration runs. */
+  coupon_id?: string | null;
   /** The Central-time day the daily run first saved it (YYYY-MM-DD). */
   found_on: string;
   created_at: string;
@@ -94,4 +96,24 @@ export interface OutreachPreview {
   recentlyEmailed: boolean;
   lastEmailedAt: string | null;
   postalAddressSet: boolean;
+}
+
+/** The coupon a partner hands out: customers they send get the discount. */
+export interface PartnerCode {
+  id: string;
+  code: string;
+  discount_type: 'fixed' | 'percentage';
+  discount_value: number;
+  is_active: boolean;
+  times_used: number;
+  last_used_at: string | null;
+}
+
+/** One Resend event for a sent outreach email (get_partner_lead_email_activity). */
+export interface PartnerEmailEvent {
+  email_id: string;
+  event_type: string;
+  occurred_at: string;
+  /** For a click, the link that was clicked. */
+  link: string | null;
 }

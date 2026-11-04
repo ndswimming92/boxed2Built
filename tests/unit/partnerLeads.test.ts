@@ -18,8 +18,17 @@ import {
   withOutreachUtm,
 } from '../../supabase/functions/_shared/partnerOutreach.ts';
 import {
+  PARTNER_CODE_PATTERN,
   canEmail,
+  clickedLinkLabel,
+  describePartnerDiscount,
   foundLabel,
+  insertBeforeClosing,
+  normalizePartnerCode,
+  partnerCodeLink,
+  partnerCodeSnippet,
+  suggestPartnerCode,
+  summarizeEmailActivity,
   isPlainEmail,
   matchesLeadSearch,
   partnerLinks,
@@ -70,8 +79,8 @@ test('the rendered email escapes what was typed and adds the closing, card and o
 
 test('without an override the footer uses the business mailing address', () => {
   const out = renderOutreach({ subject: 'Hi', body: 'Hello', postalAddress: null });
-  assert.match(out.text, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN$/);
-  assert.match(out.html, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN/);
+  assert.match(out.text, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN 37174$/);
+  assert.match(out.html, /Boxed2Built LLC, 163 Bess Blvd, Spring Hill, TN 37174/);
 });
 
 test('the closing is added only when the body lacks one', () => {
@@ -246,4 +255,69 @@ test('UTM tags skip other sites and never override tags already in the link', ()
   assert.equal(kept.searchParams.get('utm_source'), 'partner_outreach');
   assert.equal(kept.searchParams.has('utm_term'), false);
   assert.equal(utmSlug("Thompson's Station & Co."), 'thompson_s_station_and_co');
+});
+
+test('text links, the logo and the contact card link to the site with UTM tags', () => {
+  const out = renderOutreach({
+    subject: 'Hi',
+    body: 'See [our partner page](https://boxed2built.com/partners) or [their site](https://example.com).',
+    postalAddress: null,
+    leadName: 'Jett Moving Services',
+  });
+  const hrefs = [...out.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
+  const partner = hrefs.find((h) => h.startsWith('https://boxed2built.com/partners'));
+  assert.ok(partner);
+  assert.equal(new URL(partner).searchParams.get('utm_content'), 'link_our_partner_page');
+  assert.equal(new URL(partner).searchParams.get('utm_term'), 'jett_moving_services');
+  assert.ok(hrefs.includes('https://example.com'), 'other sites are left alone');
+  const contents = hrefs
+    .filter((h) => h.startsWith('https://boxed2built.com/?'))
+    .map((h) => new URL(h).searchParams.get('utm_content'));
+  assert.deepEqual(contents.sort(), ['card_website', 'logo']);
+  assert.match(out.text, /our partner page \(https:\/\/boxed2built\.com\/partners\?utm_source=partner_outreach/);
+});
+
+test('partner codes are suggested from the business name and fit the coupon format', () => {
+  assert.equal(suggestPartnerCode('Grand Welcome of Franklin'), 'GRANDWELCOME');
+  assert.equal(suggestPartnerCode('The Shuford Group'), 'SHUFORD');
+  assert.equal(suggestPartnerCode('Tim Earls, TN Realty'), 'TIMEARLS');
+  assert.equal(suggestPartnerCode('A'), 'PARTNER');
+  for (const name of ['Grand Welcome of Franklin', 'Revere at Spring Hill', 'Flint Adam, Beacon Real Estate', 'Regent Homes - Rutherford']) {
+    assert.match(suggestPartnerCode(name), PARTNER_CODE_PATTERN, name);
+  }
+  assert.equal(normalizePartnerCode(' grand welcome! '), 'GRANDWELCOME');
+  assert.equal(partnerCodeLink('GRANDWELCOME'), 'https://boxed2built.com/contact?coupon=GRANDWELCOME');
+  assert.equal(describePartnerDiscount('fixed', 25), '$25 off');
+  assert.equal(describePartnerDiscount('percentage', 10), '10% off');
+});
+
+test('the code snippet goes above the closing, and renders as a tagged button', () => {
+  const snippet = partnerCodeSnippet('GRANDWELCOME', '$25 off');
+  const body = 'Hi Josh,\n\nA note.\n\nThanks for your time,\nNicholas Davidson\nBoxed2Built';
+  const withCode = insertBeforeClosing(body, snippet);
+  assert.ok(withCode.endsWith('Thanks for your time,\nNicholas Davidson\nBoxed2Built'));
+  assert.ok(withCode.indexOf('GRANDWELCOME') < withCode.indexOf('Thanks for your time'));
+  assert.equal(insertBeforeClosing('Just one paragraph.', 'X'), 'Just one paragraph.\n\nX');
+  const out = renderOutreach({ subject: 'Hi', body: withCode, postalAddress: null, leadName: 'Grand Welcome of Franklin' });
+  const href = /<a href="(https:\/\/boxed2built\.com\/contact\?coupon=GRANDWELCOME[^"]*)"/.exec(out.html)?.[1];
+  assert.ok(href, 'button links to the request form with the code');
+  const url = new URL(href.replace(/&amp;/g, '&'));
+  assert.equal(url.searchParams.get('coupon'), 'GRANDWELCOME');
+  assert.equal(url.searchParams.get('utm_content'), 'button_book_with_code_grandwelcome');
+  assert.match(out.html, /<strong>GRANDWELCOME<\/strong>/);
+});
+
+test('email activity sums up delivery, opens, clicks and bounces', () => {
+  const summary = summarizeEmailActivity([
+    { event_type: 'email.delivered', occurred_at: '2026-11-04T19:00:01Z', link: null },
+    { event_type: 'email.clicked', occurred_at: '2026-11-04T20:00:00Z', link: 'https://boxed2built.com/book?utm_source=partner_outreach' },
+    { event_type: 'email.clicked', occurred_at: '2026-11-04T20:05:00Z', link: 'https://boxed2built.com/book?utm_source=partner_outreach' },
+  ]);
+  assert.equal(summary.delivered, true);
+  assert.equal(summary.opened, true, 'a click counts as opened');
+  assert.deepEqual(summary.clicks, ['https://boxed2built.com/book?utm_source=partner_outreach']);
+  assert.equal(summary.lastClickedAt, '2026-11-04T20:05:00Z');
+  assert.equal(summarizeEmailActivity([{ event_type: 'email.bounced', occurred_at: 'x', link: null }]).bounced, true);
+  assert.equal(clickedLinkLabel('https://boxed2built.com/book?utm_source=x'), 'boxed2built.com/book');
+  assert.equal(clickedLinkLabel('https://www.boxed2built.com/?a=1'), 'boxed2built.com');
 });

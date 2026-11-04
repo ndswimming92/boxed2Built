@@ -1,5 +1,12 @@
 import { supabase } from '../lib/supabase';
-import type { OutreachPreview, PartnerLead, PartnerLeadEdit, PartnerLeadEmail } from '../types/partnerLeads';
+import type {
+  OutreachPreview,
+  PartnerCode,
+  PartnerEmailEvent,
+  PartnerLead,
+  PartnerLeadEdit,
+  PartnerLeadEmail,
+} from '../types/partnerLeads';
 
 const FETCH_SIZE = 1000;
 /** A runaway guard, not a real limit. */
@@ -116,4 +123,60 @@ export function sendOutreach(
   sendAgain = false,
 ): Promise<{ sent: true; to: string; sentAt?: string; alreadySent?: boolean }> {
   return callOutreach({ leadId, subject, body, mode: 'send', confirmTo, attemptId, sendAgain });
+}
+
+const PARTNER_CODE_COLUMNS = 'id, code, discount_type, discount_value, is_active, times_used, last_used_at';
+
+/** The coupons linked to these leads, by id. Missing ones are simply absent. */
+export async function getPartnerCodes(couponIds: string[]): Promise<PartnerCode[]> {
+  const ids = [...new Set(couponIds.filter(Boolean))];
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from('coupons').select(PARTNER_CODE_COLUMNS).in('id', ids);
+  if (error) {
+    console.error('Error fetching partner codes:', error);
+    throw new Error(`Failed to load partner codes: ${error.message}`);
+  }
+  return ((data || []) as PartnerCode[]).map((row) => ({ ...row, discount_value: Number(row.discount_value) }));
+}
+
+/**
+ * Delivered / opened / clicked / bounced events for the organization's sent
+ * outreach emails. Activity is extra information, so a failure (for example
+ * before the database function exists) returns nothing rather than breaking
+ * the page.
+ */
+export async function getPartnerEmailActivity(organizationId: string): Promise<PartnerEmailEvent[]> {
+  const { data, error } = await supabase.rpc('get_partner_lead_email_activity', { p_organization_id: organizationId });
+  if (error) {
+    console.warn('Partner email activity unavailable:', error.message);
+    return [];
+  }
+  return (data || []) as PartnerEmailEvent[];
+}
+
+/**
+ * Makes the partner's code (a coupon) and links it to the lead. A lead that
+ * already has one gets it back. A code already used anywhere is refused.
+ */
+export async function createPartnerCode(
+  leadId: string,
+  code: string,
+  discountType: 'fixed' | 'percentage',
+  discountValue: number,
+): Promise<PartnerCode> {
+  const { data, error } = await supabase.rpc('create_partner_lead_code', {
+    p_lead_id: leadId,
+    p_code: code,
+    p_discount_type: discountType,
+    p_discount_value: discountValue,
+  });
+  if (error) {
+    console.error('Error creating partner code:', error);
+    if (error.code === '23505') throw new Error('That code is already in use. Pick another one.');
+    if (error.code === '23514') throw new Error('Codes are 3 to 30 letters, numbers or dashes, and the discount must be more than 0.');
+    throw new Error(`Could not create the code: ${error.message}`);
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as PartnerCode | null;
+  if (!row) throw new Error('Could not create the code');
+  return { ...row, discount_value: Number(row.discount_value) };
 }

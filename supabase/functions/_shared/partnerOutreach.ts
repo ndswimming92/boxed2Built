@@ -164,27 +164,39 @@ function linkHtml(label: string, url: string): string {
   return `<a href="${escapeHtml(url.trim())}" target="_blank" rel="noopener noreferrer" style="color:${LINK};font-weight:600;text-decoration:underline;">${emphasis(escapeHtml(label))}</a>`;
 }
 
+/** When set, links to boxed2built.com in the text get the outreach UTM tags. */
+export interface LinkTracking {
+  leadName: string | null;
+}
+
+function trackedLink(label: string, url: string, tracking?: LinkTracking): string {
+  if (!tracking) return url;
+  const slug = utmSlug(label.replace(/[*_]/g, ''));
+  return withOutreachUtm(url, { content: slug ? `link_${slug}` : 'link', leadName: tracking.leadName });
+}
+
 /** One line of typed text as HTML: escaped, links for safe URLs only, then emphasis. */
-export function inlineHtml(line: string): string {
+export function inlineHtml(line: string, tracking?: LinkTracking): string {
   let out = '';
   let last = 0;
   for (const match of line.matchAll(LINK_PATTERN)) {
     const [whole, label, url] = match;
     const at = match.index ?? 0;
     out += emphasis(escapeHtml(line.slice(last, at)));
-    out += isSafeLinkUrl(url) ? linkHtml(label, url) : emphasis(escapeHtml(whole));
+    out += isSafeLinkUrl(url) ? linkHtml(label, trackedLink(label, url, tracking)) : emphasis(escapeHtml(whole));
     last = at + whole.length;
   }
   return out + emphasis(escapeHtml(line.slice(last)));
 }
 
 /** The same line as plain text: markers dropped, links spelled out. */
-export function inlineText(line: string): string {
+export function inlineText(line: string, tracking?: LinkTracking): string {
   return line
     .replace(LINK_PATTERN, (whole, label: string, url: string) => {
       if (!isSafeLinkUrl(url)) return whole;
       const shown = url.replace(/^mailto:|^tel:/i, '');
-      return label.trim() === shown || label.trim() === url ? shown : `${label} (${shown})`;
+      const target = trackedLink(label, url, tracking).replace(/^mailto:|^tel:/i, '');
+      return label.trim() === shown || label.trim() === url ? target : `${label} (${target})`;
     })
     .replace(/\*\*(?=\S)(.+?)(?<=\S)\*\*/g, '$1')
     .replace(/__(?=\S)(.+?)(?<=\S)__/g, '$1')
@@ -310,12 +322,12 @@ const PARAGRAPH_STYLE = `margin:0 0 16px;color:${INK};font-size:15px;line-height
 function blockHtml(block: Block, leadName: string | null): string {
   switch (block.kind) {
     case 'paragraph':
-      return `<p style="${PARAGRAPH_STYLE}">${block.lines.map(inlineHtml).join('<br>')}</p>`;
+      return `<p style="${PARAGRAPH_STYLE}">${block.lines.map((line) => inlineHtml(line, { leadName })).join('<br>')}</p>`;
     case 'bullets':
     case 'numbers': {
       const tag = block.kind === 'bullets' ? 'ul' : 'ol';
       const items = block.items
-        .map((item) => `<li style="margin:0 0 6px;padding-left:4px;">${inlineHtml(item)}</li>`)
+        .map((item) => `<li style="margin:0 0 6px;padding-left:4px;">${inlineHtml(item, { leadName })}</li>`)
         .join('');
       return `<${tag} style="margin:0 0 16px;padding-left:24px;color:${INK};font-size:15px;line-height:1.6;">${items}</${tag}>`;
     }
@@ -327,11 +339,11 @@ function blockHtml(block: Block, leadName: string | null): string {
 function blockText(block: Block, leadName: string | null): string {
   switch (block.kind) {
     case 'paragraph':
-      return block.lines.map(inlineText).join('\n');
+      return block.lines.map((line) => inlineText(line, { leadName })).join('\n');
     case 'bullets':
-      return block.items.map((item) => `- ${inlineText(item)}`).join('\n');
+      return block.items.map((item) => `- ${inlineText(item, { leadName })}`).join('\n');
     case 'numbers':
-      return block.items.map((item, index) => `${index + 1}. ${inlineText(item)}`).join('\n');
+      return block.items.map((item, index) => `${index + 1}. ${inlineText(item, { leadName })}`).join('\n');
     case 'button':
       return `${block.label}: ${buttonUrl(block, leadName).replace(/^mailto:|^tel:/i, '')}`;
   }
@@ -347,7 +359,7 @@ const OPT_OUT_LINE =
  * The business's mailing address for the footer (CAN-SPAM). An
  * OUTREACH_POSTAL_ADDRESS secret on the function overrides it.
  */
-export const OUTREACH_POSTAL_ADDRESS = '163 Bess Blvd, Spring Hill, TN';
+export const OUTREACH_POSTAL_ADDRESS = '163 Bess Blvd, Spring Hill, TN 37174';
 
 function footerAddress(postalAddress: string | null): string {
   const address = postalAddress?.trim() || OUTREACH_POSTAL_ADDRESS;
@@ -367,6 +379,8 @@ export function renderOutreach({ subject, body, postalAddress, leadName = null }
   const lead = leadName?.trim() || null;
   const blocks = parseBlocks(withClosing(body));
   const website = OUTREACH_WEBSITE.replace(/^https:\/\//, '');
+  const logoHref = escapeHtml(withOutreachUtm(`${OUTREACH_WEBSITE}/`, { content: 'logo', leadName: lead }));
+  const cardHref = withOutreachUtm(`${OUTREACH_WEBSITE}/`, { content: 'card_website', leadName: lead });
 
   const text = [
     blocks.map((block) => blockText(block, lead)).join('\n\n'),
@@ -375,7 +389,7 @@ export function renderOutreach({ subject, body, postalAddress, leadName = null }
     CARD_TAGLINE.replace('·', '-'),
     OUTREACH_PHONE,
     OUTREACH_FROM_EMAIL,
-    `${OUTREACH_WEBSITE}/`,
+    cardHref,
     '',
     socialFooterText(),
     '',
@@ -390,7 +404,7 @@ export function renderOutreach({ subject, body, postalAddress, leadName = null }
   const header = `<tr><td style="padding:0 0 24px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${NAVY};border-radius:10px;">
     <tr><td align="center" style="padding:16px 20px;text-align:center;">
-      <a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="64" height="64" alt="Boxed2Built" style="display:block;margin:0 auto;width:64px;height:64px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a>
+      <a href="${logoHref}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="64" height="64" alt="Boxed2Built" style="display:block;margin:0 auto;width:64px;height:64px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a>
     </td></tr>
     <tr><td style="height:4px;line-height:4px;font-size:0;background:${GOLD};border-radius:0 0 10px 10px;">&nbsp;</td></tr>
   </table>
@@ -407,7 +421,7 @@ ${blocks.map((block) => blockHtml(block, lead)).join('\n')}
       <div style="color:${MUTED};font-size:13px;margin-bottom:6px;">${escapeHtml(CARD_TAGLINE)}</div>
       <a href="${OUTREACH_PHONE_HREF}" style="color:${INK};text-decoration:none;">${escapeHtml(OUTREACH_PHONE)}</a>
       &nbsp;&middot;&nbsp; <a href="mailto:${OUTREACH_FROM_EMAIL}" style="color:${LINK};text-decoration:none;">${OUTREACH_FROM_EMAIL}</a><br>
-      <a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="color:${LINK};font-weight:700;text-decoration:underline;">${website}</a>
+      <a href="${escapeHtml(cardHref)}" target="_blank" rel="noopener noreferrer" style="color:${LINK};font-weight:700;text-decoration:underline;">${website}</a>
     </td></tr>
   </table>
 </td></tr>`;
