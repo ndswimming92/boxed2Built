@@ -193,6 +193,33 @@ test('saving a draft writes only the draft', async ({ page }) => {
   expect(Object.keys(writes[0].body ?? {}).sort()).toEqual(['draft_body', 'draft_subject']);
 });
 
+test('the toolbar writes markup and the live preview shows the branded email', async ({ page }) => {
+  await stub(page, [MOVER]);
+  await open(page);
+  const lead = card(page, 'Example Movers');
+  await lead.getByRole('button', { name: 'Example Movers' }).click();
+
+  const message = lead.getByLabel('Message');
+  await message.fill('Refer move-in help to us.');
+  await message.selectText();
+  await lead.getByRole('button', { name: 'Bold' }).click();
+  await expect(message).toHaveValue('**Refer move-in help to us.**');
+
+  // Collapse the selection to the end, then insert a brand button via the
+  // toolbar's form and its quick-pick.
+  await message.press('Control+End');
+  await lead.getByRole('button', { name: 'Insert button' }).click();
+  await lead.getByRole('button', { name: 'Book online' }).click();
+  await lead.getByRole('button', { name: 'Insert', exact: true }).click();
+  await expect(message).toHaveValue(/\[button: Book online\]\(https:\/\/boxed2built\.com\/book\)/);
+
+  // The live preview renders the finished, branded email.
+  const previewSrc = await lead.getByTitle('Email preview').first().getAttribute('srcdoc');
+  expect(previewSrc).toContain('boxed2built_logo_email.png');
+  expect(previewSrc).toContain('<strong>Refer move-in help to us.</strong>');
+  expect(previewSrc).toContain('Book online');
+});
+
 test('an email is sent only from the review step, to the address shown there', async ({ page }) => {
   const calls = await stub(page, [MOVER]);
   await open(page);
