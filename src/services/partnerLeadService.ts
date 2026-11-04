@@ -146,12 +146,23 @@ export async function getPartnerCodes(couponIds: string[]): Promise<PartnerCode[
  * the page.
  */
 export async function getPartnerEmailActivity(organizationId: string): Promise<PartnerEmailEvent[]> {
-  const { data, error } = await supabase.rpc('get_partner_lead_email_activity', { p_organization_id: organizationId });
-  if (error) {
-    console.warn('Partner email activity unavailable:', error.message);
-    return [];
+  // Read in pages: the API returns at most ~1,000 rows per request, and the
+  // function orders oldest first, so one request would drop the newest events.
+  const events: PartnerEmailEvent[] = [];
+  for (let request = 0; request < FETCH_MAX_REQUESTS; request += 1) {
+    const { data, error } = await supabase
+      .rpc('get_partner_lead_email_activity', { p_organization_id: organizationId })
+      .range(events.length, events.length + FETCH_SIZE - 1);
+    if (error) {
+      console.warn('Partner email activity unavailable:', error.message);
+      return events;
+    }
+    const page = (data || []) as PartnerEmailEvent[];
+    // Stop on an empty page, like fetchAll: the server's row cap may be below FETCH_SIZE.
+    if (page.length === 0) break;
+    events.push(...page);
   }
-  return (data || []) as PartnerEmailEvent[];
+  return events;
 }
 
 /**
