@@ -321,8 +321,8 @@ export function renderOutreach({ subject, body, postalAddress }: OutreachInput):
   // is lost.
   const header = `<tr><td style="padding:0 0 24px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${NAVY};border-radius:10px;">
-    <tr><td style="padding:16px 20px;">
-      <a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="64" height="64" alt="Boxed2Built" style="display:block;width:64px;height:64px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a>
+    <tr><td align="center" style="padding:16px 20px;text-align:center;">
+      <a href="${OUTREACH_WEBSITE}/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;"><img src="${OUTREACH_WEBSITE}/boxed2built_logo_email.png" width="64" height="64" alt="Boxed2Built" style="display:block;margin:0 auto;width:64px;height:64px;border:0;outline:none;color:#ffffff;font-size:16px;font-weight:800;"></a>
     </td></tr>
     <tr><td style="height:4px;line-height:4px;font-size:0;background:${GOLD};border-radius:0 0 10px 10px;">&nbsp;</td></tr>
   </table>
