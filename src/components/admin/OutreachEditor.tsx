@@ -58,11 +58,14 @@ function ToolbarButton({
 export function OutreachEditor({
   subject,
   body,
+  leadName = null,
   maxLength,
   onChange,
 }: {
   subject: string;
   body: string;
+  /** The business being emailed; button links carry it as utm_term, as in the sent email. */
+  leadName?: string | null;
   maxLength: number;
   onChange: (next: string) => void;
 }) {
@@ -75,11 +78,11 @@ export function OutreachEditor({
   const preview = useMemo(() => {
     if (!body.trim()) return null;
     try {
-      return renderOutreach({ subject, body, postalAddress: null });
+      return renderOutreach({ subject, body, postalAddress: null, leadName });
     } catch {
       return null;
     }
-  }, [subject, body]);
+  }, [subject, body, leadName]);
 
   const read = (): Selection => {
     const el = textareaRef.current;

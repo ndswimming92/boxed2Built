@@ -13,7 +13,9 @@ import {
   normalizeSubject,
   parseBlocks,
   renderOutreach,
+  utmSlug,
   withClosing,
+  withOutreachUtm,
 } from '../../supabase/functions/_shared/partnerOutreach.ts';
 import {
   canEmail,
@@ -111,9 +113,9 @@ test('blocks become paragraphs, lists and a button', () => {
   assert.deepEqual(blocks.map((b) => b.kind), ['paragraph', 'bullets', 'numbers', 'button']);
   const out = renderOutreach({ subject: 'Hi', body: 'Intro.\n\n- a\n- b\n\n[button: Book online](https://boxed2built.com/book)', postalAddress: null });
   assert.match(out.html, /<ul[^>]*>.*<li[^>]*>a<\/li>/s);
-  assert.match(out.html, /<a href="https:\/\/boxed2built\.com\/book"[^>]*>Book online<\/a>/);
+  assert.match(out.html, /<a href="https:\/\/boxed2built\.com\/book\?[^"]*"[^>]*>Book online<\/a>/);
   assert.match(out.text, /- a\n- b/);
-  assert.match(out.text, /Book online: https:\/\/boxed2built\.com\/book/);
+  assert.match(out.text, /Book online: https:\/\/boxed2built\.com\/book\?utm_/);
 });
 
 test('a button line with an unsafe url is not rendered as a button', () => {
@@ -214,4 +216,33 @@ test('search matches name, town, contact and kind', () => {
   assert.equal(matchesLeadSearch(row, 'dana'), true);
   assert.equal(matchesLeadSearch(row, 'moving company'), true);
   assert.equal(matchesLeadSearch(row, 'realtor'), false);
+});
+
+test('buttons to boxed2built.com carry GA4 UTM tags, with the business as utm_term', () => {
+  const out = renderOutreach({
+    subject: 'Hi',
+    body: 'Intro.\n\n[button: Book online](https://boxed2built.com/book)',
+    postalAddress: null,
+    leadName: 'Grand Welcome of Franklin',
+  });
+  const href = /<a href="(https:\/\/boxed2built\.com\/book[^"]*)"[^>]*>Book online<\/a>/.exec(out.html)?.[1];
+  assert.ok(href, 'button link present');
+  const url = new URL(href.replace(/&amp;/g, '&'));
+  assert.equal(url.searchParams.get('utm_source'), 'partner_outreach');
+  assert.equal(url.searchParams.get('utm_medium'), 'email');
+  assert.equal(url.searchParams.get('utm_campaign'), 'partner_leads');
+  assert.equal(url.searchParams.get('utm_content'), 'button_book_online');
+  assert.equal(url.searchParams.get('utm_term'), 'grand_welcome_of_franklin');
+  // The plain-text version links to the same tagged address.
+  assert.match(out.text, /Book online: https:\/\/boxed2built\.com\/book\?utm_source=partner_outreach/);
+});
+
+test('UTM tags skip other sites and never override tags already in the link', () => {
+  assert.equal(withOutreachUtm('https://example.com/x', { content: 'button_x' }), 'https://example.com/x');
+  assert.equal(withOutreachUtm('mailto:a@b.com', { content: 'button_x' }), 'mailto:a@b.com');
+  const kept = new URL(withOutreachUtm('https://www.boxed2built.com/gift-cards?utm_campaign=holiday', { content: 'button_gift' }));
+  assert.equal(kept.searchParams.get('utm_campaign'), 'holiday');
+  assert.equal(kept.searchParams.get('utm_source'), 'partner_outreach');
+  assert.equal(kept.searchParams.has('utm_term'), false);
+  assert.equal(utmSlug("Thompson's Station & Co."), 'thompson_s_station_and_co');
 });

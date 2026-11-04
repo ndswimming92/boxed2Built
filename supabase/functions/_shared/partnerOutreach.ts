@@ -128,6 +128,8 @@ export interface OutreachInput {
   body: string;
   /** Where the footer says the business is. Set OUTREACH_POSTAL_ADDRESS on the function. */
   postalAddress: string | null;
+  /** The business being emailed; tagged as utm_term on button links so GA4 shows who clicked. */
+  leadName?: string | null;
 }
 
 export type OutreachProblem = 'subject_missing' | 'subject_too_long' | 'body_missing' | 'body_too_long';
@@ -244,9 +246,68 @@ export function parseBlocks(body: string): Block[] {
   return blocks;
 }
 
+// ---------------------------------------------------------------------------
+// GA4 tracking
+
+/** The UTM tags on buttons that lead to the Boxed2Built site, so GA4 shows the click. */
+export const OUTREACH_UTM = { source: 'partner_outreach', medium: 'email', campaign: 'partner_leads' } as const;
+
+/** "Book online" -> "book_online"; "Grand Welcome of Franklin" -> "grand_welcome_of_franklin". */
+export function utmSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 60);
+}
+
+function isBoxed2BuiltSite(url: URL): boolean {
+  const host = url.hostname.toLowerCase();
+  return host === 'boxed2built.com' || host.endsWith('.boxed2built.com');
+}
+
+/**
+ * Adds the outreach UTM tags to a link on boxed2built.com:
+ * utm_source=partner_outreach, utm_medium=email, utm_campaign=partner_leads,
+ * utm_content=button_<label>, and utm_term=<the business emailed> when known.
+ * Links to other sites are returned unchanged (GA4 only sees our own site),
+ * and any utm_ value already typed into the link is kept as written.
+ */
+export function withOutreachUtm(url: string, { content, leadName }: { content: string; leadName?: string | null }): string {
+  const raw = url.trim();
+  if (!/^https?:\/\//i.test(raw)) return raw;
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return raw;
+  }
+  if (!isBoxed2BuiltSite(parsed)) return raw;
+  const tags: Record<string, string> = {
+    utm_source: OUTREACH_UTM.source,
+    utm_medium: OUTREACH_UTM.medium,
+    utm_campaign: OUTREACH_UTM.campaign,
+    utm_content: content,
+  };
+  const term = leadName ? utmSlug(leadName) : '';
+  if (term) tags.utm_term = term;
+  for (const [key, value] of Object.entries(tags)) {
+    if (value && !parsed.searchParams.has(key)) parsed.searchParams.set(key, value);
+  }
+  return parsed.toString();
+}
+
+function buttonUrl(block: { label: string; url: string }, leadName: string | null): string {
+  const label = utmSlug(block.label);
+  return withOutreachUtm(block.url, { content: label ? `button_${label}` : 'button', leadName });
+}
+
 const PARAGRAPH_STYLE = `margin:0 0 16px;color:${INK};font-size:15px;line-height:1.65;`;
 
-function blockHtml(block: Block): string {
+function blockHtml(block: Block, leadName: string | null): string {
   switch (block.kind) {
     case 'paragraph':
       return `<p style="${PARAGRAPH_STYLE}">${block.lines.map(inlineHtml).join('<br>')}</p>`;
@@ -259,11 +320,11 @@ function blockHtml(block: Block): string {
       return `<${tag} style="margin:0 0 16px;padding-left:24px;color:${INK};font-size:15px;line-height:1.6;">${items}</${tag}>`;
     }
     case 'button':
-      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 20px;"><tr><td style="background:${NAVY};border-radius:8px;"><a href="${escapeHtml(block.url.trim())}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;border-bottom:3px solid ${GOLD};">${escapeHtml(block.label)}</a></td></tr></table>`;
+      return `<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:4px auto 20px;"><tr><td align="center" style="background:${NAVY};border-radius:8px;"><a href="${escapeHtml(buttonUrl(block, leadName))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 22px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;border-bottom:3px solid ${GOLD};">${escapeHtml(block.label)}</a></td></tr></table>`;
   }
 }
 
-function blockText(block: Block): string {
+function blockText(block: Block, leadName: string | null): string {
   switch (block.kind) {
     case 'paragraph':
       return block.lines.map(inlineText).join('\n');
@@ -272,7 +333,7 @@ function blockText(block: Block): string {
     case 'numbers':
       return block.items.map((item, index) => `${index + 1}. ${inlineText(item)}`).join('\n');
     case 'button':
-      return `${block.label}: ${block.url.replace(/^mailto:|^tel:/i, '')}`;
+      return `${block.label}: ${buttonUrl(block, leadName).replace(/^mailto:|^tel:/i, '')}`;
   }
 }
 
@@ -295,13 +356,14 @@ export interface RenderedOutreach {
   html: string;
 }
 
-export function renderOutreach({ subject, body, postalAddress }: OutreachInput): RenderedOutreach {
+export function renderOutreach({ subject, body, postalAddress, leadName = null }: OutreachInput): RenderedOutreach {
   const cleanSubject = normalizeSubject(subject);
+  const lead = leadName?.trim() || null;
   const blocks = parseBlocks(withClosing(body));
   const website = OUTREACH_WEBSITE.replace(/^https:\/\//, '');
 
   const text = [
-    blocks.map(blockText).join('\n\n'),
+    blocks.map((block) => blockText(block, lead)).join('\n\n'),
     '',
     'Boxed2Built',
     CARD_TAGLINE.replace('·', '-'),
@@ -329,7 +391,7 @@ export function renderOutreach({ subject, body, postalAddress }: OutreachInput):
 </td></tr>`;
 
   const message = `<tr><td style="padding:4px 0 8px;">
-${blocks.map(blockHtml).join('\n')}
+${blocks.map((block) => blockHtml(block, lead)).join('\n')}
 </td></tr>`;
 
   const card = `<tr><td style="padding:12px 0 0;">

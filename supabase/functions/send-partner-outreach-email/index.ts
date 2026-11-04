@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
   if (!lead) return json({ error: 'Lead not found' }, 404);
 
   const to = lead.email?.trim() ?? null;
-  const rendered = renderOutreach({ subject, body, postalAddress: POSTAL_ADDRESS });
+  const rendered = renderOutreach({ subject, body, postalAddress: POSTAL_ADDRESS, leadName: lead.name });
   const from = `${OUTREACH_FROM_NAME} <${OUTREACH_FROM_EMAIL}>`;
   const blocked = (BLOCKED_STATUSES as readonly string[]).includes(lead.status);
   const sinceLast = daysSince(lead.last_emailed_at);
