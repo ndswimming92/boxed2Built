@@ -483,8 +483,9 @@ export default function ClientsPage() {
             Manage your client relationships and marketing campaigns
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
-          {viewToggle}
+        {/* Right-aligned group: the view toggle is the LAST item so it stays pinned
+            to the right edge in both views, and action buttons grow leftward. */}
+        <div className="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
           <button
             onClick={() => {
               setCreatedMessage(null);
@@ -525,6 +526,7 @@ export default function ClientsPage() {
               Export ({selectedClients.size})
             </button>
           )}
+          {viewToggle}
         </div>
       </div>
 
