@@ -12,6 +12,7 @@ import type {
   SaleScope,
 } from '../types/news';
 import {
+  centralMidnight,
   centralToday,
   endingAfterCondition,
   isEndingOrder,
@@ -51,7 +52,13 @@ export async function getPublishedNews(options: {
   store?: string | null;
   scope?: SaleScope | null;
   type?: FurnitureType | null;
-} = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null }> {
+  /**
+   * Where "new today" starts. Later pages pass the first page's value back so
+   * the split between today's items and the paged feed cannot move if Central
+   * midnight passes while a visitor is reading.
+   */
+  cutoff?: string;
+} = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null; cutoff: string }> {
   const order = options.order ?? 'newest';
   const ascending = order === 'oldest';
   const byEndDate = isEndingOrder(order);
@@ -64,6 +71,24 @@ export async function getPublishedNews(options: {
   // so they are asked for on top of the page rather than out of it. An end-date
   // page starts strictly after the last sale shown, so it has no ties to ask for.
   const limit = byEndDate ? NEWS_PAGE_SIZE + 1 : NEWS_PAGE_SIZE + alreadyShown.size + 1;
+
+  // Items that went live today lead the list, except when the visitor asked
+  // for oldest first.
+  const newFirst = order !== 'oldest';
+  const midnight = options.cutoff ?? centralMidnight();
+
+  const applyTopicFilters = <T extends { eq: (c: string, v: string) => T; contains: (c: string, v: string[]) => T }>(
+    query: T,
+  ): T => {
+    let q = query;
+    if (options.topic) q = q.eq('topic', options.topic);
+    if (options.topic === 'deals') {
+      if (options.store) q = q.eq('store_slug', options.store);
+      if (options.scope) q = q.eq('sale_scope', options.scope);
+      if (options.type) q = q.contains('furniture_types', [options.type]);
+    }
+    return q;
+  };
 
   // Rebuilt for each attempt, because a query can only be sent once.
   const buildQuery = (client: SupabaseClient) => {
@@ -96,14 +121,10 @@ export async function getPublishedNews(options: {
         .order('id', { ascending });
     }
 
-    if (options.topic) {
-      query = query.eq('topic', options.topic);
-    }
-    if (options.topic === 'deals') {
-      if (options.store) query = query.eq('store_slug', options.store);
-      if (options.scope) query = query.eq('sale_scope', options.scope);
-      if (options.type) query = query.contains('furniture_types', [options.type]);
-    }
+    query = applyTopicFilters(query);
+    // Today's items are fetched separately and shown first, so the paged
+    // feed starts where they end.
+    if (newFirst) query = query.lt('published_at', midnight);
     if (cursor && !byEndDate) {
       query = ascending
         ? query.gte('published_at', cursor.publishedAt)
@@ -116,18 +137,39 @@ export async function getPublishedNews(options: {
     return query.retry(false);
   };
 
-  const { data, error, count } = await readWithRetry(() => buildQuery(supabase));
+  const buildNewQuery = (client: SupabaseClient) =>
+    applyTopicFilters(
+      client
+        .from('news_items')
+        .select('*')
+        .eq('status', 'published')
+        .or(`ends_on.is.null,ends_on.gte.${centralToday()}`)
+        .gte('published_at', midnight)
+        .order('published_at', { ascending: false })
+        .order('id', { ascending: false }),
+    ).retry(false);
 
-  if (error) {
-    console.error('Error fetching news:', error);
-    throw new Error(`Failed to load news: ${error.message}`);
+  const [paged, fresh] = await Promise.all([
+    readWithRetry(() => buildQuery(supabase)),
+    newFirst && !cursor
+      ? readWithRetry(() => buildNewQuery(supabase))
+      : Promise.resolve({ data: [] as NewsItem[], error: null }),
+  ]);
+  const { data, error, count } = paged;
+
+  if (error || fresh.error) {
+    const message = (error ?? fresh.error)?.message;
+    console.error('Error fetching news:', error ?? fresh.error);
+    throw new Error(`Failed to load news: ${message}`);
   }
 
+  const newItems = (fresh.data || []) as NewsItem[];
   const rows = ((data || []) as NewsItem[]).filter((row) => !alreadyShown.has(row.id));
   return {
-    items: rows.slice(0, NEWS_PAGE_SIZE),
+    items: [...newItems, ...rows.slice(0, NEWS_PAGE_SIZE)],
     hasMore: rows.length > NEWS_PAGE_SIZE,
-    total: count ?? null,
+    total: count == null ? null : count + newItems.length,
+    cutoff: midnight,
   };
 }
 

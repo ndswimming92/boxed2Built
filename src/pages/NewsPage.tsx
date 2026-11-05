@@ -17,10 +17,12 @@ import {
   NO_SALES_FILTERS,
   SALE_SCOPE_LABELS,
   defaultOrderFor,
+  centralMidnight,
   formatEndsOn,
   formatNewsDate,
   hasSalesFilters,
   isEndingOrder,
+  isNewToday,
   newsCursor,
   newsViewToSearch,
   parseNewsView,
@@ -95,14 +97,57 @@ const getSearch = () => window.location.search;
 const getServerSearch = () => '';
 const subscribeNever = () => () => {};
 
+/**
+ * Changes when Central midnight passes, so a page left open overnight stops
+ * marking yesterday's items as new without a reload.
+ */
+function useCentralDayTick(): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const now = Date.now();
+      // 30 hours after today's midnight always lands on tomorrow, even on a
+      // daylight saving day, and tomorrow's midnight is the one to wait for.
+      const next = new Date(centralMidnight(new Date(new Date(centralMidnight(new Date(now))).getTime() + 30 * 3600 * 1000))).getTime();
+      // Timers cap near 24.8 days; a day is far below that.
+      timer = setTimeout(() => {
+        setTick((value) => value + 1);
+        schedule();
+      }, Math.max(1000, next - now + 1000));
+    };
+    schedule();
+    return () => clearTimeout(timer);
+  }, []);
+  return tick;
+}
+
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
   const endsOn = formatEndsOn(item.ends_on);
   const sourceUrl = safeExternalUrl(item.source_url);
+  const isNew = isNewToday(item);
 
   return (
-    <article data-news-card className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+    <article
+      data-news-card
+      className="relative overflow-hidden bg-white rounded-lg shadow-md border border-gray-100 p-6"
+    >
+      {isNew && (
+        <span
+          data-new-ribbon
+          className="pointer-events-none absolute left-0 top-0 h-24 w-24 overflow-hidden"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-[-34px] top-[18px] w-[130px] -rotate-45 bg-red-600 py-1 text-center text-xs font-bold uppercase tracking-wider text-white shadow"
+          >
+            New
+          </span>
+          <span className="sr-only">New today</span>
+        </span>
+      )}
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 ${isNew ? 'pl-10' : ''}`}>
         <span
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
             item.topic === 'deals' ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
@@ -168,6 +213,10 @@ const NewsPage: React.FC = () => {
   // False while hydrating, so the first load waits for the real page link.
   const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false);
   const parsed = useMemo(() => parseNewsView(search), [search]);
+  // Re-render at Central midnight so expired NEW ribbons clear.
+  useCentralDayTick();
+  // Where "new today" started when the first page loaded; later pages reuse it.
+  const cutoffRef = useRef<string | undefined>(undefined);
 
   // The page opens on Sales. If that first load finds no sales, fall back to
   // All news once; after that the visitor's own choices (or a page link that
@@ -240,6 +289,7 @@ const NewsPage: React.FC = () => {
     getPublishedNews({ topic: topic === 'all' ? null : topic, order, store, scope, type })
       .then((result) => {
         if (cancelled) return;
+        cutoffRef.current = result.cutoff;
         if (awaitingFirstLoad.current) {
           awaitingFirstLoad.current = false;
           if (topic === 'deals' && result.items.length === 0) {
@@ -351,6 +401,7 @@ const NewsPage: React.FC = () => {
         store,
         scope,
         type,
+        cutoff: cutoffRef.current,
       });
       if (currentView.current !== requestedView) return;
       setItems((previous) => {

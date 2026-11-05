@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  centralMidnight,
   centralToday,
+  isNewToday,
   endingAfterCondition,
   formatEndsOn,
   formatNewsDate,
@@ -228,4 +230,29 @@ test('filter options count the live sales that match the other filters', () => {
     typeOptions(SALE_ROWS, { scope: 'local' }).map((option) => [option.value, option.count]),
     [['living_room', 1]],
   );
+});
+
+test('central midnight is 05:00 UTC in winter and 06:00 UTC in summer', () => {
+  assert.equal(centralMidnight(new Date('2026-12-15T18:00:00Z')), '2026-12-15T06:00:00.000Z');
+  assert.equal(centralMidnight(new Date('2026-07-15T18:00:00Z')), '2026-07-15T05:00:00.000Z');
+});
+
+test('central midnight follows Central time, not UTC', () => {
+  // 02:00 UTC on Dec 16 is still the evening of Dec 15 in Chicago.
+  assert.equal(centralMidnight(new Date('2026-12-16T02:00:00Z')), '2026-12-15T06:00:00.000Z');
+});
+
+test('central midnight is right on daylight saving change days', () => {
+  assert.equal(centralMidnight(new Date('2026-03-08T20:00:00Z')), '2026-03-08T06:00:00.000Z');
+  assert.equal(centralMidnight(new Date('2026-11-01T20:00:00Z')), '2026-11-01T05:00:00.000Z');
+});
+
+test('an item is new from midnight Central and stops being new at the next one', () => {
+  const now = new Date('2026-12-15T18:00:00Z');
+  assert.equal(isNewToday({ published_at: '2026-12-15T06:00:00Z' }, now), true);
+  assert.equal(isNewToday({ published_at: '2026-12-15T05:59:59Z' }, now), false);
+  assert.equal(isNewToday({ published_at: '2026-12-15T17:00:00Z' }, now), true);
+  // The same item the next day (after the next midnight) is no longer new.
+  assert.equal(isNewToday({ published_at: '2026-12-15T17:00:00Z' }, new Date('2026-12-16T06:00:00Z')), false);
+  assert.equal(isNewToday({ published_at: null }, now), false);
 });
