@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import SmsConsentLog from '../../components/admin/SmsConsentLog';
 import { AlertCircle, CheckCircle, MessageSquare } from 'lucide-react';
 
 export default function SmsOptInPage() {
@@ -66,11 +67,11 @@ export default function SmsOptInPage() {
   }
 
   return (
-    <div className="max-w-4xl px-0">
+    <div className="max-w-6xl px-0">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">SMS Opt-In</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">SMS Opt-In &amp; Consent Log</h1>
         <p className="text-sm sm:text-base text-slate-600">
-          Show or hide the text-message consent checkboxes on the service request form
+          Control the text-message consent checkboxes on the service request form and review every consent record
         </p>
       </div>
 
@@ -127,6 +128,8 @@ export default function SmsOptInPage() {
           </div>
         </div>
       </div>
+
+      <SmsConsentLog />
     </div>
   );
 }
