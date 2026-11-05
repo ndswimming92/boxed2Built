@@ -43,6 +43,43 @@ export function centralToday(now: Date = new Date()): string {
 }
 
 /**
+ * The instant today began in Central time, as an ISO timestamp. Works across
+ * daylight saving changes by asking Intl what the zone's offset is on that day.
+ */
+export function centralMidnight(now: Date = new Date()): string {
+  const [year, month, day] = centralToday(now).split('-').map(Number);
+  const offsetAt = (instant: number): number => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: DEAL_TIME_ZONE,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).formatToParts(new Date(instant));
+    const get = (type: string) => Number(parts.find((part) => part.type === type)?.value);
+    const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+    return asUtc - Math.floor(instant / 1000) * 1000;
+  };
+  const wallClockMidnight = Date.UTC(year, month - 1, day);
+  // The offset can differ between the guess and the answer on a change day,
+  // so settle it with a second pass.
+  let instant = wallClockMidnight - offsetAt(wallClockMidnight);
+  instant = wallClockMidnight - offsetAt(instant);
+  return new Date(instant).toISOString();
+}
+
+/** True when the item went live since midnight Central time today. */
+export function isNewToday(item: Pick<NewsItem, 'published_at'>, now: Date = new Date()): boolean {
+  if (!item.published_at) return false;
+  const published = new Date(item.published_at).getTime();
+  if (Number.isNaN(published)) return false;
+  return published >= new Date(centralMidnight(now)).getTime();
+}
+
+/**
  * True once the day after `ends_on` has begun (Central time). An item with no
  * end date never expires. The database applies the same rule to anonymous
  * visitors; this is for signed-in admins, who can read everything.

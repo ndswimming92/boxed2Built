@@ -21,6 +21,7 @@ import {
   formatNewsDate,
   hasSalesFilters,
   isEndingOrder,
+  isNewToday,
   newsCursor,
   newsViewToSearch,
   parseNewsView,
@@ -99,10 +100,28 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
   const endsOn = formatEndsOn(item.ends_on);
   const sourceUrl = safeExternalUrl(item.source_url);
+  const isNew = isNewToday(item);
 
   return (
-    <article data-news-card className="bg-white rounded-lg shadow-md border border-gray-100 p-6">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
+    <article
+      data-news-card
+      className="relative overflow-hidden bg-white rounded-lg shadow-md border border-gray-100 p-6"
+    >
+      {isNew && (
+        <span
+          data-new-ribbon
+          className="pointer-events-none absolute left-0 top-0 h-24 w-24 overflow-hidden"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-[-34px] top-[18px] w-[130px] -rotate-45 bg-red-600 py-1 text-center text-xs font-bold uppercase tracking-wider text-white shadow"
+          >
+            New
+          </span>
+          <span className="sr-only">New today</span>
+        </span>
+      )}
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 ${isNew ? 'pl-10' : ''}`}>
         <span
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
             item.topic === 'deals' ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
