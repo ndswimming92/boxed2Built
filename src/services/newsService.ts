@@ -52,7 +52,13 @@ export async function getPublishedNews(options: {
   store?: string | null;
   scope?: SaleScope | null;
   type?: FurnitureType | null;
-} = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null }> {
+  /**
+   * Where "new today" starts. Later pages pass the first page's value back so
+   * the split between today's items and the paged feed cannot move if Central
+   * midnight passes while a visitor is reading.
+   */
+  cutoff?: string;
+} = {}): Promise<{ items: NewsItem[]; hasMore: boolean; total: number | null; cutoff: string }> {
   const order = options.order ?? 'newest';
   const ascending = order === 'oldest';
   const byEndDate = isEndingOrder(order);
@@ -69,7 +75,7 @@ export async function getPublishedNews(options: {
   // Items that went live today lead the list, except when the visitor asked
   // for oldest first.
   const newFirst = order !== 'oldest';
-  const midnight = centralMidnight();
+  const midnight = options.cutoff ?? centralMidnight();
 
   const applyTopicFilters = <T extends { eq: (c: string, v: string) => T; contains: (c: string, v: string[]) => T }>(
     query: T,
@@ -163,6 +169,7 @@ export async function getPublishedNews(options: {
     items: [...newItems, ...rows.slice(0, NEWS_PAGE_SIZE)],
     hasMore: rows.length > NEWS_PAGE_SIZE,
     total: count == null ? null : count + newItems.length,
+    cutoff: midnight,
   };
 }
 

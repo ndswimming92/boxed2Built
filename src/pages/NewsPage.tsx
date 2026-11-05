@@ -17,6 +17,7 @@ import {
   NO_SALES_FILTERS,
   SALE_SCOPE_LABELS,
   defaultOrderFor,
+  centralMidnight,
   formatEndsOn,
   formatNewsDate,
   hasSalesFilters,
@@ -95,6 +96,31 @@ const subscribeToLocation = (notify: () => void) => {
 const getSearch = () => window.location.search;
 const getServerSearch = () => '';
 const subscribeNever = () => () => {};
+
+/**
+ * Changes when Central midnight passes, so a page left open overnight stops
+ * marking yesterday's items as new without a reload.
+ */
+function useCentralDayTick(): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const now = Date.now();
+      // 30 hours after today's midnight always lands on tomorrow, even on a
+      // daylight saving day, and tomorrow's midnight is the one to wait for.
+      const next = new Date(centralMidnight(new Date(new Date(centralMidnight(new Date(now))).getTime() + 30 * 3600 * 1000))).getTime();
+      // Timers cap near 24.8 days; a day is far below that.
+      timer = setTimeout(() => {
+        setTick((value) => value + 1);
+        schedule();
+      }, Math.max(1000, next - now + 1000));
+    };
+    schedule();
+    return () => clearTimeout(timer);
+  }, []);
+  return tick;
+}
 
 const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
   const date = formatNewsDate(item);
@@ -187,6 +213,10 @@ const NewsPage: React.FC = () => {
   // False while hydrating, so the first load waits for the real page link.
   const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false);
   const parsed = useMemo(() => parseNewsView(search), [search]);
+  // Re-render at Central midnight so expired NEW ribbons clear.
+  useCentralDayTick();
+  // Where "new today" started when the first page loaded; later pages reuse it.
+  const cutoffRef = useRef<string | undefined>(undefined);
 
   // The page opens on Sales. If that first load finds no sales, fall back to
   // All news once; after that the visitor's own choices (or a page link that
@@ -259,6 +289,7 @@ const NewsPage: React.FC = () => {
     getPublishedNews({ topic: topic === 'all' ? null : topic, order, store, scope, type })
       .then((result) => {
         if (cancelled) return;
+        cutoffRef.current = result.cutoff;
         if (awaitingFirstLoad.current) {
           awaitingFirstLoad.current = false;
           if (topic === 'deals' && result.items.length === 0) {
@@ -370,6 +401,7 @@ const NewsPage: React.FC = () => {
         store,
         scope,
         type,
+        cutoff: cutoffRef.current,
       });
       if (currentView.current !== requestedView) return;
       setItems((previous) => {
