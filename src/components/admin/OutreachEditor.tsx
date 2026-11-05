@@ -282,7 +282,8 @@ export function OutreachEditor({
           )}
         </div>
 
-        <div className="hidden lg:flex flex-col rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+        {/* Sticky beside the editor; if the email is taller than the screen it scrolls within its own pane. */}
+        <div className="hidden lg:flex flex-col self-start sticky top-4 max-h-[calc(100vh-2rem)] rounded-lg border border-slate-200 bg-slate-50 overflow-y-auto">
           <div className="flex items-center gap-1.5 border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500">
             <Eye className="w-3.5 h-3.5" aria-hidden="true" /> Live preview
           </div>
