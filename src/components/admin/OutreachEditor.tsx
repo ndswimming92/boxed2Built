@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Bold,
   Eye,
@@ -83,6 +83,21 @@ export function OutreachEditor({
       return null;
     }
   }, [subject, body, leadName]);
+
+  // Grow the textarea to fit all of its text so the whole message is visible
+  // without an inner scrollbar or dragging a resize handle. The page scrolls instead.
+  const fitHeight = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useLayoutEffect(fitHeight, [body, showPreviewOnMobile]);
+  useEffect(() => {
+    // Re-fit when the column width changes (line wrapping changes the height).
+    window.addEventListener('resize', fitHeight);
+    return () => window.removeEventListener('resize', fitHeight);
+  }, []);
 
   const read = (): Selection => {
     const el = textareaRef.current;
@@ -250,7 +265,7 @@ export function OutreachEditor({
 
           <textarea
             ref={textareaRef}
-            className={`w-full min-h-[18rem] px-3 py-2.5 text-sm leading-relaxed text-slate-900 focus:outline-none resize-y ${
+            className={`w-full min-h-[18rem] px-3 py-2.5 text-sm leading-relaxed text-slate-900 focus:outline-none resize-none overflow-hidden ${
               showPreviewOnMobile ? 'hidden lg:block' : 'block'
             }`}
             value={body}
@@ -267,7 +282,8 @@ export function OutreachEditor({
           )}
         </div>
 
-        <div className="hidden lg:flex flex-col rounded-lg border border-slate-200 bg-slate-50 overflow-hidden">
+        {/* Sticky beside the editor; if the email is taller than the screen it scrolls within its own pane. */}
+        <div className="hidden lg:flex flex-col self-start sticky top-4 max-h-[calc(100vh-2rem)] rounded-lg border border-slate-200 bg-slate-50 overflow-y-auto">
           <div className="flex items-center gap-1.5 border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-500">
             <Eye className="w-3.5 h-3.5" aria-hidden="true" /> Live preview
           </div>
@@ -302,12 +318,41 @@ function PreviewFrame({ html }: { html: string | null }) {
       </div>
     );
   }
+  return <AutoHeightIframe html={html} />;
+}
+
+/**
+ * Renders the email in a script-less iframe and sizes it to its content so the
+ * whole email is visible with no inner scrollbar. `allow-same-origin` (without
+ * `allow-scripts`) lets us read the height; scripts in the email still can't run.
+ */
+function AutoHeightIframe({ html }: { html: string }) {
+  const ref = useRef<HTMLIFrameElement | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
+
+  const measure = () => {
+    const doc = ref.current?.contentDocument;
+    if (!doc) return;
+    const h = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0);
+    if (h) setHeight(h);
+  };
+
+  useEffect(() => {
+    // Line wrapping (and so height) changes with the pane width.
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   return (
     <iframe
+      ref={ref}
       title="Email preview"
-      sandbox=""
+      sandbox="allow-same-origin"
       srcDoc={html}
-      className="w-full h-[26rem] rounded-md border border-slate-200 bg-white"
+      onLoad={measure}
+      scrolling="no"
+      style={height ? { height } : undefined}
+      className="w-full min-h-[16rem] block rounded-md border border-slate-200 bg-white"
     />
   );
 }
