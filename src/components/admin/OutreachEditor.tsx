@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Bold,
   Eye,
@@ -83,6 +83,21 @@ export function OutreachEditor({
       return null;
     }
   }, [subject, body, leadName]);
+
+  // Grow the textarea to fit all of its text so the whole message is visible
+  // without an inner scrollbar or dragging a resize handle. The page scrolls instead.
+  const fitHeight = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useLayoutEffect(fitHeight, [body, showPreviewOnMobile]);
+  useEffect(() => {
+    // Re-fit when the column width changes (line wrapping changes the height).
+    window.addEventListener('resize', fitHeight);
+    return () => window.removeEventListener('resize', fitHeight);
+  }, []);
 
   const read = (): Selection => {
     const el = textareaRef.current;
@@ -250,7 +265,7 @@ export function OutreachEditor({
 
           <textarea
             ref={textareaRef}
-            className={`w-full min-h-[18rem] px-3 py-2.5 text-sm leading-relaxed text-slate-900 focus:outline-none resize-y ${
+            className={`w-full min-h-[18rem] px-3 py-2.5 text-sm leading-relaxed text-slate-900 focus:outline-none resize-none overflow-hidden ${
               showPreviewOnMobile ? 'hidden lg:block' : 'block'
             }`}
             value={body}
