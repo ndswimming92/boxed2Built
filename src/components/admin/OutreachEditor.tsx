@@ -317,12 +317,42 @@ function PreviewFrame({ html }: { html: string | null }) {
       </div>
     );
   }
+  return <AutoHeightIframe html={html} />;
+}
+
+/**
+ * Renders the email in a script-less iframe and sizes it to its content so the
+ * whole email is visible with no inner scrollbar. `allow-same-origin` (without
+ * `allow-scripts`) lets us read the height; scripts in the email still can't run.
+ */
+function AutoHeightIframe({ html }: { html: string }) {
+  const ref = useRef<HTMLIFrameElement | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
+
+  const measure = () => {
+    const doc = ref.current?.contentDocument;
+    if (!doc) return;
+    const h = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0);
+    if (h) setHeight(h);
+  };
+
+  useEffect(() => {
+    // Line wrapping (and so height) changes with the pane width.
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   return (
     <iframe
+      ref={ref}
       title="Email preview"
-      sandbox=""
+      sandbox="allow-same-origin"
       srcDoc={html}
-      className="w-full h-[26rem] rounded-md border border-slate-200 bg-white"
+      onLoad={measure}
+      scrolling="no"
+      style={height ? { height } : undefined}
+      className="w-full min-h-[16rem] block rounded-md border border-slate-200 bg-white"
     />
   );
+}
 }
