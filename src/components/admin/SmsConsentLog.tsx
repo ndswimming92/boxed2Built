@@ -47,7 +47,7 @@ const csvCell = (value: unknown) => {
   return `"${safe.replace(/"/g, '""')}"`;
 };
 
-export default function SmsConsentLogPage() {
+export default function SmsConsentLog() {
   const [rows, setRows] = useState<ConsentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,10 +160,10 @@ export default function SmsConsentLogPage() {
   ];
 
   return (
-    <div className="max-w-6xl px-0">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">SMS Consent Log</h1>
-        <p className="text-sm sm:text-base text-slate-600">
+    <div className="mt-10">
+      <div className="mb-4">
+        <h2 className="text-xl font-bold text-slate-900 mb-1">Consent log</h2>
+        <p className="text-sm text-slate-600">
           Every opt-in and opt-out, kept as a permanent record. Entries cannot be edited or deleted.
         </p>
       </div>
