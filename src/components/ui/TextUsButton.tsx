@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
-import { formatPhoneInput, validatePhoneInput } from '../../utils/phoneInput';
+import { caretAfterDigits, formatPhoneInput, phoneDigitsOnly, validatePhoneInput } from '../../utils/phoneInput';
 
 const CONSENT_LABEL =
   'I agree to receive a text message reply from Boxed2Built at this number about my question. Msg&data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.';
@@ -36,8 +36,28 @@ const TextUsButton: React.FC = () => {
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
-  const setPhone = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, phone: formatPhoneInput(e.target.value) }));
+  // Reformatting replaces the field's text, which would throw the cursor to the end. When the
+  // visitor edits in the middle, remember which digit the cursor was on and put it back.
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const pendingCaret = useRef<number | null>(null);
+  const setPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, selectionStart } = e.target;
+    const formatted = formatPhoneInput(value);
+    // Every edit sets or clears the position, so one edit's position can never carry over to the next.
+    pendingCaret.current =
+      selectionStart !== null && selectionStart < value.length
+        ? caretAfterDigits(formatted, phoneDigitsOnly(value.slice(0, selectionStart)).length)
+        : null;
+    setForm((f) => ({ ...f, phone: formatted }));
+  };
+  // No dependency list on purpose: an edit that leaves the formatted text unchanged (deleting a
+  // hyphen the formatter puts straight back) still re-renders, and its position must be used then.
+  useLayoutEffect(() => {
+    if (pendingCaret.current !== null && phoneRef.current) {
+      phoneRef.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+    }
+    pendingCaret.current = null;
+  });
   const touch = (field: Field) => () => setTouched((t) => ({ ...t, [field]: true }));
 
   const errors = fieldErrors(form, consent, touched);
@@ -115,7 +135,7 @@ const TextUsButton: React.FC = () => {
               </div>
               <div>
                 <input
-                  id="text-us-phone" type="tel" inputMode="tel" maxLength={22} value={form.phone}
+                  id="text-us-phone" ref={phoneRef} type="tel" inputMode="tel" maxLength={22} value={form.phone}
                   onChange={setPhone} onBlur={touch('phone')}
                   placeholder="Mobile number, e.g. (615) 555-0123" autoComplete="tel-national"
                   aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'text-us-phone-error' : undefined}
