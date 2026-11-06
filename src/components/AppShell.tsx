@@ -8,6 +8,7 @@ import { BusinessDataProvider, useBusinessDataContext } from '../contexts/Busine
 import { CartProvider } from '../contexts/CartContext';
 import CartHost from './store/CartHost';
 import ScrollToTop from './ui/ScrollToTop';
+import TextUsButton from './ui/TextUsButton';
 import NotificationBar from './NotificationBar';
 import { useNotificationBar } from '../hooks/useNotificationBar';
 import { useManifestManager } from '../hooks/useManifestManager';
@@ -193,6 +194,15 @@ function ConditionalAuthProvider({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// Public pages only: hidden in the admin, customer portal and payment pages.
+function TextUsButtonWrapper() {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/pay')) {
+    return null;
+  }
+  return <TextUsButton />;
+}
+
 function ClientOnlyBrowserComponents() {
   return (
     <ClientOnly>
@@ -204,6 +214,7 @@ function ClientOnlyBrowserComponents() {
           <Analytics />
           <HashHandler />
           <ScrollToTop />
+          <TextUsButtonWrapper />
         </>
       )}
     </ClientOnly>
