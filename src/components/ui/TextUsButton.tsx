@@ -43,17 +43,21 @@ const TextUsButton: React.FC = () => {
   const setPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, selectionStart } = e.target;
     const formatted = formatPhoneInput(value);
-    if (selectionStart !== null && selectionStart < value.length) {
-      pendingCaret.current = caretAfterDigits(formatted, phoneDigitsOnly(value.slice(0, selectionStart)).length);
-    }
+    // Every edit sets or clears the position, so one edit's position can never carry over to the next.
+    pendingCaret.current =
+      selectionStart !== null && selectionStart < value.length
+        ? caretAfterDigits(formatted, phoneDigitsOnly(value.slice(0, selectionStart)).length)
+        : null;
     setForm((f) => ({ ...f, phone: formatted }));
   };
+  // No dependency list on purpose: an edit that leaves the formatted text unchanged (deleting a
+  // hyphen the formatter puts straight back) still re-renders, and its position must be used then.
   useLayoutEffect(() => {
     if (pendingCaret.current !== null && phoneRef.current) {
       phoneRef.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
     }
     pendingCaret.current = null;
-  }, [form.phone]);
+  });
   const touch = (field: Field) => () => setTouched((t) => ({ ...t, [field]: true }));
 
   const errors = fieldErrors(form, consent, touched);
