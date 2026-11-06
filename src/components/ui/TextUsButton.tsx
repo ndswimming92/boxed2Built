@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
+import { formatPhoneInput, validatePhoneInput } from '../../utils/phoneInput';
 
 const CONSENT_LABEL =
   'I agree to receive a text message reply from Boxed2Built at this number about my question. Msg&data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
+type Field = 'name' | 'phone' | 'message' | 'consent';
+
+const INPUT = 'w-full rounded-md border px-3 py-2';
+const inputClass = (bad: boolean) => `${INPUT} ${bad ? 'border-red-500 focus:outline-red-500' : 'border-gray-300'}`;
+
+function fieldErrors(form: { name: string; phone: string; message: string }, consent: boolean, complete: Record<Field, boolean>) {
+  const errors: Partial<Record<Field, string>> = {};
+  if (complete.name && !form.name.trim()) errors.name = 'Enter your name.';
+  const phoneError = validatePhoneInput(form.phone, complete.phone);
+  if (phoneError) errors.phone = phoneError;
+  if (complete.message) {
+    if (!form.message.trim()) errors.message = 'Enter your question.';
+    else if (form.message.trim().length < 3) errors.message = 'Please add a little more detail.';
+  }
+  if (complete.consent && !consent) errors.consent = 'Please tick the box so we can text you back.';
+  return errors;
+}
 
 const TextUsButton: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -13,12 +31,27 @@ const TextUsButton: React.FC = () => {
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', message: '', website: '' });
   const [consent, setConsent] = useState(false);
+  // A field counts as "finished" once the visitor leaves it or tries to send.
+  const [touched, setTouched] = useState<Record<Field, boolean>>({ name: false, phone: false, message: false, consent: false });
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setPhone = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, phone: formatPhoneInput(e.target.value) }));
+  const touch = (field: Field) => () => setTouched((t) => ({ ...t, [field]: true }));
+
+  const errors = fieldErrors(form, consent, touched);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const all = { name: true, phone: true, message: true, consent: true };
+    setTouched(all);
+    const problems = fieldErrors(form, consent, all);
+    const first = (['name', 'phone', 'message', 'consent'] as Field[]).find((f) => problems[f]);
+    if (first) {
+      document.getElementById(`text-us-${first}`)?.focus();
+      return;
+    }
     setStatus('sending');
     setError('');
     try {
@@ -40,6 +73,7 @@ const TextUsButton: React.FC = () => {
       setStatus('sent');
       setForm({ name: '', phone: '', message: '', website: '' });
       setConsent(false);
+      setTouched({ name: false, phone: false, message: false, consent: false });
     } catch {
       setError('Something went wrong. Please call us instead.');
       setStatus('error');
@@ -58,7 +92,7 @@ const TextUsButton: React.FC = () => {
         <div
           role="dialog"
           aria-label="Text us a question"
-          className="fixed bottom-20 left-4 sm:left-6 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-xl bg-white shadow-2xl border border-gray-200"
+          className="fixed bottom-20 left-4 sm:left-6 z-[60] w-[calc(100vw-2rem)] max-w-sm rounded-xl bg-white shadow-2xl border border-gray-200 isolate"
         >
           <div className="flex items-center justify-between bg-blue-600 text-white rounded-t-xl px-4 py-3">
             <span className="font-semibold">Text us a question</span>
@@ -69,32 +103,55 @@ const TextUsButton: React.FC = () => {
           {status === 'sent' ? (
             <p className="p-4 text-sm text-gray-700">Thanks! We got your message and will text you back soon.</p>
           ) : (
-            <form onSubmit={submit} className="p-4 space-y-3 text-sm">
-              <input
-                required maxLength={100} value={form.name} onChange={set('name')}
-                placeholder="Your name" autoComplete="name"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-              />
-              <input
-                required type="tel" maxLength={30} value={form.phone} onChange={set('phone')}
-                placeholder="Mobile number" autoComplete="tel"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-              />
-              <textarea
-                required minLength={3} maxLength={600} rows={3} value={form.message} onChange={set('message')}
-                placeholder="Your question"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
-              />
+            <form onSubmit={submit} noValidate className="p-4 space-y-3 text-sm">
+              <div>
+                <input
+                  id="text-us-name" maxLength={100} value={form.name} onChange={set('name')} onBlur={touch('name')}
+                  placeholder="Your name" autoComplete="name"
+                  aria-invalid={!!errors.name} aria-describedby={errors.name ? 'text-us-name-error' : undefined}
+                  className={inputClass(!!errors.name)}
+                />
+                {errors.name && <p id="text-us-name-error" role="alert" className="mt-1 text-xs text-red-600">{errors.name}</p>}
+              </div>
+              <div>
+                <input
+                  id="text-us-phone" type="tel" inputMode="tel" maxLength={22} value={form.phone}
+                  onChange={setPhone} onBlur={touch('phone')}
+                  placeholder="Mobile number, e.g. (615) 555-0123" autoComplete="tel-national"
+                  aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'text-us-phone-error' : undefined}
+                  className={inputClass(!!errors.phone)}
+                />
+                {errors.phone && <p id="text-us-phone-error" role="alert" className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+              </div>
+              <div>
+                <textarea
+                  id="text-us-message" maxLength={600} rows={3} value={form.message} onChange={set('message')} onBlur={touch('message')}
+                  placeholder="Your question"
+                  aria-invalid={!!errors.message} aria-describedby={errors.message ? 'text-us-message-error' : undefined}
+                  className={inputClass(!!errors.message)}
+                />
+                <div className="mt-1 flex justify-between text-xs">
+                  <span id="text-us-message-error" role={errors.message ? 'alert' : undefined} className="text-red-600">{errors.message}</span>
+                  <span className={form.message.length >= 550 ? 'text-amber-600' : 'text-gray-400'}>{form.message.length}/600</span>
+                </div>
+              </div>
               {/* Honeypot: hidden from people, filled in by bots. */}
               <input
                 tabIndex={-1} autoComplete="off" aria-hidden="true" value={form.website} onChange={set('website')}
                 className="absolute left-[-9999px] h-0 w-0 opacity-0" name="website"
               />
-              <label className="flex items-start gap-2 text-xs text-gray-600">
-                <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
-                <span>{CONSENT_LABEL}</span>
-              </label>
-              {status === 'error' && <p className="text-xs text-red-600">{error}</p>}
+              <div>
+                <label className="flex items-start gap-2 text-xs text-gray-600">
+                  <input
+                    id="text-us-consent" type="checkbox" checked={consent}
+                    onChange={(e) => { setConsent(e.target.checked); setTouched((t) => ({ ...t, consent: true })); }}
+                    aria-invalid={!!errors.consent} className="mt-0.5"
+                  />
+                  <span>{CONSENT_LABEL}</span>
+                </label>
+                {errors.consent && <p role="alert" className="mt-1 text-xs text-red-600">{errors.consent}</p>}
+              </div>
+              {status === 'error' && <p role="alert" className="text-xs text-red-600">{error}</p>}
               <button
                 type="submit" disabled={status === 'sending'}
                 className="w-full flex items-center justify-center gap-2 rounded-md bg-blue-600 px-3 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
