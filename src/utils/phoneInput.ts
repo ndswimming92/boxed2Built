@@ -54,3 +54,18 @@ export function validatePhoneInput(raw: string, complete: boolean): string | nul
   }
   return null;
 }
+
+/**
+ * Where the text cursor belongs after reformatting: just past the Nth digit of
+ * the formatted text. Counting digits (not characters) keeps the cursor on the
+ * same digit even though "(", ")", " " and "-" appear or vanish around it.
+ * `digitsBefore` is how many digits sat before the cursor in the text as typed.
+ */
+export function caretAfterDigits(formatted: string, digitsBefore: number): number {
+  if (digitsBefore <= 0) return 0;
+  let seen = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted[i]) && ++seen === digitsBefore) return i + 1;
+  }
+  return formatted.length;
+}

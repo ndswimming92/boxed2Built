@@ -59,3 +59,17 @@ test('accepts a good number in any common format', () => {
     assert.equal(validatePhoneInput(raw, true), null, raw);
   }
 });
+
+test('keeps the cursor on the same digit after reformatting', async () => {
+  const { caretAfterDigits } = await import('../../src/utils/phoneInput.ts');
+  // Deleting the "4" after the area code: "(615) |403-4538" typed as "(615) 03-4538" with the cursor before the "0".
+  const typed = '(615) 03-4538';
+  const digitsBefore = phoneDigitsOnly(typed.slice(0, 6)).length; // 3 digits before the cursor
+  const formatted = formatPhoneInput(typed);
+  assert.equal(formatted, '(615) 034-538');
+  assert.equal(caretAfterDigits(formatted, digitsBefore), 4); // right after the area code's last digit
+  assert.equal(caretAfterDigits('(615) 403-4538', 4), 7); // right after the "4" of the exchange
+  assert.equal(caretAfterDigits('(6', 1), 2);
+  assert.equal(caretAfterDigits('(615) 403-4538', 0), 0);
+  assert.equal(caretAfterDigits('(615) 403', 99), 9);
+});
