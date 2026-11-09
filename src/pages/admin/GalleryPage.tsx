@@ -356,7 +356,7 @@ export default function GalleryPage() {
           <h1 className="text-2xl font-bold text-slate-900">Gallery Management</h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1">Manage images and videos for the public gallery</p>
         </div>
-        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex gap-2 sm:gap-3 shrink-0">
           {!reorderMode && (
             <Button
               onClick={() => setReorderMode(true)}
@@ -399,7 +399,7 @@ export default function GalleryPage() {
 
       {publishMessage && (
         <div className={`p-4 rounded-lg flex items-start gap-3 ${publishMessage.type === 'success' ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
-          {publishMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />}
+          {publishMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
           <p className={`text-sm ${publishMessage.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>{publishMessage.text}</p>
         </div>
       )}
@@ -617,13 +617,13 @@ export default function GalleryPage() {
                 {item.type === 'image' && item.eligible_for_social && item.social_scheduled_at && (
                   <div className="w-full mb-1.5 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded text-xs font-medium text-amber-800 flex items-center justify-between gap-1.5">
                     <span className="flex items-center gap-1.5 truncate">
-                      <Clock size={12} className="flex-shrink-0" />
+                      <Clock size={12} className="shrink-0" />
                       Scheduled {formatScheduledTime(item.social_scheduled_at)}
                     </span>
                     <button
                       onClick={() => handleCancelScheduledPost(item)}
                       disabled={schedulingBusyId === item.id}
-                      className="flex-shrink-0 text-amber-700 hover:text-amber-900 disabled:opacity-50"
+                      className="shrink-0 text-amber-700 hover:text-amber-900 disabled:opacity-50"
                       title="Cancel scheduled post"
                     >
                       <X size={14} />

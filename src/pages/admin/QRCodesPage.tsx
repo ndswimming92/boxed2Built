@@ -508,7 +508,7 @@ export default function QRCodesPage() {
       />
 
       {previewQRCode && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={() => { setPreviewQRCode(null); setPreviewDataURL(''); }}>
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4" onClick={() => { setPreviewQRCode(null); setPreviewDataURL(''); }}>
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 truncate pr-2">{previewQRCode.title}</h3>
@@ -579,7 +579,7 @@ export default function QRCodesPage() {
           onSuccess={fetchData}
         />
       ) : showFormModal ? (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Business Setup Required</h3>
             <p className="text-gray-600 mb-4">

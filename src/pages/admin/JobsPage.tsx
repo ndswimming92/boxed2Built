@@ -796,7 +796,7 @@ export default function JobsPage() {
                               href={getDirectionsUrl(clientAddress)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm font-semibold text-slate-900 break-words underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
+                              className="text-sm font-semibold text-slate-900 wrap-break-word underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
                               title="Open directions"
                             >
                               {clientAddress}
@@ -820,7 +820,7 @@ export default function JobsPage() {
                               href={getDirectionsUrl(workAddress)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm font-semibold text-slate-900 break-words underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
+                              className="text-sm font-semibold text-slate-900 wrap-break-word underline decoration-slate-300 hover:text-emerald-700 hover:decoration-emerald-400"
                               title="Open directions"
                             >
                               {workAddress}

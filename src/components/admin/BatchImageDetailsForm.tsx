@@ -185,7 +185,7 @@ export default function BatchImageDetailsForm({
 
         {error && (
           <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+            <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
             <div className="flex-1">
               <p className="text-sm font-medium text-red-900">Error</p>
               <p className="text-sm text-red-700">{error}</p>

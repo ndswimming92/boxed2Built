@@ -62,7 +62,7 @@ export default function PricingInsightsCard({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-blue-50">
+      <div className="p-4 sm:p-6 border-b border-slate-200 bg-linear-to-r from-teal-50 to-blue-50">
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-teal-100 rounded-lg">
@@ -183,7 +183,7 @@ export default function PricingInsightsCard({
                 {Math.abs(rec.priceAdjustmentNeeded) > 5 && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
                     <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <p className="text-xs text-slate-600">
                         {rec.priceAdjustmentNeeded > 0 ? (
                           <>
@@ -217,7 +217,7 @@ export default function PricingInsightsCard({
       {recommendations.length > 0 && (
         <div className="p-4 bg-slate-50 border-t border-slate-200">
           <div className="flex items-start gap-2 text-xs text-slate-600">
-            <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
             <div className="space-y-1">
               <p className="font-medium">How to Use These Recommendations:</p>
               <ul className="list-disc list-inside space-y-0.5 text-slate-500">

@@ -109,7 +109,7 @@ const TVMountingPage: React.FC = () => {
       <Header />
 
       <main className="min-h-screen">
-        <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
+        <div className="bg-linear-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
           <div className="container mx-auto px-4">
             <Breadcrumbs
               items={[
@@ -212,19 +212,19 @@ const TVMountingPage: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Additional Services Available:</h3>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
-                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 shrink-0 mt-0.5" />
                     <span>In-wall cable concealment and wire routing</span>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 shrink-0 mt-0.5" />
                     <span>TV stand assembly and setup</span>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 shrink-0 mt-0.5" />
                     <span>Sound bar and component mounting</span>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 shrink-0 mt-0.5" />
                     <span>Old TV removal and recycling coordination</span>
                   </li>
                 </ul>
@@ -279,7 +279,7 @@ const TVMountingPage: React.FC = () => {
                   }
                 ].map((item, index) => (
                   <div key={index} className="flex gap-6">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center text-xl font-bold">
                         {item.step}
                       </div>
@@ -424,7 +424,7 @@ const TVMountingPage: React.FC = () => {
                     <details key={index} className="bg-gray-50 rounded-lg shadow-md p-6 group">
                       <summary className="flex items-center justify-between cursor-pointer list-none">
                         <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                       </summary>
                       <div className="mt-4 text-gray-600 leading-relaxed">
                         {faq.answer}
@@ -461,7 +461,7 @@ const TVMountingPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">Professional Furniture Assembly</p>
                     <p className="text-blue-700 text-xs mt-0.5">IKEA, Target, Walmart &amp; all major brands</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/gallery"
@@ -471,7 +471,7 @@ const TVMountingPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">See Our Completed Projects</p>
                     <p className="text-blue-700 text-xs mt-0.5">Browse our TV mounting and assembly gallery</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/about"
@@ -481,7 +481,7 @@ const TVMountingPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">About Our Team</p>
                     <p className="text-blue-700 text-xs mt-0.5">Meet the experts behind Boxed2Built</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/gift-cards"
@@ -491,14 +491,14 @@ const TVMountingPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">Gift Cards Available</p>
                     <p className="text-blue-700 text-xs mt-0.5">Give the gift of professional installation</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <section className="py-20 bg-linear-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">

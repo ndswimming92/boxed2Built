@@ -365,7 +365,7 @@ export default function EmailActivityPage() {
                         const { label, color, bg, icon: Icon } = getEventMeta(ev.event_type);
                         return (
                           <div key={ev.id} className="flex items-start gap-3 bg-white rounded-lg border border-slate-100 px-4 py-3">
-                            <div className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
+                            <div className={`mt-0.5 shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
                               <Icon className={`w-3.5 h-3.5 ${color}`} />
                             </div>
                             <div className="flex-1 min-w-0">

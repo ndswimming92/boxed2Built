@@ -283,7 +283,7 @@ export default function SubscriberMap({ subscribers, updatedAt }: Props) {
           </svg>
 
           <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            <div className="sm-scan h-1/3 w-full bg-gradient-to-b from-transparent via-cyan-400/[0.06] to-transparent" />
+            <div className="sm-scan h-1/3 w-full bg-linear-to-b from-transparent via-cyan-400/[0.06] to-transparent" />
           </div>
 
           {summary.total > 0 && dots.length === 0 && (

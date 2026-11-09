@@ -44,28 +44,28 @@ const Pricing: React.FC = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start">
-                <CheckCircle size={20} className="text-green-600 mr-3 flex-shrink-0 mt-1" />
+                <CheckCircle size={20} className="text-green-600 mr-3 shrink-0 mt-1" />
                 <div>
                   <div className="font-semibold text-gray-900">Complete Assembly</div>
                   <div className="text-sm text-gray-600">Professional setup from box to finished product</div>
                 </div>
               </div>
               <div className="flex items-start">
-                <CheckCircle size={20} className="text-green-600 mr-3 flex-shrink-0 mt-1" />
+                <CheckCircle size={20} className="text-green-600 mr-3 shrink-0 mt-1" />
                 <div>
                   <div className="font-semibold text-gray-900">Packaging Removal</div>
                   <div className="text-sm text-gray-600">We clean up and remove all boxes and materials</div>
                 </div>
               </div>
               <div className="flex items-start">
-                <CheckCircle size={20} className="text-green-600 mr-3 flex-shrink-0 mt-1" />
+                <CheckCircle size={20} className="text-green-600 mr-3 shrink-0 mt-1" />
                 <div>
                   <div className="font-semibold text-gray-900">Proper Placement</div>
                   <div className="text-sm text-gray-600">Positioned exactly where you want it</div>
                 </div>
               </div>
               <div className="flex items-start">
-                <CheckCircle size={20} className="text-green-600 mr-3 flex-shrink-0 mt-1" />
+                <CheckCircle size={20} className="text-green-600 mr-3 shrink-0 mt-1" />
                 <div>
                   <div className="font-semibold text-gray-900">Quality Guarantee</div>
                   <div className="text-sm text-gray-600">30-day workmanship guarantee on every job</div>

@@ -292,7 +292,7 @@ export default function BurnRatePage() {
 
       {!hasBalance && (
         <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-900">Set your starting balance</p>
             <p className="text-sm text-amber-800">

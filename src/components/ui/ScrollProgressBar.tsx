@@ -44,7 +44,7 @@ const ScrollProgressBar: React.FC = () => {
   return (
     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 bg-opacity-50">
       <div
-        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-150 ease-out shadow-sm"
+        className="h-full bg-linear-to-r from-blue-500 to-blue-600 transition-all duration-150 ease-out shadow-sm"
         style={{ width: `${scrollPercentage}%` }}
         role="progressbar"
         aria-valuenow={Math.round(scrollPercentage)}

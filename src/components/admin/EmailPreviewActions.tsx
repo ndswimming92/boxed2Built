@@ -155,16 +155,16 @@ export default function EmailPreviewActions({
 
       {notice && (
         <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-green-800">
-          <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-px" />
           {notice}
         </p>
       )}
 
       {error && (
         <div className="mt-2 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="min-w-0">
-            <p className="text-sm text-amber-900 break-words">{error}</p>
+            <p className="text-sm text-amber-900 wrap-break-word">{error}</p>
             {expanded && !preview && !loading && (
               <button
                 type="button"
@@ -188,7 +188,7 @@ export default function EmailPreviewActions({
 
       {expanded && preview && !loading && (
         <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1.5 break-words">
+          <p className="text-xs text-gray-500 mb-1.5 wrap-break-word">
             <span className="font-semibold text-gray-700">Subject:</span> {preview.subject}
           </p>
           <p className="text-xs text-gray-500 mb-1.5 break-all">
@@ -200,7 +200,7 @@ export default function EmailPreviewActions({
               pressing Send and reading an error. */}
           {preview.blocked && (
             <p className="mb-2 flex items-start gap-1.5 px-3 py-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" />
               {preview.blocked}
             </p>
           )}

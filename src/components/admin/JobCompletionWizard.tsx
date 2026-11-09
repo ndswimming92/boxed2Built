@@ -431,7 +431,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
 
             {!checklist.filter(item => item.required).every(item => item.checked) && (
               <div className="flex items-start gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-yellow-900">
                   All required items must be checked before proceeding
                 </p>
@@ -512,7 +512,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
                         <img
                           src={photo.dataUrl}
                           alt={`Photo ${index + 1}`}
-                          className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                          className="w-24 h-24 object-cover rounded-lg shrink-0"
                         />
                         <div className="flex-1 flex flex-col justify-between min-w-0">
                           <div>
@@ -848,7 +848,7 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
 
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-900">Error</p>
                   <p className="text-sm text-red-700">{error}</p>

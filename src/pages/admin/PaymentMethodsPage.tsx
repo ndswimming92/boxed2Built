@@ -231,9 +231,9 @@ export default function PaymentMethodsPage() {
 
             <div className={`flex items-start gap-2 p-3 border rounded-lg mb-4 ${isTestMode ? 'bg-amber-100 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
               {isTestMode ? (
-                <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5 shrink-0" />
               ) : (
-                <CheckCircle className="w-5 h-5 text-emerald-700 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-5 h-5 text-emerald-700 mt-0.5 shrink-0" />
               )}
               <div>
                 <p className={`text-sm font-semibold ${isTestMode ? 'text-amber-800' : 'text-emerald-800'}`}>

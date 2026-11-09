@@ -209,7 +209,7 @@ export default function AdminDocumentsPage() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Customer Documents</h1>
           <p className="text-sm text-slate-500 mt-1">Upload and manage files in customer secure vaults</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={loadData}
             disabled={loading}
@@ -324,7 +324,7 @@ export default function AdminDocumentsPage() {
         </div>
       ) : error ? (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-4 text-sm text-red-700">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 shrink-0" />
           {error}
         </div>
       ) : filteredDocuments.length === 0 ? (
@@ -382,7 +382,7 @@ export default function AdminDocumentsPage() {
                     <tr key={doc.id} className={`hover:bg-slate-50/50 transition-colors ${isProcessing ? 'opacity-60' : ''}`}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                             <DocTypeIcon type={doc.document_type} />
                           </div>
                           <div>

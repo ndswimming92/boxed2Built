@@ -43,7 +43,7 @@ const STEPS: Step[] = [
 
 const WhyChooseSection: React.FC = () => {
   return (
-    <section className="py-[72px] px-8 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+    <section className="py-[72px] px-8 bg-linear-to-br from-blue-50 via-white to-gray-50">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[7fr_5fr] gap-12 lg:gap-[72px] items-start">
           {/* Left column — process */}

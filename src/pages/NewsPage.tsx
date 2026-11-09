@@ -455,7 +455,7 @@ const NewsPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <section className="bg-linear-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Breadcrumbs
@@ -675,7 +675,7 @@ const NewsPage: React.FC = () => {
                     <p className="text-gray-900 font-semibold text-sm">Furniture Assembly Service</p>
                     <p className="text-gray-500 text-xs mt-0.5">IKEA, Wayfair, Amazon &amp; all brands</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </a>
                 <a
                   href="/faq"
@@ -692,7 +692,7 @@ const NewsPage: React.FC = () => {
                     <p className="text-gray-900 font-semibold text-sm">Furniture Assembly FAQ</p>
                     <p className="text-gray-500 text-xs mt-0.5">Pricing, scheduling &amp; what to expect</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </a>
               </div>
 

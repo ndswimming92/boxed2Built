@@ -97,7 +97,7 @@ export default function SocialMessagesPage() {
           <p className="text-sm sm:text-base text-slate-600">Reply to Facebook Messenger and Instagram DMs without leaving the admin.</p>
         </div>
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div className="text-sm text-red-800">
             <p className="font-medium mb-1">{error}</p>
             <p>
@@ -144,7 +144,7 @@ export default function SocialMessagesPage() {
 
       {platformError && (
         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-sm text-amber-800">{platformError}</p>
         </div>
       )}
@@ -192,7 +192,7 @@ export default function SocialMessagesPage() {
           {conversations.map((conversation) => (
             <div key={conversation.id} className="bg-white rounded-xl border border-slate-200 p-4">
               <div className="flex items-start gap-3">
-                <div className={`p-1.5 rounded-lg flex-shrink-0 ${conversation.platform === 'facebook' ? 'bg-blue-100' : 'bg-pink-100'}`}>
+                <div className={`p-1.5 rounded-lg shrink-0 ${conversation.platform === 'facebook' ? 'bg-blue-100' : 'bg-pink-100'}`}>
                   {conversation.platform === 'facebook' ? (
                     <Facebook className="w-4 h-4 text-blue-600" />
                   ) : (

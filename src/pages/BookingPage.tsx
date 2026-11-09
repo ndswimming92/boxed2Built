@@ -412,7 +412,7 @@ export default function BookingPage() {
 
           {slotError && (
             <div className="mx-4 mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
               <p className="text-sm text-red-800">
                 We could not load open times just now. {slotError}
               </p>
@@ -457,7 +457,7 @@ export default function BookingPage() {
             className="bg-white rounded-xl border border-slate-200 p-5 scroll-mt-4"
           >
             <div className="flex items-start gap-3 p-4 rounded-lg bg-emerald-50 border border-emerald-200 mb-5">
-              <CalendarCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <CalendarCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-emerald-900">
                   {formatDateLabel(selectedSlot.slot_date)}
@@ -634,7 +634,7 @@ export default function BookingPage() {
 
             {submitError && (
               <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800">{submitError}</p>
               </div>
             )}
@@ -710,7 +710,7 @@ function Step({
     <li className="flex gap-3">
       <span
         aria-hidden="true"
-        className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center"
+        className="shrink-0 w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center"
       >
         {number}
       </span>
@@ -827,7 +827,7 @@ function SignInGate({
               <ul className="space-y-2">
                 {bringAlong.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -878,7 +878,7 @@ function SignInGate({
           <div className="p-6 sm:p-8">
             {error && (
               <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}
@@ -894,7 +894,7 @@ function SignInGate({
             </button>
 
             <p className="text-xs text-slate-500 mt-3 flex items-start gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-slate-400" />
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5 text-slate-400" />
               Signing in is how we know the booking is really yours — it holds your slot and lets you
               cancel or check it later. Nothing is posted anywhere.
             </p>

@@ -36,14 +36,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, elevated = false, class
 
   return (
     <div
-      className={`relative flex h-full flex-col overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-emerald-50 px-7 py-8 sm:px-8 transition-shadow duration-300 ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 via-white to-emerald-50 px-7 py-8 sm:px-8 transition-shadow duration-300 ${
         elevated ? 'shadow-xl' : 'shadow-sm'
       } ${className}`}
     >
       <div className="relative flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatarTint}`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatarTint}`}
             aria-hidden="true"
           >
             {initials}
@@ -73,7 +73,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, elevated = false, class
             )}
           </div>
         </div>
-        <StarRating rating={review.rating} size={16} className="flex-shrink-0" />
+        <StarRating rating={review.rating} size={16} className="shrink-0" />
       </div>
 
       <blockquote

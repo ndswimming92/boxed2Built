@@ -139,7 +139,7 @@ const RedeemGiftCardPage: React.FC = () => {
                   body="No balance remaining. Thanks for using Boxed2Built!"
                 />
               ) : (
-                <div className="rounded-2xl bg-gradient-to-br from-teal-700 to-emerald-600 text-white p-6 sm:p-8">
+                <div className="rounded-2xl bg-linear-to-br from-teal-700 to-emerald-600 text-white p-6 sm:p-8">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5" />
                     <p className="text-sm font-semibold tracking-wide uppercase">Gift card is active</p>

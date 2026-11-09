@@ -55,7 +55,7 @@ const ClientHoursSavedStat: React.FC<ClientHoursSavedStatProps> = ({ totalHoursS
     <section ref={statRef} className="py-10 bg-white border-b border-gray-100" aria-label="Customer time saved">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-green-50 p-6 md:p-8 shadow-sm">
+          <div className="rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 via-white to-green-50 p-6 md:p-8 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow">
                 <Clock3 className="w-6 h-6" />

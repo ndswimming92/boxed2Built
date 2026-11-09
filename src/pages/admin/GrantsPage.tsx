@@ -127,12 +127,12 @@ function Points({ text, className = 'text-slate-700' }: { text: string | null; c
   const points = toPoints(text);
   if (points.length === 0) return null;
   if (points.length === 1) {
-    return <p className={`text-sm leading-relaxed break-words ${className}`}>{points[0]}</p>;
+    return <p className={`text-sm leading-relaxed wrap-break-word ${className}`}>{points[0]}</p>;
   }
   return (
     <ul className={`list-disc pl-5 space-y-1.5 text-sm leading-relaxed marker:text-slate-400 ${className}`}>
       {points.map((point, index) => (
-        <li key={index} className="break-words pl-0.5">
+        <li key={index} className="wrap-break-word pl-0.5">
           {point}
         </li>
       ))}
@@ -158,8 +158,8 @@ function Fact({
     <div className="px-5 sm:px-6 py-4 min-w-0">
       <dt className="text-xs font-medium text-slate-500">{label}</dt>
       <dd className="mt-1">
-        <span className={`block text-base font-bold leading-snug break-words ${color}`}>{headline}</span>
-        {detail && <span className="mt-1 block text-xs leading-relaxed text-slate-600 break-words">{detail}</span>}
+        <span className={`block text-base font-bold leading-snug wrap-break-word ${color}`}>{headline}</span>
+        {detail && <span className="mt-1 block text-xs leading-relaxed text-slate-600 wrap-break-word">{detail}</span>}
       </dd>
     </div>
   );
@@ -228,7 +228,7 @@ function GrantCard({
             </span>
           </div>
           <div className="flex items-start justify-between gap-3">
-            <h2 id={`grant-${grant.id}`} className="text-xl font-bold text-slate-900 break-words">
+            <h2 id={`grant-${grant.id}`} className="text-xl font-bold text-slate-900 wrap-break-word">
               <button
                 type="button"
                 aria-expanded={expanded}
@@ -239,13 +239,13 @@ function GrantCard({
               </button>
             </h2>
             <ChevronDown
-              className={`w-5 h-5 mt-1 flex-shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+              className={`w-5 h-5 mt-1 shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
               aria-hidden="true"
             />
           </div>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-            <Building2 className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
-            <span className="break-words">{grant.funder}</span>
+            <Building2 className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
+            <span className="wrap-break-word">{grant.funder}</span>
           </p>
         </header>
 
@@ -274,7 +274,7 @@ function GrantCard({
       <div hidden={!expanded}>
         <div id={`grant-details-${grant.id}`} className="px-5 sm:px-6 py-5 sm:py-6">
           {/* A summary reads as a paragraph; the rules and steps below read as lists. */}
-          <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line break-words">
+          <p className="max-w-prose mb-5 text-[15px] leading-relaxed text-slate-800 whitespace-pre-line wrap-break-word">
             {grant.description}
           </p>
 
@@ -454,14 +454,14 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
 
       {error && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           <p className="text-sm flex-1 text-red-800">{error}. Reload the page to try again.</p>
         </div>
       )}
 
       {!organizationId && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-amber-50 border border-amber-200">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
           <p className="text-sm flex-1 text-amber-900">
             No organization is selected, so there are no grants to show. Sign out and back in, then try again.
           </p>
@@ -526,7 +526,7 @@ export function GrantsView({ organizationId }: { organizationId: string | null }
 
           {saveError && (
             <div role="alert" className="mb-4 p-3 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               <p className="text-sm flex-1 text-red-800">{saveError}</p>
             </div>
           )}

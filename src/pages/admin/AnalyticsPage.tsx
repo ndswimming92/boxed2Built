@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl p-4 sm:p-6 border border-emerald-200 mb-6 sm:mb-8">
+          <div className="bg-linear-to-br from-emerald-50 to-blue-50 rounded-xl p-4 sm:p-6 border border-emerald-200 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Boxed2Built Health</h2>

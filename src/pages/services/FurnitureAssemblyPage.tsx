@@ -75,7 +75,7 @@ const FurnitureAssemblyPage: React.FC = () => {
       <Header />
 
       <main className="min-h-screen">
-        <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
+        <div className="bg-linear-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
           <div className="container mx-auto px-4">
             <Breadcrumbs
               items={[
@@ -250,7 +250,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                     }
                   ].map((item, index) => (
                     <div key={index} className="flex gap-6">
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <div className="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center text-xl font-bold">
                           {item.step}
                         </div>
@@ -410,7 +410,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                     <details key={index} className="bg-white rounded-lg shadow-md p-6 group">
                       <summary className="flex items-center justify-between cursor-pointer list-none">
                         <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                       </summary>
                       <div className="mt-4 text-gray-600 leading-relaxed">
                         {faq.answer}
@@ -447,7 +447,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">Professional TV Mounting</p>
                     <p className="text-blue-700 text-xs mt-0.5">All sizes, wall types &amp; cable management</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/gallery"
@@ -457,7 +457,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">See Our Completed Projects</p>
                     <p className="text-blue-700 text-xs mt-0.5">Browse our furniture assembly gallery</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/about"
@@ -467,7 +467,7 @@ const FurnitureAssemblyPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">About Our Team</p>
                     <p className="text-blue-700 text-xs mt-0.5">Meet the experts behind Boxed2Built</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
                 <Link
                   to="/gift-cards"
@@ -477,14 +477,14 @@ const FurnitureAssemblyPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm">Gift Cards Available</p>
                     <p className="text-blue-700 text-xs mt-0.5">Give the gift of professional assembly</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                  <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <section className="py-20 bg-linear-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">

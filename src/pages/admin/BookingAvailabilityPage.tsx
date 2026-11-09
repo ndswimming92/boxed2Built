@@ -315,7 +315,7 @@ export default function BookingAvailabilityPage() {
     return (
       <div className="max-w-4xl">
         <div className="p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           <p className="text-sm text-red-800">
             Booking settings could not be loaded. Make sure an active business exists under Business
             Info.
@@ -345,9 +345,9 @@ export default function BookingAvailabilityPage() {
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           )}
           <p
             className={`text-sm ${
@@ -625,7 +625,7 @@ export default function BookingAvailabilityPage() {
                   <button
                     type="button"
                     onClick={() => handleDeleteOverride(override.id)}
-                    className="p-2 text-slate-400 hover:text-red-600 transition-colors flex-shrink-0"
+                    className="p-2 text-slate-400 hover:text-red-600 transition-colors shrink-0"
                     aria-label="Remove exception"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -1002,7 +1002,7 @@ function CheckboxField({
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="w-4 h-4 mt-0.5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 flex-shrink-0"
+        className="w-4 h-4 mt-0.5 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 shrink-0"
       />
       <span>
         <span className="text-sm font-medium text-slate-900">{label}</span>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function ReferralProgram() {
   return (
-    <section className="py-16 bg-gradient-to-br from-blue-700 to-blue-900 relative overflow-hidden">
+    <section className="py-16 bg-linear-to-br from-blue-700 to-blue-900 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-8 left-12 w-48 h-48 bg-white rounded-full blur-3xl" />
         <div className="absolute bottom-8 right-12 w-64 h-64 bg-blue-300 rounded-full blur-3xl" />

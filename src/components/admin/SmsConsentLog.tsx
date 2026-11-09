@@ -170,7 +170,7 @@ export default function SmsConsentLog() {
 
       {error && (
         <div className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
@@ -267,7 +267,7 @@ export default function SmsConsentLog() {
                           value ? (
                             <div key={label as string} className="min-w-0">
                               <dt className="text-xs text-slate-500">{label}</dt>
-                              <dd className="text-slate-800 break-words">{value}</dd>
+                              <dd className="text-slate-800 wrap-break-word">{value}</dd>
                             </div>
                           ) : null,
                         )}

@@ -159,14 +159,14 @@ export default function PasskeyManager({ accent = 'emerald', recoveryHint }: Pas
 
       {error && (
         <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4" role="alert" aria-live="polite">
-          <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
       {notice && (
         <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4" role="status" aria-live="polite">
-          <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+          <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
           <p className="text-sm text-emerald-800">{notice}</p>
         </div>
       )}
@@ -182,7 +182,7 @@ export default function PasskeyManager({ accent = 'emerald', recoveryHint }: Pas
         <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200">
           {passkeys.map((passkey) => (
             <li key={passkey.id} className="flex flex-wrap items-center gap-3 p-4">
-              <span className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${theme.chip}`}>
+              <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${theme.chip}`}>
                 <KeyRound className={`h-4 w-4 ${theme.icon}`} aria-hidden="true" />
               </span>
 

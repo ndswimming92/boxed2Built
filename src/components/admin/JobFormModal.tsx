@@ -783,7 +783,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
                 />
                 <span className="min-w-0">
                   <span className="block text-sm font-medium text-slate-800">Same as customer address</span>
-                  <span className="block text-xs text-slate-500 mt-0.5 break-words">
+                  <span className="block text-xs text-slate-500 mt-0.5 wrap-break-word">
                     {clientAddress || 'Add a customer address above to use this option.'}
                   </span>
                 </span>
@@ -1098,7 +1098,7 @@ export default function JobFormModal({ job, businessId, onClose, onSave, initial
             {!!formData.notes?.trim() && (
               <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Preview</p>
-                <div className="text-sm text-slate-700 break-words">
+                <div className="text-sm text-slate-700 wrap-break-word">
                   {renderNotesPreview(formData.notes)}
                 </div>
               </div>

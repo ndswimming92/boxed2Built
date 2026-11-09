@@ -107,7 +107,7 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
       </style>
       <div
         ref={barRef}
-        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 transform ${
+        className={`fixed top-0 left-0 right-0 z-100 transition-all duration-300 transform ${
           isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
         }`}
         style={{
@@ -135,7 +135,7 @@ export default function NotificationBar({ notification }: NotificationBarProps) 
             </div>
             <button
               onClick={handleDismiss}
-              className="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
               aria-label="Dismiss notification"
             >
               <X className="w-5 h-5" />

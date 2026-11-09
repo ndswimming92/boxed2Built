@@ -33,7 +33,7 @@ const stepBadgeCls = 'w-[26px] h-[26px] shrink-0 rounded-full bg-[#0E2748] text-
 const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="flex justify-between gap-4">
     <span className="text-gray-500 shrink-0">{label}</span>
-    <span className="font-semibold text-[#0E2748] text-right break-words min-w-0">{value}</span>
+    <span className="font-semibold text-[#0E2748] text-right wrap-break-word min-w-0">{value}</span>
   </div>
 );
 

@@ -131,7 +131,7 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
   return (
     <div className="fixed inset-0 bg-slate-900/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-2xl w-full max-h-dvh sm:max-h-[90vh] flex flex-col">
-        <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Target className="w-6 h-6 text-emerald-600" />
             <h2 className="text-xl font-bold text-slate-900">
@@ -383,7 +383,7 @@ export default function GoalFormModal({ goal, onClose, onSave }: GoalFormModalPr
           </div>
 
           </div>
-          <div className="flex-shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-slate-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-slate-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button
               type="button"
               onClick={onClose}

@@ -341,7 +341,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
                   <img
                     src={previewUrl}
                     alt="Selected customer photo"
-                    className="w-24 h-24 object-contain bg-white rounded-lg border border-slate-200 flex-shrink-0"
+                    className="w-24 h-24 object-contain bg-white rounded-lg border border-slate-200 shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs font-medium text-slate-600 mb-1">
@@ -400,7 +400,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
 
             {scanError && (
               <div className="mt-3 flex items-start gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{scanError}</span>
               </div>
             )}
@@ -408,7 +408,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
             {scanResult && (
               <div className="mt-3 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
                 <div className="flex items-start gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <Check className="w-4 h-4 shrink-0 mt-0.5" />
                   <div className="min-w-0">
                     <p className="flex flex-wrap items-center gap-2">
                       {scanResult.filledFields.length > 0 ? (
@@ -601,7 +601,7 @@ export default function ClientFormModal({ organizationId, onClose, onCreated, in
 
           {error && (
             <div className="flex items-start gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}

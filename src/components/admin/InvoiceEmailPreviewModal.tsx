@@ -105,7 +105,7 @@ export default function InvoiceEmailPreviewModal({ invoice, onClose }: InvoiceEm
         <div className="overflow-y-auto px-5 pb-5">
           {lookupError ? (
             <p className="mt-4 flex items-start gap-2 text-sm text-amber-900">
-              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
               {lookupError}
             </p>
           ) : organizationId ? (

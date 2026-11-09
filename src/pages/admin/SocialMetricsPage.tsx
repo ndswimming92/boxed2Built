@@ -66,7 +66,7 @@ export default function SocialMetricsPage() {
           <p className="text-sm sm:text-base text-slate-600">Facebook and Instagram performance at a glance.</p>
         </div>
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <div className="text-sm text-red-800">
             <p className="font-medium mb-1">{error}</p>
             <p>
@@ -248,7 +248,7 @@ function sumMetric(trend: SocialMetricsTrendPoint[] | undefined, key: string): s
 function NotConnectedNotice({ provider }: { provider: string }) {
   return (
     <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-3">
-      <Plug className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+      <Plug className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
       <div className="text-sm text-slate-700">
         <p className="font-medium mb-1">{provider} isn't connected</p>
         <p>
@@ -266,7 +266,7 @@ function NotConnectedNotice({ provider }: { provider: string }) {
 function InsightsUnavailableNotice({ message }: { message: string }) {
   return (
     <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-      <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+      <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
       <div className="text-sm text-amber-800">
         <p className="font-medium mb-1">Trend data isn't available right now</p>
         <p>{message}</p>

@@ -5,7 +5,7 @@ import { MARKETING_IMAGES, HALF_COLUMN_SIZES } from '../../constants/marketingIm
 
 const HomeCTA: React.FC = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
+    <section className="py-16 bg-linear-to-br from-blue-600 to-blue-800 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <img
           {...MARKETING_IMAGES.skipTheBuild}

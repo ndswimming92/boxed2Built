@@ -182,7 +182,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
       <div className="space-y-6">
         {/* Explanation */}
         <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <GitMerge className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <GitMerge className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-900">
               Select which client to keep. All records from the other client will be transferred to the kept one, and the duplicate will be permanently deleted.
@@ -227,7 +227,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
         {/* Confirmation */}
         {keepClient && discardClient && (
           <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="space-y-3 flex-1">
               <p className="text-sm font-medium text-red-900">
                 This action cannot be undone. The client record for "{discardClient.name}" will be permanently deleted after transferring all associated data.
@@ -250,7 +250,7 @@ export default function MergeClientsModal({ clientA, clientB, onClose, onMerged 
         {/* Error */}
         {error && (
           <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <AlertTriangle className="w-4 h-4 shrink-0" />
             {error}
           </div>
         )}

@@ -421,7 +421,7 @@ export default function DashboardPage() {
 
       {!loading && referralStats && (
         <div className="mt-8">
-          <div className="bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl p-6 border border-blue-800">
+          <div className="bg-linear-to-r from-blue-700 to-blue-900 rounded-xl p-6 border border-blue-800">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Gift className="w-5 h-5 text-blue-200" />
@@ -925,7 +925,7 @@ export default function DashboardPage() {
             </Link>
             <Link
               to="/admin/analytics"
-              className="block px-4 py-3 bg-gradient-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100 border border-emerald-200 rounded-lg transition-colors"
+              className="block px-4 py-3 bg-linear-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100 border border-emerald-200 rounded-lg transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div>

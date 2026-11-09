@@ -351,7 +351,7 @@ export default function ForecastingPage() {
 
       {forecastResult && (
         <>
-          <div className="bg-gradient-to-br from-blue-50 to-emerald-50 rounded-xl p-6 border border-blue-200 mb-6">
+          <div className="bg-linear-to-br from-blue-50 to-emerald-50 rounded-xl p-6 border border-blue-200 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">

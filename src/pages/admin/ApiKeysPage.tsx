@@ -128,7 +128,7 @@ export default function ApiKeysPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm flex-shrink-0"
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
           Create API Key
@@ -171,7 +171,7 @@ export default function ApiKeysPage() {
           </code>
           <button
             onClick={copyBaseUrl}
-            className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors flex-shrink-0"
+            className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors shrink-0"
             title="Copy base URL"
           >
             {copiedBaseUrl ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -394,7 +394,7 @@ function CreateApiKeyModal({ onClose, onCreated }: CreateApiKeyModalProps) {
         {createdKey ? (
           <div className="p-6">
             <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800">
                 <strong>Copy this key now.</strong> For security it is not stored anywhere and cannot be shown again.
                 If you lose it, revoke it and create a new one.
@@ -406,7 +406,7 @@ function CreateApiKeyModal({ onClose, onCreated }: CreateApiKeyModalProps) {
               </code>
               <button
                 onClick={copyKey}
-                className="p-2.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-colors flex-shrink-0"
+                className="p-2.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-colors shrink-0"
                 title="Copy key"
               >
                 {copied ? <Check className="w-5 h-5 text-emerald-600" /> : <Copy className="w-5 h-5" />}
@@ -423,7 +423,7 @@ function CreateApiKeyModal({ onClose, onCreated }: CreateApiKeyModalProps) {
           <div className="p-6 space-y-5">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}

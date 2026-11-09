@@ -25,7 +25,7 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className={`py-16 bg-gradient-to-br from-gray-50 to-blue-50 ${className}`}>
+    <section className={`py-16 bg-linear-to-br from-gray-50 to-blue-50 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -59,7 +59,7 @@ const HomeFAQ: React.FC<HomeFAQProps> = ({
                 >
                   <summary className="flex items-center justify-between cursor-pointer list-none">
                     <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                   </summary>
                   <div className="mt-4 text-gray-600 leading-relaxed">
                     {faq.answer}

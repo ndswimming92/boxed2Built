@@ -490,7 +490,7 @@ export default function InquiriesPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">Form Inquiries</h1>
             <p className="text-sm sm:text-base text-slate-600">Manage customer inquiries from your website contact form</p>
           </div>
-          <div className="flex items-center justify-end flex-wrap gap-2 flex-shrink-0">
+          <div className="flex items-center justify-end flex-wrap gap-2 shrink-0">
             {/* Delete Tests sits to the LEFT of the toggle so the right-aligned
                 group grows leftward and the toggle never moves under the cursor. */}
             {showTestData && (
@@ -747,18 +747,18 @@ export default function InquiriesPage() {
               key={inquiry.id}
               className={`group relative rounded-2xl border p-6 cursor-pointer transition-all duration-200 overflow-hidden ${
                 !inquiry.viewed
-                  ? 'border-blue-300 bg-gradient-to-br from-blue-50 via-white to-cyan-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
-                  : 'border-slate-200 bg-gradient-to-br from-white via-slate-50/40 to-white shadow-sm hover:shadow-md hover:-translate-y-0.5'
+                  ? 'border-blue-300 bg-linear-to-br from-blue-50 via-white to-cyan-50 shadow-sm hover:shadow-lg hover:-translate-y-0.5'
+                  : 'border-slate-200 bg-linear-to-br from-white via-slate-50/40 to-white shadow-sm hover:shadow-md hover:-translate-y-0.5'
               }`}
               onClick={() => handleViewInquiry(inquiry)}
             >
               <div
                 className={`absolute inset-x-0 top-0 h-1 ${
                   inquiry.status === 'converted_to_job'
-                    ? 'bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400'
+                    ? 'bg-linear-to-r from-emerald-400 via-green-500 to-emerald-400'
                     : inquiry.status === 'archived'
-                      ? 'bg-gradient-to-r from-slate-300 via-slate-400 to-slate-300'
-                      : 'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300'
+                      ? 'bg-linear-to-r from-slate-300 via-slate-400 to-slate-300'
+                      : 'bg-linear-to-r from-amber-300 via-yellow-400 to-amber-300'
                 }`}
               />
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -773,7 +773,7 @@ export default function InquiriesPage() {
                         TEST
                       </span>
                     )}
-                    <h3 className="break-words text-xl font-semibold text-slate-900">{inquiry.client_name}</h3>
+                    <h3 className="wrap-break-word text-xl font-semibold text-slate-900">{inquiry.client_name}</h3>
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(inquiry.status)}`}>
                       {getStatusLabel(inquiry.status)}
                     </span>
@@ -784,7 +784,7 @@ export default function InquiriesPage() {
                       </span>
                     )}
                     {inquiry.source === 'footer_quick_contact' && (
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-linear-to-r from-blue-500 to-cyan-500 text-white border border-blue-300 shadow-sm">
                         Quick Contact
                       </span>
                     )}

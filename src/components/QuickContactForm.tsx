@@ -311,7 +311,7 @@ const QuickContactForm: React.FC = () => {
 
   if (submitStatus === 'success') {
     return (
-      <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-green-400/30 shadow-xl animate-fadeIn">
+      <div className="bg-linear-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-green-400/30 shadow-xl animate-fadeIn">
         <div className="flex items-center justify-center gap-3 text-green-400">
           <CheckCircle size={24} className="drop-shadow-lg" />
           <div>
@@ -324,7 +324,7 @@ const QuickContactForm: React.FC = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10 shadow-xl">
+    <div className="bg-linear-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10 shadow-xl">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-white drop-shadow-md">Quick Question?</h3>
         <p className="text-sm text-gray-200 mt-1">Send us a message and we'll respond shortly</p>
@@ -332,7 +332,7 @@ const QuickContactForm: React.FC = () => {
 
       {submitStatus === 'error' && errorMessage && (
         <div className="mb-4 bg-red-500/10 backdrop-blur-sm border border-red-400/30 rounded-md p-3 flex items-start gap-2 animate-fadeIn">
-          <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5 drop-shadow-lg" />
+          <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5 drop-shadow-lg" />
           <p className="text-sm text-red-200">{errorMessage}</p>
         </div>
       )}
@@ -407,7 +407,7 @@ const QuickContactForm: React.FC = () => {
           className={`w-full py-3 px-4 rounded-md font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             isSubmitting
               ? 'bg-white/5 backdrop-blur-sm text-gray-300 cursor-not-allowed border border-white/10'
-              : 'bg-gradient-to-r from-blue-500/80 to-blue-600/80 backdrop-blur-sm text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl border border-blue-400/30 hover:border-blue-400/50'
+              : 'bg-linear-to-r from-blue-500/80 to-blue-600/80 backdrop-blur-sm text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl border border-blue-400/30 hover:border-blue-400/50'
           }`}
         >
           {isSubmitting ? (

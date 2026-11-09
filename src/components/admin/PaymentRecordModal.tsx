@@ -163,9 +163,9 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
             }`}
           >
             {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
             )}
             <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>
               {message.text}
@@ -194,7 +194,7 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
           <div className="border border-slate-200 rounded-lg p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
-                <Smartphone className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+                <Smartphone className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-slate-900">Link a Stripe payment</p>
                   <p className="text-xs text-slate-600 mt-0.5">
@@ -206,7 +206,7 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
                 type="button"
                 onClick={handleFindStripePayments}
                 disabled={loadingStripe}
-                className="flex-shrink-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors disabled:opacity-50"
+                className="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loadingStripe ? 'animate-spin' : ''}`} />
                 {stripePayments === null ? 'Find payments' : 'Refresh'}
@@ -240,7 +240,7 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
                       type="button"
                       onClick={() => handleLinkStripePayment(payment)}
                       disabled={linkingId !== null}
-                      className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors disabled:opacity-50"
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors disabled:opacity-50"
                     >
                       <Link2 className="w-4 h-4" />
                       {linkingId === payment.id ? 'Linking…' : 'Link'}
@@ -365,7 +365,7 @@ export default function PaymentRecordModal({ invoice, onClose, onPaymentRecorded
           </div>
 
           </div>
-          <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button
               type="button"
               onClick={onClose}

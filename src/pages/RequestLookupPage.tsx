@@ -163,7 +163,7 @@ const RequestLookupPage: React.FC = () => {
       </Head>
       <Header />
       <main className="pt-20 min-h-screen bg-gray-50">
-        <section className="py-12 bg-gradient-to-br from-blue-50 to-gray-100">
+        <section className="py-12 bg-linear-to-br from-blue-50 to-gray-100">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <Breadcrumbs
@@ -410,7 +410,7 @@ const RequestLookupPage: React.FC = () => {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-900 underline break-all"
                                 >
-                                  <Link size={13} className="flex-shrink-0" />
+                                  <Link size={13} className="shrink-0" />
                                   {request.furniture_photo_url}
                                 </a>
                               )}
@@ -599,7 +599,7 @@ const BookingFound: React.FC<{ booking: BookingLookupResult }> = ({ booking }) =
 
           {booking.service_address && (
             <div className="flex justify-between gap-4">
-              <span className="text-gray-600 flex-shrink-0">Address:</span>
+              <span className="text-gray-600 shrink-0">Address:</span>
               <span className="font-semibold text-gray-900 text-right">
                 {booking.service_address}
               </span>

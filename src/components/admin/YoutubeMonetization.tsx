@@ -37,9 +37,9 @@ function ProgressRow({
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-start gap-2">
           {done ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
           ) : (
-            <Circle className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
+            <Circle className="w-5 h-5 text-slate-300 mt-0.5 shrink-0" />
           )}
           <div>
             <h3 className="text-base font-semibold text-slate-900">{label}</h3>

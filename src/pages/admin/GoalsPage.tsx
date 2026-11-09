@@ -249,12 +249,12 @@ export default function GoalsPage() {
       <div className="mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
           <div className="flex items-center gap-3">
-            <Target className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 flex-shrink-0" />
+            <Target className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 shrink-0" />
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Business Goals</h1>
           </div>
           <button
             onClick={handleCreateGoal}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto flex-shrink-0"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto shrink-0"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             New Goal
@@ -465,7 +465,7 @@ export default function GoalsPage() {
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm">
                     <span className="text-slate-600">Progress</span>
-                    <span className="font-semibold text-slate-900 text-xs sm:text-sm break-words">
+                    <span className="font-semibold text-slate-900 text-xs sm:text-sm wrap-break-word">
                       {formatUnitValue(goal.current_value, goal.unit_type, goal.unit_label)} /{' '}
                       {formatUnitValue(goal.target_value, goal.unit_type, goal.unit_label)}
                     </span>

@@ -31,7 +31,7 @@ export default function TaxOverview({ taxCalculation, quarterlyPayments = [], ne
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+      <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 mb-1">Tax Overview for Spring Hill, TN</h2>
@@ -102,7 +102,7 @@ export default function TaxOverview({ taxCalculation, quarterlyPayments = [], ne
             </div>
 
             <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200 mt-4">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
                 <p className="font-medium mb-1">Self-Employment Tax Deduction</p>
                 <p>You can deduct {formatCurrency(taxCalculation.selfEmploymentDeduction)} (50% of SE tax) from your AGI.</p>
@@ -213,7 +213,7 @@ export default function TaxOverview({ taxCalculation, quarterlyPayments = [], ne
             <span className="text-right font-medium text-slate-900">{formatCurrency(taxCalculation.selfEmploymentTax)}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 font-semibold text-base mt-2">
+          <div className="grid grid-cols-2 gap-4 p-3 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 font-semibold text-base mt-2">
             <span className="text-slate-800">Total Tax Liability</span>
             <span className="text-right text-blue-600">{formatCurrency(taxCalculation.totalTaxLiability)}</span>
           </div>

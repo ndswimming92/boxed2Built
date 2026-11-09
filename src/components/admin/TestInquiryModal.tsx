@@ -177,7 +177,7 @@ export default function TestInquiryModal({ isOpen, onClose, onSubmitted }: TestI
   return (
     <div className="fixed inset-0 z-50 bg-gray-900/75 flex items-end sm:items-center justify-center">
       <div className="bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-dvh sm:max-h-[90vh]">
-        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-amber-50">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-amber-50">
           <div className="flex items-center gap-3">
             <FlaskConical className="w-6 h-6 text-amber-600" />
             <div>
@@ -297,7 +297,7 @@ export default function TestInquiryModal({ isOpen, onClose, onSubmitted }: TestI
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
             <button type="button" onClick={handleClose} disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50">
               Cancel

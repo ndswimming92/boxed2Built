@@ -51,7 +51,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={product.name}
@@ -89,7 +89,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                     key={src}
                     type="button"
                     onClick={() => setActiveImage(src)}
-                    className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                       activeImage === src ? 'border-blue-700' : 'border-transparent hover:border-slate-300'
                     }`}
                   >

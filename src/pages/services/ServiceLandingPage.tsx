@@ -88,7 +88,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
       <Header />
 
       <main className="min-h-screen">
-        <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
+        <div className="bg-linear-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
           <div className="container mx-auto px-4">
             <Breadcrumbs
               items={[
@@ -195,7 +195,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
                 <ul className="space-y-2 text-gray-700">
                   {content.alsoIncluded.map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-blue-700 mr-2 shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -229,7 +229,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
               <div className="space-y-8">
                 {content.process.map((step, index) => (
                   <div key={index} className="flex gap-6">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center text-xl font-bold">
                         {index + 1}
                       </div>
@@ -304,7 +304,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
                   <details key={index} className="bg-gray-50 rounded-lg shadow-md p-6 group">
                     <summary className="flex items-center justify-between cursor-pointer list-none">
                       <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                      <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                     </summary>
                     <div className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</div>
                   </details>
@@ -340,7 +340,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
                       <p className="text-blue-900 font-semibold text-sm">{link.title}</p>
                       <p className="text-blue-700 text-xs mt-0.5">{link.subtitle}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0 ml-3" />
+                    <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform shrink-0 ml-3" />
                   </Link>
                 ))}
               </div>
@@ -348,7 +348,7 @@ const ServiceLandingPage: React.FC<ServiceLandingPageProps> = ({ content }) => {
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <section className="py-20 bg-linear-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Get Started?</h2>

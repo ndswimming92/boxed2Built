@@ -67,7 +67,7 @@ export default function BalanceUpdateModal({
   return (
     <div className="fixed inset-0 bg-slate-900/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-lg w-full max-h-dvh sm:max-h-[90vh] flex flex-col">
-        <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
               <Wallet className="w-5 h-5 text-emerald-600" />
@@ -149,7 +149,7 @@ export default function BalanceUpdateModal({
           </div>
 
           <div
-            className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200"
+            className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200"
             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           >
             <button

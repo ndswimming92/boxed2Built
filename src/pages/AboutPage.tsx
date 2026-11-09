@@ -37,7 +37,7 @@ const AboutPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <section className="bg-linear-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Breadcrumbs 
@@ -216,7 +216,7 @@ const AboutPage: React.FC = () => {
               </div>
 
               {/* Serving Our Community */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
+              <div className="bg-linear-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">Serving Our Community</h2>
 
                 <div className="max-w-md mx-auto mb-8">
@@ -291,7 +291,7 @@ const AboutPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm mb-1">Furniture Assembly</p>
                     <p className="text-blue-700 text-xs">IKEA, Target, Walmart &amp; more</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform shrink-0" />
                 </a>
                 <a
                   href="/services/tv-mounting"
@@ -301,7 +301,7 @@ const AboutPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm mb-1">TV Mounting</p>
                     <p className="text-blue-700 text-xs">All sizes &amp; wall types</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform shrink-0" />
                 </a>
                 <a
                   href="/services"
@@ -311,7 +311,7 @@ const AboutPage: React.FC = () => {
                     <p className="text-blue-900 font-semibold text-sm mb-1">All Services &amp; Pricing</p>
                     <p className="text-blue-700 text-xs">Transparent, no hidden fees</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 group-hover:translate-x-1 transition-transform shrink-0" />
                 </a>
               </div>
             </div>

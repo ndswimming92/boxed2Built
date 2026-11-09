@@ -143,9 +143,9 @@ export default function BookingsPage() {
           }`}
         >
           {message.type === 'success' ? (
-            <CalendarCheck className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <CalendarCheck className="w-5 h-5 text-emerald-600 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           )}
           <p
             className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}
@@ -375,7 +375,7 @@ function BookingRow({
           )}
         </div>
 
-        <div className="flex flex-row lg:flex-col gap-2 lg:w-40 flex-shrink-0">
+        <div className="flex flex-row lg:flex-col gap-2 lg:w-40 shrink-0">
           {decidable && (
             <>
               <button

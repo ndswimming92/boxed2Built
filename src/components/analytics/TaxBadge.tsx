@@ -34,7 +34,7 @@ export default function TaxBadge({
   }
 
   return (
-    <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+    <div className="p-3 bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
       <div className="flex items-start gap-2 mb-2">
         <Receipt className="w-4 h-4 text-amber-600 mt-0.5" />
         <div className="flex-1">

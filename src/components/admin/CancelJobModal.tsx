@@ -57,7 +57,7 @@ export default function CancelJobModal({ job, isOpen, onClose, onSuccess }: Canc
   return (
     <div className="fixed inset-0 z-50 bg-gray-900/75 flex items-end sm:items-center justify-center">
       <div className="bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-dvh sm:max-h-[90vh]">
-          <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
               <h3 className="text-xl font-semibold text-gray-900">Cancel Job</h3>
               <p className="mt-1 text-sm text-gray-600">
@@ -77,7 +77,7 @@ export default function CancelJobModal({ job, isOpen, onClose, onSuccess }: Canc
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
               <div className="p-4 rounded-lg bg-red-50 border border-red-200">
                 <div className="flex items-start space-x-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-red-900">Job Details</h4>
                     <div className="mt-2 space-y-1 text-sm text-red-800">
@@ -127,7 +127,7 @@ export default function CancelJobModal({ job, isOpen, onClose, onSuccess }: Canc
               </div>
             </div>
 
-            <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
               <button
                 type="button"
                 onClick={handleClose}

@@ -168,7 +168,7 @@ const HomeHero: React.FC = () => {
                   className="inline-flex w-full sm:w-auto min-h-[56px] items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-[#13807A] hover:bg-[#0F6B66] text-white px-6 py-4 text-base md:text-lg font-bold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E2748]"
                   aria-label={`Call Boxed2Built at ${phoneDisplay}`}
                 >
-                  <Phone className="w-5 h-5 flex-shrink-0" />
+                  <Phone className="w-5 h-5 shrink-0" />
                   {phoneDisplay}
                 </a>
               </div>
@@ -202,7 +202,7 @@ const HomeHero: React.FC = () => {
                 <div className="relative pt-3 pr-3 md:pt-[18px] md:pr-[18px]">
                   <div aria-hidden="true" className="absolute top-0 right-0 bottom-3 left-3 md:bottom-[18px] md:left-[18px] rounded-[26px] border-2 border-[#D9A441] pointer-events-none" />
                   <div className="relative rounded-3xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.35)] group">
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0E2748]/50 via-transparent to-transparent z-10 pointer-events-none" />
+                    <div className="absolute inset-0 bg-linear-to-t from-[#0E2748]/50 via-transparent to-transparent z-10 pointer-events-none" />
                     <div className="relative h-72 sm:h-80 md:h-96 lg:h-[480px]">
                       {heroImages.map((img, idx) => (
                         <img
@@ -261,15 +261,15 @@ const HomeHero: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-3 divide-x divide-white/10">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 py-4 md:py-6 text-center">
-                <Star className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] flex-shrink-0" aria-hidden="true" />
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] shrink-0" aria-hidden="true" />
                 <span className="text-xs md:text-base font-bold text-white">5-Star Rated</span>
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 py-4 md:py-6 text-center">
-                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] flex-shrink-0" aria-hidden="true" />
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] shrink-0" aria-hidden="true" />
                 <span className="text-xs md:text-base font-bold text-white">No Payment Until Done</span>
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 py-4 md:py-6 text-center">
-                <MapPin className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] flex-shrink-0" aria-hidden="true" />
+                <MapPin className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] shrink-0" aria-hidden="true" />
                 <span className="text-xs md:text-base font-bold text-white">Locally Owned</span>
               </div>
             </div>

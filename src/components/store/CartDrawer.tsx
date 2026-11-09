@@ -184,7 +184,7 @@ const CartDrawer: React.FC = () => {
     }`;
 
   return (
-    <div className="fixed inset-0 z-[70] flex justify-end" role="dialog" aria-modal="true" aria-label="Cart">
+    <div className="fixed inset-0 z-70 flex justify-end" role="dialog" aria-modal="true" aria-label="Cart">
       <div className="absolute inset-0 bg-slate-900/50" onClick={closeCart} />
 
       <div className="relative flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
@@ -226,7 +226,7 @@ const CartDrawer: React.FC = () => {
               {syncNotices.length > 0 && (
                 <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                     <div className="text-xs leading-relaxed text-amber-900">
                       <p className="font-semibold">The shop updated since you added these:</p>
                       <ul className="mt-1 list-disc space-y-0.5 pl-4">
@@ -250,7 +250,7 @@ const CartDrawer: React.FC = () => {
               <ul className="space-y-4">
                 {lines.map((line) => (
                   <li key={line.productId} className="flex gap-3">
-                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                       {line.imageUrl ? (
                         <img src={line.imageUrl} alt="" className="h-full w-full object-cover" />
                       ) : (

@@ -103,7 +103,7 @@ const Modal: React.FC<ModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center bg-black bg-opacity-50"
       onClick={handleBackdropClick}
       role="presentation"
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}

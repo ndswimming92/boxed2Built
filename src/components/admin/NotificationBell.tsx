@@ -172,7 +172,7 @@ export default function NotificationBell() {
                   }`}
                 >
                   <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                    className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       n.type === 'shop_order'
                         ? 'bg-emerald-100 text-emerald-600'
                         : 'bg-slate-100 text-slate-500'
@@ -190,7 +190,7 @@ export default function NotificationBell() {
                         {n.title}
                       </p>
                       {!n.is_read && (
-                        <span className="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-blue-500" />
+                        <span className="shrink-0 w-2 h-2 mt-1.5 rounded-full bg-blue-500" />
                       )}
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.body}</p>

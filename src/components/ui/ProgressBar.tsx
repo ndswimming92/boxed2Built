@@ -55,7 +55,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, className = '' }) =
           aria-label={`Form completion: ${progress}%`}
         >
           {progress > 0 && progress < 100 && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse" />
+            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white to-transparent opacity-30 animate-pulse" />
           )}
         </div>
       </div>

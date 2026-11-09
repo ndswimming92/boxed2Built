@@ -865,7 +865,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 </div>
               ) : documentsError ? (
                 <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   {documentsError}
                 </div>
               ) : documents.length === 0 ? (
@@ -892,16 +892,16 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium text-gray-900 truncate">{doc.display_name}</p>
-                          <span className={`flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${DOC_TYPE_COLORS[doc.document_type] ?? 'bg-gray-100 text-gray-600'}`}>
+                          <span className={`shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${DOC_TYPE_COLORS[doc.document_type] ?? 'bg-gray-100 text-gray-600'}`}>
                             {ADMIN_DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
                           </span>
                           {doc.is_internal_only ? (
-                            <span className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
+                            <span className="flex items-center gap-1 shrink-0 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
                               <Lock className="w-3 h-3" />
                               Internal
                             </span>
                           ) : doc.is_visible_to_customer ? (
-                            <span className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                            <span className="flex items-center gap-1 shrink-0 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
                               <Eye className="w-3 h-3" />
                               Visible
                             </span>
@@ -910,7 +910,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                         <p className="text-xs text-gray-500 mt-0.5">{formatDate(doc.created_at)}</p>
                       </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleViewDocument(doc)}
                           disabled={viewingDocId === doc.id}
@@ -976,12 +976,12 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
       {activeTab === 'overview' && (
       <div className="space-y-6">
         {/* Client Overview */}
-        <div className="rounded-2xl border border-indigo-100 shadow-md shadow-indigo-100/60 overflow-hidden bg-gradient-to-b from-indigo-50 via-white to-cyan-50/40">
+        <div className="rounded-2xl border border-indigo-100 shadow-md shadow-indigo-100/60 overflow-hidden bg-linear-to-b from-indigo-50 via-white to-cyan-50/40">
           {/* Header Band */}
-          <div className="bg-gradient-to-r from-indigo-700 via-violet-700 to-cyan-600 px-6 py-5">
+          <div className="bg-linear-to-r from-indigo-700 via-violet-700 to-cyan-600 px-6 py-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
-                <h2 className="text-2xl font-bold text-white tracking-tight whitespace-normal break-words">{currentClient.name}</h2>
+                <h2 className="text-2xl font-bold text-white tracking-tight whitespace-normal wrap-break-word">{currentClient.name}</h2>
                 <div className="flex items-center gap-2 mt-2.5 flex-wrap">
                   <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-md capitalize border ${
                     currentClient.client_status === 'active'
@@ -1106,8 +1106,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {currentClient.email && (
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-50 to-white rounded-xl border border-indigo-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-indigo-200 shadow-sm">
+                  <div className="flex items-center gap-3 p-3 bg-linear-to-r from-indigo-50 to-white rounded-xl border border-indigo-100">
+                    <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-indigo-200 shadow-sm">
                       <Mail className="w-4 h-4 text-indigo-500" />
                     </div>
                     <div className="min-w-0">
@@ -1123,8 +1123,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50 to-white rounded-xl border border-cyan-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-cyan-200 shadow-sm">
+                  <div className="flex items-center gap-3 p-3 bg-linear-to-r from-cyan-50 to-white rounded-xl border border-cyan-100">
+                    <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-cyan-200 shadow-sm">
                       <Phone className="w-4 h-4 text-cyan-600" />
                     </div>
                     <div className="min-w-0">
@@ -1140,8 +1140,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.address && (
-                  <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-violet-50 to-white rounded-xl border border-violet-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-violet-200 shadow-sm">
+                  <div className="flex items-start gap-3 p-3 bg-linear-to-r from-violet-50 to-white rounded-xl border border-violet-100">
+                    <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-violet-200 shadow-sm">
                       <MapPin className="w-4 h-4 text-violet-500" />
                     </div>
                     <div className="min-w-0">
@@ -1150,7 +1150,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                         href={getAddressDirectionsUrl(currentClient.address)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block text-sm font-medium text-slate-800 break-words underline decoration-violet-200 hover:text-violet-700 hover:decoration-violet-400 transition-colors"
+                        className="block text-sm font-medium text-slate-800 wrap-break-word underline decoration-violet-200 hover:text-violet-700 hover:decoration-violet-400 transition-colors"
                         title="Open directions in Maps"
                       >
                         {currentClient.address}
@@ -1159,8 +1159,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                   </div>
                 )}
                 {currentClient.source && (
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-50 to-white rounded-xl border border-emerald-100">
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-emerald-200 shadow-sm">
+                  <div className="flex items-center gap-3 p-3 bg-linear-to-r from-emerald-50 to-white rounded-xl border border-emerald-100">
+                    <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-white rounded-md border border-emerald-200 shadow-sm">
                       <FileText className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div className="min-w-0">
@@ -1179,21 +1179,21 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/40 border border-emerald-100 rounded-xl shadow-sm">
+          <div className="p-4 bg-linear-to-br from-emerald-50 via-white to-emerald-100/40 border border-emerald-100 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 text-emerald-700 mb-1">
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Total Revenue</p>
             </div>
             <p className="text-2xl font-bold text-emerald-900">{formatCurrency(currentClient.total_revenue)}</p>
           </div>
-          <div className="p-4 bg-gradient-to-br from-indigo-50 via-white to-indigo-100/40 border border-indigo-100 rounded-xl shadow-sm">
+          <div className="p-4 bg-linear-to-br from-indigo-50 via-white to-indigo-100/40 border border-indigo-100 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 text-indigo-700 mb-1">
               <Briefcase className="w-4 h-4" />
               <p className="text-sm font-medium">Number of Jobs</p>
             </div>
             <p className="text-2xl font-bold text-indigo-900">{currentClient.job_count}</p>
           </div>
-          <div className="p-4 bg-gradient-to-br from-cyan-50 via-white to-cyan-100/40 border border-cyan-100 rounded-xl shadow-sm">
+          <div className="p-4 bg-linear-to-br from-cyan-50 via-white to-cyan-100/40 border border-cyan-100 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 text-cyan-700 mb-1">
               <DollarSign className="w-4 h-4" />
               <p className="text-sm font-medium">Avg Job Value</p>
@@ -1274,8 +1274,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                 : 'bg-red-50 text-red-800 border border-red-200'
             }`}>
               {jobMessage.type === 'success'
-                ? <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+                ? <Check className="w-4 h-4 shrink-0 mt-0.5" />
+                : <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />}
               <span>{jobMessage.text}</span>
             </div>
           )}
@@ -1347,7 +1347,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     const buildable = docMode === 'quote' && !selectedInvoiceId && job?.quoted_price != null;
                     return (
                       <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${selectedInvoiceId ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-                        <FileText className="w-4 h-4 flex-shrink-0" />
+                        <FileText className="w-4 h-4 shrink-0" />
                         {selectedInvoiceId
                           ? `Existing ${docNoun} found. Review or edit it before sending.`
                           : buildable
@@ -1446,13 +1446,13 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           ) : (
             <div className="flex flex-col items-start gap-3 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center sm:justify-between">
               <p className="flex items-start gap-2 text-sm text-gray-500">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 No jobs found for this client. A job is required to send a quote or invoice.
               </p>
               <button
                 onClick={openNewJobForm}
                 disabled={openingJobForm}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {openingJobForm ? 'Opening...' : 'Create First Job'}
@@ -1671,7 +1671,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {allActivities.map((activity, index) => (
                 <div key={`${activity.type}-${index}`} className="flex gap-4">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       activity.type === 'inquiry' ? 'bg-blue-100' :
                       activity.type === 'job' ? 'bg-green-100' :
@@ -1699,8 +1699,8 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
                     </p>
                     {activity.type === 'job' && hasSeparateWorkAddress(activity.data) && (
                       <p className="text-xs text-gray-500 mt-1 flex items-start gap-1">
-                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                        <span className="break-words">Worked at {resolveWorkAddress(activity.data)}</span>
+                        <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span className="wrap-break-word">Worked at {resolveWorkAddress(activity.data)}</span>
                       </p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">{formatDateTime(activity.date)}</p>
@@ -1758,7 +1758,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
         {currentClient.client_status === 'dormant' && (
           <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-medium text-orange-900">Re-engagement Opportunity</h4>
                 <p className="text-sm text-orange-700 mt-1">
@@ -1796,7 +1796,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
           {showDeleteConfirm && (
             <div className="px-5 py-5 bg-white space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center shrink-0">
                   <AlertCircle className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
@@ -1825,7 +1825,7 @@ export default function ClientDetailModal({ client, onClose, onDeleted }: Client
 
               {deleteError && (
                 <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   {deleteError}
                 </div>
               )}

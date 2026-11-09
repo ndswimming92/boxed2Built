@@ -13,7 +13,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-gradient-to-br from-blue-50 to-gray-100">
+    <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-linear-to-br from-blue-50 to-gray-100">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute right-0 top-1/4 w-64 h-64 bg-blue-100 rounded-full opacity-50 transform translate-x-1/2"></div>
         <div className="absolute left-0 bottom-1/4 w-48 h-48 bg-green-100 rounded-full opacity-50 transform -translate-x-1/2"></div>
@@ -89,7 +89,7 @@ const Hero: React.FC = () => {
         {/* Enhanced pricing preview with updated 10% increased prices */}
         <div className="flex justify-center mt-16">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-w-lg w-full">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
+            <div className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-6 py-3">
               <div className="flex items-center justify-center">
                 <DollarSign size={20} className="mr-2" />
                 <h2 className="font-semibold">Transparent Furniture Assembly Pricing</h2>

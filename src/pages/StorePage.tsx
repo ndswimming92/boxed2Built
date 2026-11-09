@@ -112,7 +112,7 @@ const StorePage: React.FC = () => {
 
           {settings?.announcement && (
             <div className="mt-8 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-              <Megaphone className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+              <Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
               <p className="text-sm leading-relaxed text-amber-900">{settings.announcement}</p>
             </div>
           )}
@@ -183,7 +183,7 @@ const StorePage: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-16 rounded-3xl bg-gradient-to-br from-blue-800 via-blue-700 to-blue-600 px-6 py-10 text-center text-white sm:px-10">
+          <div className="mt-16 rounded-3xl bg-linear-to-br from-blue-800 via-blue-700 to-blue-600 px-6 py-10 text-center text-white sm:px-10">
             <h2 className="text-2xl font-bold sm:text-3xl">Want something custom printed?</h2>
             <p className="mx-auto mt-3 max-w-2xl text-blue-100">
               Replacement parts, jigs, signage, party favors, branded pieces for your business — if

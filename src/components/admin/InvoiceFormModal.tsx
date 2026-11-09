@@ -596,7 +596,7 @@ export default function InvoiceFormModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-xl sm:rounded-xl max-w-6xl w-full flex flex-col max-h-dvh sm:max-h-[90vh] sm:my-8">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
               {invoice ? 'Edit Invoice' : 'Create Invoice'}
@@ -621,9 +621,9 @@ export default function InvoiceFormModal({
             }`}
           >
             {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
             )}
             <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>
               {message.text}
@@ -1076,7 +1076,7 @@ export default function InvoiceFormModal({
         </div>
         </div>
 
-        <div className="flex flex-col gap-3 p-4 sm:p-6 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between flex-shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        <div className="flex flex-col gap-3 p-4 sm:p-6 border-t border-slate-200 sm:flex-row sm:items-center sm:justify-between shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           {invoice && (
             <button
               type="button"

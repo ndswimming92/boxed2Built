@@ -54,7 +54,7 @@ const ValidationMessage: React.FC<ValidationMessageProps> = ({
   return (
     <div className={`flex items-start p-3 rounded-md border ${bgColor} ${borderColor} ${className}`} role={type === 'error' ? 'alert' : 'status'}>
       {showIcon && (
-        <Icon size={16} className={`${iconColor} mr-2 mt-0.5 flex-shrink-0`} aria-hidden="true" />
+        <Icon size={16} className={`${iconColor} mr-2 mt-0.5 shrink-0`} aria-hidden="true" />
       )}
       <span className={`text-sm ${textColor} flex-1`}>{message}</span>
       {dismissible && onDismiss && (

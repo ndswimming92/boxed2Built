@@ -136,7 +136,7 @@ export default function BusinessHoursPage() {
             Weekly Schedule
           </h2>
           <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-            <Link2 className="w-3 h-3 flex-shrink-0" />
+            <Link2 className="w-3 h-3 shrink-0" />
             These hours sync to Google Business Profile as a whole when you save.
           </p>
         </div>

@@ -92,7 +92,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-sky-50">
+    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-sky-50">
       <header className="border-b border-indigo-100/80 bg-white/90 shadow-sm backdrop-blur">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-5">
@@ -104,7 +104,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
               </div>
 
               <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <div className="rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50 to-indigo-50 px-4 py-2.5 text-xs text-slate-600 shadow-sm">
+                <div className="rounded-xl border border-sky-100 bg-linear-to-r from-sky-50 to-indigo-50 px-4 py-2.5 text-xs text-slate-600 shadow-sm">
                   <p>
                     Logged in as <span className="font-semibold text-slate-900">{displayName}</span>
                   </p>
@@ -122,7 +122,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
               </div>
             </div>
 
-            <nav className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-sky-50 to-cyan-50 p-1.5 shadow-inner">
+            <nav className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50 via-sky-50 to-cyan-50 p-1.5 shadow-inner">
               {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -130,7 +130,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
                   className={({ isActive }) =>
                     `rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow'
+                        ? 'bg-linear-to-r from-indigo-600 to-blue-600 text-white shadow'
                         : 'text-slate-700 hover:bg-white hover:text-indigo-700'
                     }`
                   }
@@ -149,7 +149,7 @@ export default function PortalLayout({ title, subtitle, children }: PortalLayout
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 rounded-2xl border border-indigo-100 bg-gradient-to-r from-white via-indigo-50/50 to-sky-50/60 p-5 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-indigo-100 bg-linear-to-r from-white via-indigo-50/50 to-sky-50/60 p-5 shadow-sm">
           <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
           {subtitle ? <p className="mt-1 text-sm text-slate-600">{subtitle}</p> : null}
         </div>

@@ -258,7 +258,7 @@ export default function InvoicePaymentPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl border border-slate-200 p-5 min-w-0">
             <p className="text-xs uppercase tracking-wide font-semibold text-slate-400 mb-3">Billed To</p>
-            <p className="font-semibold text-slate-900 break-words">{invoice.client_name}</p>
+            <p className="font-semibold text-slate-900 wrap-break-word">{invoice.client_name}</p>
             {invoice.client_email && <p className="text-sm text-slate-500 mt-0.5 break-all">{invoice.client_email}</p>}
             {invoice.client_phone && <p className="text-sm text-slate-500 mt-0.5">{invoice.client_phone}</p>}
           </div>

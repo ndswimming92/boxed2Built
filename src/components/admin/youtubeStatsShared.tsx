@@ -112,7 +112,7 @@ export function Notice({
   }[tone];
   return (
     <div className={`p-4 border rounded-lg flex items-start gap-3 ${styles.box}`}>
-      <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${styles.icon}`} />
+      <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${styles.icon}`} />
       <div className={`text-sm ${styles.text}`}>
         <p className="font-medium mb-1">{title}</p>
         {children && <p>{children}</p>}

@@ -61,7 +61,7 @@ const ContactPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         {/* Page Header */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <section className="bg-linear-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Breadcrumbs 
@@ -97,7 +97,7 @@ const ContactPage: React.FC = () => {
                   
                   <div className="space-y-6 mb-8">
                     <div className="flex items-start">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 shrink-0">
                         <Phone className="text-blue-600" size={24} />
                       </div>
                       <div>
@@ -113,7 +113,7 @@ const ContactPage: React.FC = () => {
                     </div>
                     
                     <div className="flex items-start">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 shrink-0">
                         <Mail className="text-green-600" size={24} />
                       </div>
                       <div>
@@ -130,7 +130,7 @@ const ContactPage: React.FC = () => {
                     </div>
                     
                     <div className="flex items-start">
-                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 shrink-0">
                         <MapPin className="text-purple-600" size={24} />
                       </div>
                       <div>
@@ -143,7 +143,7 @@ const ContactPage: React.FC = () => {
                     </div>
                     
                     <div className="flex items-start">
-                      <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                      <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mr-4 shrink-0">
                         <Clock className="text-amber-600" size={24} />
                       </div>
                       <div>

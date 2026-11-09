@@ -129,7 +129,7 @@ export default function JobCalendarFeedModal({
                       />
                       <button
                         onClick={handleCopy}
-                        className="px-3 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-sm flex-shrink-0"
+                        className="px-3 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-sm shrink-0"
                       >
                         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         {copied ? 'Copied' : 'Copy'}
@@ -162,7 +162,7 @@ export default function JobCalendarFeedModal({
 
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                     <div className="flex gap-2.5">
-                      <AlertTriangle className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                       <div className="space-y-3 min-w-0">
                         <p className="text-sm text-amber-900 leading-relaxed">
                           Anyone with this link can read your job schedule, including client names and

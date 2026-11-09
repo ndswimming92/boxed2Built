@@ -7,11 +7,11 @@ import { useBusinessDataWithFallback } from '../../hooks/useBusinessData';
 import { formatPhoneForDisplay } from '../../services/communicationService';
 
 const CARD_ACCENTS = [
-  { border: 'border-t-blue-600', bg: 'bg-gradient-to-br from-blue-50 to-white', includedBg: 'bg-blue-50/80', includedBorder: 'border-blue-200', check: 'text-blue-600', priceBg: 'bg-blue-600' },
-  { border: 'border-t-teal-500', bg: 'bg-gradient-to-br from-teal-50 to-white', includedBg: 'bg-teal-50/80', includedBorder: 'border-teal-200', check: 'text-teal-600', priceBg: 'bg-teal-600' },
-  { border: 'border-t-emerald-500', bg: 'bg-gradient-to-br from-emerald-50 to-white', includedBg: 'bg-emerald-50/80', includedBorder: 'border-emerald-200', check: 'text-emerald-600', priceBg: 'bg-emerald-600' },
-  { border: 'border-t-amber-500', bg: 'bg-gradient-to-br from-amber-50 to-white', includedBg: 'bg-amber-50/80', includedBorder: 'border-amber-200', check: 'text-amber-600', priceBg: 'bg-amber-600' },
-  { border: 'border-t-sky-500', bg: 'bg-gradient-to-br from-sky-50 to-white', includedBg: 'bg-sky-50/80', includedBorder: 'border-sky-200', check: 'text-sky-600', priceBg: 'bg-sky-600' },
+  { border: 'border-t-blue-600', bg: 'bg-linear-to-br from-blue-50 to-white', includedBg: 'bg-blue-50/80', includedBorder: 'border-blue-200', check: 'text-blue-600', priceBg: 'bg-blue-600' },
+  { border: 'border-t-teal-500', bg: 'bg-linear-to-br from-teal-50 to-white', includedBg: 'bg-teal-50/80', includedBorder: 'border-teal-200', check: 'text-teal-600', priceBg: 'bg-teal-600' },
+  { border: 'border-t-emerald-500', bg: 'bg-linear-to-br from-emerald-50 to-white', includedBg: 'bg-emerald-50/80', includedBorder: 'border-emerald-200', check: 'text-emerald-600', priceBg: 'bg-emerald-600' },
+  { border: 'border-t-amber-500', bg: 'bg-linear-to-br from-amber-50 to-white', includedBg: 'bg-amber-50/80', includedBorder: 'border-amber-200', check: 'text-amber-600', priceBg: 'bg-amber-600' },
+  { border: 'border-t-sky-500', bg: 'bg-linear-to-br from-sky-50 to-white', includedBg: 'bg-sky-50/80', includedBorder: 'border-sky-200', check: 'text-sky-600', priceBg: 'bg-sky-600' },
 ];
 
 const Services: React.FC = () => {
@@ -42,7 +42,7 @@ const Services: React.FC = () => {
 
 
   return (
-    <section id="services" className="py-12 bg-gradient-to-b from-gray-50 to-white">
+    <section id="services" className="py-12 bg-linear-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
@@ -154,7 +154,7 @@ const Services: React.FC = () => {
         </div>
 
         {/* Enhanced CTA Section with more local keywords */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 text-white p-8 rounded-lg shadow-lg mb-8">
           <div className="text-center mb-8">
               <InternalLink href="/about" trackingCategory="services_info">
             <p className="text-blue-50 text-lg max-w-3xl mx-auto">

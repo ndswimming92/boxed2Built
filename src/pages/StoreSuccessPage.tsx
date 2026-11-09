@@ -144,9 +144,9 @@ const StoreSuccessPage: React.FC = () => {
 
                 <div className="mt-6 flex items-start gap-3 rounded-xl bg-blue-50 px-4 py-3 text-left">
                   {order.fulfillment_method === 'pickup' ? (
-                    <Store className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-700" />
+                    <Store className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
                   ) : (
-                    <Package className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-700" />
+                    <Package className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
                   )}
                   <p className="text-sm leading-relaxed text-blue-900">
                     {order.fulfillment_method === 'pickup'
