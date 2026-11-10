@@ -73,6 +73,8 @@ const StoreSuccessPage: React.FC = () => {
         <meta name="description" content="Your Boxed2Built print shop order is confirmed." />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://boxed2built.com/store/success" />
+        <meta property="og:url" content="https://boxed2built.com/store/success" />
+        <meta property="og:title" content="Order Confirmed | Boxed2Built Print Shop" />
       </Head>
 
       <Header />

@@ -622,7 +622,7 @@ export const SERVICE_LANDING_PAGES: ServiceLandingContent[] = [
     slug: 'home-gym-equipment-assembly',
     navLabel: 'Home Gym & Backyard',
     navDescription: 'Treadmills, racks, trampolines & hoops',
-    metaTitle: 'Home Gym & Backyard Equipment Assembly Spring Hill, TN | Boxed2Built',
+    metaTitle: 'Home Gym & Backyard Assembly in Spring Hill, TN | Boxed2Built',
     metaDescription:
       'Treadmill, exercise bike, power rack, trampoline and basketball hoop assembly in Spring Hill, TN. NordicTrack, Bowflex, Rogue, Lifetime and more. Starting at $200.',
     ogTitle: 'Home Gym & Backyard Equipment Assembly in Spring Hill, TN | Boxed2Built',
