@@ -11,7 +11,9 @@
 //   2. dist/_headers (public/_headers after apply-csp.mjs has filled in the CSP
 //      hashes) is followed by cloudflare/_headers,
 //      which carries the netlify.toml [[headers]] blocks Cloudflare ignores.
-//   3. The build fails if dist/404.html is missing. Without it Cloudflare
+//   3. dist/_routes.json is written so the Pages Function that serves markdown
+//      to AI agents (functions/_middleware.ts) only runs for page URLs.
+//   4. The build fails if dist/404.html is missing. Without it Cloudflare
 //      silently switches to single-page-app mode and answers every unknown
 //      URL with the homepage at 200, which Google indexes as duplicates.
 
@@ -63,4 +65,36 @@ if (longLine) {
 
 writeFileSync(join(dist, '_headers'), headers);
 
-console.log(`[prepare-cloudflare] wrote dist/_redirects and dist/_headers (${ruleCount} header rules)`);
+// 3. Function routes
+// Static files and the signed-in app never have a markdown twin, so they skip
+// the function entirely and do not count against the Functions request quota.
+const routes = {
+  version: 1,
+  include: ['/*'],
+  exclude: [
+    '/assets/*',
+    '/images/*',
+    '/fonts/*',
+    '/email-icons/*',
+    '/admin-icons/*',
+    '/.well-known/*',
+    '/admin',
+    '/admin/*',
+    '/portal',
+    '/portal/*',
+    '/book',
+    '/go/*',
+    '/r/*',
+    '/R/*',
+    '/pay/*',
+    '/*.png',
+    '/*.svg',
+    '/*.txt',
+    '/*.xml',
+    '/*.webmanifest',
+    '/*.md',
+  ],
+};
+writeFileSync(join(dist, '_routes.json'), `${JSON.stringify(routes, null, 2)}\n`);
+
+console.log(`[prepare-cloudflare] wrote dist/_redirects, dist/_routes.json and dist/_headers (${ruleCount} header rules)`);
