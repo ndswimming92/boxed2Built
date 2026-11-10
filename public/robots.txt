@@ -3,6 +3,13 @@
 # Nashville metro.
 
 User-agent: *
+# Content Signals (https://contentsignals.org/) — how collected content may be
+# used after it is accessed:
+#   search=yes    index the site and show links/snippets in search results
+#   ai-input=yes  use pages to ground live AI answers (AI search, assistants) —
+#                 the same audience /llms.txt is written for
+#   ai-train=no   do not use the content to train or fine-tune AI models
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 
 # Private and auth-gated areas. These are also served with
