@@ -12,6 +12,9 @@
 //   4. Every unindented dist/_headers line must be a comment or a path. A
 //      stray line there is read as a URL pattern and swallows the headers
 //      under it.
+//   5. dist/_routes.json (from public/_routes.json) must exist. It keeps the
+//      Pages Function that serves markdown to AI agents
+//      (functions/_middleware.ts) off static files and the signed-in app.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +33,9 @@ if (!existsSync(join(dist, '404.html'))) {
 }
 if (!existsSync(join(dist, '_redirects'))) fail('dist/_redirects is missing.');
 if (!existsSync(join(dist, '_headers'))) fail('dist/_headers is missing.');
+if (!existsSync(join(dist, '_routes.json'))) {
+  fail('dist/_routes.json is missing. The markdown function would run on every request, images included.');
+}
 
 const lines = readFileSync(join(dist, '_headers'), 'utf8').split('\n');
 

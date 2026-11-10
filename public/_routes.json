@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/assets/*",
+    "/images/*",
+    "/fonts/*",
+    "/email-icons/*",
+    "/admin-icons/*",
+    "/.well-known/*",
+    "/admin",
+    "/admin/*",
+    "/portal",
+    "/portal/*",
+    "/book",
+    "/go/*",
+    "/r/*",
+    "/R/*",
+    "/pay/*",
+    "/*.png",
+    "/*.svg",
+    "/*.txt",
+    "/*.xml",
+    "/*.webmanifest",
+    "/*.md"
+  ]
+}

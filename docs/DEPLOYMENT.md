@@ -13,14 +13,15 @@ What ships automatically, what does not, and the one thing that will bite you.
 ## Frontend on Cloudflare Pages
 
 Cloudflare Pages builds and publishes the site on every push to `main`. It is
-the only host, and its configuration lives in two files:
+the only host, and its configuration lives in three files:
 
 | File | What it holds |
 | --- | --- |
 | `public/_redirects` | Retired-page redirects, the app-shell rewrites for routes that are not pre-rendered, and the trailing-slash rewrites |
 | `public/_headers` | Security headers and the CSP, asset caching, and `noindex` for private areas |
+| `public/_routes.json` | Which URLs run the Pages Function in `functions/` (see *Markdown for AI agents* below) |
 
-Vite copies both into `dist/`. `npm run build` then fills the CSP hashes into
+Vite copies them into `dist/`. `npm run build` then fills the CSP hashes into
 `dist/_headers` (`scripts/apply-csp.mjs`) and finishes with
 `scripts/check-cloudflare-output.mjs`, which fails the build on the mistakes
 Cloudflare would otherwise accept silently: a missing `dist/404.html`, more than
@@ -77,7 +78,32 @@ ever rebuilt:
 
 Spot checks: `/about` and `/about/` both 200 with the same page;
 `/services/move-in-assembly` 301s to `/services/furniture-assembly`; `/admin/x`
-loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404.
+loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404;
+`/about` with `Accept: text/markdown` returns markdown.
+
+### Markdown for AI agents
+
+A request that sends `Accept: text/markdown` gets a clean markdown version of
+the page at the same URL; browsers get HTML as before.
+
+- `scripts/generate-markdown.mjs` runs in `npm run build` and writes a `.md`
+  file beside every public page in `dist/` (`about.html` → `about.md`), from
+  the page's `<main>`. Pages marked noindex are skipped.
+- `functions/_middleware.ts` is a Pages Function that answers markdown
+  requests with that file. Cloudflare picks up the `functions/` folder on its
+  own; there is nothing to switch on in the dashboard.
+- `dist/_routes.json` (copied from `public/_routes.json`) keeps the
+  function off images, scripts and the signed-in app, so only page views count
+  toward the free plan's 100,000 function requests a day.
+
+Check it after a deploy:
+
+```bash
+curl -sI -H "Accept: text/markdown" https://boxed2built.com/about
+```
+
+Expect `content-type: text/markdown; charset=utf-8` and `vary: Accept`. The
+same request without the header must still return `text/html`.
 
 On a `.pages.dev` address, public pages, redirects and headers can all be
 checked. Sign-in cannot: passkeys are bound to boxed2built.com, and

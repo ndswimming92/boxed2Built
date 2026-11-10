@@ -87,3 +87,10 @@
   ! Content-Type
   Content-Type: text/plain
   X-Robots-Tag: noindex, nofollow
+
+# Markdown twins of the public pages (scripts/generate-markdown.mjs). AI agents
+# get them at the page's own URL by sending "Accept: text/markdown"
+# (functions/_middleware.ts). The .md addresses themselves stay out of search
+# so they never compete with the HTML page.
+/*.md
+  X-Robots-Tag: noindex
