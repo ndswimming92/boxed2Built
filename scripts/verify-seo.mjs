@@ -244,9 +244,9 @@ function checkAssets(file, html) {
       if (!url.startsWith('/images/')) continue;
 
       if (url.includes('?')) {
-        // Netlify serves static files verbatim; ?fm=/?w= params do nothing and
+        // The host serves static files verbatim; ?fm=/?w= params do nothing and
         // previously made the site claim formats it wasn't serving.
-        fail(page, `image URL carries transform params that Netlify ignores: ${url}`);
+        fail(page, `image URL carries transform params that the host ignores: ${url}`);
       }
       const onDisk = join(DIST, url.split('?')[0]);
       if (!existsSync(onDisk)) fail(page, `references missing image ${url}`);
@@ -317,8 +317,9 @@ function checkRobotsDirectives(page, html) {
 /**
  * The canonical URL form on this site is "no trailing slash", and nothing
  * declares that — it falls out of the build shape. ssgOptions.dirStyle: 'flat'
- * writes dist/about.html, so Netlify answers /about with a 200 and 301s
- * /about/ onto it. Switch dirStyle to 'nested' and dist/about/index.html
+ * writes dist/about.html, so /about is the served URL (left alone the host
+ * would 301 /about/ onto it; public/_redirects serves the same page there
+ * with a 200 instead). Switch dirStyle to 'nested' and dist/about/index.html
  * inverts the pair: /about/ becomes the served URL and /about starts
  * redirecting — which means every <loc> in sitemap.xml, every rel="canonical"
  * and every internal link now points at a redirect. Search Console fills up
@@ -367,7 +368,7 @@ function checkNoTrailingSlashUrls(file, html) {
  * Unmatched URLs have to answer with a real 404. They used to hit a blanket
  * `/*  /index.html  200` in _redirects, so every typo, every stale inbound link
  * and every retired path returned the homepage shell at HTTP 200 — a soft 404
- * that Google indexes as a duplicate of the homepage. Netlify serves
+ * that Google indexes as a duplicate of the homepage. Cloudflare serves
  * dist/404.html with a 404 status for anything that matches no file and no
  * rule, so the guard is: that file exists, it is noindex, and no rule reaches
  * past it.
@@ -375,7 +376,7 @@ function checkNoTrailingSlashUrls(file, html) {
 async function checkNotFoundHandling(pages) {
   const notFound = pages.find((p) => p.page === '/404');
   if (!notFound) {
-    fail('/404', 'no dist/404.html — Netlify would answer unmatched URLs with its own generic page');
+    fail('/404', 'no dist/404.html — Cloudflare would answer every unmatched URL with the homepage at 200');
   } else if (!notFound.noIndex) {
     fail('/404', 'the 404 page is indexable — it must carry <meta name="robots" content="noindex">');
   }

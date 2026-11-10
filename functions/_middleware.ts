@@ -6,7 +6,7 @@
 // before. Pages with no markdown twin (admin, portal, 404, checkout results)
 // fall through to HTML too.
 //
-// dist/_routes.json (written by scripts/prepare-cloudflare.mjs) keeps this
+// dist/_routes.json (copied from public/_routes.json) keeps this
 // function off static files so they do not count against the Functions quota.
 import { estimateTokens, markdownPathFor, prefersMarkdown } from '../cloudflare/markdownNegotiation.ts';
 

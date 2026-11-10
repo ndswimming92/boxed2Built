@@ -36,7 +36,7 @@ export function getReferralLandingURL(code: string): string {
  *
  * Safe because hosts are case-insensitive, React Router matches static path
  * segments case-insensitively, and `public/_redirects` lists `/R/*` alongside
- * `/r/*` so Netlify does not 404 before the app loads.
+ * `/r/*` so Cloudflare does not 404 before the app loads.
  */
 export function getReferralQRPayload(code: string): string {
   return getReferralLandingURL(code).toUpperCase();

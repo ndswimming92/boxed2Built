@@ -1,30 +1,45 @@
-# Retired pages -> closest live equivalent. These must sit above the SPA
-# fallback: Netlify matches _redirects rules in order, and a catch-all below
-# would otherwise answer with index.html and a 200 (a soft 404).
-/services/move-in-assembly    /services/furniture-assembly   301!
+# Cloudflare Pages redirects and rewrites. This is the only redirects file:
+# Vite copies it to dist/_redirects unchanged.
+#
+# Rules of the road:
+#   - The FIRST matching rule wins, and rules without wildcards or
+#     placeholders must all come before rules with them.
+#   - There is no `!` force flag. Cloudflare always applies a matching rule,
+#     even when a real file exists at that path.
+#   - Trailing slashes are NOT ignored when matching, so every app route
+#     below also lists its trailing-slash form.
+#   - HTTP -> HTTPS is not done here. Turn on "Always Use HTTPS" in the
+#     Cloudflare dashboard (SSL/TLS -> Edge Certificates) instead.
+#   - Unmatched paths fall through to dist/404.html, which Cloudflare serves
+#     with a real 404 status. Never add a blanket `/*  /  200` here: without
+#     a match Cloudflare would answer every junk URL with the homepage at 200.
 
-# SPA fallback, scoped to the route families that are deliberately NOT
-# pre-rendered (see ssgOptions.includedRoutes in vite.config.ts). Every public
-# page ships as a real .html file in dist and Netlify serves it directly, so no
-# public URL belongs in this list.
-#
-# This was a blanket `/*  /index.html  200`, which answered EVERY unknown URL
-# with the homepage shell at HTTP 200. Google reads that as a real page and
-# indexes the junk as a duplicate of the homepage, then keeps re-crawling it;
-# it also hid missing JS chunks and loader JSON behind HTML instead of a 404.
-# Unmatched paths now fall through to dist/404.html, which Netlify serves with
-# a real 404 status.
-#
-# Netlify ignores trailing slashes when matching, so `/admin` covers `/admin/`.
-/admin       /index.html   200
-/admin/*     /index.html   200
-/portal      /index.html   200
-/portal/*    /index.html   200
-/book        /index.html   200
-/go/*        /index.html   200
+# ── Retired pages -> closest live equivalent ───────────────────────────────
+/services/move-in-assembly     /services/furniture-assembly   301
+/services/move-in-assembly/    /services/furniture-assembly   301
+
+# ── App routes that are deliberately NOT pre-rendered ──────────────────────
+# (see ssgOptions.includedRoutes in vite.config.ts). They load the app shell
+# and let the client router take over.
+/admin      /   200
+/admin/     /   200
+/portal     /   200
+/portal/    /   200
+/book       /   200
+/book/      /   200
+
+/admin/*    /   200
+/portal/*   /   200
+/go/*       /   200
 # Referral QR tokens. The uppercase rule is not redundant: the QR payload is
-# uppercased to stay in QR alphanumeric mode, and Netlify matches paths
-# case-sensitively, so /R/* would 404 at the CDN without it.
-/r/*         /index.html   200
-/R/*         /index.html   200
-/pay/*       /index.html   200
+# uppercased to stay in QR alphanumeric mode, and paths match case-sensitively.
+/r/*        /   200
+/R/*        /   200
+/pay/*      /   200
+
+# ── Trailing-slash URLs ────────────────────────────────────────────────────
+# The build writes flat files (about.html, not about/index.html), and
+# Cloudflare would redirect /about/ -> /about. Google flags those as "Page
+# with redirect", so serve the flat page at both URLs with a 200 instead.
+/:page/             /:page            200
+/:section/:page/    /:section/:page   200

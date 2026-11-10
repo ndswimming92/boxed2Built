@@ -47,7 +47,7 @@ to start over. The bare apex domain is used deliberately: it covers both
 ## Passkeys do not work on localhost or deploy previews
 
 The browser requires the page's origin to match, or be a subdomain of, the RP ID. Neither
-`127.0.0.1:5173` nor `deploy-preview-*.netlify.app` is a subdomain of `boxed2built.com`, so
+`127.0.0.1:5173` nor a `*.pages.dev` address is a subdomain of `boxed2built.com`, so
 the ceremony is refused before any request is sent. The UI reports this as *"Passkeys only
 work on the live boxed2built.com site, not on this address."*
 

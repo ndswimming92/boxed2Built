@@ -6,7 +6,7 @@
 // functions/_middleware.ts, so they read clean text instead of scraping the
 // HTML layout. Browsers keep getting HTML.
 //
-// Runs as part of `npm run build:cloudflare`, after the pages are rendered.
+// Runs as part of `npm run build`, after the pages are rendered.
 // Only the page's <main> is converted: the header, footer and navigation repeat
 // on every page and are noise to a reader that fetched one URL.
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';

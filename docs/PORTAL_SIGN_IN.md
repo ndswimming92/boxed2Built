@@ -125,7 +125,7 @@ a single `*` will not match a `redirect_to` carrying `?next=/portal/jobs`.
 matches nothing does not error — Supabase silently substitutes Site URL, so the
 customer is signed in but lands on the marketing homepage instead of their
 portal, with nothing to explain it. That check happens before any HTTP redirect,
-so a Netlify `www` → apex rule does not save you: Supabase never sees it.
+so the Cloudflare `www` → apex redirect rule does not save you: Supabase never sees it.
 
 Check these entries character by character. `boxedtobuilt.com` is a different
 domain from `boxed2built.com`, and an allowlist full of near-misses looks

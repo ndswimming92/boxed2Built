@@ -1,10 +1,10 @@
 /**
  * Routes that are never pre-rendered. The host answers them with the home
- * page's index.html (see public/_redirects and cloudflare/_redirects) and the
+ * page's index.html (see public/_redirects) and the
  * client router takes over.
  *
  * Keep in step with the exclusions in `ssgOptions.includedRoutes` in
- * vite.config.ts and the 200-rewrites in both _redirects files.
+ * vite.config.ts and the 200-rewrites in public/_redirects.
  *
  * Kept free of React and import.meta.env so `node --test` can import it.
  */

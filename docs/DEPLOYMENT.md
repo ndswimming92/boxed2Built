@@ -6,52 +6,75 @@ What ships automatically, what does not, and the one thing that will bite you.
 
 | Thing | How it deploys |
 | --- | --- |
-| Frontend (`src/`) | **Automatic** — Netlify builds on push to `main` (Cloudflare Pages once moved; see below) |
+| Frontend (`src/`) | **Automatic** — Cloudflare Pages builds on push to `main` |
 | Edge functions (`supabase/functions/`) | **Automatic** — `.github/workflows/deploy-functions.yml`, once its two secrets are set |
 | Database migrations (`supabase/migrations/`) | **By hand. Always.** See below |
 
 ## Frontend on Cloudflare Pages
 
-The site is moving from Netlify to Cloudflare Pages, whose free plan allows
-business use and 500 builds a month. Both can run side by side until the domain
-is switched: Netlify keeps using `netlify.toml` and `public/_redirects`, and
-Cloudflare runs `npm run build:cloudflare`, which builds normally and then runs
-`scripts/prepare-cloudflare.mjs` to swap in `cloudflare/_redirects` and append
-`cloudflare/_headers` to `public/_headers`.
+Cloudflare Pages builds and publishes the site on every push to `main`. It is
+the only host, and its configuration lives in three files:
 
-**Keep the two in step.** A redirect or header added to `netlify.toml` or
-`public/_redirects` must also go in `cloudflare/`, until Netlify is retired and
-those files can be deleted.
+| File | What it holds |
+| --- | --- |
+| `public/_redirects` | Retired-page redirects, the app-shell rewrites for routes that are not pre-rendered, and the trailing-slash rewrites |
+| `public/_headers` | Security headers and the CSP, asset caching, and `noindex` for private areas |
+| `public/_routes.json` | Which URLs run the Pages Function in `functions/` (see *Markdown for AI agents* below) |
+
+Vite copies them into `dist/`. `npm run build` then fills the CSP hashes into
+`dist/_headers` (`scripts/apply-csp.mjs`) and finishes with
+`scripts/check-cloudflare-output.mjs`, which fails the build on the mistakes
+Cloudflare would otherwise accept silently: a missing `dist/404.html`, more than
+100 header rules, or a header line over 2,000 characters. Each file opens with
+the Cloudflare matching rules worth knowing before editing it.
 
 ### Project settings
 
-In Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, pick this
-repo, then:
+Under **Workers & Pages → the Pages project → Settings**:
 
 | Setting | Value |
 | --- | --- |
 | Production branch | `main` |
 | Framework preset | None |
-| Build command | `npm run build:cloudflare` |
+| Build command | `npm run build` (`npm run build:cloudflare` is kept as an alias for it) |
 | Build output directory | `dist` |
 
-Environment variables (Production), copied from the Netlify site's settings:
+Environment variables (Production):
 
 - `NODE_VERSION` = `22`
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 - `VITE_AUTHORIZED_ADMIN_EMAILS` = `boxed2builtco@gmail.com`
 - `VITE_AUTHORIZED_ADMIN_DOMAINS` = `boxed2built.com`
-- Any others set in Netlify, such as `VITE_AUTHORIZED_CLIENT_EMAILS`,
+- Any others the app reads, such as `VITE_AUTHORIZED_CLIENT_EMAILS`,
   `VITE_AUTHORIZED_CLIENT_DOMAINS` and the `VITE_*_OAUTH_REDIRECT_URI` values
 
 These are read at build time, so a change only takes effect after a redeploy.
+They exist only in the Cloudflare dashboard; nothing in the repo sets them.
 
-### Testing on the `.pages.dev` address
+### Dashboard settings the site depends on
 
-Public pages, redirects and headers can all be checked there. Sign-in cannot:
-passkeys are bound to boxed2built.com, and Google/Supabase sign-in only returns
-to addresses on the Supabase redirect allow-list. Test admin, portal and booking
-sign-in after the domain moves.
+These are not in the repo, so check them if the Pages project or the zone is
+ever rebuilt:
+
+- **SSL/TLS → Edge Certificates → Always Use HTTPS** is on. Nothing in
+  `_redirects` sends HTTP to HTTPS.
+- **Rules → Redirect Rules → "Redirect from WWW to root"** (301, keep the path
+  and query). Pages can't redirect between hostnames, and invoice, gift card
+  and shop checkout links send customers to `www.boxed2built.com` while
+  canonicals point at the bare domain.
+- **Scrape Shield → Email Address Obfuscation** and **Rocket Loader** are off.
+  Both rewrite the pre-rendered HTML; Rocket Loader would also break the
+  hashed inline scripts the CSP allows.
+- **Settings → Builds → Branch control** has preview branches set to **None**.
+  Preview builds have no Supabase variables, so they fail and use up the
+  monthly build allowance.
+- Email DNS records stay **DNS only** (grey cloud): root `MX` (Google
+  Workspace) with its `google._domainkey` and SPF `TXT`; `MX` on
+  `reply.boxed2built.com` for Resend receiving (see
+  `supabase/functions/resend-webhook`); the Resend sending records
+  (`resend._domainkey`, `send.*`) and `_dmarc`.
+
+### Checking a deploy
 
 Spot checks: `/about` and `/about/` both 200 with the same page;
 `/services/move-in-assembly` 301s to `/services/furniture-assembly`; `/admin/x`
@@ -63,13 +86,13 @@ loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404
 A request that sends `Accept: text/markdown` gets a clean markdown version of
 the page at the same URL; browsers get HTML as before.
 
-- `scripts/generate-markdown.mjs` runs in `build:cloudflare` and writes a `.md`
+- `scripts/generate-markdown.mjs` runs in `npm run build` and writes a `.md`
   file beside every public page in `dist/` (`about.html` → `about.md`), from
   the page's `<main>`. Pages marked noindex are skipped.
 - `functions/_middleware.ts` is a Pages Function that answers markdown
   requests with that file. Cloudflare picks up the `functions/` folder on its
   own; there is nothing to switch on in the dashboard.
-- `dist/_routes.json` (from `scripts/prepare-cloudflare.mjs`) keeps the
+- `dist/_routes.json` (copied from `public/_routes.json`) keeps the
   function off images, scripts and the signed-in app, so only page views count
   toward the free plan's 100,000 function requests a day.
 
@@ -82,33 +105,10 @@ curl -sI -H "Accept: text/markdown" https://boxed2built.com/about
 Expect `content-type: text/markdown; charset=utf-8` and `vary: Accept`. The
 same request without the header must still return `text/html`.
 
-### Switching the domain
-
-1. Before moving nameservers, copy every DNS record into Cloudflare by hand
-   and check it against the old provider. The import scan misses uncommon
-   names. The ones that matter here:
-   - root `MX` (Google Workspace) plus its `google._domainkey` and SPF `TXT`
-   - `MX` on `reply.boxed2built.com`: Resend receiving for customer replies
-     (see `supabase/functions/resend-webhook`)
-   - Resend sending records (`resend._domainkey`, `send.*`) and `_dmarc`
-   Email records stay **DNS only** (grey cloud).
-2. Add `boxed2built.com` and `www` under the Pages project's **Custom
-   domains** and follow the DNS steps it shows.
-3. Turn on **SSL/TLS → Edge Certificates → Always Use HTTPS**. This replaces
-   the HTTP→HTTPS redirect in `netlify.toml`.
-4. Add **Rules → Redirect Rules → "Redirect from WWW to root"** (301, keep the
-   path and query). Pages can't redirect between hostnames, and invoice, gift
-   card and shop checkout links send customers to `www.boxed2built.com`
-   while canonicals point at the bare domain.
-5. Turn off **Scrape Shield → Email Address Obfuscation** and leave **Rocket
-   Loader** off. Both rewrite the pre-rendered HTML; Rocket Loader would also
-   break the hashed inline scripts the CSP allows.
-6. Under **Settings → Builds → Branch control**, set preview branches to
-   **None**. Preview builds have no Supabase variables, so they fail and use
-   up the monthly build allowance.
-7. Test sign-in, checkout, gift cards, the client portal, a text message and
-   a reply to a site email on the live domain.
-8. Once it has run cleanly for a day or two, disconnect Netlify and cancel Bolt.
+On a `.pages.dev` address, public pages, redirects and headers can all be
+checked. Sign-in cannot: passkeys are bound to boxed2built.com, and
+Google/Supabase sign-in only returns to addresses on the Supabase redirect
+allow-list.
 
 ## Edge functions
 

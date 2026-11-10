@@ -40,7 +40,7 @@ export default defineConfig({
         if (path.includes(':')) return false;
         // The `*` catch-all only exists for client-side navigation; pre-rendering
         // it would write a literal dist/*.html. dist/404.html comes from the
-        // explicit `/404` route instead, and Netlify serves it on a real 404.
+        // explicit `/404` route instead, and Cloudflare serves it on a real 404.
         if (path.includes('*')) return false;
         return true;
       });

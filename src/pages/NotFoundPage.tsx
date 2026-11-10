@@ -7,7 +7,7 @@ import Footer from '../components/layout/Footer';
 /**
  * Rendered two ways, and both matter for indexing:
  *
- *  - Pre-rendered to dist/404.html, which Netlify serves with a real HTTP 404
+ *  - Pre-rendered to dist/404.html, which Cloudflare serves with a real HTTP 404
  *    for any path that matches no static file and no rule in public/_redirects.
  *  - Matched client-side by the `*` route, so an in-app navigation to a dead
  *    link lands here instead of the generic route error screen.

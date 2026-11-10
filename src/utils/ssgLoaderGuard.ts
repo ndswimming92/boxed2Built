@@ -7,7 +7,7 @@
  * vite-react-ssg attaches a loader to every route on the client that fetches
  * `static-loader-data-manifest-<hash>.json` and calls `.json()` on the
  * response without checking it. When the file is missing (e.g. a tab that was
- * opened before a redeploy, so its hash points at deleted files), the Netlify
+ * opened before a redeploy, so its hash points at deleted files), a blanket
  * SPA fallback returns index.html with a 200 and the loader throws
  * `Unexpected token '<' ... is not valid JSON`, killing every subsequent
  * client-side navigation with react-router's error screen.
