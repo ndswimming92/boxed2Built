@@ -28,7 +28,7 @@ const ComparisonSection: React.FC = () => {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-white to-emerald-50 border border-blue-100 rounded-2xl shadow-sm p-8 md:p-12">
+        <div className="max-w-4xl mx-auto bg-linear-to-br from-blue-50 via-white to-emerald-50 border border-blue-100 rounded-2xl shadow-sm p-8 md:p-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-4">
             Why Choose Boxed2Built Instead of a Marketplace App?
           </h2>

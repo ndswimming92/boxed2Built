@@ -41,7 +41,7 @@ export function OrganizationSwitcher() {
         aria-haspopup="menu"
         aria-expanded={isOpen}
       >
-        <Building2 className="w-5 h-5 flex-shrink-0 text-orange-600" />
+        <Building2 className="w-5 h-5 shrink-0 text-orange-600" />
         <div className="min-w-0 text-left">
           <div className="truncate text-sm font-medium text-gray-900">
             {currentOrganization.name}
@@ -53,7 +53,7 @@ export function OrganizationSwitcher() {
           )}
         </div>
         <ChevronDown
-          className={`w-4 h-4 flex-shrink-0 text-gray-500 transition-transform ${
+          className={`w-4 h-4 shrink-0 text-gray-500 transition-transform ${
             isOpen ? 'transform rotate-180' : ''
           }`}
         />
@@ -82,14 +82,14 @@ export function OrganizationSwitcher() {
               }`}
             >
               <div className="flex min-w-0 items-center gap-2">
-                <Building2 className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                <Building2 className="w-4 h-4 shrink-0 text-gray-400" />
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-gray-900">{org.name}</div>
                   <div className="truncate text-xs text-gray-500">@{org.slug}</div>
                 </div>
               </div>
               {org.id === currentOrganization.id && (
-                <Check className="w-4 h-4 flex-shrink-0 text-orange-600" />
+                <Check className="w-4 h-4 shrink-0 text-orange-600" />
               )}
             </button>
           ))}

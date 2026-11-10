@@ -171,7 +171,7 @@ export default function InquiryDetailModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-xl sm:rounded-xl max-w-4xl w-full flex flex-col max-h-dvh sm:max-h-[90vh]">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 shrink-0">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">{inquiry.client_name}</h2>
             <p className="text-sm text-slate-600 mt-1">Submitted {formatDate(inquiry.submission_date)}</p>
@@ -197,7 +197,7 @@ export default function InquiryDetailModal({
               </span>
             )}
             {inquiry.source === 'footer_quick_contact' && (
-              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
+              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-linear-to-r from-purple-500 to-pink-500 text-white border border-purple-300 shadow-sm">
                 Quick Contact
               </span>
             )}
@@ -427,7 +427,7 @@ export default function InquiryDetailModal({
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm text-blue-700 hover:text-blue-900 underline break-all"
                     >
-                      <Link className="w-3.5 h-3.5 flex-shrink-0" />
+                      <Link className="w-3.5 h-3.5 shrink-0" />
                       {inquiry.furniture_photo_url}
                     </a>
                   </div>
@@ -554,7 +554,7 @@ export default function InquiryDetailModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors"

@@ -569,7 +569,7 @@ export default function ActivityLogsPage() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3 flex-1">
-                        <div className="flex-shrink-0 pt-1">
+                        <div className="shrink-0 pt-1">
                           {getStatusIcon(log.status)}
                         </div>
                         <div className="flex-1 min-w-0">

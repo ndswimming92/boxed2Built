@@ -74,7 +74,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const aspectRatioClass = {
     '16:9': 'aspect-video',
-    '4:3': 'aspect-[4/3]',
+    '4:3': 'aspect-4/3',
     '1:1': 'aspect-square'
   }[aspectRatio];
 
@@ -100,7 +100,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-gray-200 flex items-center justify-center">
+            <div className="w-full h-full bg-linear-to-br from-blue-100 to-gray-200 flex items-center justify-center">
               <Play size={48} className="text-blue-600" />
             </div>
           )}

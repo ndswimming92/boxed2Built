@@ -68,7 +68,7 @@ const FAQPage: React.FC = () => {
       <FAQSchema faqs={allFAQs} />
       <Header />
       <main className="pt-20">
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <section className="bg-linear-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Breadcrumbs
@@ -152,7 +152,7 @@ const FAQPage: React.FC = () => {
                         >
                           <summary className="flex items-center justify-between cursor-pointer list-none">
                             <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                            <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                            <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                           </summary>
                           <div className="mt-4 text-gray-600 leading-relaxed">
                             {faq.answer}
@@ -203,7 +203,7 @@ const FAQPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="py-12 bg-gradient-to-br from-blue-600 to-blue-700 text-white">
+        <section className="py-12 bg-linear-to-br from-blue-600 to-blue-700 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">Still Have Questions?</h2>

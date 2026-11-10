@@ -114,7 +114,7 @@ const About: React.FC = () => {
         </div>
 
         {/* Enhanced Local Service Area with more keywords */}
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
+        <div className="bg-linear-to-r from-blue-50 to-green-50 p-8 rounded-lg shadow-md">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 mb-6 md:mb-0 md:pr-8">

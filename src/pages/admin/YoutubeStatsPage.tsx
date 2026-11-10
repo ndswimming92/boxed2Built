@@ -165,7 +165,7 @@ export default function YoutubeStatsPage() {
       <div className="max-w-7xl">
         {header}
         <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-3">
-          <Plug className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+          <Plug className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
           <div className="text-sm text-slate-700">
             <p className="font-medium mb-1">YouTube isn't connected</p>
             <p>Connect it under <ConnectionsLink /> to see your channel stats here.</p>
@@ -365,7 +365,7 @@ export default function YoutubeStatsPage() {
                           className="flex items-center gap-3 text-left"
                         >
                           {v.thumbnail && (
-                            <img src={v.thumbnail} alt="" className="w-16 h-9 object-cover rounded flex-shrink-0" loading="lazy" />
+                            <img src={v.thumbnail} alt="" className="w-16 h-9 object-cover rounded shrink-0" loading="lazy" />
                           )}
                           <span className="font-medium text-slate-900 line-clamp-2">{v.title}</span>
                         </button>

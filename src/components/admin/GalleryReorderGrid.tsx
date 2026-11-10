@@ -156,7 +156,7 @@ export default function GalleryReorderGrid({ items, onDone }: GalleryReorderGrid
           see on the public gallery. This affects the &ldquo;All Work&rdquo; view and the relative order within
           each category tab.
         </p>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 shrink-0">
           <Button onClick={handleCancel} variant="outline" disabled={saving}>
             <X size={16} className="mr-1.5" />
             Cancel

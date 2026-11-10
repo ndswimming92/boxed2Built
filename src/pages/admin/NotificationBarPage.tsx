@@ -131,9 +131,9 @@ export default function NotificationBarPage() {
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           )}
           <p
             className={`text-sm ${
@@ -325,7 +325,7 @@ export default function NotificationBarPage() {
                   )}
                 </div>
                 <button
-                  className="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors ml-4"
+                  className="shrink-0 p-1 rounded-lg hover:bg-black/10 transition-colors ml-4"
                   disabled
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

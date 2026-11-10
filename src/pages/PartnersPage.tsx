@@ -131,7 +131,7 @@ const PartnersPage: React.FC = () => {
       {/* Matches About page header spacing */}
       <main className="pt-20">
         {/* HERO + BREADCRUMBS (combined like About page) */}
-        <section className="bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+        <section className="bg-linear-to-br from-blue-50 to-gray-100 py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Breadcrumbs

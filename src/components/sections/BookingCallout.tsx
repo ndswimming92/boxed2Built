@@ -28,7 +28,7 @@ const BookingCallout: React.FC<BookingCalloutProps> = ({ pageSection, body, clas
       className={`rounded-2xl border border-emerald-200 bg-emerald-50 p-6 sm:p-7 ${className}`}
     >
       <div className="flex items-start gap-3">
-        <span className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center">
+        <span className="shrink-0 w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center">
           <CalendarCheck className="w-5 h-5 text-white" aria-hidden="true" />
         </span>
         <div className="min-w-0">

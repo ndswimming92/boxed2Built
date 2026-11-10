@@ -165,7 +165,7 @@ export default function PortalSupportPage() {
     <PortalLayout title="Support" subtitle="Create support tickets and track updates from our team.">
       {error ? <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
-      <div className="mb-6 rounded-xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/60 p-4 shadow-sm">
+      <div className="mb-6 rounded-xl border border-indigo-100 bg-linear-to-br from-white to-indigo-50/60 p-4 shadow-sm">
         <h3 className="text-base font-semibold text-slate-900">New Ticket</h3>
         {(relatedJobId || relatedInvoiceId) ? (
           <p className="mt-1 text-xs font-medium text-indigo-700">
@@ -185,7 +185,7 @@ export default function PortalSupportPage() {
           <label className="text-sm text-slate-700 md:col-span-2">Message
             <textarea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} rows={3} className="mt-1 w-full rounded-md border border-indigo-200 bg-white px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
           </label>
-          <button onClick={() => void handleCreateTicket()} disabled={creating} className="w-fit rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-indigo-500 hover:to-blue-500 disabled:opacity-60">
+          <button onClick={() => void handleCreateTicket()} disabled={creating} className="w-fit rounded-md bg-linear-to-r from-indigo-600 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-indigo-500 hover:to-blue-500 disabled:opacity-60">
             {creating ? 'Creating…' : 'Create ticket'}
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function PortalSupportPage() {
       {loading ? <p className="text-sm text-slate-600">Loading support tickets...</p> : null}
 
       <div className="grid gap-4 md:grid-cols-[280px,1fr]">
-        <div className="rounded-xl border border-sky-100 bg-gradient-to-b from-white to-sky-50/40 p-3 shadow-sm">
+        <div className="rounded-xl border border-sky-100 bg-linear-to-b from-white to-sky-50/40 p-3 shadow-sm">
           <h4 className="text-sm font-semibold text-slate-900">Your tickets</h4>
           <ul className="mt-3 space-y-2">
             {tickets.map((ticket) => (
@@ -223,7 +223,7 @@ export default function PortalSupportPage() {
                 <span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700">{statusLabel[activeTicket.status]}</span>
               </div>
 
-              <div className="mt-3 rounded-md border border-sky-100 bg-gradient-to-r from-sky-50 to-indigo-50 p-3">
+              <div className="mt-3 rounded-md border border-sky-100 bg-linear-to-r from-sky-50 to-indigo-50 p-3">
                 <p className="text-xs font-semibold uppercase text-slate-500">Status Timeline</p>
                 <ul className="mt-2 space-y-1">
                   {timeline.map((event) => (
@@ -244,7 +244,7 @@ export default function PortalSupportPage() {
 
               <div className="mt-4">
                 <textarea value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} rows={3} className="w-full rounded-md border border-indigo-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100" placeholder="Reply to this ticket" />
-                <button onClick={() => void handleReply()} disabled={sending} className="mt-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-indigo-500 hover:to-blue-500 disabled:opacity-60">
+                <button onClick={() => void handleReply()} disabled={sending} className="mt-2 rounded-md bg-linear-to-r from-indigo-600 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-indigo-500 hover:to-blue-500 disabled:opacity-60">
                   {sending ? 'Sending…' : 'Send reply'}
                 </button>
               </div>

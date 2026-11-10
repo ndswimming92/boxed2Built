@@ -342,7 +342,7 @@ ${invoice.notes}` : ''}`,
       <div className="mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <FileText className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 flex-shrink-0" />
+            <FileText className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 shrink-0" />
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Invoices</h1>
               <p className="text-sm sm:text-base text-slate-600">Manage customer invoices and payments</p>
@@ -350,7 +350,7 @@ ${invoice.notes}` : ''}`,
           </div>
           <button
             onClick={handleCreateInvoice}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto flex-shrink-0"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 self-start sm:self-auto shrink-0"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             New Invoice

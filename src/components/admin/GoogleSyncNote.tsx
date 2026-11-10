@@ -3,7 +3,7 @@ import { Link2 } from 'lucide-react';
 export default function GoogleSyncNote({ synced }: { synced: boolean }) {
   return synced ? (
     <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-      <Link2 className="w-3 h-3 flex-shrink-0" />
+      <Link2 className="w-3 h-3 shrink-0" />
       Syncs to Google Business Profile
     </p>
   ) : (

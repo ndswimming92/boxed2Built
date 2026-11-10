@@ -493,7 +493,7 @@ function AdminLayoutContent() {
             aria-label={`Reorder ${item.name}`}
             title="Drag to reorder"
             style={{ touchAction: 'none' }}
-            className="flex-shrink-0 ml-1 p-0.5 rounded cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500"
+            className="shrink-0 ml-1 p-0.5 rounded cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500"
           >
             <GripVertical className="w-3.5 h-3.5" />
           </button>
@@ -508,7 +508,7 @@ function AdminLayoutContent() {
           aria-current={isActive ? 'page' : undefined}
           className={`flex flex-1 min-w-0 items-center gap-2 ${sortable ? 'pl-1' : 'pl-1.5'} pr-1 py-1`}
         >
-          <span className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
+          <span className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${isActive ? 'bg-emerald-600 text-white' : theme.badge}`}>
             <Icon className="w-3.5 h-3.5" />
           </span>
           <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>{item.name}</span>
@@ -530,7 +530,7 @@ function AdminLayoutContent() {
           }
           aria-pressed={isFavorite}
           title={isFavorite ? 'Unpin' : isAutoPinned ? 'Remove from Quick Access' : 'Pin to Quick Access'}
-          className={`flex-shrink-0 mr-1 p-1 rounded transition-opacity focus:opacity-100 ${
+          className={`shrink-0 mr-1 p-1 rounded transition-opacity focus:opacity-100 ${
             isFavorite
               ? 'opacity-100 text-amber-500'
               : isAutoPinned
@@ -611,7 +611,7 @@ function AdminLayoutContent() {
               {!sidebarCollapsed && (
                 <div>
                   <div className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg ${groupThemes.amber.header}`}>
-                    <Star className="w-4 h-4 flex-shrink-0 fill-current" />
+                    <Star className="w-4 h-4 shrink-0 fill-current" />
                     <span>Quick Access</span>
                   </div>
                   {quickAccessHrefs.length > 0 ? (
@@ -663,15 +663,15 @@ function AdminLayoutContent() {
                           : theme.header
                       }`}
                     >
-                      <GroupIcon className="w-4 h-4 flex-shrink-0" />
+                      <GroupIcon className="w-4 h-4 shrink-0" />
                       <span className={`flex-1 text-left transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
                         {group.name}
                       </span>
                       {!sidebarCollapsed && (
                         isExpanded ? (
-                          <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                          <ChevronDown className="w-4 h-4 shrink-0" />
                         ) : (
-                          <ChevronUp className="w-4 h-4 flex-shrink-0" />
+                          <ChevronUp className="w-4 h-4 shrink-0" />
                         )
                       )}
 
@@ -708,7 +708,7 @@ function AdminLayoutContent() {
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              <Menu className="w-4 h-4 flex-shrink-0" />
+              <Menu className="w-4 h-4 shrink-0" />
               <span className={`text-sm font-normal transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
                 {sidebarCollapsed ? 'Expand' : 'Collapse'}
               </span>
@@ -729,7 +729,7 @@ function AdminLayoutContent() {
               }`}
               title={sidebarCollapsed ? 'Sign Out' : undefined}
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <LogOut className="w-4 h-4 shrink-0" />
               <span className={`text-sm font-normal transition-opacity duration-200 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>Sign Out</span>
 
               {/* Tooltip for collapsed state */}

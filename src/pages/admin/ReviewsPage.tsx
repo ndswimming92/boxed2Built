@@ -178,7 +178,7 @@ export default function ReviewsPage() {
       </div>
 
       <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <Layout className="w-5 h-5 text-blue-600 flex-shrink-0" />
+        <Layout className="w-5 h-5 text-blue-600 shrink-0" />
         <p className="text-sm text-blue-800">
           <span className="font-semibold">{headerCount} {headerCount === 1 ? 'review' : 'reviews'}</span> rotating in the homepage header.
           {headerCount === 0 && ' Toggle "Show in Header" on any review below to add it to the rotation.'}
@@ -319,7 +319,7 @@ export default function ReviewsPage() {
                   )}
                   <p className="text-sm text-slate-500">{formatDateWithoutTimezone(review.date_published)}</p>
                 </div>
-                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <div className="flex flex-col items-end gap-2 shrink-0">
                   <button
                     onClick={() => handleToggleShowInHeader(review)}
                     title={review.show_in_header ? 'Remove from header rotation' : 'Add to header rotation'}

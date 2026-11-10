@@ -525,7 +525,7 @@ const ModelStudioDetailPage: React.FC = () => {
           <ArrowLeft className="h-4 w-4" /> Back to Model Studio
         </Link>
         <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error ?? 'Model not found.'}</span>
         </div>
       </div>
@@ -562,7 +562,7 @@ const ModelStudioDetailPage: React.FC = () => {
 
       {error && (
         <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -577,7 +577,7 @@ const ModelStudioDetailPage: React.FC = () => {
       {compileError && !busy && (
         <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <div className="flex items-start gap-2">
-            <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="min-w-0">
               <p className="font-medium">The model did not compile</p>
               <pre className="mt-1 overflow-x-auto whitespace-pre-wrap text-xs">{compileError}</pre>
@@ -916,7 +916,7 @@ const ModelStudioDetailPage: React.FC = () => {
                         {checks.map((check) => (
                           <div key={check.id} className="flex items-start gap-2 text-sm">
                             <span
-                              className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${
+                              className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
                                 check.level === 'pass'
                                   ? 'bg-emerald-500'
                                   : check.level === 'warn'

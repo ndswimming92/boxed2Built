@@ -91,7 +91,7 @@ const FormField: React.FC<FormFieldProps> = ({
       {/* Help text - shown when no error/warning */}
       {helpText && !error && !warning && (
         <p className="text-xs text-gray-600 flex items-start">
-          <Info size={12} className="mr-1 mt-0.5 flex-shrink-0" />
+          <Info size={12} className="mr-1 mt-0.5 shrink-0" />
           {helpText}
         </p>
       )}
@@ -99,7 +99,7 @@ const FormField: React.FC<FormFieldProps> = ({
       {/* Warning message */}
       {warning && !error && (
         <p className="text-sm text-yellow-700 flex items-start bg-yellow-50 p-2 rounded border border-yellow-200">
-          <Info size={14} className="mr-2 mt-0.5 flex-shrink-0" />
+          <Info size={14} className="mr-2 mt-0.5 shrink-0" />
           {warning}
         </p>
       )}
@@ -107,7 +107,7 @@ const FormField: React.FC<FormFieldProps> = ({
       {/* Error message */}
       {error && (
         <p className="text-sm text-red-700 flex items-start bg-red-50 p-2 rounded border border-red-200" role="alert">
-          <AlertCircle size={14} className="mr-2 mt-0.5 flex-shrink-0" />
+          <AlertCircle size={14} className="mr-2 mt-0.5 shrink-0" />
           {error}
         </p>
       )}

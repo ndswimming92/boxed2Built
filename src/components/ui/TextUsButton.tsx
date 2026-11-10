@@ -112,7 +112,7 @@ const TextUsButton: React.FC = () => {
         <div
           role="dialog"
           aria-label="Text us a question"
-          className="fixed bottom-20 left-4 sm:left-6 z-[60] w-[calc(100vw-2rem)] max-w-sm rounded-xl bg-white shadow-2xl border border-gray-200 isolate"
+          className="fixed bottom-20 left-4 sm:left-6 z-60 w-[calc(100vw-2rem)] max-w-sm rounded-xl bg-white shadow-2xl border border-gray-200 isolate"
         >
           <div className="flex items-center justify-between bg-blue-600 text-white rounded-t-xl px-4 py-3">
             <span className="font-semibold">Text us a question</span>

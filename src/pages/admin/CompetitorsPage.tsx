@@ -80,12 +80,12 @@ function Points({ text }: { text: string | null }) {
   const points = toPoints(text);
   if (points.length === 0) return null;
   if (points.length === 1) {
-    return <p className="text-sm leading-relaxed break-words text-slate-700">{points[0]}</p>;
+    return <p className="text-sm leading-relaxed wrap-break-word text-slate-700">{points[0]}</p>;
   }
   return (
     <ul className="list-disc pl-5 space-y-1.5 text-sm leading-relaxed marker:text-slate-400 text-slate-700">
       {points.map((point, index) => (
-        <li key={index} className="break-words pl-0.5">
+        <li key={index} className="wrap-break-word pl-0.5">
           {point}
         </li>
       ))}
@@ -139,13 +139,13 @@ function ActionItemRow({
           disabled={saving}
           onChange={() => onStatus(item, done ? 'open' : 'done')}
           aria-label={done ? `Move back to To do: ${item.title}` : `Mark as done: ${item.title}`}
-          className="mt-1 h-5 w-5 flex-shrink-0 rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:opacity-50"
+          className="mt-1 h-5 w-5 shrink-0 rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:opacity-50"
         />
       )}
 
       <div className="min-w-0 flex-1">
         <h3
-          className={`text-[15px] font-semibold leading-snug break-words ${
+          className={`text-[15px] font-semibold leading-snug wrap-break-word ${
             done || removed ? 'text-slate-500' : 'text-slate-900'
           } ${done ? 'line-through' : ''}`}
         >
@@ -167,10 +167,10 @@ function ActionItemRow({
           </span>
         </div>
 
-        <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-700 break-words">{item.detail}</p>
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-700 wrap-break-word">{item.detail}</p>
 
         {item.competitor_names.length > 0 && (
-          <p className="mt-1.5 text-xs text-slate-500 break-words">
+          <p className="mt-1.5 text-xs text-slate-500 wrap-break-word">
             <span className="font-medium text-slate-600">Seen at:</span> {item.competitor_names.join(', ')}
           </p>
         )}
@@ -221,7 +221,7 @@ function ActionItemRow({
           onClick={() => onStatus(item, 'open')}
           disabled={saving}
           aria-label={`Put back on the list: ${item.title}`}
-          className="flex-shrink-0 px-2.5 py-1.5 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-1.5"
+          className="shrink-0 px-2.5 py-1.5 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 disabled:opacity-50 inline-flex items-center gap-1.5"
         >
           <Undo2 className="w-3.5 h-3.5" aria-hidden="true" />
           Put back
@@ -233,7 +233,7 @@ function ActionItemRow({
           disabled={saving}
           aria-label={`Remove: ${item.title}`}
           title="Remove — not relevant"
-          className="flex-shrink-0 p-2 text-slate-400 rounded-lg hover:bg-red-50 hover:text-red-600 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+          className="shrink-0 p-2 text-slate-400 rounded-lg hover:bg-red-50 hover:text-red-600 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
         </button>
@@ -262,7 +262,7 @@ function Contact({
         <Icon className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
         {label}
       </dt>
-      <dd className="mt-1 text-sm break-words">
+      <dd className="mt-1 text-sm wrap-break-word">
         {!value ? (
           <span className="text-slate-400">Not found</span>
         ) : href ? (
@@ -322,7 +322,7 @@ function CompetitorCard({
           )}
         </div>
         <div className="flex items-start justify-between gap-3">
-          <h3 id={`competitor-${competitor.id}`} className="text-lg font-bold text-slate-900 break-words">
+          <h3 id={`competitor-${competitor.id}`} className="text-lg font-bold text-slate-900 wrap-break-word">
             <button
               type="button"
               aria-expanded={expanded}
@@ -333,7 +333,7 @@ function CompetitorCard({
             </button>
           </h3>
           <ChevronDown
-            className={`w-5 h-5 mt-1 flex-shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 mt-1 shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
         </div>
@@ -341,20 +341,20 @@ function CompetitorCard({
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600">
             {competitor.location && (
               <span className="inline-flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
-                <span className="break-words">{competitor.location}</span>
+                <MapPin className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <span className="wrap-break-word">{competitor.location}</span>
               </span>
             )}
             {website && (
               <span className="inline-flex items-center gap-1.5">
-                <Globe className="w-4 h-4 flex-shrink-0 text-slate-400" aria-hidden="true" />
+                <Globe className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
                 <span className="break-all">{websiteLabel(website)}</span>
               </span>
             )}
           </p>
         )}
         <p
-          className={`mt-2 max-w-prose text-sm leading-relaxed text-slate-700 break-words ${
+          className={`mt-2 max-w-prose text-sm leading-relaxed text-slate-700 wrap-break-word ${
             expanded ? '' : 'line-clamp-2'
           }`}
         >
@@ -620,14 +620,14 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
 
       {error && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           <p className="text-sm flex-1 text-red-800">{error}. Reload the page to try again.</p>
         </div>
       )}
 
       {!organizationId && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-amber-50 border border-amber-200">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
           <p className="text-sm flex-1 text-amber-900">
             No organization is selected, so there is nothing to show. Sign out and back in, then try again.
           </p>
@@ -640,7 +640,7 @@ export function CompetitorWatchView({ organizationId }: { organizationId: string
         <>
           {saveError && (
             <div role="alert" className="mb-4 p-3 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               <p className="text-sm flex-1 text-red-800">{saveError}</p>
             </div>
           )}

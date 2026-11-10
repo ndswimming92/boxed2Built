@@ -485,7 +485,7 @@ export default function ClientsPage() {
         </div>
         {/* Right-aligned group: the view toggle is the LAST item so it stays pinned
             to the right edge in both views, and action buttons grow leftward. */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0 flex-wrap">
           <button
             onClick={() => {
               setCreatedMessage(null);
@@ -927,7 +927,7 @@ export default function ClientsPage() {
         >
           <div className="space-y-5">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
                 <AlertCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
@@ -945,7 +945,7 @@ export default function ClientsPage() {
 
             {deleteError && (
               <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 {deleteError}
               </div>
             )}
@@ -989,7 +989,7 @@ export default function ClientsPage() {
         >
           <div className="space-y-5">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
                 <Send className="w-5 h-5 text-blue-600" />
               </div>
               <div>
@@ -1015,7 +1015,7 @@ export default function ClientsPage() {
 
             {inviteError && (
               <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 {inviteError}
               </div>
             )}

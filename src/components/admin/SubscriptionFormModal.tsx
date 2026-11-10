@@ -106,7 +106,7 @@ export default function SubscriptionFormModal({
   return (
     <div className="fixed inset-0 bg-slate-900/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-2xl w-full max-h-dvh sm:max-h-[90vh] flex flex-col">
-        <div className="flex-shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">
             {subscription ? 'Edit Subscription' : 'Add Subscription'}
           </h2>
@@ -258,7 +258,7 @@ export default function SubscriptionFormModal({
           </div>
 
           <div
-            className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200"
+            className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200"
             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           >
             <button

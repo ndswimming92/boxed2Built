@@ -352,7 +352,7 @@ export default function AdminDocumentUploadModal({
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
               } disabled:opacity-50`}
             >
-              <Eye className="w-4 h-4 flex-shrink-0" />
+              <Eye className="w-4 h-4 shrink-0" />
               <div className="text-left">
                 <div>Visible to customer</div>
                 <div className="text-xs font-normal opacity-70">Customer can see this in portal</div>
@@ -372,7 +372,7 @@ export default function AdminDocumentUploadModal({
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
               }`}
             >
-              <Lock className="w-4 h-4 flex-shrink-0" />
+              <Lock className="w-4 h-4 shrink-0" />
               <div className="text-left">
                 <div>Internal only</div>
                 <div className="text-xs font-normal opacity-70">Hidden from customer portal</div>
@@ -444,7 +444,7 @@ export default function AdminDocumentUploadModal({
 
             {fileError && (
               <p className="mt-2 text-xs text-red-600 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {fileError}
               </p>
             )}
@@ -469,7 +469,7 @@ export default function AdminDocumentUploadModal({
           {/* Success state */}
           {success && (
             <div className="flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               <p className="text-sm font-medium text-emerald-800">Document uploaded successfully!</p>
             </div>
           )}
@@ -477,7 +477,7 @@ export default function AdminDocumentUploadModal({
           {/* Error state */}
           {error && (
             <div className="flex items-center gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}

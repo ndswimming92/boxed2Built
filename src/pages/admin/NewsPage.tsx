@@ -262,9 +262,9 @@ export default function NewsPage() {
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           )}
           <p className={`text-sm flex-1 ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>
             {message.text}
@@ -523,7 +523,7 @@ export default function NewsPage() {
                       className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-800 font-medium underline underline-offset-2 break-all"
                     >
                       Check the source: {item.source_name}
-                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 shrink-0" />
                     </a>
                   ) : (
                     <span className="text-red-700">

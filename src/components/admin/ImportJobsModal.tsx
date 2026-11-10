@@ -173,7 +173,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
 
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
@@ -232,7 +232,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
 
       <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
         <div className="flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-sm text-amber-800">
             <p className="font-medium mb-1">Please fix these errors before importing</p>
             <ul className="list-disc list-inside space-y-1 text-xs">
@@ -296,7 +296,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
 
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="flex items-start gap-2">
-          <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <FileText className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800">
             <p className="font-medium mb-1">Ready to proceed</p>
             <p className="text-xs">
@@ -309,7 +309,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
 
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
@@ -331,7 +331,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
   return (
     <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-end sm:items-center justify-center">
       <div className="bg-white rounded-t-xl sm:rounded-xl shadow-2xl max-w-4xl w-full max-h-dvh sm:max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
           <h2 className="text-2xl font-bold text-slate-900">Import Jobs</h2>
           <button
             onClick={onClose}
@@ -349,7 +349,7 @@ export default function ImportJobsModal({ businessId, onClose, onSuccess }: Impo
           {step === 'success' && renderSuccessStep()}
         </div>
 
-        <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3 flex-shrink-0">
+        <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-3 shrink-0">
           {step === 'upload' && (
             <button
               onClick={onClose}

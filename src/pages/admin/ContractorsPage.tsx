@@ -99,7 +99,7 @@ export default function ContractorsPage() {
             setEditing(null);
             setShowModal(true);
           }}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm flex-shrink-0"
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
           Add Contractor
@@ -171,12 +171,12 @@ export default function ContractorsPage() {
             <div key={contractor.id} className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="p-2 bg-emerald-100 rounded-lg flex-shrink-0">
+                  <div className="p-2 bg-emerald-100 rounded-lg shrink-0">
                     <HardHat className="w-5 h-5 text-emerald-600" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 truncate">{contractor.name}</h3>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => {
                       setEditing(contractor);

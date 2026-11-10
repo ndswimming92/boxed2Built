@@ -259,7 +259,7 @@ export default function PortalLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 px-4 py-12">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-slate-100 to-slate-200 px-4 py-12">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 lg:flex-row lg:items-stretch">
         <section className="flex-1 rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
@@ -323,7 +323,7 @@ export default function PortalLoginPage() {
 
           {error && (
             <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4" role="alert" aria-live="polite">
-              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}

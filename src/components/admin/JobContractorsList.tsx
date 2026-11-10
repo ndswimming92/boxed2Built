@@ -123,7 +123,7 @@ export default function JobContractorsList({
                     </div>
                     {a.notes && <p className="text-xs text-slate-500 mt-1 italic">{a.notes}</p>}
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => {
                         setEditing(a);

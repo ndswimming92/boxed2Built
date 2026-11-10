@@ -92,7 +92,7 @@ const mobileTileClass = (active: boolean) =>
     MOBILE_FOCUS_RING,
     active
       ? 'border-[#D9A441]/70 bg-[#D9A441]/10 text-[#D9A441]'
-      : 'border-[#F5EFE3]/[0.12] bg-[#F5EFE3]/[0.05] text-[#E6E9F0] hover:bg-[#F5EFE3]/10',
+      : 'border-[#F5EFE3]/12 bg-[#F5EFE3]/5 text-[#E6E9F0] hover:bg-[#F5EFE3]/10',
   ].join(' ');
 
 const Header: React.FC = () => {
@@ -257,7 +257,7 @@ const Header: React.FC = () => {
             className="
               absolute left-1/2 -translate-x-1/2
               xl:static xl:translate-x-0
-              flex-shrink-0 xl:mr-4 2xl:mr-6
+              shrink-0 xl:mr-4 2xl:mr-6
             "
           >
             <a
@@ -372,7 +372,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Right-side desktop actions */}
-          <div className={`hidden xl:flex flex-shrink-0 items-center gap-2 2xl:gap-3 transition-opacity duration-200 ${headerActionsReady && (hasStoreProducts || bookingEnabled) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className={`hidden xl:flex shrink-0 items-center gap-2 2xl:gap-3 transition-opacity duration-200 ${headerActionsReady && (hasStoreProducts || bookingEnabled) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             {/* The nav had no call to action at all, so booking takes the slot
                 rather than competing with one. Quoting stays the default path
                 for anyone who does not yet know what they need. */}
@@ -457,7 +457,7 @@ const Header: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-label="Site menu"
-            className="xl:hidden fixed inset-0 z-[60] flex flex-col bg-[#0E2748] text-[#F5EFE3] animate-fadeIn"
+            className="xl:hidden fixed inset-0 z-60 flex flex-col bg-[#0E2748] text-[#F5EFE3] animate-fadeIn"
           >
             {/* Menu header: logo + name on the left, close on the right */}
             <div className="flex items-center justify-between gap-3 px-6 pt-5 pb-2">
@@ -523,7 +523,7 @@ const Header: React.FC = () => {
                     className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
                       isMobileServicesOpen
                         ? 'bg-[#D9A441] text-[#0E2748]'
-                        : 'bg-[#F5EFE3]/[0.08] text-[#F5EFE3]'
+                        : 'bg-[#F5EFE3]/8 text-[#F5EFE3]'
                     }`}
                   >
                     <ChevronDown
@@ -537,7 +537,7 @@ const Header: React.FC = () => {
                 {isMobileServicesOpen && (
                   <div
                     id="mobile-services-menu"
-                    className="mt-1 mb-2.5 flex flex-col rounded-2xl bg-[#F5EFE3]/[0.06] py-1.5"
+                    className="mt-1 mb-2.5 flex flex-col rounded-2xl bg-[#F5EFE3]/6 py-1.5"
                   >
                     {SERVICE_MENU_ITEMS.map((item) => (
                       <a
@@ -556,7 +556,7 @@ const Header: React.FC = () => {
                     <a
                       href="/services"
                       onClick={() => handleNavClick('all_services', '/services')}
-                      className={`mt-0.5 flex min-h-[48px] items-center justify-between rounded-lg border-t border-[#F5EFE3]/[0.12] px-4 text-[15px] font-bold text-[#D9A441] ${MOBILE_FOCUS_RING}`}
+                      className={`mt-0.5 flex min-h-[48px] items-center justify-between rounded-lg border-t border-[#F5EFE3]/12 px-4 text-[15px] font-bold text-[#D9A441] ${MOBILE_FOCUS_RING}`}
                     >
                       All services
                       <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />

@@ -70,7 +70,7 @@ export default function YoutubeUploadModal({ onClose, onUploaded }: YoutubeUploa
         {result ? (
           <div className="p-6">
             <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <p className="text-sm text-emerald-800">
                 Your video is uploaded.{' '}
                 <a href={result.videoUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">
@@ -90,7 +90,7 @@ export default function YoutubeUploadModal({ onClose, onUploaded }: YoutubeUploa
           <div className="p-6 space-y-5">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}

@@ -91,7 +91,7 @@ const LocalSEOContent: React.FC<LocalSEOContentProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.map((service, index) => (
                 <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                  <Star className="text-yellow-500 mr-3 flex-shrink-0" size={16} />
+                  <Star className="text-yellow-500 mr-3 shrink-0" size={16} />
                   <span className="text-gray-700 text-sm">{service} in {city}</span>
                 </div>
               ))}

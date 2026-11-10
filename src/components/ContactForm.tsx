@@ -856,7 +856,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
             <span className="text-[13px] font-bold text-[#FBF8F1] whitespace-nowrap">{progressLabel}</span>
             <div className="flex-1 h-3 rounded-full overflow-hidden bg-white/[0.14] shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#D9A441] to-[#E9BE6A] shadow-[0_0_12px_rgba(217,164,65,0.6)] transition-[width] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="h-full rounded-full bg-linear-to-r from-[#D9A441] to-[#E9BE6A] shadow-[0_0_12px_rgba(217,164,65,0.6)] transition-[width] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 style={{ width: `${formProgress}%` }}
               />
             </div>
@@ -868,7 +868,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
           {submissionError && (
             <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-2xl p-4" role="alert">
               <div className="flex items-start gap-3">
-                <AlertCircle size={22} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle size={22} className="text-red-600 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="text-red-900 font-bold mb-1">Submission Error</h4>
                   <p className="text-red-800 text-sm mb-3">{submissionError}</p>
@@ -1157,7 +1157,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     <span className="block text-[12.5px] font-semibold text-[#7A5F22]">Optional — tell us when works best for you</span>
                   </span>
                 </span>
-                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showScheduling ? 'rotate-180' : ''}`} />
+                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-250 ${showScheduling ? 'rotate-180' : ''}`} />
               </button>
               {showScheduling && (
                 <div id="quote-scheduling" className="pb-[18px] pt-1 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
@@ -1230,7 +1230,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                     <span className="block text-[12.5px] font-semibold text-[#7A5F22]">Optional — helps us give a sharper quote</span>
                   </span>
                 </span>
-                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-[250ms] ${showReference ? 'rotate-180' : ''}`} />
+                <ChevronDown size={20} aria-hidden className={`shrink-0 text-[#0E2748] transition-transform duration-250 ${showReference ? 'rotate-180' : ''}`} />
               </button>
               {showReference && (
                 <div id="quote-reference" className="pb-[18px] pt-1 flex flex-col gap-4 animate-fadeIn">
@@ -1272,7 +1272,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
                         htmlFor="furniturePhoto"
                         className="flex items-center gap-3.5 border-2 border-dashed border-[#D9C6A0] hover:border-[#D9A441] rounded-[14px] p-4 cursor-pointer bg-[#FBF8F1] transition-colors"
                       >
-                        <span className="w-11 h-11 rounded-[10px] bg-[#F5EFE3] text-[#0E2748] inline-flex items-center justify-center flex-shrink-0">
+                        <span className="w-11 h-11 rounded-[10px] bg-[#F5EFE3] text-[#0E2748] inline-flex items-center justify-center shrink-0">
                           <Upload size={22} aria-hidden />
                         </span>
                         <span>

@@ -85,7 +85,7 @@ export default function PortalProfilePage() {
 
       {!loading && !error && profile ? (
         <div className="space-y-4">
-          <section className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-sm">
+          <section className="rounded-lg border border-blue-200 bg-linear-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-50">

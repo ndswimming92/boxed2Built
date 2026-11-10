@@ -236,7 +236,7 @@ function ChangelogContent({ entries, generatedAt }: { entries: ChangelogEntry[];
                             >
                               {e.category}
                             </span>
-                            <span className="flex-1 min-w-0 break-words">{e.title}</span>
+                            <span className="flex-1 min-w-0 wrap-break-word">{e.title}</span>
                             {e.pr && (
                               <a
                                 href={`${REPO_URL}/pull/${e.pr}`}
@@ -262,7 +262,7 @@ function ChangelogContent({ entries, generatedAt }: { entries: ChangelogEntry[];
                             )}
                           </div>
                           {isMinor && e.files && expanded.has(key) && (
-                            <p className="mt-1 ml-1 text-xs text-gray-500 break-words">{e.files.join(', ')}</p>
+                            <p className="mt-1 ml-1 text-xs text-gray-500 wrap-break-word">{e.files.join(', ')}</p>
                           )}
                         </li>
                       );

@@ -255,7 +255,7 @@ const GiftCardsPage: React.FC = () => {
                       className="inline-flex w-full sm:w-auto min-h-[56px] items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-[#13807A] hover:bg-[#0F6B66] text-white px-6 py-4 text-base md:text-lg font-bold shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0E2748]"
                       aria-label={`Call Boxed2Built at ${phoneDisplay}`}
                     >
-                      <Phone className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                      <Phone className="w-5 h-5 shrink-0" aria-hidden="true" />
                       {phoneDisplay}
                     </a>
                   </div>
@@ -285,7 +285,7 @@ const GiftCardsPage: React.FC = () => {
         </section>
 
         {/* ── Builder ─────────────────────────────────────────────────── */}
-        <section id="build-gift-card" className="scroll-mt-24 py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+        <section id="build-gift-card" className="scroll-mt-24 py-12 md:py-16 bg-linear-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-10">
@@ -374,9 +374,9 @@ const GiftCardsPage: React.FC = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 {c.covered ? (
-                                  <Check className="w-[18px] h-[18px] text-[#D9A441] flex-shrink-0" strokeWidth={2.5} aria-label="Covered" />
+                                  <Check className="w-[18px] h-[18px] text-[#D9A441] shrink-0" strokeWidth={2.5} aria-label="Covered" />
                                 ) : (
-                                  <Circle className="w-[18px] h-[18px] text-[#6E7A93] flex-shrink-0" aria-label="Not fully covered" />
+                                  <Circle className="w-[18px] h-[18px] text-[#6E7A93] shrink-0" aria-label="Not fully covered" />
                                 )}
                                 {c.label}
                               </span>
@@ -569,7 +569,7 @@ function GiftCardPreview({ amountLabel, forName, fromName }: { amountLabel: stri
 function TrustItem({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 py-4 md:py-6 text-center">
-      <Icon className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] flex-shrink-0" aria-hidden="true" />
+      <Icon className="w-5 h-5 md:w-6 md:h-6 text-[#D9A441] shrink-0" aria-hidden="true" />
       <span className="text-xs md:text-base font-bold text-white">{label}</span>
     </div>
   );

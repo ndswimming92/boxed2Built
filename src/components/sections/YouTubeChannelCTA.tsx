@@ -43,7 +43,7 @@ const YouTubeChannelCTA: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-blue-50 border-t border-gray-200">
+    <section className="py-16 bg-linear-to-br from-blue-50 via-white to-blue-50 border-t border-gray-200">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
           <div className="grid md:grid-cols-5">
@@ -86,7 +86,7 @@ const YouTubeChannelCTA: React.FC = () => {
               <ul className="space-y-4">
                 {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
                   <li key={title} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-white text-blue-700 flex items-center justify-center shadow-sm">
+                    <span className="shrink-0 w-9 h-9 rounded-lg bg-white text-blue-700 flex items-center justify-center shadow-sm">
                       <Icon size={18} aria-hidden="true" />
                     </span>
                     <span>
@@ -101,7 +101,7 @@ const YouTubeChannelCTA: React.FC = () => {
 
           {/* Customer quote */}
           <figure className="border-t border-blue-100 bg-white px-8 md:px-10 py-6 flex items-start gap-4">
-            <Quote size={28} className="text-blue-300 flex-shrink-0" aria-hidden="true" />
+            <Quote size={28} className="text-blue-300 shrink-0" aria-hidden="true" />
             <div>
               <blockquote className="text-gray-700 italic">
                 &ldquo;Enjoyed having Nick in my home. Put two pieces of furniture together in 2 hours on a Friday night.&rdquo;

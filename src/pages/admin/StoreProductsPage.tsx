@@ -192,7 +192,7 @@ const StoreProductsPage: React.FC = () => {
 
       {error && (
         <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
@@ -244,7 +244,7 @@ const StoreProductsPage: React.FC = () => {
                   <tr key={product.id} className="border-t border-slate-100 hover:bg-slate-50">
                     <Td>
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100">
                           {product.image_url ? (
                             <img src={product.image_url} alt="" className="h-full w-full object-cover" />
                           ) : (

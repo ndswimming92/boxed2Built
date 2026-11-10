@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
       <main className="pt-16">
         <HomeHero />
 
-        <section id="contact-form-section" className="scroll-mt-24 py-12 bg-gradient-to-b from-gray-50 to-white">
+        <section id="contact-form-section" className="scroll-mt-24 py-12 bg-linear-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
@@ -115,7 +115,7 @@ const HomePage: React.FC = () => {
 
         <ReferralProgram />
 
-        <section className="py-16 bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+        <section className="py-16 bg-linear-to-br from-emerald-50 via-white to-blue-50">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto rounded-2xl bg-white border border-gray-200 shadow-lg overflow-hidden">
               <div className="grid md:grid-cols-[1.1fr_1fr] items-center">
@@ -151,7 +151,7 @@ const HomePage: React.FC = () => {
                     $25, $50, $100, or $200 denominations. Delivered instantly by email.
                   </p>
                 </div>
-                <div className="relative bg-gradient-to-br from-emerald-600 to-blue-700 p-8 md:p-10 min-h-[260px] flex items-center justify-center">
+                <div className="relative bg-linear-to-br from-emerald-600 to-blue-700 p-8 md:p-10 min-h-[260px] flex items-center justify-center">
                   <div className="w-full max-w-xs rotate-[-4deg] rounded-2xl bg-white/10 backdrop-blur border border-white/30 p-6 text-white shadow-2xl">
                     <div className="flex items-center justify-between mb-6">
                       <span className="text-xs font-semibold uppercase tracking-widest opacity-90">

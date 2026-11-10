@@ -158,7 +158,7 @@ export function URLSelector({ value, onChange, error, label = 'Destination URL',
 
       {selectedOption && (
         <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <ExternalLink className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <ExternalLink className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-gray-700 mb-1">Preview URL:</p>
             <p className="text-sm text-gray-900 break-all">{getPreviewUrl()}</p>

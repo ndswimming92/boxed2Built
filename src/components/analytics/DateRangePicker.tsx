@@ -374,10 +374,10 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
         className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 min-w-[180px] sm:min-w-[240px] justify-between text-sm sm:text-base"
       >
         <span className="flex items-center gap-2 truncate">
-          <Calendar className="w-4 h-4 flex-shrink-0" />
+          <Calendar className="w-4 h-4 shrink-0" />
           <span className="truncate">{triggerLabel}</span>
         </span>
-        <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (

@@ -37,7 +37,7 @@ export default function QuoteAccuracyChart({ data }: QuoteAccuracyChartProps) {
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+      <div className="p-4 sm:p-6 border-b border-slate-200 bg-linear-to-r from-slate-50 to-blue-50">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg">
             <Target className="w-5 h-5 text-blue-600" />

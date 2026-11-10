@@ -101,11 +101,11 @@ function formatInstant(iso: string): string {
 function Points({ text }: { text: string | null }) {
   const points = toPoints(text);
   if (points.length === 0) return null;
-  if (points.length === 1) return <p className="text-sm leading-relaxed break-words text-slate-700">{points[0]}</p>;
+  if (points.length === 1) return <p className="text-sm leading-relaxed wrap-break-word text-slate-700">{points[0]}</p>;
   return (
     <ul className="list-disc pl-5 space-y-1.5 text-sm leading-relaxed marker:text-slate-400 text-slate-700">
       {points.map((point, index) => (
-        <li key={index} className="break-words pl-0.5">
+        <li key={index} className="wrap-break-word pl-0.5">
           {point}
         </li>
       ))}
@@ -141,7 +141,7 @@ function Contact({
         <Icon className="w-3.5 h-3.5" aria-hidden="true" />
         {label}
       </dt>
-      <dd className="mt-1 text-sm break-words">
+      <dd className="mt-1 text-sm wrap-break-word">
         {!value ? (
           <span className="text-slate-400">Not found</span>
         ) : href ? (
@@ -428,7 +428,7 @@ function ReviewDialog({
                 <dt className="font-semibold text-slate-500">Replies to</dt>
                 <dd className="break-all text-slate-800">{preview.replyTo}</dd>
                 <dt className="font-semibold text-slate-500">Subject</dt>
-                <dd className="break-words text-slate-800">{preview.subject}</dd>
+                <dd className="wrap-break-word text-slate-800">{preview.subject}</dd>
               </dl>
 
               {/* The server's own HTML, in a sandbox with scripts off. */}
@@ -599,7 +599,7 @@ function LeadCard({
           <span className="text-slate-500">{foundLabel(lead.found_on, today)}</span>
         </div>
         <div className="flex items-start justify-between gap-3">
-          <h3 id={`lead-${lead.id}`} className="text-lg font-bold text-slate-900 break-words">
+          <h3 id={`lead-${lead.id}`} className="text-lg font-bold text-slate-900 wrap-break-word">
             <button
               type="button"
               aria-expanded={expanded}
@@ -609,7 +609,7 @@ function LeadCard({
             </button>
           </h3>
           <ChevronDown
-            className={`w-5 h-5 mt-1 flex-shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 mt-1 shrink-0 text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
         </div>
@@ -628,7 +628,7 @@ function LeadCard({
             </span>
           )}
         </p>
-        <p className={`mt-2 max-w-prose text-sm leading-relaxed text-slate-700 break-words ${expanded ? '' : 'line-clamp-2'}`}>
+        <p className={`mt-2 max-w-prose text-sm leading-relaxed text-slate-700 wrap-break-word ${expanded ? '' : 'line-clamp-2'}`}>
           {lead.summary}
         </p>
       </div>
@@ -798,7 +798,7 @@ function LeadCard({
                           <span className="text-slate-500"> · {formatInstant(email.sent_at)} · {email.to_email}</span>
                           <ActivityChips events={activity.get(email.id) ?? []} />
                         </summary>
-                        <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm text-slate-700 bg-slate-50 rounded-lg p-3">
+                        <pre className="mt-2 whitespace-pre-wrap wrap-break-word font-sans text-sm text-slate-700 bg-slate-50 rounded-lg p-3">
                           {email.body}
                         </pre>
                       </details>
@@ -992,14 +992,14 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
 
       {error && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
           <p className="text-sm flex-1 text-red-800">{error}. Reload the page to try again.</p>
         </div>
       )}
 
       {!organizationId && (
         <div role="alert" className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-amber-50 border border-amber-200">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
           <p className="text-sm flex-1 text-amber-900">
             No organization is selected, so there is nothing to show. Sign out and back in, then try again.
           </p>
@@ -1010,7 +1010,7 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
         <>
           {sentBanner && (
             <div role="status" className="mb-4 p-3 rounded-lg flex items-start gap-3 bg-emerald-50 border border-emerald-200">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               <p className="text-sm flex-1 text-emerald-900">{sentBanner}</p>
               <button type="button" onClick={() => setSentBanner(null)} aria-label="Dismiss" className="p-0.5">
                 <X className="w-4 h-4 text-emerald-700" />
@@ -1019,7 +1019,7 @@ export function PartnerLeadsView({ organizationId }: { organizationId: string | 
           )}
           {saveError && (
             <div role="alert" className="mb-4 p-3 rounded-lg flex items-start gap-3 bg-red-50 border border-red-200">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               <p className="text-sm flex-1 text-red-800">{saveError}</p>
             </div>
           )}

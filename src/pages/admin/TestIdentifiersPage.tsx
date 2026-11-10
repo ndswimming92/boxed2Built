@@ -97,9 +97,9 @@ export default function TestIdentifiersPage() {
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           )}
           <p className={`text-sm ${message.type === 'success' ? 'text-emerald-800' : 'text-red-800'}`}>
             {message.text}
@@ -108,7 +108,7 @@ export default function TestIdentifiersPage() {
       )}
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-        <FlaskConical className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <FlaskConical className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div className="text-sm text-amber-800">
           <p className="font-medium mb-1">How it works</p>
           <p>
@@ -143,7 +143,7 @@ export default function TestIdentifiersPage() {
                   </div>
                   <button
                     onClick={() => handleDelete(identifier.id, identifier.value)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
                     title="Remove"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function TestIdentifiersPage() {
                   </div>
                   <button
                     onClick={() => handleDelete(identifier.id, identifier.value)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
                     title="Remove"
                   >
                     <Trash2 className="w-4 h-4" />

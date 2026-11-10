@@ -95,7 +95,7 @@ const GiftCardSuccessPage: React.FC = () => {
                 </p>
 
                 {confirmation.delivery_type === 'self' && confirmation.code ? (
-                  <div className="mt-8 rounded-2xl bg-gradient-to-br from-teal-700 to-emerald-600 text-white p-6">
+                  <div className="mt-8 rounded-2xl bg-linear-to-br from-teal-700 to-emerald-600 text-white p-6">
                     <p className="text-xs uppercase tracking-widest opacity-80">Your gift card code</p>
                     <p className="mt-2 font-mono text-2xl sm:text-3xl font-bold tracking-wider">
                       {confirmation.code}

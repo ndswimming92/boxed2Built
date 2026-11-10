@@ -93,7 +93,7 @@ const ServiceAreasHubPage: React.FC = () => {
       <Header />
 
       <main className="min-h-screen">
-        <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
+        <div className="bg-linear-to-br from-blue-50 via-white to-blue-50 pt-32 pb-16">
           <div className="container mx-auto px-4">
             <Breadcrumbs
               items={[
@@ -131,7 +131,7 @@ const ServiceAreasHubPage: React.FC = () => {
                   <Link
                     key={location.slug}
                     to={locationPath(location.slug)}
-                    className="group block bg-gradient-to-br from-blue-700 to-blue-900 text-white rounded-2xl p-8 md:p-10 shadow-lg hover:shadow-xl transition-shadow"
+                    className="group block bg-linear-to-br from-blue-700 to-blue-900 text-white rounded-2xl p-8 md:p-10 shadow-lg hover:shadow-xl transition-shadow"
                   >
                     <p className="inline-flex items-center gap-2 text-sm font-semibold bg-white/15 rounded-full px-4 py-1.5 mb-5">
                       <MapPin className="w-4 h-4" />
@@ -175,7 +175,7 @@ const ServiceAreasHubPage: React.FC = () => {
                       <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-800">
                         {locationLabel(location)}
                       </h3>
-                      <ArrowRight className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-5 h-5 text-blue-600 shrink-0 mt-1 group-hover:translate-x-1 transition-transform" />
                     </div>
                     <p className="text-sm text-gray-500 mb-3">{location.county}</p>
                     <p className="text-gray-600 text-sm leading-relaxed flex-1">
@@ -247,7 +247,7 @@ const ServiceAreasHubPage: React.FC = () => {
                   <details key={index} className="bg-white rounded-lg shadow-md p-6 group">
                     <summary className="flex items-center justify-between cursor-pointer list-none">
                       <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                      <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform flex-shrink-0" />
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-open:rotate-90 transition-transform shrink-0" />
                     </summary>
                     <div className="mt-4 text-gray-600 leading-relaxed">{faq.answer}</div>
                   </details>
@@ -257,7 +257,7 @@ const ServiceAreasHubPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-br from-blue-700 to-blue-900 text-white">
+        <section className="py-20 bg-linear-to-br from-blue-700 to-blue-900 text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">Not Sure If We Cover You?</h2>

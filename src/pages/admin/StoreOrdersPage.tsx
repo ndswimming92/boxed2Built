@@ -131,7 +131,7 @@ const StoreOrdersPage: React.FC = () => {
 
       {error && (
         <div className="flex items-start gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
@@ -185,9 +185,9 @@ const StoreOrdersPage: React.FC = () => {
                     className="flex w-full items-center gap-4 px-4 py-4 text-left hover:bg-slate-50"
                   >
                     {expanded ? (
-                      <ChevronDown className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                      <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
                     )}
 
                     <div className="min-w-0 flex-1">
@@ -315,7 +315,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ order, items, busy, onChange 
           )}
           {order.fulfillment_method === 'shipping' && order.shipping_line1 && (
             <p className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
               <span>
                 {order.shipping_line1}
                 {order.shipping_line2 ? `, ${order.shipping_line2}` : ''}

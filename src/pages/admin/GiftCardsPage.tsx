@@ -367,7 +367,7 @@ const GiftCardDetail: React.FC<DetailProps> = ({ card, onBack, onChanged, onToas
       </button>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
-        <div className="bg-gradient-to-br from-teal-700 to-emerald-600 text-white p-6">
+        <div className="bg-linear-to-br from-teal-700 to-emerald-600 text-white p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs uppercase tracking-widest opacity-80">Gift card</p>
