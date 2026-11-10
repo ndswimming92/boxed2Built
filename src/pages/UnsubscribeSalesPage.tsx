@@ -35,7 +35,11 @@ const UnsubscribeSalesPage: React.FC = () => {
     <>
       <Head>
         <title>Unsubscribe from sales emails | Boxed2Built</title>
+        <meta name="description" content="Stop receiving Boxed2Built sales and deals emails." />
         <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://boxed2built.com/unsubscribe-sales" />
+        <meta property="og:url" content="https://boxed2built.com/unsubscribe-sales" />
+        <meta property="og:title" content="Unsubscribe from sales emails | Boxed2Built" />
       </Head>
       <Header />
       <main className="pt-20">

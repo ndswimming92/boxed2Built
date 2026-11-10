@@ -1,0 +1,41 @@
+name: SEO check
+
+# Runs scripts/verify-seo.mjs against a fresh build, so the SEO rules it
+# guards (one canonical per page pointing at itself, one title and
+# description, titles short enough not to be cut off in Google, noindex pages
+# kept out of the sitemap, a noindex 404) are checked on every change instead
+# of only when someone remembers to run `npm run verify:seo` by hand.
+#
+# The checks read the pre-rendered HTML in dist/, so the build has to run
+# first. The build needs no real secrets for this: the Supabase values are
+# only baked into the client bundle, which the checks don't read, so
+# placeholders keep this workflow free of credentials.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder
+        run: npm run build
+
+      - name: Check SEO rules
+        run: npm run verify:seo

@@ -113,7 +113,7 @@ const PartnersPage: React.FC = () => {
         <meta name="description" content={LOCAL_SEO_CONTENT.partners.description} />
         <link rel="canonical" href="https://boxed2built.com/partners" />
         <meta property="og:url" content="https://boxed2built.com/partners" />
-        <meta property="og:title" content="Boxed2Built Partnerships | Realtors, Hosts & Movers in Spring Hill" />
+        <meta property="og:title" content="Realtor, Host & Mover Partners in Spring Hill | Boxed2Built" />
         <meta property="og:description" content="Partner with Boxed2Built to add furniture assembly value for your customers. Closing gifts for realtors and per-room unit furnishing for Airbnb hosts and property managers in Spring Hill, TN." />
         <meta name="twitter:title" content="Partner with Boxed2Built | Spring Hill, TN" />
         <meta name="twitter:description" content="Add furniture assembly value for your customers. Closing gifts for realtors, per-room unit furnishing for hosts and property managers, and referral benefits for movers." />
