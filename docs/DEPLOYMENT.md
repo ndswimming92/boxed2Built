@@ -55,7 +55,32 @@ sign-in after the domain moves.
 
 Spot checks: `/about` and `/about/` both 200 with the same page;
 `/services/move-in-assembly` 301s to `/services/furniture-assembly`; `/admin/x`
-loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404.
+loads the app with `X-Robots-Tag: noindex, nofollow`; an unknown URL returns 404;
+`/about` with `Accept: text/markdown` returns markdown.
+
+### Markdown for AI agents
+
+A request that sends `Accept: text/markdown` gets a clean markdown version of
+the page at the same URL; browsers get HTML as before.
+
+- `scripts/generate-markdown.mjs` runs in `build:cloudflare` and writes a `.md`
+  file beside every public page in `dist/` (`about.html` → `about.md`), from
+  the page's `<main>`. Pages marked noindex are skipped.
+- `functions/_middleware.ts` is a Pages Function that answers markdown
+  requests with that file. Cloudflare picks up the `functions/` folder on its
+  own; there is nothing to switch on in the dashboard.
+- `dist/_routes.json` (from `scripts/prepare-cloudflare.mjs`) keeps the
+  function off images, scripts and the signed-in app, so only page views count
+  toward the free plan's 100,000 function requests a day.
+
+Check it after a deploy:
+
+```bash
+curl -sI -H "Accept: text/markdown" https://boxed2built.com/about
+```
+
+Expect `content-type: text/markdown; charset=utf-8` and `vary: Accept`. The
+same request without the header must still return `text/html`.
 
 ### Switching the domain
 
