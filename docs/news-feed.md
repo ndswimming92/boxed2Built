@@ -151,11 +151,11 @@ make a struggling database worse:
 - **Monitoring.** `npm run monitor:synthetic` checks `/news` every 15 minutes once
   the `SYNTHETIC_BASE_URL` secret is set.
 
-**What is not here: a shared cache.** A Netlify Function that cached the two reads
-at the CDN was tried and removed. The site is published through Bolt.new, and the
-function was never deployed (the route answered 404), so it only added a wasted
-request. Putting a cache in front of Supabase needs a host that runs Netlify
-Functions, or a static snapshot of the feed rebuilt on a schedule.
+**What is not here: a shared cache.** A serverless function that cached the two
+reads at the CDN was tried and removed: it was never deployed (the route answered
+404), so it only added a wasted request. Putting a cache in front of Supabase
+needs a Cloudflare Pages Function or Worker, or a static snapshot of the feed
+rebuilt on a schedule.
 
 ## Changing what the daily check looks for
 

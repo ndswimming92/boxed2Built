@@ -10,7 +10,7 @@
 //
 // HOW TO USE IT
 // This is a content operation, not a build step, so sharp is deliberately NOT
-// a project dependency — pulling a native binary into every Netlify deploy to
+// a project dependency — pulling a native binary into every deploy to
 // serve a script that runs a few times a year is a bad trade. Install it just
 // for the run:
 //

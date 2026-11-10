@@ -20,7 +20,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 // "supabaseUrl is required." at module load on an empty string. Because
 // vite-react-ssg imports this module during prerender, `npm run build` fails
 // outright without VITE_SUPABASE_URL rather than degrading. The fallbacks only
-// keep TypeScript happy about `string | undefined`. Netlify supplies both vars
+// keep TypeScript happy about `string | undefined`. Cloudflare Pages supplies both vars
 // at build time; a local build needs them in the environment too.
 const isBrowser = typeof window !== 'undefined';
 

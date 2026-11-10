@@ -72,8 +72,8 @@ const MESSAGES: Record<string, string> = {
     'Too many attempts. Wait a moment and try again.',
 
   // ── Browser ceremony codes (auth-js WebAuthnError) ──────────────────────
-  // The RP-ID pair below is the expected failure on localhost and on Netlify
-  // deploy previews: passkeys are bound to boxed2built.com, and neither host
+  // The RP-ID pair below is the expected failure on localhost and on
+  // *.pages.dev addresses: passkeys are bound to boxed2built.com, and neither host
   // is a subdomain of it. Naming that explicitly saves a long debugging detour.
   ERROR_INVALID_DOMAIN:
     'Passkeys only work on the live boxed2built.com site, not on this address.',

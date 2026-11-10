@@ -104,16 +104,15 @@ export const generateResponsiveImageSources = (
     // Locally hosted images are served verbatim.
     //
     // This branch used to synthesise "responsive" variants for /images/ paths
-    // by appending ?fm=avif&q=85&w=400 style query strings. Netlify serves
+    // by appending ?fm=avif&q=85&w=400 style query strings. The host serves
     // static files as-is and ignores those parameters, so the browser was
     // handed a <source type="image/avif"> whose URL returned the original
     // PNG — no bytes saved, and several redundant cache entries per image.
     //
     // Pre-built variants are the real fix: see scripts/optimize-images.mjs and
     // src/constants/marketingImages.ts, which generate and reference genuine
-    // WebP files at multiple widths. If on-the-fly transforms are ever wanted
-    // here, Netlify's Image CDN (/.netlify/images?url=…&w=…&fm=…) is the API
-    // that actually performs them.
+    // WebP files at multiple widths. On-the-fly transforms would need an image
+    // resizing service in front of these files, not query strings.
     sources.fallback = {
       src: baseUrl,
       srcSet: baseUrl
@@ -194,7 +193,7 @@ export const generateOptimizedImageUrl = (
   }
   
   // Locally hosted images cannot be transformed by URL. This used to append
-  // ?fm=…&w=… to /images/ paths, but Netlify serves static files verbatim and
+  // ?fm=…&w=… to /images/ paths, but the host serves static files verbatim and
   // ignores those parameters — so the caller got a URL that looked converted
   // and resolved to the untouched original. Return it unchanged instead; use
   // the pre-built variants in src/constants/marketingImages.ts for real

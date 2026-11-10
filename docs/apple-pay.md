@@ -37,7 +37,7 @@ Download the association file Stripe gives you and commit it to:
 public/.well-known/apple-developer-merchantid-domain-association
 ```
 
-No file extension. `netlify.toml` already pins its content type and the SPA fallback in
+No file extension. `public/_headers` already pins its content type and the SPA fallback in
 `public/_redirects` is scoped to named route families, so the path is served as a real file.
 Confirm after deploying:
 

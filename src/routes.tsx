@@ -162,7 +162,7 @@ export const routes: RouteRecord[] = [
       { path: 'store/success', Component: StoreSuccessPage },
       { path: 'lookup-request', Component: RequestLookupPage },
 
-      // Pre-rendered to dist/404.html, which Netlify serves with a real HTTP 404
+      // Pre-rendered to dist/404.html, which Cloudflare serves with a real HTTP 404
       // for anything that matches no static file and no rule in public/_redirects.
       { path: '404', Component: NotFoundPage },
 

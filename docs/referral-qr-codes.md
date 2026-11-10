@@ -38,7 +38,7 @@ Two things make it safe, and **both are load-bearing**:
 
 - React Router matches static path segments case-insensitively, so `/R/…` hits
   the `r/:code` route.
-- Netlify matches `_redirects` paths **case-sensitively**, so `public/_redirects`
+- Cloudflare matches `_redirects` paths **case-sensitively**, so `public/_redirects`
   lists `/R/*` as well as `/r/*`. Without that line the CDN answers a 404
   before the app ever loads. Browsers lowercase the host but leave the path
   alone, so `/R/` really does arrive uppercase.

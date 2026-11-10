@@ -13,7 +13,7 @@ Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 
 # Private and auth-gated areas. These are also served with
-# X-Robots-Tag: noindex (see netlify.toml) and are excluded from pre-rendering.
+# X-Robots-Tag: noindex (see public/_headers) and are excluded from pre-rendering.
 Disallow: /admin/
 Disallow: /portal/
 Disallow: /private/
