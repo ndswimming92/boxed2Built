@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical, ChevronDown, ChevronRight, Search, Handshake } from 'lucide-react';
+import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical, ChevronDown, ChevronRight, Search, Handshake, AppWindow, Eye } from 'lucide-react';
 import { Facebook } from '../../components/ui/BrandIcons';
 import {
   getCoupons, getCouponRedemptions, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
   draftCouponPromo, publishCouponPromo, sendCouponPromoReminder, getPartnerCouponOwners,
+  getCouponPopupSettings, saveCouponPopupSettings, setCouponShowOnHome,
 } from '../../services/couponService';
+import CouponPopup from '../../components/CouponPopup';
+import CouponPopupSettingsPanel from '../../components/admin/CouponPopupSettingsPanel';
+import {
+  DEFAULT_COUPON_POPUP_SETTINGS, pickHomeCoupon, popupCopy,
+  type CouponPopupContent, type CouponPopupSettings,
+} from '../../utils/couponPopup';
 import {
   couponAudience, matchesCouponSearch, couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
   describeActiveDuration, describeDiscount, describeStateDetail, describePostDue, describeWindow,
@@ -28,6 +35,9 @@ interface FormState {
   promote: boolean;
   promo_post_on: string;
   promo_message: string;
+  show_on_home: boolean;
+  popup_headline: string;
+  popup_message: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -42,6 +52,9 @@ const EMPTY_FORM: FormState = {
   promote: false,
   promo_post_on: '',
   promo_message: '',
+  show_on_home: false,
+  popup_headline: '',
+  popup_message: '',
 };
 
 /**
@@ -109,6 +122,10 @@ export default function CouponsPage() {
   // How many cards each section has revealed, by section key.
   const [shown, setShown] = useState<Record<string, number>>({});
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [popupSettings, setPopupSettings] = useState<CouponPopupSettings>(DEFAULT_COUPON_POPUP_SETTINGS);
+  const [savingPopup, setSavingPopup] = useState(false);
+  // The popup drawn over this page exactly as the home page draws it.
+  const [preview, setPreview] = useState<{ coupon: CouponPopupContent; settings: CouponPopupSettings } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -151,6 +168,11 @@ export default function CouponsPage() {
       // Who owns the partner codes is a refinement, not a reason to hold the
       // list: until it arrives (or if it fails) a partner code is still
       // recognised by its description.
+      // Same again for the popup settings: the defaults stand in until they load.
+      getCouponPopupSettings(businessInfo.id)
+        .then(setPopupSettings)
+        .catch((error) => console.error('Error loading popup settings:', error));
+
       if (businessInfo.organization_id) {
         getPartnerCouponOwners(businessInfo.organization_id)
           .then(setPartnerOwners)
@@ -182,6 +204,9 @@ export default function CouponsPage() {
       promote: coupon.promote,
       promo_post_on: timestampToDatetimeLocal(coupon.promo_post_at),
       promo_message: coupon.promo_message ?? '',
+      show_on_home: coupon.show_on_home ?? false,
+      popup_headline: coupon.popup_headline ?? '',
+      popup_message: coupon.popup_message ?? '',
     });
     setShowForm(true);
   };
@@ -245,6 +270,9 @@ export default function CouponsPage() {
       promote: form.promote,
       promo_post_at: form.promote ? datetimeLocalToTimestamp(form.promo_post_on) : null,
       promo_message: form.promo_message,
+      show_on_home: form.show_on_home,
+      popup_headline: form.popup_headline,
+      popup_message: form.popup_message,
     };
 
     setSaving(true);
@@ -276,6 +304,85 @@ export default function CouponsPage() {
       console.error('Error toggling coupon:', error);
       notify('error', 'Failed to update coupon');
     }
+  };
+
+  /** The card's one-click switch for the home page popup. */
+  const handleShowOnHome = async (coupon: Coupon) => {
+    if (!businessId) return;
+    const next = !coupon.show_on_home;
+    try {
+      await setCouponShowOnHome(coupon.id, next);
+      setCoupons(await getCoupons(businessId));
+      notify(
+        'success',
+        !next
+          ? `${coupon.code} taken off the home page popup.`
+          : couponState(coupon) === 'active'
+            ? `${coupon.code} will pop up on your home page.`
+            : `${coupon.code} will pop up on your home page once it is live.`,
+      );
+    } catch (error) {
+      console.error('Error updating home page popup:', error);
+      notify('error', 'Failed to update coupon');
+    }
+  };
+
+  const handleSavePopupSettings = async (next: CouponPopupSettings) => {
+    if (!businessId) return;
+    // Shown as saved straight away so the switch answers the click; put back
+    // if the save is refused.
+    const previous = popupSettings;
+    setPopupSettings(next);
+    setSavingPopup(true);
+    try {
+      setPopupSettings(await saveCouponPopupSettings(businessId, next));
+      notify('success', 'Home page popup settings saved.');
+    } catch (error) {
+      setPopupSettings(previous);
+      notify('error', error instanceof Error ? error.message : 'Failed to save popup settings');
+    } finally {
+      setSavingPopup(false);
+    }
+  };
+
+  /** What a coupon row looks like to the popup. */
+  const toPopupContent = (coupon: Pick<Coupon, 'code' | 'discount_type' | 'discount_value' | 'ends_at' | 'popup_headline' | 'popup_message'>): CouponPopupContent => ({
+    code: coupon.code,
+    discount_type: coupon.discount_type,
+    discount_value: coupon.discount_value,
+    ends_at: coupon.ends_at,
+    headline: coupon.popup_headline,
+    message: coupon.popup_message,
+  });
+
+  /**
+   * Preview from the settings panel: whichever coupon visitors would see, or
+   * failing that any ticked one, or a stand-in so the timing can still be judged.
+   */
+  const previewSettings = (settings: CouponPopupSettings) => {
+    const coupon = pickHomeCoupon(coupons) ?? coupons.find((c) => c.show_on_home) ?? null;
+    setPreview({
+      settings,
+      coupon: coupon
+        ? toPopupContent(coupon)
+        : { code: 'WELCOME25', discount_type: 'fixed', discount_value: 25, ends_at: null, headline: null, message: null },
+    });
+  };
+
+  /** Preview from the form: the coupon as typed, saved or not. */
+  const previewForm = () => {
+    const value = Number(form.discount_value);
+    setPreview({
+      settings: popupSettings,
+      coupon: {
+        code: normalizeCouponCode(form.code) || 'YOURCODE',
+        discount_type: form.discount_type,
+        discount_value: Number.isFinite(value) && value > 0 ? value : 25,
+        ends_at: endDateToTimestamp(form.ends_on),
+        headline: form.popup_headline,
+        message: form.popup_message,
+      },
+    });
   };
 
   const handleDelete = async (coupon: Coupon) => {
@@ -438,6 +545,15 @@ export default function CouponsPage() {
     .filter(Boolean)
     .sort()[0];
   const queuedCount = coupons.filter((c) => couponPromoState(c) === 'queued').length;
+  // The wording the popup falls back to, shown as the placeholders in the form.
+  const formPopupDefaults = popupCopy({
+    code: form.code,
+    discount_type: form.discount_type,
+    discount_value: Number(form.discount_value) > 0 ? Number(form.discount_value) : 25,
+    ends_at: null,
+    headline: null,
+    message: null,
+  });
 
   /**
    * The form renders in one of two places, never both: at the top of the page
@@ -633,6 +749,73 @@ export default function CouponsPage() {
           )}
         </div>
 
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <label className="flex items-start gap-2.5 text-sm text-slate-700 mb-1">
+            <input
+              type="checkbox"
+              name="show_on_home"
+              checked={form.show_on_home}
+              onChange={(e) => setForm({ ...form, show_on_home: e.target.checked })}
+              className="w-4 h-4 mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            />
+            <span>
+              <span className="font-medium">Show on home page</span>
+              <span className="block text-xs text-slate-500 mt-0.5">
+                Pops this code up for everyone who lands on your home page while it is live. Leave this off for a
+                private code — one for a partner, or for a single group of people.
+              </span>
+            </span>
+          </label>
+
+          {form.show_on_home && (
+            <div className="mt-4 grid grid-cols-1 gap-4">
+              <div>
+                <label htmlFor="coupon-popup-headline" className="block text-sm font-medium text-slate-700 mb-2">
+                  Popup headline <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="coupon-popup-headline"
+                  name="popup_headline"
+                  value={form.popup_headline}
+                  maxLength={80}
+                  onChange={(e) => setForm({ ...form, popup_headline: e.target.value })}
+                  placeholder={formPopupDefaults.headline}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="coupon-popup-message" className="block text-sm font-medium text-slate-700 mb-2">
+                  Popup message <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  id="coupon-popup-message"
+                  name="popup_message"
+                  rows={3}
+                  value={form.popup_message}
+                  maxLength={240}
+                  onChange={(e) => setForm({ ...form, popup_message: e.target.value })}
+                  placeholder={formPopupDefaults.message}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  This is what customers read. Leave either box empty and the wording shown in grey is used.
+                  The description above stays private.
+                </p>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={previewForm}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  Preview popup
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
           <button
             onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
@@ -662,6 +845,7 @@ export default function CouponsPage() {
       const state = couponState(coupon);
       const style = STATE_STYLES[state];
       const promo = couponPromoState(coupon);
+      const homeCoupon = pickHomeCoupon(coupons);
 
       const used = redemptions?.[coupon.code] ?? [];
       const showAllUses = expandedUses.includes(coupon.id);
@@ -699,6 +883,18 @@ export default function CouponsPage() {
                   <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5">
                     <Facebook className="w-3 h-3" />
                     Posted
+                  </span>
+                )}
+                {coupon.show_on_home && (state === 'active' || state === 'scheduled') && (
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200 flex items-center gap-1.5">
+                    <AppWindow className="w-3 h-3" />
+                    {state === 'scheduled'
+                      ? 'Home page popup when live'
+                      : !popupSettings.is_enabled
+                        ? 'Home page popup is off'
+                        : homeCoupon?.id === coupon.id
+                          ? 'On home page now'
+                          : 'Home page popup · waiting its turn'}
                   </span>
                 )}
               </div>
@@ -825,6 +1021,19 @@ export default function CouponsPage() {
               >
                 <Share2 className="w-4 h-4" />
                 Share
+              </button>
+              <button
+                onClick={() => handleShowOnHome(coupon)}
+                aria-pressed={coupon.show_on_home}
+                className={`p-2 rounded-lg transition-colors ${
+                  coupon.show_on_home
+                    ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+                    : 'text-slate-400 hover:bg-slate-100'
+                }`}
+                aria-label={`${coupon.show_on_home ? 'Stop showing' : 'Show'} ${coupon.code} on the home page`}
+                title={coupon.show_on_home ? 'Showing on home page — click to stop' : 'Show on home page'}
+              >
+                <AppWindow className="w-5 h-5" />
               </button>
               <button
                 onClick={() => handleToggle(coupon)}
@@ -1112,6 +1321,23 @@ export default function CouponsPage() {
         </div>
       )}
 
+
+      <CouponPopupSettingsPanel
+        settings={popupSettings}
+        coupons={coupons}
+        saving={savingPopup}
+        onSave={handleSavePopupSettings}
+        onPreview={previewSettings}
+      />
+
+      {preview && (
+        <CouponPopup
+          coupon={preview.coupon}
+          settings={preview.settings}
+          onClaim={() => setPreview(null)}
+          onClose={() => setPreview(null)}
+        />
+      )}
 
       {nextUp && (
         <div className="mb-6 bg-white rounded-xl border-2 border-emerald-500 overflow-hidden">

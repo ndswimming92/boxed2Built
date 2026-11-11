@@ -119,6 +119,47 @@ A code that is switched off or already expired is refused before it reaches
 Facebook, and a rejection from Facebook is kept on the card so it is visible
 rather than silent.
 
+## The home page popup
+
+A small offer card that fades in on the home page while a coupon is live, so a
+first-time visitor sees the discount without being sent a link.
+
+**Which coupon shows.** Only the ones you tick. Every coupon has a **Show on home
+page** box in its form, and a window icon on its card that does the same thing in
+one click. It is off by default: a popup publishes the code to every visitor, and
+most codes — a partner's, or one for a single group — are private. A ticked
+coupon shows only while it is live; a scheduled one waits for its first day and
+its card says *Home page popup when live*. If two ticked coupons are live at
+once, the one ending soonest shows, and a code with no end date only shows when
+nothing with a deadline is live.
+
+**What it says.** The discount in large type, a headline, a short message, the
+code, and the last day with the days left. **Popup headline** and **Popup
+message** on the coupon are what customers read; leave them empty and the wording
+shown in grey in those boxes is used. The coupon's description stays private.
+
+**The button** takes the visitor to the quote form on the same page with the code
+already filled in and applied.
+
+**Popup settings**, at the top of the coupons page:
+
+| Setting | Meaning |
+| --- | --- |
+| On / Off | The master switch. Off, nothing pops up whatever is ticked. |
+| Wait before showing | Seconds, 0–60, counted from when the opening box animation finishes. |
+| Fade-in speed | How long the fade takes, from instant to 3 seconds. Visitors whose device asks for reduced motion always get it instantly. |
+| How often one visitor sees it | Once per coupon (default), once a day, or every visit. Remembered in the visitor's browser. |
+| Button text | The wording on the main button. |
+| Where it appears | Centre of the screen with the page dimmed, or the bottom corner with the page left usable. |
+
+**Preview** — in the settings and in the coupon form — draws the popup over the
+admin page exactly as visitors get it, including unsaved changes. The line under
+*Home page popup* always says which code visitors are seeing right now.
+
+The popup stays away from anyone who arrived with a code already: a shared
+`?coupon=` link or a friend's referral. The form takes one code, so offering
+another would cost the friend their credit.
+
 ## What the customer sees
 
 The quote form's **Have a Referral or Coupon Code?** box takes both kinds of
@@ -196,6 +237,17 @@ invoice raised months later still carries the discount they were promised.
   the name `service_role_key`. Store it once with
   `SELECT vault.create_secret('<service role key>', 'service_role_key');` — with
   no such secret the job posts nothing rather than failing hourly.
+- The popup reads `get_home_coupon_popup(business)`, a `SECURITY DEFINER`
+  function granted to `anon` that returns at most one row — the ticked
+  (`coupons.show_on_home`), redeemable coupon ending soonest, with the settings
+  from `coupon_popup_settings` — and nothing when the switch is off. `anon`
+  still has no rights on either table, and an unticked or scheduled code never
+  leaves the database. See
+  `supabase/migrations/20261111120000_coupon_home_popup.sql`.
+- Which coupon wins, the wording and the seen-it-already rule live in
+  `src/utils/couponPopup.ts`; `CouponPopup` draws it and `HomeCouponPopup`
+  decides when. `tests/coupon-popup.spec.ts` and
+  `tests/unit/couponPopup.test.ts` cover them.
 - `tests/coupons.spec.ts` covers the customer-facing pricing, the admin list and
   the posting queue; `supabase/tests/coupon_test_cases.sql` covers the database
   rules.

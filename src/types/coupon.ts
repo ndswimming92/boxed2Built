@@ -31,6 +31,12 @@ export interface Coupon {
   facebook_post_id: string | null;
   facebook_posted_at: string | null;
   facebook_post_error: string | null;
+
+  /** Opt-in: advertise this code in the home page popup while it is live. */
+  show_on_home: boolean;
+  /** Customer-facing popup wording. Empty means the site writes it from the discount. */
+  popup_headline: string | null;
+  popup_message: string | null;
 }
 
 export interface CouponInput {
@@ -44,6 +50,9 @@ export interface CouponInput {
   promote?: boolean;
   promo_post_at?: string | null;
   promo_message?: string | null;
+  show_on_home?: boolean;
+  popup_headline?: string | null;
+  popup_message?: string | null;
 }
 
 /**
