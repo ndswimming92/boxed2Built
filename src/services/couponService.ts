@@ -290,3 +290,27 @@ export async function sendCouponPromoReminder(couponId: string): Promise<SendCou
     coupon_id: couponId,
   });
 }
+
+/**
+ * Partner leads that have a code made for them, keyed by coupon id. This is
+ * what tells the coupons page which codes belong to partners rather than
+ * customers. Never throws: without it the page falls back to the description.
+ */
+export async function getPartnerCouponOwners(organizationId: string): Promise<Record<string, string>> {
+  const { data, error } = await supabase
+    .from('partner_leads')
+    .select('name, coupon_id')
+    .eq('organization_id', organizationId)
+    .not('coupon_id', 'is', null);
+
+  if (error) {
+    console.error('Error loading partner codes:', error);
+    return {};
+  }
+
+  const owners: Record<string, string> = {};
+  for (const row of (data || []) as { name: string; coupon_id: string }[]) {
+    owners[row.coupon_id] = row.name;
+  }
+  return owners;
+}

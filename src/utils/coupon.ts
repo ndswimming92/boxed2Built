@@ -312,3 +312,32 @@ export function defaultPromoPostAt(startsOn: string, now: Date = new Date()): st
   if (base.getTime() > now.getTime()) return toDatetimeLocal(base);
   return toDatetimeLocal(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, DEFAULT_POST_HOUR));
 }
+
+// --- Customer vs. partner codes ---------------------------------------------
+
+export type CouponAudience = 'customer' | 'partner';
+
+/**
+ * A code is a partner's when a partner lead points at it (`partner_leads.coupon_id`,
+ * the source of truth), or — for a code typed in by hand before that link
+ * existed — when its description is the one the partner flow writes.
+ */
+export function couponAudience(
+  coupon: { id: string; description: string | null },
+  partnerCouponIds: ReadonlySet<string>,
+): CouponAudience {
+  if (partnerCouponIds.has(coupon.id)) return 'partner';
+  return /^partner code for\b/i.test(coupon.description ?? '') ? 'partner' : 'customer';
+}
+
+/** Case-insensitive match on the code, description and partner name; empty matches all. */
+export function matchesCouponSearch(
+  coupon: { code: string; description: string | null },
+  query: string,
+  partnerName?: string | null,
+): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return [coupon.code, coupon.description ?? '', partnerName ?? '']
+    .some((field) => field.toLowerCase().includes(needle));
+}
