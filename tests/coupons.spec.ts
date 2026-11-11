@@ -345,19 +345,19 @@ test('editing opens the form in the card\'s own place, not at the top', async ({
     promoCoupon({ id: 'c', code: 'CHARLIE', created_at: new Date(Date.now() - 3 * day).toISOString() }),
   ]);
 
-  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'BRAVO', 'CHARLIE']);
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'Home page popup', 'ALPHA', 'BRAVO', 'CHARLIE']);
 
   await page.getByRole('button', { name: 'Edit BRAVO' }).click();
 
   // The form sits between ALPHA and CHARLIE — where BRAVO's card was — and
   // BRAVO's card is gone rather than duplicated above the list.
-  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'Edit BRAVO', 'CHARLIE']);
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'Home page popup', 'ALPHA', 'Edit BRAVO', 'CHARLIE']);
   await expect(page.locator('#coupon-code')).toHaveValue('BRAVO');
 
   // Switching to another card moves the form with it.
   await page.getByRole('button', { name: 'Cancel' }).click();
   await page.getByRole('button', { name: 'Edit CHARLIE' }).click();
-  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'ALPHA', 'BRAVO', 'Edit CHARLIE']);
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'Home page popup', 'ALPHA', 'BRAVO', 'Edit CHARLIE']);
 });
 
 test('a new coupon still opens at the top, above the list', async ({ page }) => {
@@ -366,7 +366,7 @@ test('a new coupon still opens at the top, above the list', async ({ page }) => 
   ]);
 
   await page.getByRole('button', { name: 'New Coupon' }).click();
-  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'New coupon', 'ALPHA']);
+  await expect(page.getByRole('heading')).toHaveText(['Coupon Codes', 'Home page popup', 'New coupon', 'ALPHA']);
 });
 
 /**

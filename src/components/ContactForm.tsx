@@ -345,14 +345,20 @@ const ContactForm: React.FC<ContactFormProps> = ({ sideRail = false, onProgressC
    * always misses, and "Not a coupon code" is the wrong first thing to show
    * someone who just scanned a friend's token.
    */
+  // Keyed on the param rather than run once: the home page's coupon popup adds
+  // `?coupon=` to a form that is already mounted, and that has to apply too.
+  const couponParam = searchParams.get('coupon');
   useEffect(() => {
-    const couponParam = searchParams.get('coupon');
-    if (couponParam) {
-      const code = normalizeCouponCode(couponParam);
-      handleFieldChange('referralCode', code);
-      checkCouponCode(code);
-      return;
-    }
+    if (!couponParam) return;
+    const code = normalizeCouponCode(couponParam);
+    handleFieldChange('referralCode', code);
+    setPrefilledReferral(null);
+    checkCouponCode(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [couponParam]);
+
+  useEffect(() => {
+    if (searchParams.get('coupon')) return;
 
     const refParam = searchParams.get('ref');
     const code = refParam ? normalizeReferralCode(refParam) : recallReferralCode();

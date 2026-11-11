@@ -2,6 +2,10 @@ import { supabase } from '../lib/supabase';
 import { logAction } from './auditLogService';
 import { normalizeCouponCode, sortCouponsForQueue } from '../utils/coupon';
 import type { Coupon, CouponInput, CouponLookupResult, CouponRedemption } from '../types/coupon';
+import {
+  DEFAULT_COUPON_POPUP_SETTINGS, normalizePopupSettings,
+  type CouponPopupContent, type CouponPopupSettings,
+} from '../utils/couponPopup';
 
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
@@ -48,6 +52,9 @@ export async function createCoupon(
       promote: input.promote ?? false,
       promo_post_at: input.promo_post_at || null,
       promo_message: input.promo_message?.trim() || null,
+      show_on_home: input.show_on_home ?? false,
+      popup_headline: input.popup_headline?.trim() || null,
+      popup_message: input.popup_message?.trim() || null,
     })
     .select()
     .single();
@@ -89,6 +96,9 @@ export async function updateCoupon(id: string, input: CouponInput): Promise<Coup
       promote: input.promote ?? false,
       promo_post_at: input.promo_post_at || null,
       promo_message: input.promo_message?.trim() || null,
+      show_on_home: input.show_on_home ?? false,
+      popup_headline: input.popup_headline?.trim() || null,
+      popup_message: input.popup_message?.trim() || null,
     })
     .eq('id', id)
     .select()
@@ -313,4 +323,125 @@ export async function getPartnerCouponOwners(organizationId: string): Promise<Re
     owners[row.coupon_id] = row.name;
   }
   return owners;
+}
+
+/*
+ * ── Home page popup ─────────────────────────────────────────────────────────
+ */
+
+export interface HomeCouponPopup {
+  coupon: CouponPopupContent;
+  settings: CouponPopupSettings;
+}
+
+/**
+ * The public path for the home page popup: the one ticked coupon that is live
+ * right now, with the display settings beside it. Null when the popup is
+ * switched off or nothing ticked is live. Never throws — a popup that cannot
+ * load is a popup that does not show, not a broken home page.
+ */
+export async function getHomeCouponPopup(businessId: string): Promise<HomeCouponPopup | null> {
+  try {
+    const { data, error } = await supabase.rpc('get_home_coupon_popup', { p_business_id: businessId });
+    if (error) throw error;
+
+    const row = ((data as Record<string, unknown>[] | null) ?? [])[0];
+    if (!row || typeof row.code !== 'string') return null;
+
+    return {
+      coupon: {
+        code: row.code,
+        discount_type: row.discount_type === 'percentage' ? 'percentage' : 'fixed',
+        discount_value: Number(row.discount_value),
+        ends_at: (row.ends_at as string | null) ?? null,
+        headline: (row.headline as string | null) ?? null,
+        message: (row.message as string | null) ?? null,
+      },
+      settings: normalizePopupSettings({
+        ...DEFAULT_COUPON_POPUP_SETTINGS,
+        delay_seconds: Number(row.delay_seconds),
+        fade_ms: Number(row.fade_ms),
+        frequency: (row.frequency as CouponPopupSettings['frequency']) ?? DEFAULT_COUPON_POPUP_SETTINGS.frequency,
+        position: row.position === 'corner' ? 'corner' : 'center',
+        cta_label: String(row.cta_label ?? ''),
+      }),
+    };
+  } catch (error) {
+    console.warn('[couponPopup] Could not load the home page coupon:', error);
+    return null;
+  }
+}
+
+/** The admin's saved popup settings, or the defaults when none are saved yet. */
+export async function getCouponPopupSettings(businessId: string): Promise<CouponPopupSettings> {
+  const { data, error } = await supabase
+    .from('coupon_popup_settings')
+    .select('is_enabled, delay_seconds, fade_ms, frequency, position, cta_label')
+    .eq('business_id', businessId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching coupon popup settings:', error);
+    throw new Error(`Failed to load popup settings: ${error.message}`);
+  }
+
+  if (!data) return DEFAULT_COUPON_POPUP_SETTINGS;
+
+  return normalizePopupSettings({
+    ...DEFAULT_COUPON_POPUP_SETTINGS,
+    ...(data as Partial<CouponPopupSettings>),
+    delay_seconds: Number(data.delay_seconds),
+    fade_ms: Number(data.fade_ms),
+  });
+}
+
+export async function saveCouponPopupSettings(
+  businessId: string,
+  settings: CouponPopupSettings,
+): Promise<CouponPopupSettings> {
+  const clean = normalizePopupSettings(settings);
+
+  const { error } = await supabase
+    .from('coupon_popup_settings')
+    .upsert({ business_id: businessId, ...clean }, { onConflict: 'business_id' });
+
+  if (error) {
+    console.error('Error saving coupon popup settings:', error);
+    throw new Error(`Failed to save popup settings: ${error.message}`);
+  }
+
+  await logAction({
+    actionType: 'UPDATE',
+    tableName: 'coupon_popup_settings',
+    recordId: businessId,
+    recordIdentifier: 'Home page coupon popup',
+    metadata: { ...clean },
+  });
+
+  return clean;
+}
+
+/** The card's quick switch: put one code on, or take it off, the home page. */
+export async function setCouponShowOnHome(id: string, showOnHome: boolean): Promise<Coupon> {
+  const { data, error } = await supabase
+    .from('coupons')
+    .update({ show_on_home: showOnHome })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating coupon home page setting:', error);
+    throw new Error(`Failed to update coupon: ${error.message}`);
+  }
+
+  await logAction({
+    actionType: 'UPDATE',
+    tableName: 'coupons',
+    recordId: id,
+    recordIdentifier: data.code,
+    metadata: { show_on_home: showOnHome },
+  });
+
+  return data as Coupon;
 }

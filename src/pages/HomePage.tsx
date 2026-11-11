@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Gift, ArrowRight } from 'lucide-react';
 
-import { Head } from 'vite-react-ssg';
+import { ClientOnly, Head } from 'vite-react-ssg';
 import EnhancedLocalBusinessSchema from '../components/seo/EnhancedLocalBusinessSchema';
 import FAQSchema from '../components/seo/FAQSchema';
 import ServiceAreaSchema from '../components/seo/ServiceAreaSchema';
 import Header from '../components/layout/Header';
 import BoxLoader from '../components/BoxLoader';
+import HomeCouponPopup from '../components/HomeCouponPopup';
 import HomeHero from '../components/sections/HomeHero';
 import HomeServices from '../components/sections/HomeServices';
 import HomeFAQ from '../components/sections/HomeFAQ';
@@ -24,10 +25,18 @@ import {
   FAQ_CONTENT
 } from '../constants/localSEO';
 import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
+import { useBusinessDataContext } from '../contexts/BusinessDataContext';
 
 const HomePage: React.FC = () => {
   const businessData = useBusinessLoaderData();
+  // The loader data is fixed at build time; this is the copy refreshed in the
+  // browser, which is the one that carries the real business id if the build
+  // had to fall back to placeholder data.
+  const liveBusiness = useBusinessDataContext();
   const [quoteProgress, setQuoteProgress] = useState(0);
+  // The coupon popup waits for the opening animation, so its delay counts from
+  // when the visitor can see the page rather than from behind the loader.
+  const [loaderDone, setLoaderDone] = useState(false);
 
   // Get high-value FAQ questions from Common Questions category plus a few popular ones
   const commonQuestions = FAQ_CONTENT.find(cat => cat.category === "Common Questions")?.questions || [];
@@ -65,7 +74,10 @@ const HomePage: React.FC = () => {
         businessUrl={businessData.info.website}
         serviceAreas={businessData.serviceAreas}
       />
-      <BoxLoader />
+      <BoxLoader onDone={() => setLoaderDone(true)} />
+      <ClientOnly>
+        {() => <HomeCouponPopup businessId={liveBusiness?.data?.info?.id ?? businessData.info.id ?? null} ready={loaderDone} />}
+      </ClientOnly>
       <Header />
       <main className="pt-16">
         <HomeHero />
