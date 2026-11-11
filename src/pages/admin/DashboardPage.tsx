@@ -1,973 +1,678 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import { useRealtimeJobs } from '../../hooks/useRealtimeJobs';
-import { getRecentInquiries, getInquiryStats, getAvgResponseTime, type ResponseTimeStats } from '../../services/inquiryService';
-import { getGoalStats, getUpcomingGoals } from '../../services/goalsService';
-import { getReferralStats } from '../../services/clientService';
-import { calculateClientTimeSaved } from '../../services/analyticsService';
+import { useDashboardData } from '../../hooks/useDashboardData';
+import { calculateClientTimeSaved, parseJobDate } from '../../services/analyticsCalculations';
+import { buildMonthlyTrend, summarizeMonthToDate } from '../../utils/dashboardTrends';
 import NextJobBanner from '../../components/admin/NextJobBanner';
+import AttentionStrip, { type AttentionItem } from '../../components/admin/dashboard/AttentionStrip';
+import InquiryPipelineCard from '../../components/admin/dashboard/InquiryPipelineCard';
+import KpiCard from '../../components/admin/dashboard/KpiCard';
+import Panel from '../../components/admin/dashboard/Panel';
+import TrendCharts from '../../components/admin/dashboard/TrendCharts';
 import { findNextJob } from '../../utils/nextJob';
-import { listScheduledEmails, type ScheduledEmailRow } from '../../services/scheduledEmailsService';
-import type { Goal } from '../../lib/supabase';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  Building2,
-  Briefcase,
-  MapPin,
-  Star,
-  TrendingUp,
-  Clock,
+  AlertCircle,
+  AlertTriangle,
   BarChart3,
-  ArrowRight,
+  Bell,
+  Briefcase,
+  Building2,
+  Calendar,
+  Clock,
+  Gift,
   Inbox,
   Mail,
+  MapPin,
   MessageSquare,
-  AlertCircle,
-  Target,
-  Gift,
-  Users,
-  DollarSign,
-  Bell,
   Phone,
-  Calendar,
+  Plus,
+  RefreshCw,
   Send,
+  Star,
+  Target,
+  TrendingUp,
+  Wrench,
 } from 'lucide-react';
 
-interface Stats {
-  services: number;
-  serviceAreas: number;
-  reviews: number;
-  avgRating: number;
-  paymentMethods: number;
-  socialMedia: number;
-  jobs: number;
-  totalRevenue: number;
-  totalHoursSaved: number;
-  inquiries: number;
-  pendingInquiries: number;
-  conversionRate: number;
-  remindersDueToday: number;
-  remindersOverdue: number;
-}
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 
-interface DashboardReminder {
-  id: string;
-  scheduled_date: string;
-  reminder_type: string;
-  admin_notes: string | null;
-  job: {
-    client_name: string;
-    client_phone: string;
-    job_type: string;
-  } | null;
+const formatHours = (hours: number) => `${hours.toFixed(1)} hrs`;
+
+const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);
+
+function KpiSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4" aria-hidden="true">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="animate-pulse rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <div className="mb-3 h-4 w-24 rounded bg-slate-200" />
+          <div className="mb-3 h-8 w-20 rounded bg-slate-200" />
+          <div className="h-3 w-28 rounded bg-slate-100" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function DashboardPage() {
-  const { maskFinancialValue } = usePrivacyMode();
+  const { maskFinancialValue, privacyModeEnabled } = usePrivacyMode();
   const { currentOrganization } = useAuth();
-  const [referralStats, setReferralStats] = useState<{
-    totalCodes: number;
-    totalReferrals: number;
-    creditsIssuedAllTime: number;
-    creditsRedeemedAllTime: number;
-  } | null>(null);
-  const [stats, setStats] = useState<Stats>({
-    services: 0,
-    serviceAreas: 0,
-    reviews: 0,
-    avgRating: 0,
-    paymentMethods: 0,
-    socialMedia: 0,
-    jobs: 0,
-    totalRevenue: 0,
-    totalHoursSaved: 0,
-    inquiries: 0,
-    pendingInquiries: 0,
-    conversionRate: 0,
-    remindersDueToday: 0,
-    remindersOverdue: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [businessName, setBusinessName] = useState('');
-  const [businessId, setBusinessId] = useState<string | null>(null);
-  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
-  const [goalStats, setGoalStats] = useState({ totalGoals: 0, completedGoals: 0, overdueGoals: 0, completionRate: 0 });
-  const [upcomingGoals, setUpcomingGoals] = useState<Goal[]>([]);
-  const [pendingReminders, setPendingReminders] = useState<DashboardReminder[]>([]);
-  const [responseTimeStats, setResponseTimeStats] = useState<ResponseTimeStats | null>(null);
-  const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmailRow[]>([]);
-  const { jobs: realtimeJobs } = useRealtimeJobs(businessId);
+  const {
+    business,
+    data,
+    scheduledEmails,
+    referralStats,
+    loading,
+    refreshing,
+    error,
+    lastUpdated,
+    refresh,
+  } = useDashboardData(currentOrganization?.id);
+  const {
+    jobs,
+    loading: jobsLoading,
+    lastUpdated: jobsUpdated,
+    isConnected,
+  } = useRealtimeJobs(business?.id ?? null);
 
-  const nextJob = findNextJob(realtimeJobs);
+  const nextJob = findNextJob(jobs);
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  const jobTotals = useMemo(() => {
+    const completed = jobs.filter(job => job.date_completed);
+    return {
+      total: jobs.length,
+      completed: completed.length,
+      revenue: completed.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0),
+      timeSaved: calculateClientTimeSaved(completed.map(job => job.hours_worked)),
+      trend: buildMonthlyTrend(jobs),
+      monthToDate: summarizeMonthToDate(jobs),
+    };
+  }, [jobs]);
 
-  useEffect(() => {
-    // Its own call rather than folded into fetchStats: a slow or failed load
-    // here should never hold up the rest of the dashboard.
-    listScheduledEmails().then(setScheduledEmails).catch(() => {});
-  }, []);
+  const updatedAt = [lastUpdated, jobsUpdated]
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => b.getTime() - a.getTime())[0];
 
-  useEffect(() => {
-    if (currentOrganization?.id) {
-      getReferralStats(currentOrganization.id)
-        .then(setReferralStats)
-        .catch(() => {});
-    }
-  }, [currentOrganization?.id]);
+  const blockedEmails = scheduledEmails.filter(e => e.status === 'blocked').length;
+  const dueEmails = scheduledEmails.filter(e => e.status === 'due').length;
+  const upcomingEmails = scheduledEmails.filter(e => e.status === 'scheduled').length;
+  const emailsToShow = scheduledEmails.filter(e => e.status === 'due' || e.status === 'scheduled').slice(0, 5);
 
-  useEffect(() => {
-    if (realtimeJobs.length > 0 && businessId) {
-      updateRevenueFromJobs();
-    }
-  }, [realtimeJobs, businessId]);
+  const attentionItems: AttentionItem[] = data
+    ? [
+        {
+          key: 'inquiries',
+          icon: Inbox,
+          count: data.inquiries.pending,
+          label: `${plural(data.inquiries.pending, 'inquiry', 'inquiries')} pending`,
+          to: '/admin/inquiries',
+        },
+        {
+          key: 'reminders',
+          icon: Bell,
+          count: data.reminders.overdue + data.reminders.dueToday,
+          label: `follow-up ${plural(data.reminders.overdue + data.reminders.dueToday, 'reminder', 'reminders')} due`,
+          note: data.reminders.overdue > 0 ? `${data.reminders.overdue} overdue` : 'Due today',
+          to: '/admin/reminders',
+          urgent: data.reminders.overdue > 0,
+        },
+        {
+          key: 'goals',
+          icon: Target,
+          count: data.goalStats.overdueGoals,
+          label: `${plural(data.goalStats.overdueGoals, 'goal', 'goals')} overdue`,
+          to: '/admin/goals',
+          urgent: true,
+        },
+        {
+          key: 'emails',
+          icon: Mail,
+          count: blockedEmails,
+          label: `scheduled ${plural(blockedEmails, 'email', 'emails')} blocked`,
+          note: 'Will not send until fixed',
+          to: '/admin/scheduled-emails',
+          urgent: true,
+        },
+      ]
+    : [];
 
-  const updateRevenueFromJobs = () => {
-    const completedJobs = realtimeJobs.filter(job => job.date_completed);
-    const totalRevenue = completedJobs.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0);
-    const clientTimeSaved = calculateClientTimeSaved(completedJobs.map(job => job.hours_worked));
-
-    setStats(prev => ({
-      ...prev,
-      jobs: realtimeJobs.length,
-      totalRevenue,
-      totalHoursSaved: clientTimeSaved.rawHours,
-    }));
-  };
-
-  const fetchStats = async () => {
-    try {
-      const { data: businessInfo } = await supabase
-        .from('business_info')
-        .select('id, name')
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (businessInfo) {
-        setBusinessName(businessInfo.name);
-        setBusinessId(businessInfo.id);
-      }
-
-      if (!businessInfo) {
-        setLoading(false);
-        return;
-      }
-
-      const [
-        { count: servicesCount },
-        { count: serviceAreasCount },
-        { data: reviewsData },
-        { count: paymentMethodsCount },
-        { count: socialMediaCount },
-        { count: jobsCount },
-        { data: jobsData },
-        inquiryStats,
-        recentInquiriesData,
-        goalStatsData,
-        upcomingGoalsData,
-        { data: remindersData }
-      ] = await Promise.all([
-        supabase.from('services').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('service_areas').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('customer_reviews').select('rating_value').eq('is_active', true),
-        supabase.from('payment_methods').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('social_media').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('business_id', businessInfo.id).eq('is_active', true).eq('is_test', false),
-        supabase.from('jobs').select('final_price, date_completed, hours_worked').eq('business_id', businessInfo.id).eq('is_active', true).eq('is_test', false).not('date_completed', 'is', null),
-        getInquiryStats(businessInfo.id),
-        getRecentInquiries(businessInfo.id, 5),
-        getGoalStats(businessInfo.id),
-        getUpcomingGoals(businessInfo.id, 3),
-        supabase.from('job_completion_reminders').select('id, scheduled_date, reminder_type, admin_notes, job:jobs!job_id(client_name, client_phone, job_type)').eq('status', 'pending').order('scheduled_date', { ascending: true })
-      ]);
-
-      setRecentInquiries(recentInquiriesData);
-      setGoalStats(goalStatsData);
-      setUpcomingGoals(upcomingGoalsData);
-
-      getAvgResponseTime(businessInfo.id).then(setResponseTimeStats).catch(() => {});
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const reminders = (remindersData || []) as unknown as DashboardReminder[];
-      let dueToday = 0;
-      let overdue = 0;
-      for (const r of reminders) {
-        const d = new Date(r.scheduled_date);
-        d.setHours(0, 0, 0, 0);
-        if (d.getTime() === today.getTime()) dueToday++;
-        else if (d < today) overdue++;
-      }
-      setPendingReminders(reminders.slice(0, 5));
-
-      const avgRating = reviewsData && reviewsData.length > 0
-        ? reviewsData.reduce((sum, r) => sum + r.rating_value, 0) / reviewsData.length
-        : 0;
-
-      const totalRevenue = jobsData && jobsData.length > 0
-        ? jobsData.reduce((sum, job) => sum + (Number(job.final_price) || 0), 0)
-        : 0;
-
-      const clientTimeSaved = calculateClientTimeSaved((jobsData || []).map(job => job.hours_worked));
-
-      setStats({
-        services: servicesCount || 0,
-        serviceAreas: serviceAreasCount || 0,
-        reviews: reviewsData?.length || 0,
-        avgRating: Math.round(avgRating * 10) / 10,
-        paymentMethods: paymentMethodsCount || 0,
-        socialMedia: socialMediaCount || 0,
-        jobs: jobsCount || 0,
-        totalRevenue,
-        totalHoursSaved: clientTimeSaved.rawHours,
-        inquiries: inquiryStats.total,
-        pendingInquiries: inquiryStats.pending,
-        conversionRate: inquiryStats.conversionRate,
-        remindersDueToday: dueToday,
-        remindersOverdue: overdue,
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const clientTimeSaved = calculateClientTimeSaved([stats.totalHoursSaved]);
-
-  const formatResponseTime = (seconds: number | null): string => {
-    if (seconds === null) return 'N/A';
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    if (hours > 0) return `${hours}h ${minutes % 60}m`;
-    return `${minutes}m`;
-  };
-
-  const getResponseTimeColor = (seconds: number | null): string => {
-    if (seconds === null) return 'bg-slate-500';
-    const hours = seconds / 3600;
-    if (hours < 1) return 'bg-emerald-500';
-    if (hours < 4) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  const statCards = [
-    {
-      name: 'Total Jobs',
-      value: stats.jobs,
-      icon: Briefcase,
-      link: '/admin/jobs',
-      color: 'bg-blue-500'
-    },
-    {
-      name: 'Total Revenue',
-      value: maskFinancialValue(formatCurrency(stats.totalRevenue)),
-      icon: TrendingUp,
-      link: '/admin/jobs',
-      color: 'bg-emerald-500'
-    },
-    {
-      name: clientTimeSaved.title,
-      value: clientTimeSaved.label,
-      subtitle: clientTimeSaved.subtitle,
-      icon: Clock,
-      link: '/admin/analytics',
-      color: 'bg-violet-500'
-    },
-    {
-      name: 'Services',
-      value: stats.services,
-      icon: Briefcase,
-      link: '/admin/services',
-      color: 'bg-indigo-500'
-    },
-    {
-      name: 'Service Areas',
-      value: stats.serviceAreas,
-      icon: MapPin,
-      link: '/admin/service-areas',
-      color: 'bg-teal-500'
-    },
-    {
-      name: 'Reviews',
-      value: stats.reviews,
-      icon: Star,
-      link: '/admin/reviews',
-      color: 'bg-amber-500'
-    },
-    {
-      name: 'Avg Rating',
-      value: stats.avgRating > 0 ? `${stats.avgRating}/5` : 'N/A',
-      icon: Star,
-      link: '/admin/reviews',
-      color: 'bg-yellow-500'
-    },
-    {
-      name: 'Pending Inquiries',
-      value: stats.pendingInquiries,
-      icon: AlertCircle,
-      link: '/admin/inquiries',
-      color: 'bg-orange-500',
-      highlight: stats.pendingInquiries > 0
-    },
-    {
-      name: 'Reminders Due',
-      value: stats.remindersDueToday + stats.remindersOverdue,
-      subtitle: stats.remindersOverdue > 0 ? `${stats.remindersOverdue} overdue` : undefined,
-      icon: Bell,
-      link: '/admin/reminders',
-      color: 'bg-rose-500',
-      highlight: (stats.remindersDueToday + stats.remindersOverdue) > 0
-    },
-    {
-      name: 'Total Inquiries',
-      value: stats.inquiries,
-      icon: Inbox,
-      link: '/admin/inquiries',
-      color: 'bg-cyan-500'
-    },
-    {
-      name: 'Avg Response (30d)',
-      value: formatResponseTime(responseTimeStats?.avgSeconds30d ?? null),
-      subtitle: responseTimeStats?.sampleSize30d ? `Based on ${responseTimeStats.sampleSize30d} inquiries` : undefined,
-      icon: Clock,
-      link: '/admin/inquiries',
-      color: getResponseTimeColor(responseTimeStats?.avgSeconds30d ?? null),
-    },
-    {
-      name: 'Avg Response (All)',
-      value: formatResponseTime(responseTimeStats?.avgSecondsAllTime ?? null),
-      subtitle: responseTimeStats?.sampleSizeAllTime ? `Based on ${responseTimeStats.sampleSizeAllTime} inquiries` : undefined,
-      icon: Clock,
-      link: '/admin/inquiries',
-      color: getResponseTimeColor(responseTimeStats?.avgSecondsAllTime ?? null),
-    },
-  ];
+  const { monthToDate } = jobTotals;
+  const showSkeleton = loading || (jobsLoading && business !== null);
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1 sm:mb-2">
-          Welcome back!
-        </h1>
-        <p className="text-sm sm:text-base text-slate-600">
-          {businessName ? `Managing ${businessName}` : 'Manage your business content'}
-        </p>
-      </div>
-
-      {nextJob && <NextJobBanner job={nextJob} />}
-
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl p-3 md:p-6 border border-slate-200 animate-pulse">
-              <div className="h-8 w-8 md:h-12 md:w-12 bg-slate-200 rounded-lg mb-2 md:mb-4"></div>
-              <div className="h-3 md:h-4 bg-slate-200 rounded w-20 mb-1 md:mb-2"></div>
-              <div className="h-5 md:h-8 bg-slate-200 rounded w-12 md:w-16"></div>
-            </div>
-          ))}
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Welcome back!</h1>
+          <p className="mt-1 text-sm text-slate-600 sm:text-base">
+            {business?.name ? `Managing ${business.name}` : 'Manage your business content'}
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {statCards.map((card) => {
-            const Icon = card.icon;
-            const isHighlighted = 'highlight' in card && card.highlight;
-            return (
-              <Link
-                key={card.name}
-                to={card.link}
-                className={`bg-white rounded-xl p-3 md:p-6 border transition-all group ${
-                  isHighlighted
-                    ? 'border-orange-300 shadow-md hover:shadow-lg'
-                    : 'border-slate-200 hover:shadow-lg hover:border-emerald-300'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2 md:mb-4">
-                  <div className={`p-2 md:p-3 ${card.color} rounded-lg`}>
-                    <Icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
-                  </div>
-                  {isHighlighted && (
-                    <span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 leading-tight">
-                      Action
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs md:text-sm font-medium text-slate-600 mb-0.5 md:mb-1">{card.name}</p>
-                <p className="text-xl md:text-3xl font-bold text-slate-900">{card.value}</p>
-                {'subtitle' in card && card.subtitle && (
-                  <p className="text-xs text-slate-500 mt-1 md:mt-2">{card.subtitle}</p>
-                )}
-                <p className="text-xs md:text-sm text-emerald-600 mt-1 md:mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Manage →
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-      )}
 
-      {!loading && referralStats && (
-        <div className="mt-8">
-          <div className="bg-linear-to-r from-blue-700 to-blue-900 rounded-xl p-6 border border-blue-800">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <Gift className="w-5 h-5 text-blue-200" />
-                <h2 className="text-base font-semibold text-white">Referral Program</h2>
-              </div>
-              <Link
-                to="/admin/clients?segment=referrals"
-                className="text-xs font-medium text-blue-200 hover:text-white flex items-center gap-1 transition-colors"
-              >
-                View Referrals
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Gift className="w-5 h-5 text-blue-200" />
-                </div>
-                <p className="text-2xl font-bold text-white">{referralStats.totalCodes}</p>
-                <p className="text-xs text-blue-200 mt-1">Active Codes</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Users className="w-5 h-5 text-blue-200" />
-                </div>
-                <p className="text-2xl font-bold text-white">{referralStats.totalReferrals}</p>
-                <p className="text-xs text-blue-200 mt-1">Total Referrals</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="w-5 h-5 text-blue-200" />
-                </div>
-                <p className="text-2xl font-bold text-white">{maskFinancialValue(`$${referralStats.creditsIssuedAllTime.toFixed(0)}`)}</p>
-                <p className="text-xs text-blue-200 mt-1">Credits Issued</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="w-5 h-5 text-blue-200" />
-                </div>
-                <p className="text-2xl font-bold text-white">{maskFinancialValue(`$${referralStats.creditsRedeemedAllTime.toFixed(0)}`)}</p>
-                <p className="text-xs text-blue-200 mt-1">Credits Redeemed</p>
-              </div>
-            </div>
+        <div className="flex flex-col gap-3 sm:items-end">
+          <div className="flex items-center gap-2 text-xs text-slate-600" aria-live="polite">
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              {isConnected && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+            </span>
+            <span>
+              {isConnected ? 'Live' : 'Auto-refreshing'}
+              {updatedAt && ` · updated ${updatedAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
+            </span>
+            <button
+              type="button"
+              onClick={refresh}
+              disabled={refreshing}
+              aria-label="Refresh dashboard"
+              title="Refresh now"
+              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-900 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+            </button>
           </div>
-        </div>
-      )}
 
-      {!loading && pendingReminders.length > 0 && (
-        <div className="mt-12">
-          <div className="bg-white rounded-xl p-6 border border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Bell className="w-5 h-5 text-rose-500" />
-                Follow-up Reminders
-              </h2>
-              <Link
-                to="/admin/reminders"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-3 mb-5">
-              {stats.remindersOverdue > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-xs font-semibold text-red-800">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {stats.remindersOverdue} Overdue
-                </span>
-              )}
-              {stats.remindersDueToday > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">
-                  <Clock className="w-3.5 h-3.5" />
-                  {stats.remindersDueToday} Due Today
-                </span>
-              )}
-              {pendingReminders.length - stats.remindersOverdue - stats.remindersDueToday > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {pendingReminders.length - stats.remindersOverdue - stats.remindersDueToday} Upcoming
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              {pendingReminders.map((reminder) => {
-                const scheduledDate = new Date(reminder.scheduled_date);
-                scheduledDate.setHours(0, 0, 0, 0);
-                const todayDate = new Date();
-                todayDate.setHours(0, 0, 0, 0);
-                const isOverdue = scheduledDate < todayDate;
-                const isDueToday = scheduledDate.getTime() === todayDate.getTime();
-
-                const getReminderTypeLabel = (type: string) => {
-                  switch (type) {
-                    case 'follow_up_call': return 'Follow-up Call';
-                    case 'warranty_check': return 'Warranty Check';
-                    case 'repeat_business': return 'Repeat Business';
-                    case 'custom': return 'Custom';
-                    default: return type;
-                  }
-                };
-
-                const getReminderTypeColor = (type: string) => {
-                  switch (type) {
-                    case 'follow_up_call': return 'bg-blue-100 text-blue-800 border-blue-200';
-                    case 'warranty_check': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-                    case 'repeat_business': return 'bg-teal-100 text-teal-800 border-teal-200';
-                    case 'custom': return 'bg-slate-100 text-slate-800 border-slate-200';
-                    default: return 'bg-slate-100 text-slate-800 border-slate-200';
-                  }
-                };
-
-                return (
-                  <Link
-                    key={reminder.id}
-                    to="/admin/reminders"
-                    className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
-                      isOverdue
-                        ? 'bg-red-50 border-red-200'
-                        : isDueToday
-                        ? 'bg-amber-50 border-amber-200'
-                        : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {isOverdue && (
-                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-600 text-white">
-                              OVERDUE
-                            </span>
-                          )}
-                          {isDueToday && !isOverdue && (
-                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-600 text-white">
-                              TODAY
-                            </span>
-                          )}
-                          <p className="font-semibold text-slate-900 truncate">
-                            {reminder.job?.client_name || 'Unknown Customer'}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-slate-600 mb-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {scheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </span>
-                          {reminder.job?.client_phone && (
-                            <>
-                              <span className="text-slate-400">|</span>
-                              <span className="flex items-center gap-1">
-                                <Phone className="w-3 h-3" />
-                                {reminder.job.client_phone}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        {reminder.admin_notes && (
-                          <p className="text-xs text-slate-500 truncate">{reminder.admin_notes}</p>
-                        )}
-                      </div>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getReminderTypeColor(reminder.reminder_type)}`}>
-                        {getReminderTypeLabel(reminder.reminder_type)}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {scheduledEmails.length > 0 && (
-        <div className="mt-12">
-          <div className="bg-white rounded-xl p-6 border border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-blue-600" />
-                Scheduled Emails
-              </h2>
-              <Link
-                to="/admin/scheduled-emails"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-3 mb-5">
-              {scheduledEmails.filter(e => e.status === 'due').length > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
-                  <Send className="w-3.5 h-3.5" />
-                  {scheduledEmails.filter(e => e.status === 'due').length} Sending Soon
-                </span>
-              )}
-              {scheduledEmails.filter(e => e.status === 'scheduled').length > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {scheduledEmails.filter(e => e.status === 'scheduled').length} Upcoming
-                </span>
-              )}
-              {scheduledEmails.filter(e => e.status === 'blocked').length > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {scheduledEmails.filter(e => e.status === 'blocked').length} Need Attention
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {scheduledEmails
-                .filter(e => e.status === 'due' || e.status === 'scheduled')
-                .slice(0, 5)
-                .map(email => (
-                  <Link
-                    key={email.id}
-                    to="/admin/scheduled-emails"
-                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
-                        {email.recipientName || email.recipientEmail || 'Unknown recipient'}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">{email.label}</p>
-                    </div>
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${
-                        email.status === 'due'
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
-                      }`}
-                    >
-                      {email.status === 'due' ? 'Sending soon' : 'Upcoming'}
-                    </span>
-                  </Link>
-                ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!loading && recentInquiries.length > 0 && (
-        <div className="mt-12">
-          <div className="bg-white rounded-xl p-6 border border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-emerald-600" />
-                Recent Inquiries
-              </h2>
-              <Link
-                to="/admin/inquiries"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {recentInquiries.map((inquiry) => {
-                const formatDate = (dateString: string) => {
-                  const date = new Date(dateString);
-                  const now = new Date();
-                  const diffInMs = now.getTime() - date.getTime();
-                  const diffInHours = diffInMs / (1000 * 60 * 60);
-
-                  if (diffInHours < 24) {
-                    const hours = Math.floor(diffInHours);
-                    if (hours < 1) {
-                      const minutes = Math.floor(diffInMs / (1000 * 60));
-                      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-                    }
-                    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-                  }
-
-                  return date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-                  });
-                };
-
-                const getStatusColor = (status: string) => {
-                  switch (status) {
-                    case 'pending':
-                      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                    case 'converted_to_job':
-                      return 'bg-green-100 text-green-800 border-green-200';
-                    case 'archived':
-                      return 'bg-gray-100 text-gray-800 border-gray-200';
-                    default:
-                      return 'bg-gray-100 text-gray-800 border-gray-200';
-                  }
-                };
-
-                const getStatusLabel = (status: string) => {
-                  switch (status) {
-                    case 'pending':
-                      return 'Pending';
-                    case 'converted_to_job':
-                      return 'Converted';
-                    case 'archived':
-                      return 'Archived';
-                    default:
-                      return status;
-                  }
-                };
-
-                return (
-                  <Link
-                    key={inquiry.id}
-                    to="/admin/inquiries"
-                    className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
-                      !inquiry.viewed ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {!inquiry.viewed && (
-                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-600 text-white">
-                              NEW
-                            </span>
-                          )}
-                          <p className="font-semibold text-slate-900 truncate">{inquiry.client_name}</p>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-slate-600 mb-2">
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {inquiry.client_email}
-                          </span>
-                          <span className="text-slate-400">•</span>
-                          <span>{formatDate(inquiry.submission_date)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-slate-700">{inquiry.furniture_type}</span>
-                          {inquiry.pieces && (
-                            <>
-                              <span className="text-slate-400">•</span>
-                              <span className="text-slate-600">{inquiry.pieces} {inquiry.pieces === 1 ? 'piece' : 'pieces'}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getStatusColor(inquiry.status)}`}>
-                          {getStatusLabel(inquiry.status)}
-                        </span>
-                        {inquiry.estimated_price && (
-                          <span className="text-sm font-semibold text-emerald-600">{maskFinancialValue(inquiry.estimated_price)}</span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!loading && upcomingGoals.length > 0 && (
-        <div className="mt-12">
-          <div className="bg-white rounded-xl p-6 border border-slate-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Target className="w-5 h-5 text-emerald-600" />
-                Active Goals
-              </h2>
-              <Link
-                to="/admin/goals"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <p className="text-sm text-slate-600 mb-1">Total Goals</p>
-                <p className="text-2xl font-bold text-slate-900">{goalStats.totalGoals}</p>
-              </div>
-              <div className="p-4 bg-emerald-50 rounded-lg">
-                <p className="text-sm text-emerald-700 mb-1">Completed</p>
-                <p className="text-2xl font-bold text-emerald-900">{goalStats.completedGoals}</p>
-                <p className="text-xs text-emerald-600 mt-1">{goalStats.completionRate}% rate</p>
-              </div>
-              {goalStats.overdueGoals > 0 && (
-                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                  <p className="text-sm text-red-700 mb-1">Overdue</p>
-                  <p className="text-2xl font-bold text-red-900">{goalStats.overdueGoals}</p>
-                  <p className="text-xs text-red-600 mt-1">Need attention</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              {upcomingGoals.map((goal) => {
-                const getPriorityColor = (priority: string) => {
-                  switch (priority) {
-                    case 'high': return 'bg-red-100 text-red-800';
-                    case 'medium': return 'bg-yellow-100 text-yellow-800';
-                    case 'low': return 'bg-green-100 text-green-800';
-                    default: return 'bg-slate-100 text-slate-800';
-                  }
-                };
-
-                const getDaysRemaining = (dueDate: string | null) => {
-                  if (!dueDate) return null;
-                  const today = new Date();
-                  const due = new Date(dueDate);
-                  const diffTime = due.getTime() - today.getTime();
-                  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                };
-
-                const daysRemaining = getDaysRemaining(goal.due_date);
-
-                return (
-                  <div
-                    key={goal.id}
-                    className="p-4 border border-slate-200 rounded-lg hover:border-emerald-300 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-slate-900">{goal.title}</h3>
-                          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getPriorityColor(goal.priority)}`}>
-                            {goal.priority.toUpperCase()}
-                          </span>
-                        </div>
-                        {goal.due_date && (
-                          <p className="text-sm text-slate-600">
-                            Due {new Date(goal.due_date).toLocaleDateString()}
-                            {daysRemaining !== null && daysRemaining >= 0 && (
-                              <span className={daysRemaining <= 7 ? 'text-red-600 font-medium ml-1' : 'ml-1'}>
-                                ({daysRemaining} days left)
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {Math.round(goal.progress_percentage)}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          goal.progress_percentage >= 75 ? 'bg-emerald-500' :
-                          goal.progress_percentage >= 50 ? 'bg-blue-500' :
-                          goal.progress_percentage >= 25 ? 'bg-yellow-500' : 'bg-orange-500'
-                        }`}
-                        style={{ width: `${Math.min(goal.progress_percentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-emerald-600" />
-            Quick Actions
-          </h2>
-          <div className="space-y-3">
+          <nav aria-label="Quick actions" className="flex flex-wrap gap-2">
             <Link
               to="/admin/jobs"
-              className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
             >
-              <p className="font-medium text-slate-900">Add New Job</p>
-              <p className="text-sm text-slate-600">Track completed jobs and revenue</p>
-            </Link>
-            <Link
-              to="/admin/business-info"
-              className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
-            >
-              <p className="font-medium text-slate-900">Edit Business Information</p>
-              <p className="text-sm text-slate-600">Update contact details and description</p>
-            </Link>
-            <Link
-              to="/admin/services"
-              className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
-            >
-              <p className="font-medium text-slate-900">Manage Services</p>
-              <p className="text-sm text-slate-600">Add, edit, or remove services</p>
-            </Link>
-            <Link
-              to="/admin/reviews"
-              className="block px-4 py-3 bg-slate-50 hover:bg-emerald-50 rounded-lg transition-colors"
-            >
-              <p className="font-medium text-slate-900">Manage Reviews</p>
-              <p className="text-sm text-slate-600">Add or update customer reviews</p>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add job
             </Link>
             <Link
               to="/admin/analytics"
-              className="block px-4 py-3 bg-linear-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100 border border-emerald-200 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-emerald-900 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    View Analytics Dashboard
-                  </p>
-                  <p className="text-sm text-emerald-700">Charts, graphs, and detailed insights</p>
-                </div>
-                <ArrowRight className="w-5 h-5 text-emerald-600" />
-              </div>
+              <BarChart3 className="h-4 w-4" aria-hidden="true" />
+              Analytics
             </Link>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 border border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-emerald-600" />
-            Tips
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <p className="font-medium text-slate-900 mb-1">Keep Information Current</p>
-              <p className="text-sm text-slate-600">
-                Regularly update your services and pricing to ensure customers have accurate information.
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-900 mb-1">Showcase Reviews</p>
-              <p className="text-sm text-slate-600">
-                Feature your best customer reviews to build trust with potential clients.
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-slate-900 mb-1">Expand Service Areas</p>
-              <p className="text-sm text-slate-600">
-                Add new service areas as you grow your business coverage.
-              </p>
-            </div>
-          </div>
+            <Link
+              to="/admin/business-info"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <Building2 className="h-4 w-4" aria-hidden="true" />
+              Business info
+            </Link>
+          </nav>
         </div>
       </div>
+
+      {error && (
+        <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+          <span className="flex-1">
+            {data
+              ? 'Could not refresh the dashboard, so these numbers may be out of date.'
+              : 'Could not load the dashboard.'}
+          </span>
+          <button type="button" onClick={refresh} className="font-semibold underline underline-offset-2 hover:text-red-700">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {nextJob && <NextJobBanner job={nextJob} />}
+
+      {showSkeleton ? (
+        <KpiSkeleton />
+      ) : (
+        <>
+          {data && <AttentionStrip items={attentionItems} />}
+
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+            <KpiCard
+              label="Total Revenue"
+              value={maskFinancialValue(formatCurrency(jobTotals.revenue))}
+              icon={TrendingUp}
+              to="/admin/jobs"
+              detail={<>{maskFinancialValue(formatCurrency(monthToDate.revenue.current))} this month</>}
+              comparison={monthToDate.revenue}
+            />
+            <KpiCard
+              label="Total Jobs"
+              value={jobTotals.total}
+              icon={Briefcase}
+              to="/admin/jobs"
+              detail={<>{monthToDate.jobs.current} completed this month</>}
+              comparison={monthToDate.jobs}
+            />
+            <KpiCard
+              label={jobTotals.timeSaved.title}
+              value={jobTotals.timeSaved.label}
+              icon={Clock}
+              to="/admin/analytics"
+              detail={<>{formatHours(monthToDate.hours.current)} this month</>}
+              comparison={monthToDate.hours}
+            />
+            <KpiCard
+              label="Avg Rating"
+              value={data && data.avgRating > 0 ? `${data.avgRating}/5` : 'N/A'}
+              icon={Star}
+              to="/admin/reviews"
+              detail={data ? <>From {data.reviews} {plural(data.reviews, 'review', 'reviews')}</> : undefined}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <div className="xl:col-span-2">
+              <TrendCharts
+                trend={jobTotals.trend}
+                formatCurrency={formatCurrency}
+                maskFinancialValue={maskFinancialValue}
+                privacyModeEnabled={privacyModeEnabled}
+              />
+            </div>
+            {data && <InquiryPipelineCard inquiries={data.inquiries} responseTime={data.responseTime} />}
+          </div>
+
+          {data && (
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+              {data.reminders.items.length > 0 && (
+                <Panel title="Follow-up Reminders" icon={Bell} action={{ label: 'View all', to: '/admin/reminders' }}>
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {data.reminders.overdue > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-800">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        {data.reminders.overdue} Overdue
+                      </span>
+                    )}
+                    {data.reminders.dueToday > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                        <Clock className="h-3.5 w-3.5" />
+                        {data.reminders.dueToday} Due Today
+                      </span>
+                    )}
+                    {data.reminders.upcoming > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {data.reminders.upcoming} Upcoming
+                      </span>
+                    )}
+                  </div>
+                <div className="space-y-3">
+                  {data.reminders.items.map((reminder) => {
+                    const scheduledDate = parseJobDate(reminder.scheduled_date) ?? new Date(reminder.scheduled_date);
+                    scheduledDate.setHours(0, 0, 0, 0);
+                    const todayDate = new Date();
+                    todayDate.setHours(0, 0, 0, 0);
+                    const isOverdue = scheduledDate < todayDate;
+                    const isDueToday = scheduledDate.getTime() === todayDate.getTime();
+
+                    const getReminderTypeLabel = (type: string) => {
+                      switch (type) {
+                        case 'follow_up_call': return 'Follow-up Call';
+                        case 'warranty_check': return 'Warranty Check';
+                        case 'repeat_business': return 'Repeat Business';
+                        case 'custom': return 'Custom';
+                        default: return type;
+                      }
+                    };
+
+                    const getReminderTypeColor = (type: string) => {
+                      switch (type) {
+                        case 'follow_up_call': return 'bg-blue-100 text-blue-800 border-blue-200';
+                        case 'warranty_check': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                        case 'repeat_business': return 'bg-teal-100 text-teal-800 border-teal-200';
+                        case 'custom': return 'bg-slate-100 text-slate-800 border-slate-200';
+                        default: return 'bg-slate-100 text-slate-800 border-slate-200';
+                      }
+                    };
+
+                    return (
+                      <Link
+                        key={reminder.id}
+                        to="/admin/reminders"
+                        className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
+                          isOverdue
+                            ? 'bg-red-50 border-red-200'
+                            : isDueToday
+                            ? 'bg-amber-50 border-amber-200'
+                            : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              {isOverdue && (
+                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-600 text-white">
+                                  OVERDUE
+                                </span>
+                              )}
+                              {isDueToday && !isOverdue && (
+                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-600 text-white">
+                                  TODAY
+                                </span>
+                              )}
+                              <p className="font-semibold text-slate-900 truncate">
+                                {reminder.job?.client_name || 'Unknown Customer'}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-slate-600 mb-1">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {scheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                              {reminder.job?.client_phone && (
+                                <>
+                                  <span className="text-slate-400">|</span>
+                                  <span className="flex items-center gap-1">
+                                    <Phone className="w-3 h-3" />
+                                    {reminder.job.client_phone}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            {reminder.admin_notes && (
+                              <p className="text-xs text-slate-500 truncate">{reminder.admin_notes}</p>
+                            )}
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getReminderTypeColor(reminder.reminder_type)}`}>
+                            {getReminderTypeLabel(reminder.reminder_type)}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                </Panel>
+              )}
+
+              {data.recentInquiries.length > 0 && (
+                <Panel title="Recent Inquiries" icon={MessageSquare} action={{ label: 'View all', to: '/admin/inquiries' }}>
+                <div className="space-y-3">
+                  {data.recentInquiries.map((inquiry) => {
+                    const formatDate = (dateString: string) => {
+                      const date = new Date(dateString);
+                      const now = new Date();
+                      const diffInMs = now.getTime() - date.getTime();
+                      const diffInHours = diffInMs / (1000 * 60 * 60);
+
+                      if (diffInHours < 24) {
+                        const hours = Math.floor(diffInHours);
+                        if (hours < 1) {
+                          const minutes = Math.floor(diffInMs / (1000 * 60));
+                          return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+                        }
+                        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+                      }
+
+                      return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+                      });
+                    };
+
+                    const getStatusColor = (status: string) => {
+                      switch (status) {
+                        case 'pending':
+                          return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                        case 'converted_to_job':
+                          return 'bg-green-100 text-green-800 border-green-200';
+                        case 'archived':
+                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                        default:
+                          return 'bg-gray-100 text-gray-800 border-gray-200';
+                      }
+                    };
+
+                    const getStatusLabel = (status: string) => {
+                      switch (status) {
+                        case 'pending':
+                          return 'Pending';
+                        case 'converted_to_job':
+                          return 'Converted';
+                        case 'archived':
+                          return 'Archived';
+                        default:
+                          return status;
+                      }
+                    };
+
+                    return (
+                      <Link
+                        key={inquiry.id}
+                        to="/admin/inquiries"
+                        className={`block px-4 py-3 rounded-lg border transition-all hover:shadow-md ${
+                          !inquiry.viewed ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              {!inquiry.viewed && (
+                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-600 text-white">
+                                  NEW
+                                </span>
+                              )}
+                              <p className="font-semibold text-slate-900 truncate">{inquiry.client_name}</p>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-slate-600 mb-2">
+                              <span className="flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                {inquiry.client_email}
+                              </span>
+                              <span className="text-slate-400">•</span>
+                              <span>{formatDate(inquiry.submission_date)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-slate-700">{inquiry.furniture_type}</span>
+                              {inquiry.pieces && (
+                                <>
+                                  <span className="text-slate-400">•</span>
+                                  <span className="text-slate-600">{inquiry.pieces} {inquiry.pieces === 1 ? 'piece' : 'pieces'}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${getStatusColor(inquiry.status)}`}>
+                              {getStatusLabel(inquiry.status)}
+                            </span>
+                            {inquiry.estimated_price && (
+                              <span className="text-sm font-semibold text-emerald-600">{maskFinancialValue(inquiry.estimated_price)}</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                </Panel>
+              )}
+
+              {scheduledEmails.length > 0 && (
+                <Panel title="Scheduled Emails" icon={Mail} action={{ label: 'View all', to: '/admin/scheduled-emails' }}>
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {dueEmails > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                        <Send className="h-3.5 w-3.5" />
+                        {dueEmails} Sending Soon
+                      </span>
+                    )}
+                    {upcomingEmails > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {upcomingEmails} Upcoming
+                      </span>
+                    )}
+                    {blockedEmails > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        {blockedEmails} Need Attention
+                      </span>
+                    )}
+                  </div>
+                <div className="space-y-2">
+                  {emailsToShow.map(email => (
+                      <Link
+                        key={email.id}
+                        to="/admin/scheduled-emails"
+                        className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {email.recipientName || email.recipientEmail || 'Unknown recipient'}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">{email.label}</p>
+                        </div>
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full border whitespace-nowrap ${
+                            email.status === 'due'
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                              : 'bg-blue-100 text-blue-800 border-blue-200'
+                          }`}
+                        >
+                          {email.status === 'due' ? 'Sending soon' : 'Upcoming'}
+                        </span>
+                      </Link>
+                    ))}
+                </div>
+                </Panel>
+              )}
+
+              {data.upcomingGoals.length > 0 && (
+                <Panel title="Active Goals" icon={Target} action={{ label: 'View all', to: '/admin/goals' }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-slate-50 rounded-lg">
+                    <p className="text-sm text-slate-600 mb-1">Total Goals</p>
+                    <p className="text-2xl font-bold text-slate-900">{data.goalStats.totalGoals}</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-lg">
+                    <p className="text-sm text-emerald-700 mb-1">Completed</p>
+                    <p className="text-2xl font-bold text-emerald-900">{data.goalStats.completedGoals}</p>
+                    <p className="text-xs text-emerald-600 mt-1">{data.goalStats.completionRate}% rate</p>
+                  </div>
+                  {data.goalStats.overdueGoals > 0 && (
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <p className="text-sm text-red-700 mb-1">Overdue</p>
+                      <p className="text-2xl font-bold text-red-900">{data.goalStats.overdueGoals}</p>
+                      <p className="text-xs text-red-600 mt-1">Need attention</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  {data.upcomingGoals.map((goal) => {
+                    const getPriorityColor = (priority: string) => {
+                      switch (priority) {
+                        case 'high': return 'bg-red-100 text-red-800';
+                        case 'medium': return 'bg-yellow-100 text-yellow-800';
+                        case 'low': return 'bg-green-100 text-green-800';
+                        default: return 'bg-slate-100 text-slate-800';
+                      }
+                    };
+
+                    const getDaysRemaining = (dueDate: string | null) => {
+                      if (!dueDate) return null;
+                      const today = new Date();
+                      const due = new Date(dueDate);
+                      const diffTime = due.getTime() - today.getTime();
+                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    };
+
+                    const daysRemaining = getDaysRemaining(goal.due_date);
+
+                    return (
+                      <div
+                        key={goal.id}
+                        className="p-4 border border-slate-200 rounded-lg hover:border-emerald-300 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-slate-900">{goal.title}</h3>
+                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getPriorityColor(goal.priority)}`}>
+                                {goal.priority.toUpperCase()}
+                              </span>
+                            </div>
+                            {goal.due_date && (
+                              <p className="text-sm text-slate-600">
+                                Due {new Date(goal.due_date).toLocaleDateString()}
+                                {daysRemaining !== null && daysRemaining >= 0 && (
+                                  <span className={daysRemaining <= 7 ? 'text-red-600 font-medium ml-1' : 'ml-1'}>
+                                    ({daysRemaining} days left)
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-sm font-semibold text-slate-900">
+                            {Math.round(goal.progress_percentage)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              goal.progress_percentage >= 75 ? 'bg-emerald-500' :
+                              goal.progress_percentage >= 50 ? 'bg-blue-500' :
+                              goal.progress_percentage >= 25 ? 'bg-yellow-500' : 'bg-orange-500'
+                            }`}
+                            style={{ width: `${Math.min(goal.progress_percentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                </Panel>
+              )}
+            </div>
+          )}
+
+          {data && (
+            <section aria-label="Website content">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">On your website</h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  { name: 'Services', value: data.services, icon: Wrench, to: '/admin/services' },
+                  { name: 'Service Areas', value: data.serviceAreas, icon: MapPin, to: '/admin/service-areas' },
+                  { name: 'Reviews', value: data.reviews, icon: Star, to: '/admin/reviews' },
+                ].map(({ name, value, icon: Icon, to }) => (
+                  <Link
+                    key={name}
+                    to={to}
+                    className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs transition hover:border-slate-300 hover:shadow-md"
+                  >
+                    <span className="rounded-lg bg-slate-100 p-2 text-slate-500 transition group-hover:bg-emerald-50 group-hover:text-emerald-700">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-slate-700">{name}</span>
+                    <span className="text-xl font-bold text-slate-900 tabular-nums">{value}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {referralStats && (
+            <Panel title="Referral Program" icon={Gift} action={{ label: 'View referrals', to: '/admin/clients?segment=referrals' }}>
+              <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {[
+                  { name: 'Active Codes', value: String(referralStats.totalCodes) },
+                  { name: 'Total Referrals', value: String(referralStats.totalReferrals) },
+                  { name: 'Credits Issued', value: maskFinancialValue(`$${referralStats.creditsIssuedAllTime.toFixed(0)}`) },
+                  { name: 'Credits Redeemed', value: maskFinancialValue(`$${referralStats.creditsRedeemedAllTime.toFixed(0)}`) },
+                ].map(stat => (
+                  <div key={stat.name} className="rounded-lg bg-slate-50 px-4 py-3">
+                    <dt className="text-xs text-slate-600">{stat.name}</dt>
+                    <dd className="mt-0.5 text-xl font-bold text-slate-900 tabular-nums">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Panel>
+          )}
+        </>
+      )}
     </div>
   );
 }
