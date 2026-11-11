@@ -23,6 +23,7 @@ export default function CouponPopup({ coupon, settings, onClaim, onClose }: Coup
   const [visible, setVisible] = useState(false);
   const closingRef = useRef(false);
   const claimRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   const reducedMotion =
@@ -58,12 +59,35 @@ export default function CouponPopup({ coupon, settings, onClaim, onClose }: Coup
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close(onClose);
+      if (event.key === 'Escape') {
+        close(onClose);
+        return;
+      }
+
+      // The centred version dims the page and says it is modal, so Tab stays
+      // inside it. The corner card is not a modal and leaves Tab alone.
+      if (event.key !== 'Tab' || !centered || !cardRef.current) return;
+      const stops = Array.from(cardRef.current.querySelectorAll<HTMLElement>('button'));
+      if (stops.length === 0) return;
+      const first = stops[0];
+      const last = stops[stops.length - 1];
+      const active = document.activeElement;
+
+      if (!cardRef.current.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onClose, fadeMs]);
+  }, [onClose, fadeMs, centered]);
 
   const fade = { transitionDuration: `${fadeMs}ms` };
 
@@ -86,11 +110,12 @@ export default function CouponPopup({ coupon, settings, onClaim, onClose }: Coup
       )}
 
       <div
+        ref={cardRef}
         role="dialog"
         aria-modal={centered}
         aria-labelledby="coupon-popup-headline"
         aria-describedby="coupon-popup-message"
-        className={`relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_rgba(14,39,72,0.35)] ring-1 ring-black/5 pointer-events-auto transition-[opacity,transform] ease-out ${
+        className={`relative w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl bg-white shadow-[0_24px_60px_rgba(14,39,72,0.35)] ring-1 ring-black/5 pointer-events-auto transition-[opacity,transform] ease-out ${
           visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-3 scale-[0.98]'
         }`}
         style={fade}

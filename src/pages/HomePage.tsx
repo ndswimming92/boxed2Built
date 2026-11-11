@@ -25,9 +25,14 @@ import {
   FAQ_CONTENT
 } from '../constants/localSEO';
 import { useBusinessLoaderData } from '../hooks/useBusinessLoaderData';
+import { useBusinessDataContext } from '../contexts/BusinessDataContext';
 
 const HomePage: React.FC = () => {
   const businessData = useBusinessLoaderData();
+  // The loader data is fixed at build time; this is the copy refreshed in the
+  // browser, which is the one that carries the real business id if the build
+  // had to fall back to placeholder data.
+  const liveBusiness = useBusinessDataContext();
   const [quoteProgress, setQuoteProgress] = useState(0);
   // The coupon popup waits for the opening animation, so its delay counts from
   // when the visitor can see the page rather than from behind the loader.
@@ -71,7 +76,7 @@ const HomePage: React.FC = () => {
       />
       <BoxLoader onDone={() => setLoaderDone(true)} />
       <ClientOnly>
-        {() => <HomeCouponPopup businessId={businessData.info.id ?? null} ready={loaderDone} />}
+        {() => <HomeCouponPopup businessId={liveBusiness?.data?.info?.id ?? businessData.info.id ?? null} ready={loaderDone} />}
       </ClientOnly>
       <Header />
       <main className="pt-16">

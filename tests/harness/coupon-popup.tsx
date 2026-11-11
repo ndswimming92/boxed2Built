@@ -19,7 +19,7 @@ import HomeCouponPopup from '../../src/components/HomeCouponPopup';
 createRoot(document.getElementById('root')!).render(
   <MemoryRouter initialEntries={[`/${window.location.search}`]}>
     <div className="min-h-screen bg-slate-50 p-6">
-      <HomeCouponPopup businessId="biz-1" />
+      <HomeCouponPopup businessId={new URLSearchParams(window.location.search).get('business') ?? '11111111-1111-4111-8111-111111111111'} />
       <section id="contact-form-section">
         <ContactForm />
       </section>

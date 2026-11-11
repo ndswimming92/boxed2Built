@@ -170,6 +170,48 @@ test('a visitor who arrived with a code already is left alone', async ({ page })
   await expect(page.getByLabel(/Referral or Coupon Code/i)).toHaveValue(/B2B-JONES/);
 });
 
+test('Tab stays inside the centred popup', async ({ page }) => {
+  await openHome(page, [popupRow()]);
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('button', { name: 'Claim my discount' })).toBeFocused();
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Tab');
+    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+  }
+  await page.keyboard.press('Shift+Tab');
+  expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+});
+
+test('on a short screen the popup scrolls instead of running off it', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 420 });
+  await openHome(page, [popupRow({ message: 'A longer message that wraps. '.repeat(8) })]);
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const box = await dialog.boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(420);
+  // The last control is reachable by scrolling the card.
+  await dialog.getByRole('button', { name: 'No thanks' }).click();
+  await expect(popup(page)).toHaveCount(0);
+});
+
+test('a placeholder business id is never sent to the database', async ({ page }) => {
+  let asked = false;
+  await page.route('**/rest/v1/**', (route) => route.fulfill({ json: [] }));
+  await page.route('**/rest/v1/rpc/get_home_coupon_popup', (route) => {
+    asked = true;
+    return route.fulfill({ json: [popupRow()] });
+  });
+  await page.goto('/tests/harness/coupon-popup.html?business=fallback');
+  await expect(page.getByRole('button', { name: /^IKEA Flat-Pack/ })).toBeVisible();
+  await page.waitForTimeout(500);
+
+  expect(asked).toBe(false);
+  await expect(popup(page)).toHaveCount(0);
+});
+
 test('the corner position leaves the page usable behind it', async ({ page }) => {
   await openHome(page, [popupRow({ position: 'corner' })]);
 

@@ -19,6 +19,8 @@ interface HomeCouponPopupProps {
 // the site is not a new visit, whatever the frequency setting says.
 let shownThisLoad = false;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Decides whether and when the coupon popup appears on the home page, then
  * hands the drawing to CouponPopup. Renders nothing until there is something
@@ -37,7 +39,9 @@ export default function HomeCouponPopup({ businessId, ready = true }: HomeCoupon
   const alreadyHasCode = params.has('coupon') || params.has('ref') || Boolean(recallReferralCode());
 
   useEffect(() => {
-    if (!businessId || alreadyHasCode || shownThisLoad) return;
+    // A build that could not reach the database ships a placeholder business
+    // whose id is not a real one. Wait for the real id rather than ask with it.
+    if (!businessId || !UUID.test(businessId) || alreadyHasCode || shownThisLoad) return;
 
     let cancelled = false;
     getHomeCouponPopup(businessId).then((result) => {
