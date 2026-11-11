@@ -52,3 +52,47 @@ export async function getPortalInactiveCustomersReport() {
 
   return (data ?? []) as PortalInactiveCustomerRow[];
 }
+
+export type PortalAccountDeleteResult = {
+  customerId: string;
+  success: boolean;
+  error?: string;
+  email?: string | null;
+  loginDeleted?: boolean;
+  loginKeptReason?: string;
+  clientsDeleted?: number;
+  filesDeleted?: number;
+};
+
+/**
+ * Permanently deletes portal accounts: the account, its portal data, uploaded
+ * files, login and the CRM record with the same email. Jobs, invoices, bookings
+ * and inquiries are kept but unlinked. Returns one result per account so a
+ * partial failure in a bulk delete can be reported row by row.
+ */
+export async function deletePortalAccounts(customerIds: string[]): Promise<PortalAccountDeleteResult[]> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('You need to be signed in to delete portal accounts.');
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-portal-account`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ customerIds }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!Array.isArray(payload?.results)) {
+    throw new Error(typeof payload?.error === 'string' ? payload.error : 'Failed to delete the selected accounts.');
+  }
+
+  return payload.results as PortalAccountDeleteResult[];
+}
