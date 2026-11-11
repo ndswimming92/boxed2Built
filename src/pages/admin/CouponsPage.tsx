@@ -137,20 +137,25 @@ export default function CouponsPage() {
 
       // Side by side: a coupon list with no names beside the counts is still
       // worth showing, so a failure here dims that one panel, not the page.
-      const [codes, used, owners] = await Promise.all([
+      const [codes, used] = await Promise.all([
         getCoupons(businessInfo.id),
         getCouponRedemptions(businessInfo.id).catch((error) => {
           console.error('Error loading coupon usage:', error);
           return null;
         }),
-        businessInfo.organization_id
-          ? getPartnerCouponOwners(businessInfo.organization_id)
-          : Promise.resolve<Record<string, string>>({}),
       ]);
 
-      setPartnerOwners(owners);
       setCoupons(codes);
       setRedemptions(used);
+
+      // Who owns the partner codes is a refinement, not a reason to hold the
+      // list: until it arrives (or if it fails) a partner code is still
+      // recognised by its description.
+      if (businessInfo.organization_id) {
+        getPartnerCouponOwners(businessInfo.organization_id)
+          .then(setPartnerOwners)
+          .catch((error) => console.error('Error loading partner codes:', error));
+      }
     } catch (error) {
       console.error('Error loading coupons:', error);
       notify('error', 'Failed to load coupons');
@@ -1231,7 +1236,7 @@ export default function CouponsPage() {
               </div>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
                 {([
-                  ['all', 'All'], ['active', 'Live'], ['scheduled', 'Scheduled'], ['inactive', 'Off & expired'],
+                  ['all', 'All'], ['active', 'Live'], ['scheduled', 'Scheduled'], ['inactive', 'Inactive'],
                 ] as const).map(([key, label]) => (
                   <button
                     key={key}
