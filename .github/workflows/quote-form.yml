@@ -32,7 +32,19 @@ jobs:
       - run: npm ci --include=dev
 
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        # The apt step inside --with-deps is what fails when the runner's DNS
+        # hiccups. Retry it a few times, and cap each try so a dead network
+        # fails in minutes rather than apt's ten minutes of its own retries.
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 4m npx playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "::warning::Chromium install attempt $attempt failed; retrying"
+            sleep $((attempt * 15))
+          done
+          echo "::error::Chromium install failed after 3 attempts"
+          exit 1
 
       - name: Submit the form end to end
         run: npm run test:form
