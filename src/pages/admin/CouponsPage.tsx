@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical, ChevronDown, ChevronRight } from 'lucide-react';
+import { Ticket, Plus, Trash2, CheckCircle, AlertCircle, Share2, Copy, Link as LinkIcon, Power, Pencil, X, Calendar, TrendingUp, Megaphone, Sparkles, Clock, Mail, Users, FlaskConical, ChevronDown, ChevronRight, Search, Handshake } from 'lucide-react';
 import { Facebook } from '../../components/ui/BrandIcons';
 import {
   getCoupons, getCouponRedemptions, createCoupon, updateCoupon, setCouponActive, deleteCoupon,
-  draftCouponPromo, publishCouponPromo, sendCouponPromoReminder,
+  draftCouponPromo, publishCouponPromo, sendCouponPromoReminder, getPartnerCouponOwners,
 } from '../../services/couponService';
 import {
-  couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
+  couponAudience, matchesCouponSearch, couponPromoState, couponState, datetimeLocalToTimestamp, defaultPromoPostAt,
   describeActiveDuration, describeDiscount, describeStateDetail, describePostDue, describeWindow,
   endDateToTimestamp, formatMoney, formatPostAt, formatUsedOn, isValidCouponCode, nextCouponToPost,
   normalizeCouponCode, startDateToTimestamp, timestampToDatetimeLocal,
   timestampToEndDate, timestampToStartDate, toDatetimeLocal,
-  type CouponDiscountType, type CouponState,
+  type CouponAudience, type CouponDiscountType, type CouponState,
 } from '../../utils/coupon';
 import type { Coupon, CouponInput, CouponRedemption } from '../../types/coupon';
 
@@ -50,6 +50,11 @@ const EMPTY_FORM: FormState = {
  * fifty times does not bury every card under it.
  */
 const USES_PREVIEW = 3;
+
+/** Cards shown per section before "Show more", so a long list stays a short page. */
+const PAGE_SIZE = 10;
+
+type StatusFilter = 'all' | 'active' | 'scheduled' | 'inactive';
 
 /**
  * `card` is the left edge and surface of the whole card, so state reads from a
@@ -96,6 +101,14 @@ export default function CouponsPage() {
   const [postingId, setPostingId] = useState<string | null>(null);
   const [remindingId, setRemindingId] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  // Which coupon ids belong to partners, and whose they are.
+  const [partnerOwners, setPartnerOwners] = useState<Record<string, string>>({});
+  const [audience, setAudience] = useState<CouponAudience>('customer');
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  // How many cards each section has revealed, by section key.
+  const [shown, setShown] = useState<Record<string, number>>({});
+  const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -134,6 +147,15 @@ export default function CouponsPage() {
 
       setCoupons(codes);
       setRedemptions(used);
+
+      // Who owns the partner codes is a refinement, not a reason to hold the
+      // list: until it arrives (or if it fails) a partner code is still
+      // recognised by its description.
+      if (businessInfo.organization_id) {
+        getPartnerCouponOwners(businessInfo.organization_id)
+          .then(setPartnerOwners)
+          .catch((error) => console.error('Error loading partner codes:', error));
+      }
     } catch (error) {
       console.error('Error loading coupons:', error);
       notify('error', 'Failed to load coupons');
@@ -380,10 +402,33 @@ export default function CouponsPage() {
     await copy(`${coupon.id}-share`, `${text} ${url}`, 'Share message');
   };
 
+  const partnerIds = new Set(Object.keys(partnerOwners));
+  const audienceOf = (c: Coupon): CouponAudience => couponAudience(c, partnerIds);
+  const customerTotal = coupons.filter((c) => audienceOf(c) === 'customer').length;
+  const partnerTotal = coupons.length - customerTotal;
+
+  // Everything below the tabs works on this tab's codes, narrowed by the search.
+  const searching = query.trim() !== '';
+  const inTab = coupons.filter(
+    (c) => audienceOf(c) === audience && matchesCouponSearch(c, query, partnerOwners[c.id]),
+  );
+  const stateGroup = (c: Coupon): Exclude<StatusFilter, 'all'> => {
+    const state = couponState(c);
+    return state === 'active' || state === 'scheduled' ? state : 'inactive';
+  };
+  const statusCounts = {
+    all: inTab.length,
+    active: inTab.filter((c) => stateGroup(c) === 'active').length,
+    scheduled: inTab.filter((c) => stateGroup(c) === 'scheduled').length,
+    inactive: inTab.filter((c) => stateGroup(c) === 'inactive').length,
+  };
+  const visible = statusFilter === 'all' ? inTab : inTab.filter((c) => stateGroup(c) === statusFilter);
+
   const activeCount = coupons.filter((c) => couponState(c) === 'active').length;
-  const liveCoupons = coupons.filter((c) => couponState(c) === 'active');
-  const scheduledCoupons = coupons.filter((c) => couponState(c) === 'scheduled');
-  const inactiveCoupons = coupons.filter((c) => ['off', 'expired'].includes(couponState(c)));
+  const liveCoupons = visible.filter((c) => couponState(c) === 'active');
+  const scheduledCoupons = visible.filter((c) => couponState(c) === 'scheduled');
+  const inactiveCoupons = visible.filter((c) => ['off', 'expired'].includes(couponState(c)));
+  const noneLiveAtAll = !coupons.some((c) => couponState(c) === 'active');
   const totalUses = coupons.reduce((sum, c) => sum + c.times_used, 0);
   const nextUp = nextCouponToPost(coupons);
   const editing = form.id ? coupons.find((c) => c.id === form.id) ?? null : null;
@@ -894,6 +939,138 @@ export default function CouponsPage() {
       );
   };
 
+  const toggleRow = (couponId: string) =>
+    setExpandedRows((open) =>
+      open.includes(couponId) ? open.filter((id) => id !== couponId) : [...open, couponId],
+    );
+
+  /**
+   * Partner codes are mostly "Used 0 times" with the same buttons on each, so
+   * they get a one-line row; the chevron opens the full card when it matters.
+   */
+  const renderRow = (coupon: Coupon) => {
+    if (showForm && form.id === coupon.id) {
+      return <div key={coupon.id}>{renderForm()}</div>;
+    }
+    if (expandedRows.includes(coupon.id)) {
+      return (
+        <div key={coupon.id}>
+          <button
+            onClick={() => toggleRow(coupon.id)}
+            aria-expanded
+            className="flex items-center gap-1 mb-1 text-xs font-semibold text-slate-500 hover:text-slate-700"
+          >
+            <ChevronDown className="w-4 h-4" /> Collapse
+          </button>
+          {renderCard(coupon)}
+        </div>
+      );
+    }
+
+    const state = couponState(coupon);
+    const style = STATE_STYLES[state];
+    const owner = partnerOwners[coupon.id];
+
+    return (
+      <div
+        key={coupon.id}
+        className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-4 py-3 ${style.card.replace('border-l-8', 'border-l-4')}`}
+      >
+        <button
+          onClick={() => toggleRow(coupon.id)}
+          aria-expanded={false}
+          aria-label={`Show details for ${coupon.code}`}
+          className="p-1 -ml-1 text-slate-400 hover:text-slate-700"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <span className="font-mono font-bold tracking-wider text-slate-900 break-all">{coupon.code}</span>
+        <span className={`px-2 py-0.5 text-[11px] font-bold tracking-wide rounded-full border ${style.badge}`}>
+          {style.label}
+        </span>
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+          {describeDiscount(coupon)}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm text-slate-600">
+          {owner ?? coupon.description ?? ''}
+        </span>
+        <span className="text-xs text-slate-500 whitespace-nowrap">
+          {coupon.times_used === 0 ? 'Unused' : `Used ${coupon.times_used}×`}
+        </span>
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={() => copy(coupon.id, coupon.code, 'Code')}
+            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
+            aria-label={`Copy code ${coupon.code}`}
+            title="Copy code"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => copy(`${coupon.id}-link`, shareLink(coupon.code), 'Link')}
+            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
+            aria-label={`Copy prefilled link for ${coupon.code}`}
+            title="Copy prefilled link"
+          >
+            <LinkIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleShare(coupon)}
+            className="p-1.5 text-emerald-700 hover:bg-emerald-50 rounded-lg"
+            aria-label={`Share ${coupon.code}`}
+            title="Share"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleToggle(coupon)}
+            className={`p-1.5 rounded-lg ${coupon.is_active ? 'text-emerald-700 hover:bg-emerald-50' : 'text-slate-400 hover:bg-slate-100'}`}
+            aria-label={`Turn ${coupon.code} ${coupon.is_active ? 'off' : 'on'}`}
+            title={coupon.is_active ? 'Turn off' : 'Turn on'}
+          >
+            <Power className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => openEdit(coupon)}
+            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
+            aria-label={`Edit ${coupon.code}`}
+            title="Edit"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(coupon)}
+            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+            aria-label={`Delete ${coupon.code}`}
+            title="Delete"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  /** A list that stops at PAGE_SIZE and says how many more there are. */
+  const renderList = (key: string, items: Coupon[], render: (c: Coupon) => JSX.Element) => {
+    // A search is looking for something: never hide matches behind a button.
+    const limit = searching ? items.length : shown[key] ?? PAGE_SIZE;
+    const rest = items.length - limit;
+    return (
+      <>
+        <div className={audience === 'partner' ? 'space-y-2' : 'space-y-4'}>{items.slice(0, limit).map(render)}</div>
+        {rest > 0 && (
+          <button
+            onClick={() => setShown((current) => ({ ...current, [key]: limit + PAGE_SIZE }))}
+            className="mt-3 w-full py-2 text-sm font-semibold text-emerald-700 border border-slate-200 rounded-lg bg-white hover:bg-emerald-50"
+          >
+            Show {Math.min(rest, PAGE_SIZE)} more <span className="font-normal text-slate-500">({rest} hidden)</span>
+          </button>
+        )}
+      </>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -1023,6 +1200,74 @@ export default function CouponsPage() {
         </div>
       ) : (
         <div className="space-y-8">
+          <div className="space-y-3">
+            <div role="tablist" aria-label="Whose codes" className="inline-flex p-1 rounded-xl bg-slate-100 border border-slate-200">
+              {([
+                { key: 'customer', label: 'Customer codes', count: customerTotal, Icon: Ticket },
+                { key: 'partner', label: 'Partner codes', count: partnerTotal, Icon: Handshake },
+              ] as const).map(({ key, label, count, Icon }) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={audience === key}
+                  onClick={() => { setAudience(key); setStatusFilter('all'); }}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                    audience === key ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                  <span className={`px-1.5 rounded-full text-xs ${audience === key ? 'bg-emerald-50' : 'bg-slate-200'}`}>{count}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="relative flex-1 lg:max-w-md">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={audience === 'partner' ? 'Search partner codes or names' : 'Search customer codes'}
+                  aria-label="Search coupon codes"
+                  className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+                {([
+                  ['all', 'All'], ['active', 'Live'], ['scheduled', 'Scheduled'], ['inactive', 'Inactive'],
+                ] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setStatusFilter(key)}
+                    aria-pressed={statusFilter === key}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                      statusFilter === key
+                        ? 'bg-emerald-600 text-white border-emerald-600'
+                        : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    {label} <span className="opacity-70">{statusCounts[key]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {visible.length === 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
+              <p className="text-slate-600 font-medium">
+                {searching
+                  ? `No ${audience} codes match “${query.trim()}”.`
+                  : `No ${audience} codes${statusFilter === 'all' ? ' yet' : ' with that status'}.`}
+              </p>
+              {audience === 'partner' && !searching && statusFilter === 'all' && (
+                <p className="text-sm text-slate-500 mt-1">Partner codes are made from the Partner Leads page.</p>
+              )}
+            </div>
+          )}
+
           {([
             { key: 'active', title: 'Live now', hint: 'Customers can use these right now', items: liveCoupons },
             { key: 'scheduled', title: 'Scheduled', hint: 'Not live yet, will start on their first day', items: scheduledCoupons },
@@ -1035,12 +1280,12 @@ export default function CouponsPage() {
                   </p>
                   <p className="text-xs text-slate-500">{section.hint}</p>
                 </div>
-                <div className="space-y-4">{section.items.map(renderCard)}</div>
+                {renderList(section.key, section.items, audience === 'partner' ? renderRow : renderCard)}
               </section>
             ),
           )}
 
-          {liveCoupons.length === 0 && (
+          {noneLiveAtAll && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
               <strong>No coupon is live right now.</strong> Customers entering a code on the quote form will not get a discount.
             </div>
@@ -1057,7 +1302,8 @@ export default function CouponsPage() {
                 Off &amp; expired <span className="text-slate-400">({inactiveCoupons.length})</span>
                 <span className="text-xs font-normal normal-case tracking-normal text-slate-400">Not usable right now</span>
               </button>
-              {showInactive && <div className="space-y-4">{inactiveCoupons.map(renderCard)}</div>}
+              {(showInactive || searching || statusFilter === 'inactive') &&
+                renderList('inactive', inactiveCoupons, audience === 'partner' ? renderRow : renderCard)}
             </section>
           )}
         </div>

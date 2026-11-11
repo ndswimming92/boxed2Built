@@ -42,13 +42,20 @@ async function stubBusiness(page: Page) {
  * the inquiries those codes were entered on — the admin card reads the names
  * beside its usage count from there, so an empty table is the honest default.
  */
-async function stubCoupons(page: Page, coupons: Row[], inquiries: Row[] = []) {
+async function stubCoupons(
+  page: Page,
+  coupons: Row[],
+  inquiries: Row[] = [],
+  partnerLeads: Row[] = [],
+) {
   await page.route('**/rest/v1/rpc/lookup_coupon_by_code', async (route) => {
     const { p_code } = JSON.parse(route.request().postData() || '{}');
     return route.fulfill({ json: coupons.filter((c) => c.code === p_code) });
   });
 
   await page.route('**/rest/v1/coupons*', (route) => route.fulfill({ json: coupons }));
+  // Which codes belong to partners. Empty unless a test says otherwise.
+  await page.route('**/rest/v1/partner_leads*', (route) => route.fulfill({ json: partnerLeads }));
   await page.route('**/rest/v1/form_inquiries*', (route) => route.fulfill({ json: inquiries }));
 }
 
@@ -440,4 +447,82 @@ test('a partly-deleted history lists who is left and accounts for the rest', asy
 
   await expect(card).toContainText('Dana Reyes');
   await expect(card).toContainText('2 earlier uses have no request on file');
+});
+
+/** A coupon row with only the fields a test cares about spelled out. */
+function couponRow(id: string, code: string, extra: Row = {}): Row {
+  const now = new Date().toISOString();
+  return {
+    id, code, discount_type: 'fixed', discount_value: 25, description: null,
+    starts_at: null, ends_at: null, is_active: true, times_used: 0, last_used_at: null,
+    business_id: 'biz-1', organization_id: 'org-1', created_by: null,
+    created_at: now, updated_at: now, ...extra,
+  };
+}
+
+test('partner codes live on their own tab, apart from customer codes', async ({ page }) => {
+  await stubCoupons(
+    page,
+    [
+      couponRow('c1', 'WELCOME25'),
+      couponRow('c2', 'FOUNTAINSFRANKLI'),
+      // No partner lead points at this one, but the partner flow wrote its description.
+      couponRow('c3', 'SYDNEYCOLLINS', { description: 'Partner code for Sydney Collins Realty' }),
+    ],
+    [],
+    [{ name: 'The Fountains of Franklin', coupon_id: 'c2' }],
+  );
+  await stubBusiness(page);
+  await page.goto('/tests/harness/coupons.html?view=admin');
+
+  const customerTab = page.getByRole('tab', { name: /Customer codes/ });
+  const partnerTab = page.getByRole('tab', { name: /Partner codes/ });
+  await expect(customerTab).toContainText('1');
+  await expect(partnerTab).toContainText('2');
+
+  // Customer codes first, and no partner code among them.
+  await expect(page.getByRole('heading', { level: 3, name: 'WELCOME25' })).toBeVisible();
+  await expect(page.getByText('FOUNTAINSFRANKLI')).toBeHidden();
+  await expect(page.getByText('SYDNEYCOLLINS')).toBeHidden();
+
+  await partnerTab.click();
+  await expect(page.getByText('FOUNTAINSFRANKLI')).toBeVisible();
+  await expect(page.getByText('SYDNEYCOLLINS')).toBeVisible();
+  await expect(page.getByText('WELCOME25')).toBeHidden();
+  // The partner's name is shown beside its code.
+  await expect(page.getByText('The Fountains of Franklin')).toBeVisible();
+});
+
+test('the search finds a code by its partner name and says when nothing matches', async ({ page }) => {
+  await stubCoupons(
+    page,
+    [couponRow('c1', 'FOUNTAINSFRANKLI'), couponRow('c2', 'SYDNEYCOLLINS')],
+    [],
+    [
+      { name: 'The Fountains of Franklin', coupon_id: 'c1' },
+      { name: 'Sydney Collins Realty', coupon_id: 'c2' },
+    ],
+  );
+  await stubBusiness(page);
+  await page.goto('/tests/harness/coupons.html?view=admin');
+  await page.getByRole('tab', { name: /Partner codes/ }).click();
+
+  const search = page.getByRole('searchbox', { name: 'Search coupon codes' });
+  await search.fill('realty');
+  await expect(page.getByText('SYDNEYCOLLINS')).toBeVisible();
+  await expect(page.getByText('FOUNTAINSFRANKLI')).toBeHidden();
+
+  await search.fill('zzz');
+  await expect(page.getByText(/No partner codes match/)).toBeVisible();
+});
+
+test('a long list shows ten at a time with a button for the rest', async ({ page }) => {
+  const many = Array.from({ length: 14 }, (_, i) => couponRow(`c${i}`, `CODE${String(i).padStart(2, '0')}`));
+  await stubCoupons(page, many);
+  await stubBusiness(page);
+  await page.goto('/tests/harness/coupons.html?view=admin');
+
+  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(10);
+  await page.getByRole('button', { name: /Show 4 more/ }).click();
+  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(14);
 });

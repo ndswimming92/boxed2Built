@@ -32,7 +32,26 @@ jobs:
       - run: npm ci --include=dev
 
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        # The browser binary comes from Playwright's CDN, so install it on its
+        # own and retry. The system packages (libs, fonts) come from apt, whose
+        # mirrors are what has been failing; try them but do not fail the job
+        # on them. The apt step is attempted once, under a timeout, and never
+        # retried: a retry would collide with the apt lock a stuck first
+        # attempt can still be holding.
+        run: |
+          for attempt in 1 2 3; do
+            if npx playwright install chromium; then
+              break
+            fi
+            if [ "$attempt" = 3 ]; then
+              echo "::error::Chromium download failed after 3 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 15))
+          done
+          if ! timeout --kill-after=10s 5m npx playwright install-deps chromium; then
+            echo "::warning::Could not install Chromium's system packages from apt; continuing with what the runner image has"
+          fi
 
       - name: Submit the form end to end
         run: npm run test:form
