@@ -121,9 +121,12 @@ Deno.serve(async (req: Request) => {
     // when does it start, and how far is it from home base. Only the lookup
     // differs — the cache is keyed on the address pair, so both kinds share one
     // cached result for the same destination.
-    const { jobId, bookingId } = await req.json().catch(() => ({
+    // `map: false` skips the route picture. The Job Map page only wants the
+    // address placed and cached, and asks for many addresses in a row.
+    const { jobId, bookingId, map } = await req.json().catch(() => ({
       jobId: null,
       bookingId: null,
+      map: undefined,
     }));
 
     const hasJobId = typeof jobId === "string" && jobId.length > 0;
@@ -185,7 +188,7 @@ Deno.serve(async (req: Request) => {
     });
 
     const mapImage =
-      estimate.status === "ok" && estimate.originCoordinates && estimate.destinationCoordinates
+      map !== false && estimate.status === "ok" && estimate.originCoordinates && estimate.destinationCoordinates
         ? await renderStaticMap(
             estimate.originCoordinates,
             estimate.destinationCoordinates,
