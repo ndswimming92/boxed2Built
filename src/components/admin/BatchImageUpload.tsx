@@ -114,7 +114,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">Upload Images</h2>
@@ -213,7 +213,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
                       alt={file.name}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
                       <button
                         onClick={() => removeFile(index)}
                         className="opacity-0 group-hover:opacity-100 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-all"
@@ -222,7 +222,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
                         <X size={20} />
                       </button>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 truncate">
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 truncate">
                       {file.name}
                     </div>
                   </div>

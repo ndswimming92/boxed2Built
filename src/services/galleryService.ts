@@ -12,6 +12,8 @@ export interface GalleryItem {
   alt?: string;
   hashtags?: string[];
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
+  service_type?: string | null;
+  room?: string | null;
   date?: string;
   location?: string;
   width?: number;
@@ -49,6 +51,8 @@ export interface CreateGalleryItemInput {
   alt?: string;
   hashtags?: string[];
   category: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
+  service_type?: string | null;
+  room?: string | null;
   date?: string;
   location?: string;
   width?: number;
@@ -70,6 +74,8 @@ export interface UpdateGalleryItemInput {
   alt?: string;
   hashtags?: string[];
   category?: 'before-after' | 'time-lapse' | 'completed-work' | 'process' | 'photos';
+  service_type?: string | null;
+  room?: string | null;
   date?: string;
   location?: string;
   width?: number;

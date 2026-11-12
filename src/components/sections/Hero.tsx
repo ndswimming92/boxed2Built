@@ -126,7 +126,7 @@ const Hero: React.FC = () => {
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <button
           onClick={scrollToServices}
-          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white bg-opacity-95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
+          className="flex flex-col items-center text-gray-700 hover:text-blue-600 transition-all duration-300 bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-lg hover:shadow-xl animate-bounce hover:animate-none"
           aria-label="View detailed furniture assembly pricing and services"
         >
           <span className="text-sm font-medium mb-1">View All Services</span>

@@ -54,7 +54,7 @@ function SortableCard({ item, position }: { item: GalleryItem; position: number 
         isDragging ? 'border-emerald-500 shadow-lg' : item.is_active ? 'border-slate-200' : 'border-red-200 bg-red-50'
       }`}
     >
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-black bg-opacity-60 text-white rounded px-1.5 py-1">
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-black/60 text-white rounded px-1.5 py-1">
         <GripVertical size={14} />
         <span className="text-xs font-semibold">{position}</span>
       </div>
@@ -73,7 +73,7 @@ function SortableCard({ item, position }: { item: GalleryItem; position: number 
           </div>
         )}
         {!item.is_active && (
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
             <span className="bg-red-600 text-white px-2 py-0.5 rounded-full text-xs font-medium">
               Inactive
             </span>

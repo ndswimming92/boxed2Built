@@ -28,13 +28,13 @@ const HomeCTA: React.FC = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h4 className="font-semibold mb-1">Free Quotes</h4>
               <p className="text-blue-50 text-sm font-medium">No commitment required</p>
             </div>
 
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
               <CheckCircle className="text-white mx-auto mb-2" size={24} />
               <h4 className="font-semibold mb-1">Professional Service</h4>
               <p className="text-blue-50 text-sm font-medium">Quality guaranteed</p>

@@ -40,9 +40,9 @@ export default function QuoteVarianceTable({ jobs }: QuoteVarianceTableProps) {
 
   const getVarianceBg = (percent: number) => {
     const abs = Math.abs(percent);
-    if (abs <= 5) return 'bg-slate-50';
-    if (percent > 0) return 'bg-emerald-50';
-    return 'bg-red-50';
+    if (abs <= 5) return 'bg-slate-50/30';
+    if (percent > 0) return 'bg-emerald-50/30';
+    return 'bg-red-50/30';
   };
 
   const VarianceIcon = ({ percent }: { percent: number }) => {
@@ -134,7 +134,7 @@ export default function QuoteVarianceTable({ jobs }: QuoteVarianceTableProps) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {displayedJobs.map((job) => (
-              <tr key={job.id} className={`hover:bg-slate-50 ${getVarianceBg(job.percentDifference)} bg-opacity-30`}>
+              <tr key={job.id} className={`hover:bg-slate-50 ${getVarianceBg(job.percentDifference)}`}>
                 <td className="px-4 py-3">
                   <p className="text-sm font-medium text-slate-900 truncate max-w-[140px]">{job.client_name}</p>
                   <p className="text-xs text-slate-500 sm:hidden">{job.job_type}</p>
