@@ -258,3 +258,27 @@ test('default target rate is null without recent paid work', () => {
   assert.equal(getRecentAvgHourlyRate(jobs, now), null);
   assert.equal(getRecentAvgHourlyRate([], now), null);
 });
+
+test('3-month window clamps to the last day of a shorter month', () => {
+  // May 31 minus 3 months is Feb 28, not "Feb 31" rolled over to Mar 3.
+  const now = new Date(2026, 4, 31, 12, 0, 0);
+  const onBoundary = getRecentAvgHourlyRate(
+    [job({ date_completed: '2026-02-28', hours_worked: 2, final_price: 200 })],
+    now
+  );
+  assert.ok(onBoundary, 'a job on Feb 28 is inside the window');
+  close(onBoundary.rate, 100, 'rate');
+
+  assert.equal(
+    getRecentAvgHourlyRate([job({ date_completed: '2026-02-27', hours_worked: 2, final_price: 200 })], now),
+    null
+  );
+
+  // Crossing a year boundary still lands on the right month.
+  const january = new Date(2027, 0, 15, 12, 0, 0);
+  assert.ok(getRecentAvgHourlyRate([job({ date_completed: '2026-10-15', hours_worked: 1, final_price: 90 })], january));
+  assert.equal(
+    getRecentAvgHourlyRate([job({ date_completed: '2026-10-14', hours_worked: 1, final_price: 90 })], january),
+    null
+  );
+});

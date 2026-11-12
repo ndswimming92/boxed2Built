@@ -619,9 +619,13 @@ export function getRecentAvgHourlyRate(
   now: Date = new Date(),
   months: number = 3
 ): RecentHourlyRate | null {
-  const windowStart = new Date(now);
-  windowStart.setMonth(windowStart.getMonth() - months);
-  windowStart.setHours(0, 0, 0, 0);
+  // Same day-of-month `months` back, clamped to that month's last day.
+  // A bare setMonth() overflows instead: May 31 minus 3 months lands on
+  // "Feb 31" = Mar 3, silently dropping the last days of February.
+  const startYear = now.getFullYear();
+  const startMonth = now.getMonth() - months;
+  const lastDayOfStartMonth = new Date(startYear, startMonth + 1, 0).getDate();
+  const windowStart = new Date(startYear, startMonth, Math.min(now.getDate(), lastDayOfStartMonth));
 
   const recent = jobs.filter(job => {
     if (!isPaidJob(job) || (job.hours_worked || 0) <= 0) return false;

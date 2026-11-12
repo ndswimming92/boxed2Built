@@ -65,11 +65,16 @@ export default function PricingInsightsCard({
   onTargetRateChange,
   onResetTargetRate,
 }: PricingInsightsCardProps) {
-  const { maskFinancialValue } = usePrivacyMode();
+  const { maskFinancialValue, privacyModeEnabled } = usePrivacyMode();
 
   // While the box is focused it shows exactly what was typed (so it can be
   // cleared mid-edit); otherwise it mirrors the target rate in effect.
   const [draft, setDraft] = useState<string | null>(null);
+
+  // The automatic target is real earnings data, so privacy mode hides it like
+  // every other amount on the card. Clicking in starts from an empty box
+  // rather than revealing it; whatever is typed is hidden again on blur.
+  const targetMasked = privacyModeEnabled && draft === null;
 
   const formatCurrency = (value: number) => {
     const formatted = new Intl.NumberFormat('en-US', {
@@ -126,11 +131,14 @@ export default function PricingInsightsCard({
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
                 <input
                   id="targetRate"
-                  type="number"
+                  type={targetMasked ? 'text' : 'number'}
                   min="1"
                   step="5"
                   inputMode="decimal"
-                  value={draft ?? String(targetRate)}
+                  value={targetMasked ? '••••' : draft ?? String(targetRate)}
+                  onFocus={() => {
+                    if (privacyModeEnabled) setDraft('');
+                  }}
                   onChange={(e) => handleDraftChange(e.target.value)}
                   onBlur={() => setDraft(null)}
                   aria-describedby="targetRateSource"
