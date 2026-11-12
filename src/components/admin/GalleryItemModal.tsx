@@ -5,6 +5,7 @@ import type { GalleryItem } from '../../services/galleryService';
 import { optimizeImage, validateImageFile, snapshotFileToMemory, normalizeImageFile } from '../../utils/imageOptimizationUpload';
 import { analyzeGalleryImage, analyzeGalleryImageFromUrl } from '../../services/galleryAIService';
 import { parseHashtagsInput, formatHashtagsForInput } from '../../utils/hashtags';
+import { GALLERY_ROOMS, GALLERY_SERVICE_TYPES } from '../../utils/galleryTaxonomy';
 import { SERVICE_AREAS } from '../../constants/localSEO';
 import { GALLERY_PURPOSE_OPTIONS, GalleryPurpose, purposeToFlags, flagsToPurpose } from '../../utils/galleryPurpose';
 import Button from '../ui/Button';
@@ -27,6 +28,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
     alt: item?.alt || '',
     hashtags: formatHashtagsForInput(item?.hashtags),
     category: item?.category || 'completed-work' as const,
+    serviceType: item?.service_type || '',
+    room: item?.room || '',
     date: item?.date || new Date().toISOString().split('T')[0],
     location: item?.location || 'Spring Hill, TN',
     youtubeUrl: item?.type === 'video' ? item.src : '',
@@ -201,6 +204,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           alt: formData.alt || undefined,
           hashtags,
           category: formData.category,
+          service_type: formData.serviceType || null,
+          room: formData.room || null,
           date: formData.date || undefined,
           location: formData.location || undefined,
           width,
@@ -228,6 +233,8 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
           alt: formData.alt || formData.title,
           hashtags,
           category: formData.category,
+          service_type: formData.serviceType || null,
+          room: formData.room || null,
           date: formData.date || undefined,
           location: formData.location || undefined,
           width,
@@ -253,7 +260,7 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white rounded-t-lg sm:rounded-lg shadow-xl max-w-2xl w-full max-h-dvh sm:max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">
@@ -443,6 +450,37 @@ export default function GalleryItemModal({ businessId, item, onSave, onCancel }:
                 </p>
               </FormField>
             )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Service type">
+                <select name="serviceType"
+                  value={formData.serviceType}
+                  onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Auto-detect from title</option>
+                  {GALLERY_SERVICE_TYPES.map((service) => (
+                    <option key={service.key} value={service.key}>{service.label}</option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Room">
+                <select name="room"
+                  value={formData.room}
+                  onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Auto-detect from title</option>
+                  {GALLERY_ROOMS.map((room) => (
+                    <option key={room.key} value={room.key}>{room.label}</option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
+            <p className="-mt-2 text-xs text-slate-500">
+              These power the filters on the public gallery page.
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField label="Category *" required>

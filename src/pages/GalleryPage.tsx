@@ -88,7 +88,7 @@ const GalleryPage: React.FC = () => {
           <MediaGallery
             items={galleryItems}
             title="Our Work"
-            description=""
+            description="Recent builds and installs for families across Spring Hill, Franklin, Columbia and Thompson's Station."
             className="bg-white"
           />
         )}

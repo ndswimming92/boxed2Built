@@ -508,7 +508,7 @@ export default function GalleryPage() {
                   </div>
                 )}
                 {!item.is_active && (
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       Inactive
                     </div>
@@ -804,7 +804,7 @@ export default function GalleryPage() {
       )}
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">Delete Gallery Item?</h3>
             <p className="text-slate-600 mb-6">

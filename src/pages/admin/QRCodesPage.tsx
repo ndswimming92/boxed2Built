@@ -579,7 +579,7 @@ export default function QRCodesPage() {
           onSuccess={fetchData}
         />
       ) : showFormModal ? (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Business Setup Required</h3>
             <p className="text-gray-600 mb-4">

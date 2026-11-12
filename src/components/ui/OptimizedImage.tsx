@@ -19,6 +19,8 @@ interface OptimizedImageProps {
   focusY?: number;
   /** Shown automatically if the primary src fails to load */
   fallbackSrc?: string;
+  /** Fill the parent box (cropping as needed) instead of using the image's natural height */
+  fill?: boolean;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -36,6 +38,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   focusX = 50,
   focusY = 50,
   fallbackSrc,
+  fill = false,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -92,7 +95,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           <p className="text-gray-400 text-sm">Failed to load image</p>
         </div>
       ) : (
-        <picture>
+        <picture className={fill ? 'block w-full h-full' : undefined}>
       {/* AVIF format - most efficient */}
       {enableAvif && (sources as any).avif && (
         <source
@@ -125,7 +128,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         width={width}
         height={height}
         loading={imageLoading}
-        className={`w-full h-auto object-cover transition-opacity duration-300 ${
+        className={`w-full ${fill ? 'h-full' : 'h-auto'} object-cover transition-opacity duration-300 ${
           isLoading ? 'opacity-0' : 'opacity-100'
         }`}
         decoding={priority ? 'sync' : 'async'}
@@ -133,7 +136,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onLoad={handleLoad}
         onError={handleError}
         style={{
-          aspectRatio: width && height ? `${width}/${height}` : undefined,
+          aspectRatio: !fill && width && height ? `${width}/${height}` : undefined,
           objectPosition: `${focusX}% ${focusY}%`
         }}
       />

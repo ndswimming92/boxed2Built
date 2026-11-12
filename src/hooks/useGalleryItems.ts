@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { GalleryService } from '../services/galleryService';
 import type { GalleryItem } from '../services/galleryService';
 import type { MediaItem } from '../components/sections/MediaGallery';
+import { resolveRoom, resolveServiceType } from '../utils/galleryTaxonomy';
 
 export function useGalleryItems(businessId: string, includeInactive = false) {
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -53,6 +54,8 @@ export function convertGalleryItemToMediaItem(item: GalleryItem): MediaItem {
     thumbnail: item.thumbnail || undefined,
     alt: item.alt || undefined,
     category: item.category,
+    serviceType: resolveServiceType(item.service_type, item.title),
+    room: resolveRoom(item.room, item.title),
     date: item.date || undefined,
     location: item.location || undefined,
     width: item.width || undefined,

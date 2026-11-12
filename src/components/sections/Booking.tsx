@@ -72,8 +72,8 @@ const Booking: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Easy Online Scheduling</h3>
@@ -82,8 +82,8 @@ const Booking: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Free 5-Minute Consultation</h3>
@@ -92,8 +92,8 @@ const Booking: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-6">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="text-white" size={28} />
               </div>
               <h3 className="text-xl font-semibold mb-2">Professional Assembly</h3>
