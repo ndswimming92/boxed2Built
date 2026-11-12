@@ -346,7 +346,7 @@ export default function PortalAdoptionPage() {
                 <p className="mt-3 text-sm font-medium text-gray-900">What gets deleted</p>
                 <ul className="mt-1 list-inside list-disc space-y-1 text-sm text-gray-600">
                   <li>The portal account and its login</li>
-                  <li>Portal activity, notifications, documents, support tickets and saved requests</li>
+                  <li>Portal activity, notifications, documents, support tickets and unsubmitted saved requests</li>
                   <li>Files they uploaded</li>
                   <li>The matching record on the Customers page, with its notes</li>
                 </ul>
