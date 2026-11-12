@@ -1,21 +1,75 @@
 import { useState } from 'react';
-import { DollarSign, TrendingUp, AlertCircle, Target } from 'lucide-react';
+import { DollarSign, TrendingUp, CheckCircle2, RotateCcw } from 'lucide-react';
 import { PricingRecommendation } from '../../services/analyticsService';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface PricingInsightsCardProps {
   recommendations: PricingRecommendation[];
-  defaultTargetRate?: number;
-  onTargetRateChange?: (rate: number) => void;
+  /** The target rate currently in effect. */
+  targetRate: number;
+  /** Average profit per hour over the last 3 months, or null if there is no recent paid work. */
+  autoTargetRate: number | null;
+  /** Paid jobs behind `autoTargetRate`. */
+  autoTargetJobCount: number;
+  /** True when the owner has typed their own target instead of the automatic one. */
+  isCustomTarget: boolean;
+  onTargetRateChange: (rate: number) => void;
+  onResetTargetRate: () => void;
 }
+
+type Status = 'below' | 'on' | 'above';
+
+/** Within this share of the target, a job type counts as "on target". */
+const ON_TARGET_TOLERANCE = 0.05;
+
+const STATUS_STYLES: Record<Status, { label: string; pill: string; accent: string; value: string; bar: string }> = {
+  below: {
+    label: 'Below target',
+    pill: 'bg-amber-100 text-amber-800',
+    accent: 'border-l-amber-400',
+    value: 'text-amber-700',
+    bar: 'bg-amber-400',
+  },
+  on: {
+    label: 'On target',
+    pill: 'bg-slate-100 text-slate-700',
+    accent: 'border-l-slate-300',
+    value: 'text-slate-700',
+    bar: 'bg-slate-400',
+  },
+  above: {
+    label: 'Above target',
+    pill: 'bg-emerald-100 text-emerald-800',
+    accent: 'border-l-emerald-500',
+    value: 'text-emerald-700',
+    bar: 'bg-emerald-500',
+  },
+};
+
+function getStatus(rec: PricingRecommendation): Status {
+  if (rec.targetHourlyRate <= 0) return 'on';
+  const gap = (rec.currentAvgHourlyRate - rec.targetHourlyRate) / rec.targetHourlyRate;
+  if (gap < -ON_TARGET_TOLERANCE) return 'below';
+  if (gap > ON_TARGET_TOLERANCE) return 'above';
+  return 'on';
+}
+
+const STATUS_ORDER: Record<Status, number> = { below: 0, on: 1, above: 2 };
 
 export default function PricingInsightsCard({
   recommendations,
-  defaultTargetRate = 50,
-  onTargetRateChange
+  targetRate,
+  autoTargetRate,
+  autoTargetJobCount,
+  isCustomTarget,
+  onTargetRateChange,
+  onResetTargetRate,
 }: PricingInsightsCardProps) {
   const { maskFinancialValue } = usePrivacyMode();
-  const [targetRate, setTargetRate] = useState(defaultTargetRate);
+
+  // While the box is focused it shows exactly what was typed (so it can be
+  // cleared mid-edit); otherwise it mirrors the target rate in effect.
+  const [draft, setDraft] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     const formatted = new Intl.NumberFormat('en-US', {
@@ -28,180 +82,175 @@ export default function PricingInsightsCard({
     return maskFinancialValue(formatted);
   };
 
-  const handleTargetRateChange = (value: number) => {
-    setTargetRate(value);
-    if (onTargetRateChange) {
-      onTargetRateChange(value);
+  const handleDraftChange = (value: string) => {
+    setDraft(value);
+    const parsed = Number(value);
+    if (value.trim() !== '' && Number.isFinite(parsed) && parsed > 0) {
+      onTargetRateChange(parsed);
     }
   };
 
-  const getPriceAdjustmentColor = (adjustment: number) => {
-    const absAdjustment = Math.abs(adjustment);
-    if (absAdjustment > 30) return 'text-red-600';
-    if (absAdjustment > 15) return 'text-amber-600';
-    if (absAdjustment > 5) return 'text-blue-600';
-    return 'text-emerald-600';
-  };
+  // Job types that need attention first, biggest shortfall at the top.
+  const rows = recommendations
+    .map(rec => ({ rec, status: getStatus(rec), gap: rec.currentAvgHourlyRate - rec.targetHourlyRate }))
+    .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.gap - b.gap);
 
-  const getPriceAdjustmentBg = (adjustment: number) => {
-    const absAdjustment = Math.abs(adjustment);
-    if (absAdjustment > 30) return 'bg-red-50 border-red-200';
-    if (absAdjustment > 15) return 'bg-amber-50 border-amber-200';
-    if (absAdjustment > 5) return 'bg-blue-50 border-blue-200';
-    return 'bg-emerald-50 border-emerald-200';
-  };
-
-  const getRecommendationText = (adjustment: number) => {
-    if (adjustment > 30) return 'Significant price increase needed';
-    if (adjustment > 15) return 'Moderate price increase recommended';
-    if (adjustment > 5) return 'Small price adjustment suggested';
-    if (adjustment > -5) return 'Pricing on target';
-    if (adjustment > -15) return 'Consider maintaining or slightly reducing';
-    return 'Well above target rate';
-  };
+  const targetSource = isCustomTarget
+    ? 'Custom target'
+    : autoTargetRate !== null
+      ? `Your average over the last 3 months (${autoTargetJobCount} paid ${autoTargetJobCount === 1 ? 'job' : 'jobs'})`
+      : 'Starting point — no paid jobs in the last 3 months to average yet';
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-linear-to-r from-teal-50 to-blue-50">
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 bg-teal-100 rounded-lg">
-              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+      <div className="p-4 sm:p-6 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-teal-50 rounded-lg">
+              <DollarSign className="w-5 h-5 text-teal-600" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Pricing Intelligence</h3>
-              <p className="text-xs sm:text-sm text-slate-600">Data-driven pricing recommendations by job type</p>
+              <p className="text-xs sm:text-sm text-slate-600">
+                What you earn per hour on each job type, compared with your target
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <label htmlFor="targetRate" className="text-sm font-medium text-slate-700 whitespace-nowrap">
-              Target Rate:
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
-              <input
-                id="targetRate"
-                type="number"
-                min="20"
-                max="200"
-                step="5"
-                value={targetRate}
-                onChange={(e) => handleTargetRateChange(Number(e.target.value))}
-                className="w-24 pl-7 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">/hr</span>
+
+          <div className="sm:text-right">
+            <div className="flex items-center sm:justify-end gap-2">
+              <label htmlFor="targetRate" className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                Target rate
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                <input
+                  id="targetRate"
+                  type="number"
+                  min="1"
+                  step="5"
+                  inputMode="decimal"
+                  value={draft ?? String(targetRate)}
+                  onChange={(e) => handleDraftChange(e.target.value)}
+                  onBlur={() => setDraft(null)}
+                  aria-describedby="targetRateSource"
+                  className="w-28 pl-7 pr-9 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">/hr</span>
+              </div>
             </div>
+            <p id="targetRateSource" className="mt-1.5 text-xs text-slate-500">
+              {targetSource}
+              {isCustomTarget && (
+                <>
+                  {' · '}
+                  <button
+                    type="button"
+                    onClick={onResetTargetRate}
+                    className="inline-flex items-center gap-1 font-medium text-teal-700 hover:text-teal-800 hover:underline"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    {autoTargetRate !== null
+                      ? `Reset to average (${formatCurrency(autoTargetRate)}/hr)`
+                      : 'Reset'}
+                  </button>
+                </>
+              )}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
-        {recommendations.length > 0 ? (
+      <div className="p-4 sm:p-6">
+        {rows.length > 0 ? (
           <div className="space-y-4">
-            {recommendations.map((rec) => (
-              <div
-                key={rec.jobType}
-                className={`p-4 rounded-lg border ${getPriceAdjustmentBg(rec.priceAdjustmentNeeded)}`}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+            {rows.map(({ rec, status, gap }) => {
+              const styles = STATUS_STYLES[status];
+              const scaleMax = Math.max(rec.currentAvgHourlyRate, rec.targetHourlyRate, 1);
+              const currentPct = Math.max(0, Math.min(100, (rec.currentAvgHourlyRate / scaleMax) * 100));
+              const targetPct = Math.max(0, Math.min(100, (rec.targetHourlyRate / scaleMax) * 100));
+              const priceIncrease = rec.recommendedTarget - rec.avgPrice;
+
+              return (
+                <div
+                  key={rec.jobType}
+                  className={`rounded-lg border border-slate-200 border-l-4 ${styles.accent} p-4 sm:p-5`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <div>
                       <h4 className="font-semibold text-slate-900">{rec.jobType}</h4>
-                      <span className="text-xs text-slate-500">({rec.sampleSize} paid jobs)</span>
+                      <p className="text-xs text-slate-500">
+                        {rec.sampleSize} jobs · about {rec.avgHours.toFixed(1)} hrs each
+                      </p>
                     </div>
-                    <p className="text-sm text-slate-600">{getRecommendationText(rec.priceAdjustmentNeeded)}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {rec.priceAdjustmentNeeded > 5 ? (
-                      <TrendingUp className={`w-5 h-5 ${getPriceAdjustmentColor(rec.priceAdjustmentNeeded)}`} />
-                    ) : rec.priceAdjustmentNeeded < -5 ? (
-                      <Target className="w-5 h-5 text-emerald-600" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-blue-600" />
-                    )}
-                    <span className={`text-lg font-bold ${getPriceAdjustmentColor(rec.priceAdjustmentNeeded)}`}>
-                      {rec.priceAdjustmentNeeded > 0 ? '+' : ''}
-                      {rec.priceAdjustmentNeeded.toFixed(0)}%
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${styles.pill}`}>
+                      {styles.label}
                     </span>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-6">
                     <div>
-                      <p className="text-xs text-slate-500 mb-1">Current Pricing</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-slate-700">Range:</span>
-                        <span className="text-sm text-slate-600">
-                          {formatCurrency(rec.minPrice)} - {formatCurrency(rec.maxPrice)}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-slate-700">Average:</span>
-                        <span className="text-sm text-slate-900 font-semibold">{formatCurrency(rec.avgPrice)}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">
-                        Current Hourly Rate <span className="text-slate-400">(after materials)</span>
+                      <p className="text-xs text-slate-500 mb-1">You earn</p>
+                      <p className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {formatCurrency(rec.currentAvgHourlyRate)}
+                        <span className="text-sm font-medium text-slate-500">/hr</span>
                       </p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-slate-900">
-                          {formatCurrency(rec.currentAvgHourlyRate)}/hr
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs text-slate-500 mb-1">Recommended Pricing</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-slate-700">Range:</span>
-                        <span className="text-sm text-teal-600 font-semibold">
-                          {formatCurrency(rec.recommendedMin)} - {formatCurrency(rec.recommendedMax)}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-slate-700">Target:</span>
-                        <span className="text-sm text-teal-900 font-semibold">
-                          {formatCurrency(rec.recommendedTarget)}
-                        </span>
-                      </div>
+                      <p className="text-xs text-slate-400">after materials</p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-500 mb-1">Target Hourly Rate</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-teal-600">
-                          {formatCurrency(rec.targetHourlyRate)}/hr
-                        </span>
-                      </div>
+                      <p className="text-xs text-slate-500 mb-1">Target</p>
+                      <p className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {formatCurrency(rec.targetHourlyRate)}
+                        <span className="text-sm font-medium text-slate-500">/hr</span>
+                      </p>
                     </div>
-                  </div>
-                </div>
-
-                {Math.abs(rec.priceAdjustmentNeeded) > 5 && (
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-                      <p className="text-xs text-slate-600">
-                        {rec.priceAdjustmentNeeded > 0 ? (
-                          <>
-                            To reach your target hourly rate of {formatCurrency(rec.targetHourlyRate)}/hr on an average
-                            {' '}{rec.avgHours.toFixed(1)}-hour job, consider increasing prices by approximately
-                            {' '}{formatCurrency(rec.recommendedTarget - rec.avgPrice)}.
-                          </>
-                        ) : (
-                          <>
-                            Your current rates exceed the target hourly rate. You have pricing power in this category.
-                          </>
-                        )}
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Difference</p>
+                      <p className={`text-xl sm:text-2xl font-bold ${styles.value}`}>
+                        {Math.round(gap) === 0 ? '' : gap > 0 ? '+' : '−'}
+                        {formatCurrency(Math.abs(gap))}
+                        <span className="text-sm font-medium">/hr</span>
                       </p>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  <div className="relative mt-4 h-2 rounded-full bg-slate-100" aria-hidden="true">
+                    <div className={`h-2 rounded-full ${styles.bar}`} style={{ width: `${currentPct}%` }} />
+                    <div
+                      className="absolute -top-1 h-4 w-0.5 rounded-full bg-slate-700"
+                      style={{ left: `calc(${targetPct}% - 1px)` }}
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-start gap-2 text-sm text-slate-700">
+                    {status === 'below' ? (
+                      <>
+                        <TrendingUp className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                        <p>
+                          Average job price is {formatCurrency(rec.avgPrice)}. Raise it to about{' '}
+                          <span className="font-semibold text-slate-900">{formatCurrency(rec.recommendedTarget)}</span>
+                          {' '}(+{formatCurrency(priceIncrease)} per job) to reach your target.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2
+                          className={`w-4 h-4 mt-0.5 shrink-0 ${status === 'above' ? 'text-emerald-600' : 'text-slate-400'}`}
+                        />
+                        <p>
+                          Average job price is{' '}
+                          <span className="font-semibold text-slate-900">{formatCurrency(rec.avgPrice)}</span>
+                          {' '}(from {formatCurrency(rec.minPrice)} to {formatCurrency(rec.maxPrice)}).{' '}
+                          {status === 'above'
+                            ? 'You are beating your target — keep your pricing.'
+                            : 'Your pricing is on target.'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12">
@@ -214,20 +263,12 @@ export default function PricingInsightsCard({
         )}
       </div>
 
-      {recommendations.length > 0 && (
-        <div className="p-4 bg-slate-50 border-t border-slate-200">
-          <div className="flex items-start gap-2 text-xs text-slate-600">
-            <AlertCircle className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <div className="space-y-1">
-              <p className="font-medium">How to Use These Recommendations:</p>
-              <ul className="list-disc list-inside space-y-0.5 text-slate-500">
-                <li>Adjust target hourly rate based on your business goals</li>
-                <li>Focus on job types with the largest pricing gaps first</li>
-                <li>Test price increases gradually with new customers</li>
-                <li>Consider market conditions and competition in your area</li>
-              </ul>
-            </div>
-          </div>
+      {rows.length > 0 && (
+        <div className="px-4 sm:px-6 py-3 bg-slate-50 border-t border-slate-200">
+          <p className="text-xs text-slate-500">
+            Job types use the date range selected at the top of the page. The dark marker on each bar is your
+            target rate. Introduce price increases gradually, starting with new customers.
+          </p>
         </div>
       )}
     </div>

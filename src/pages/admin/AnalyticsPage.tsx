@@ -18,6 +18,7 @@ import {
   getLostDealBreakdown,
   getJobTypeConversionRates,
   getQuoteVarianceJobs,
+  getRecentAvgHourlyRate,
   getQuoteAccuracyTimeSeries,
   filterJobsByDateRange,
   filterPipelineJobsByDateRange,
@@ -80,6 +81,9 @@ import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#14b8a6', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'];
 
+/** Used only until there are paid jobs in the last 3 months to average. */
+const FALLBACK_TARGET_RATE = 50;
+
 export default function AnalyticsPage() {
   const { maskFinancialValue } = usePrivacyMode();
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -94,7 +98,8 @@ export default function AnalyticsPage() {
   const timePeriod: TimePeriod = 'all_time';
   const [showImportModal, setShowImportModal] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [targetHourlyRate, setTargetHourlyRate] = useState(50);
+  // null = follow the automatic default (the last 3 months' average rate).
+  const [targetRateOverride, setTargetRateOverride] = useState<number | null>(null);
   const [taxSettings, setTaxSettings] = useState<TaxSettingsType | null>(null);
   const [quarterlyPayments, setQuarterlyPayments] = useState<QuarterlyTaxPayment[]>([]);
   const [trackedExpenses, setTrackedExpenses] = useState<number>(0);
@@ -159,6 +164,13 @@ export default function AnalyticsPage() {
 
   const jobTypePerformance = useMemo(() => getJobTypePerformance(filteredJobs, timePeriod), [filteredJobs, timePeriod]);
   const profitabilityLeaderboard = useMemo(() => getProfitabilityLeaderboard(filteredJobs, timePeriod, 10), [filteredJobs, timePeriod]);
+  // Always the trailing 3 months from today, independent of the page's date
+  // range, so the default target doesn't move when the range filter does.
+  const recentHourlyRate = useMemo(() => getRecentAvgHourlyRate(jobs), [jobs]);
+  const autoTargetRate = recentHourlyRate && recentHourlyRate.rate > 0
+    ? Math.round(recentHourlyRate.rate)
+    : null;
+  const targetHourlyRate = targetRateOverride ?? autoTargetRate ?? FALLBACK_TARGET_RATE;
   const pricingRecommendations = useMemo(
     () => getPricingRecommendations(filteredJobs, timePeriod, targetHourlyRate),
     [filteredJobs, timePeriod, targetHourlyRate]
@@ -622,8 +634,12 @@ export default function AnalyticsPage() {
             <div className="mb-8">
               <PricingInsightsCard
                 recommendations={pricingRecommendations}
-                defaultTargetRate={targetHourlyRate}
-                onTargetRateChange={setTargetHourlyRate}
+                targetRate={targetHourlyRate}
+                autoTargetRate={autoTargetRate}
+                autoTargetJobCount={recentHourlyRate?.jobCount ?? 0}
+                isCustomTarget={targetRateOverride !== null}
+                onTargetRateChange={setTargetRateOverride}
+                onResetTargetRate={() => setTargetRateOverride(null)}
               />
             </div>
 
