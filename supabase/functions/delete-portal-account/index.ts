@@ -8,14 +8,18 @@ import { authorizeAdminOrService } from '../_shared/authorize.ts';
  * For each customer id this removes, in order:
  *   1. files the customer uploaded to storage (portal documents, and the photos
  *      on their saved requests unless a kept inquiry still shows the same photo)
- *   2. their saved (draft) requests
+ *   2. requests they saved but never submitted
  *   3. their login, so they can no longer sign in
  *   4. the CRM `clients` record with the same email, and its notes
  *   5. the `customers` row; the database cascades the rest of the portal data
  *      (notifications, documents, support tickets, funnel history, consents ...)
  *
  * Jobs, invoices, bookings, inquiries and job completions are KEPT: their
- * foreign keys are ON DELETE SET NULL, so they stay in the books unlinked.
+ * foreign keys are ON DELETE SET NULL, so they stay in the books unlinked. A
+ * saved request that became an inquiry is kept with it.
+ *
+ * An account with rows in the immutable privacy_audit_events table is refused
+ * before anything is touched; see the check in deleteOne.
  *
  * The customers row goes last on purpose. Every earlier step is safe to repeat,
  * so if one fails the account is still listed and the admin can simply retry.
@@ -88,6 +92,31 @@ async function deleteOne(
   if (customerErr) throw new Error(customerErr.message);
   if (!customer) return { customerId, success: false, error: 'Account not found. It may already have been deleted.' };
 
+  const authUserId: string | null = customer.auth_user_id;
+  const email = (customer.email ?? '').trim();
+
+  // privacy_audit_events is immutable: triggers reject every UPDATE and DELETE,
+  // including the SET NULL its foreign keys perform when a customer or login is
+  // removed. Check before anything destructive, so such an account is refused
+  // whole rather than left half-deleted with no way to finish.
+  const auditFilter = authUserId
+    ? `customer_id.eq.${customerId},actor_user_id.eq.${authUserId}`
+    : `customer_id.eq.${customerId}`;
+  const { count: auditCount, error: auditErr } = await admin
+    .from('privacy_audit_events')
+    .select('id', { count: 'exact', head: true })
+    .or(auditFilter);
+  if (auditErr) throw new Error(auditErr.message);
+  if ((auditCount ?? 0) > 0) {
+    return {
+      customerId,
+      success: false,
+      email: customer.email,
+      error:
+        'This account has privacy audit history (consent changes or privacy requests), which is locked against changes. Nothing was deleted.',
+    };
+  }
+
   // 1. Uploaded files.
   const files = new Map<string, Set<string>>();
   const addFile = (bucket: string, path: string) => {
@@ -103,14 +132,34 @@ async function deleteOne(
   if (documentsErr) throw new Error(documentsErr.message);
   for (const doc of documents ?? []) addFile(doc.storage_bucket, doc.storage_path);
 
-  const { data: savedRequests, error: savedErr } = await admin
+  // Requests the customer saved without submitting. One that became an inquiry
+  // (inquiry_id set) is that inquiry's customer-facing copy, holding its
+  // confirmation code and SMS consent record, so it is kept with the inquiry.
+  // The contact form does not set customer_id, so match by email as well.
+  type SavedRequest = { id: string; inquiry_id: string | null; furniture_image_path: string | null };
+  const savedById = new Map<string, SavedRequest>();
+
+  const { data: savedByCustomer, error: savedErr } = await admin
     .from('saved_requests')
-    .select('id, furniture_image_path')
+    .select('id, inquiry_id, furniture_image_path')
     .eq('customer_id', customerId);
   if (savedErr) throw new Error(savedErr.message);
+  for (const r of (savedByCustomer ?? []) as SavedRequest[]) savedById.set(r.id, r);
+
+  if (email) {
+    const { data: savedByEmail, error: savedEmailErr } = await admin
+      .from('saved_requests')
+      .select('id, inquiry_id, furniture_image_path')
+      .eq('organization_id', customer.organization_id)
+      .ilike('client_email', escapeLike(email));
+    if (savedEmailErr) throw new Error(savedEmailErr.message);
+    for (const r of (savedByEmail ?? []) as SavedRequest[]) savedById.set(r.id, r);
+  }
+
+  const savedRequests = [...savedById.values()].filter((r) => r.inquiry_id === null);
 
   const savedPhotoPaths = [
-    ...new Set((savedRequests ?? []).map((r) => r.furniture_image_path).filter((p): p is string => !!p)),
+    ...new Set(savedRequests.map((r) => r.furniture_image_path).filter((p): p is string => !!p)),
   ];
   if (savedPhotoPaths.length > 0) {
     // A submitted inquiry reuses the saved request's photo. Inquiries are kept,
@@ -128,17 +177,18 @@ async function deleteOne(
 
   const filesDeleted = await removeFiles(admin, files);
 
-  // 2. Saved (draft) requests. Their FK is SET NULL, which would otherwise
-  //    leave them behind as orphans nobody can see.
-  if ((savedRequests ?? []).length > 0) {
-    const { error } = await admin.from('saved_requests').delete().eq('customer_id', customerId);
+  // 2. Unsubmitted saved requests.
+  if (savedRequests.length > 0) {
+    const { error } = await admin
+      .from('saved_requests')
+      .delete()
+      .in('id', savedRequests.map((r) => r.id));
     if (error) throw new Error(`Could not delete saved requests: ${error.message}`);
   }
 
   // 3. Login.
   let loginDeleted = false;
   let loginKeptReason: string | undefined;
-  const authUserId: string | null = customer.auth_user_id;
 
   if (authUserId) {
     if (authUserId === callerUserId) {
@@ -186,7 +236,6 @@ async function deleteOne(
 
   // 4. Matching CRM record (same email, same organization).
   let clientsDeleted = 0;
-  const email = (customer.email ?? '').trim();
   if (email) {
     const { data: clients, error: clientsErr } = await admin
       .from('clients')
