@@ -104,7 +104,13 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
             >
               <span>{getCategoryIcon(category.key)}</span>
               <span>{category.label}</span>
-              <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">{category.count}</span>
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                  selectedCategory === category.key ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {category.count}
+              </span>
             </button>
           ))}
         </div>
