@@ -119,8 +119,14 @@ test('area and drive breakdowns, and the sentences built from them', () => {
     job({ client_address: '1 A St', final_price: 200 }),
     job({ client_address: '2 B St', final_price: 400, location_city: 'Franklin' }),
     job({ client_address: '3 C St', final_price: 600, location_city: 'Franklin' }),
+    // Two jobs a long way out: listed in the table, too few to draw a conclusion from.
+    job({ client_address: '4 D St', final_price: 50, location_city: 'Dickson' }),
+    job({ client_address: '4 D St', final_price: 50, location_city: 'Dickson' }),
+    job({ client_address: '1 A St', final_price: 150 }),
+    job({ client_address: '2 B St', final_price: 500, location_city: 'Franklin' }),
   ];
   const locations = new Map([
+    ['4 d st', at(36.07, -87.38, 45)],
     ['1 a st', at(35.75, -86.93, 5)],
     ['2 b st', at(35.92, -86.87, 25)],
     ['3 c st', at(35.93, -86.86, 28)],
@@ -129,20 +135,23 @@ test('area and drive breakdowns, and the sentences built from them', () => {
 
   const areas = areaBreakdown(sites);
   assert.deepEqual(areas.map((area) => [area.label, area.jobs, area.avgPrice]), [
-    ['Franklin', 2, 500],
-    ['Spring Hill', 2, 150],
+    ['Franklin', 3, 500],
+    ['Spring Hill', 3, 150],
+    ['Dickson', 2, 50],
   ]);
 
   const drives = driveBreakdown(sites);
   assert.deepEqual(drives.map((band) => [band.label, band.jobs, band.avgPrice]), [
-    ['Under 10 min', 2, 150],
-    ['20 to 30 min', 2, 500],
+    ['Under 10 min', 3, 150],
+    ['20 to 30 min', 3, 500],
+    ['Over 30 min', 2, 50],
   ]);
 
   const insights = buildInsights(sites, (amount) => `$${amount}`);
   assert.match(insights[0], /^Franklin pays best: \$500 .* against \$150 in Spring Hill/);
-  assert.ok(insights.some((line) => line.startsWith('1 of 3 addresses had you back more than once')));
-  assert.ok(insights.some((line) => line.startsWith('Longer drives are paying more')));
+  assert.ok(insights.some((line) => line.startsWith('3 of 4 addresses had you back more than once')));
+  // The two-job band is not allowed to turn this into "longer drives pay less".
+  assert.ok(insights.includes('Jobs 20 to 30 min away pay best: $500 on average, against $150 under 10 min away.'));
 });
 
 test('the service-area frame ignores one far-away job and never collapses to a point', () => {

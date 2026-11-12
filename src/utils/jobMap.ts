@@ -257,7 +257,7 @@ export function buildInsights(sites: JobSite[], money: (amount: number) => strin
   if (summary.jobs === 0) return insights;
 
   // One job is an anecdote, not an area's going rate.
-  const areas = areaBreakdown(sites).filter((area) => area.pricedJobs >= 2 && area.avgPrice !== null);
+  const areas = areaBreakdown(sites).filter((area) => area.pricedJobs >= 3 && area.avgPrice !== null);
   if (areas.length >= 2) {
     const top = areas[0];
     const bottom = areas[areas.length - 1];
@@ -284,20 +284,20 @@ export function buildInsights(sites: JobSite[], money: (amount: number) => strin
     );
   }
 
-  const bands = driveBreakdown(sites).filter((band) => band.pricedJobs >= 2 && band.avgPrice !== null);
+  // Three priced jobs before a band is compared: two jobs a long way out would
+  // otherwise decide whether "longer drives pay".
+  const bands = driveBreakdown(sites).filter((band) => band.pricedJobs >= 3 && band.avgPrice !== null);
   if (bands.length >= 2) {
-    const near = bands[0];
-    const far = bands[bands.length - 1];
-    const verdict =
-      far.avgPrice! > near.avgPrice! * 1.1
-        ? 'Longer drives are paying more'
-        : far.avgPrice! < near.avgPrice! * 0.9
-          ? 'Longer drives are paying less'
-          : 'Drive time makes little difference to price';
-    insights.push(
-      `${verdict}: ${money(near.avgPrice!)} a job ${near.label.toLowerCase()} away, ` +
-        `${money(far.avgPrice!)} ${far.label.toLowerCase()} away.`,
-    );
+    const best = bands.reduce((a, b) => (b.avgPrice! > a.avgPrice! ? b : a));
+    const worst = bands.reduce((a, b) => (b.avgPrice! < a.avgPrice! ? b : a));
+    if (best.avgPrice! > worst.avgPrice! * 1.1) {
+      insights.push(
+        `Jobs ${best.label.toLowerCase()} away pay best: ${money(best.avgPrice!)} on average, ` +
+          `against ${money(worst.avgPrice!)} ${worst.label.toLowerCase()} away.`,
+      );
+    } else {
+      insights.push(`Drive time makes little difference to price: every distance averages close to ${money(best.avgPrice!)} a job.`);
+    }
   }
 
   return insights;
