@@ -9,6 +9,7 @@ import {
   heatColor,
   inBounds,
   jobPrice,
+  lookupQueue,
   mapAddressKey,
   priceSurface,
   spreadDots,
@@ -209,4 +210,24 @@ test('overlapping dots are pushed apart; dots with room stay put', () => {
   assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= 10 + 6 + 3 - 0.01);
   assert.ok(Math.hypot(a.x - 100, a.y - 100) < 20);
   assert.deepEqual([far.x, far.y], [300, 100]);
+});
+
+test('the lookup queue asks once per address: unlocated first, then stale, never the unfindable or already tried', () => {
+  const jobs = [
+    job({ id: 'a1', client_address: '1 A St' }),
+    job({ id: 'a2', client_address: '1 a st' }),
+    job({ id: 'b', client_address: '2 B St' }),
+    job({ id: 'c', client_address: '3 C St' }),
+    job({ id: 'd', client_address: '4 D St' }),
+    job({ id: 'quote', client_address: '5 E St', job_status: 'quoted', date_completed: null }),
+  ];
+  const locations = new Map([['4 d st', at(35.7, -86.9)]]);
+  const queue = (attempted: string[], limit = 10) =>
+    lookupQueue(jobs, locations, new Set(['3 c st']), new Set(['4 d st']), new Set(attempted), limit).map((entry) => entry.key);
+
+  assert.deepEqual(queue([]), ['1 a st', '2 b st', '4 d st']);
+  // A job added or re-addressed mid-visit is new to the queue; ones already tried are not repeated.
+  assert.deepEqual(queue(['1 a st', '4 d st']), ['2 b st']);
+  assert.deepEqual(queue([], 1), ['1 a st']);
+  assert.deepEqual(queue([], 0), []);
 });
