@@ -601,6 +601,45 @@ export function getProfitabilityLeaderboard(
   };
 }
 
+export interface RecentHourlyRate {
+  /** Net profit per paid hour (after materials) across the window. */
+  rate: number;
+  /** Paid jobs the rate is built from. */
+  jobCount: number;
+}
+
+/**
+ * Blended profit-per-hour over the trailing `months` months, measured from
+ * `now`. Built the same way as the per-job-type "current hourly rate" (net
+ * profit over paid hours) so the two are directly comparable. Returns null
+ * when there is no paid, timed work in the window.
+ */
+export function getRecentAvgHourlyRate(
+  jobs: Job[],
+  now: Date = new Date(),
+  months: number = 3
+): RecentHourlyRate | null {
+  const windowStart = new Date(now);
+  windowStart.setMonth(windowStart.getMonth() - months);
+  windowStart.setHours(0, 0, 0, 0);
+
+  const recent = jobs.filter(job => {
+    if (!isPaidJob(job) || (job.hours_worked || 0) <= 0) return false;
+    const completed = parseJobDate(job.date_completed);
+    return completed !== null && completed >= windowStart && completed <= now;
+  });
+
+  const hours = recent.reduce((sum, job) => sum + (job.hours_worked || 0), 0);
+  if (hours <= 0) return null;
+
+  const netProfit = recent.reduce(
+    (sum, job) => sum + calculateNetProfit(job.final_price, job.materials_cost),
+    0
+  );
+
+  return { rate: netProfit / hours, jobCount: recent.length };
+}
+
 export function getPricingRecommendations(
   jobs: Job[],
   period: TimePeriod,

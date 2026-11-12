@@ -9,6 +9,7 @@ import {
   getJobTypePerformance,
   getMonthlyData,
   getPricingRecommendations,
+  getRecentAvgHourlyRate,
   getProfitabilityLeaderboard,
   parseJobDate,
 } from '../../src/services/analyticsCalculations.ts';
@@ -230,4 +231,30 @@ test('best and worst performer lists never share a job', () => {
   const { topJobs, bottomJobs } = getProfitabilityLeaderboard(jobs, 'all_time', 10);
   const overlap = topJobs.filter(t => bottomJobs.some(b => b.id === t.id));
   assert.equal(overlap.length, 0, 'a job cannot be both a best and a worst performer');
+});
+
+test('default target rate is profit per paid hour over the last 3 months', () => {
+  const now = new Date(2026, 10, 12, 15, 0, 0);
+  const jobs = [
+    // in window: ($300 - $50) / 2h and $150 / 3h => $400 over 5h = $80/hr
+    job({ date_completed: '2026-11-01', hours_worked: 2, final_price: 300, materials_cost: 50 }),
+    job({ date_completed: '2026-08-12', hours_worked: 3, final_price: 150 }),
+    // too old, free, untimed and not-yet-completed work all stay out
+    job({ date_completed: '2026-08-11', hours_worked: 1, final_price: 1000 }),
+    job({ date_completed: '2026-10-01', hours_worked: 4, final_price: 0, is_free: true }),
+    job({ date_completed: '2026-10-02', hours_worked: 0, final_price: 500 }),
+    job({ date_completed: '2026-11-20', hours_worked: 1, final_price: 900 }),
+  ];
+
+  const recent = getRecentAvgHourlyRate(jobs, now);
+  assert.ok(recent);
+  close(recent.rate, 80, '3-month rate');
+  assert.equal(recent.jobCount, 2);
+});
+
+test('default target rate is null without recent paid work', () => {
+  const now = new Date(2026, 10, 12);
+  const jobs = [job({ date_completed: '2026-01-05', hours_worked: 2, final_price: 200 })];
+  assert.equal(getRecentAvgHourlyRate(jobs, now), null);
+  assert.equal(getRecentAvgHourlyRate([], now), null);
 });
