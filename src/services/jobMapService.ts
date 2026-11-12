@@ -21,7 +21,12 @@ export interface JobMapData {
   origin: JobMapOrigin | null;
   /** False when no trip origin is saved, so no address can be located at all. */
   hasOriginAddress: boolean;
+  /** Vehicle cost per mile from Mileage Settings: the newest rate already in effect. */
+  ratePerMile: number;
 }
+
+/** Used when Mileage Settings holds no rate yet. */
+const DEFAULT_RATE_PER_MILE = 0.7;
 
 /**
  * Jobs plus the coordinates already on file for their addresses.
@@ -38,10 +43,19 @@ export async function getJobMapData(): Promise<JobMapData> {
     .maybeSingle();
   if (businessError) throw new Error(`Failed to load the business: ${businessError.message}`);
   if (!business) {
-    return { jobs: [], locations: new Map(), notFound: new Set(), stale: new Set(), origin: null, hasOriginAddress: false };
+    return {
+      jobs: [],
+      locations: new Map(),
+      notFound: new Set(),
+      stale: new Set(),
+      origin: null,
+      hasOriginAddress: false,
+      ratePerMile: DEFAULT_RATE_PER_MILE,
+    };
   }
 
-  const [jobsResult, originResult, estimatesResult] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10);
+  const [jobsResult, originResult, estimatesResult, mileageResult] = await Promise.all([
     supabase.from('jobs').select('*').eq('business_id', business.id).eq('is_active', true),
     supabase
       .from('travel_settings')
@@ -53,6 +67,15 @@ export async function getJobMapData(): Promise<JobMapData> {
       .select(
         'origin_address, destination_address, destination_latitude, destination_longitude, duration_seconds, distance_meters, status, refreshed_at',
       ),
+    supabase
+      .from('mileage_settings')
+      .select('rate_per_mile')
+      .eq('business_id', business.id)
+      .eq('is_active', true)
+      .lte('effective_date', today)
+      .order('effective_date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   if (jobsResult.error) throw new Error(`Failed to load jobs: ${jobsResult.error.message}`);
@@ -100,6 +123,8 @@ export async function getJobMapData(): Promise<JobMapData> {
         ? { latitude: Number(originRow.origin_latitude), longitude: Number(originRow.origin_longitude) }
         : null,
     hasOriginAddress: !!originKey,
+    // A missing or unreadable rate must not blank the page, so it falls back.
+    ratePerMile: Number(mileageResult.data?.rate_per_mile) > 0 ? Number(mileageResult.data!.rate_per_mile) : DEFAULT_RATE_PER_MILE,
   };
 }
 

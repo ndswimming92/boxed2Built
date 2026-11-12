@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { Link } from 'react-router-dom';
 import { AlertCircle, MapPin } from 'lucide-react';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
+import JobMapPricing from '../../components/admin/JobMapPricing';
+import { getRecentAvgHourlyRate } from '../../services/analyticsCalculations';
 import { getJobMapData, locateJobAddress, type JobMapData } from '../../services/jobMapService';
 import {
   areaBreakdown,
@@ -14,6 +16,11 @@ import {
 
 // Loaded on demand: the map brings in the state and county outline data.
 const JobMap = lazy(() => import('../../components/admin/JobMap'));
+
+/** How often the page re-reads jobs, so new and edited jobs show up without a reload. */
+const REFRESH_MS = 60_000;
+/** Matches the Analytics page: used only when there is no recent paid work to average. */
+const FALLBACK_TARGET_RATE = 50;
 
 /** Enough for a first visit; anything beyond it is picked up on the next one. */
 const MAX_LOOKUPS_PER_VISIT = 40;
@@ -154,6 +161,42 @@ export default function JobMapPage() {
     };
   }, []);
 
+  // Keeps the map and the recommendations current while the page stays open.
+  // A failed refresh keeps what is on screen; the next one tries again.
+  const loaded = data !== null;
+  const busy = progress !== null;
+  useEffect(() => {
+    if (!loaded || busy) return;
+    let cancelled = false;
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return;
+      getJobMapData()
+        .then((fresh) => {
+          if (cancelled) return;
+          setData(fresh);
+          setUpdatedAt(Date.now());
+        })
+        .catch(() => {});
+    };
+    const timer = setInterval(refresh, REFRESH_MS);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [loaded, busy]);
+
+  // Same target as Pricing Intelligence on the Analytics page: the last three
+  // months' profit per hour, unless a figure has been typed in.
+  const [targetOverride, setTargetOverride] = useState<number | null>(null);
+  const recentRate = useMemo(
+    () => (data ? getRecentAvgHourlyRate(data.jobs.filter((job) => !job.is_test)) : null),
+    [data],
+  );
+  const autoTargetRate = recentRate && recentRate.rate > 0 ? Math.round(recentRate.rate) : null;
+  const targetRate = targetOverride ?? autoTargetRate ?? FALLBACK_TARGET_RATE;
+
   const result = useMemo(() => (data ? buildJobSites(data.jobs, data.locations) : null), [data]);
   const summary = useMemo(() => summarizeSites(result?.sites ?? []), [result]);
   const areas = useMemo(() => areaBreakdown(result?.sites ?? []), [result]);
@@ -262,6 +305,18 @@ export default function JobMapPage() {
               </ul>
             </div>
           )}
+
+          <JobMapPricing
+            sites={result.sites}
+            targetRate={targetRate}
+            autoTargetRate={autoTargetRate}
+            autoTargetJobCount={recentRate?.jobCount ?? 0}
+            isCustomTarget={targetOverride !== null}
+            onTargetRateChange={setTargetOverride}
+            onResetTargetRate={() => setTargetOverride(null)}
+            ratePerMile={data?.ratePerMile ?? 0.7}
+            money={money}
+          />
 
           <div className="mb-6 grid gap-4 lg:grid-cols-2">
             <BreakdownTable
