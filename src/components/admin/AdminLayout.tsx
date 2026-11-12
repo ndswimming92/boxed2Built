@@ -100,6 +100,7 @@ const navigationGroups: NavigationGroup[] = [
       { name: 'Goals', href: '/admin/goals', icon: Target },
       { name: 'Inquiries', href: '/admin/inquiries', icon: Inbox },
       { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
+      { name: 'Job Map', href: '/admin/job-map', icon: MapPin },
       { name: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
       { name: 'Contractors', href: '/admin/contractors', icon: HardHat },
       { name: 'Completions', href: '/admin/completions', icon: CheckCircle2 },
