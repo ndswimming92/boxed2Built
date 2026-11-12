@@ -4,6 +4,17 @@ import { mapAddressKey, type AddressLocation } from '../utils/jobMap';
 /** Matches CACHE_TTL_MS in supabase/functions/_shared/travel.ts. */
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+interface EstimateRow {
+  origin_address: string;
+  destination_address: string;
+  destination_latitude: number | string | null;
+  destination_longitude: number | string | null;
+  duration_seconds: number | null;
+  distance_meters: number | string | null;
+  status: string;
+  refreshed_at: string;
+}
+
 export interface JobMapOrigin {
   latitude: number;
   longitude: number;
@@ -23,6 +34,28 @@ export interface JobMapData {
   hasOriginAddress: boolean;
   /** Vehicle cost per mile from Mileage Settings: the newest rate already in effect. */
   ratePerMile: number;
+}
+
+/** Rows per request, and a ceiling on requests so a bad response cannot loop forever. */
+const PAGE_SIZE = 1000;
+const MAX_PAGES = 50;
+
+/**
+ * Reads every row of a query in ordered pages. A single request stops at the
+ * API's row cap without saying so, which would quietly drop jobs from the map.
+ */
+async function fetchAllRows<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+  what: string,
+): Promise<T[]> {
+  const rows: T[] = [];
+  for (let request = 0; request < MAX_PAGES; request += 1) {
+    const { data, error } = await page(rows.length, rows.length + PAGE_SIZE - 1);
+    if (error) throw new Error(`Failed to load ${what}: ${error.message}`);
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) break;
+  }
+  return rows;
 }
 
 /** Used when Mileage Settings holds no rate yet. */
@@ -55,18 +88,28 @@ export async function getJobMapData(): Promise<JobMapData> {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const [jobsResult, originResult, estimatesResult, mileageResult] = await Promise.all([
-    supabase.from('jobs').select('*').eq('business_id', business.id).eq('is_active', true),
+  const [jobs, originResult, estimates, mileageResult] = await Promise.all([
+    fetchAllRows<Job>(
+      (from, to) =>
+        supabase.from('jobs').select('*').eq('business_id', business.id).eq('is_active', true).order('id').range(from, to),
+      'jobs',
+    ),
     supabase
       .from('travel_settings')
       .select('origin_address, origin_latitude, origin_longitude')
       .eq('is_active', true)
       .maybeSingle(),
-    supabase
-      .from('job_travel_estimates')
-      .select(
-        'origin_address, destination_address, destination_latitude, destination_longitude, duration_seconds, distance_meters, status, refreshed_at',
-      ),
+    fetchAllRows<EstimateRow>(
+      (from, to) =>
+        supabase
+          .from('job_travel_estimates')
+          .select(
+            'origin_address, destination_address, destination_latitude, destination_longitude, duration_seconds, distance_meters, status, refreshed_at',
+          )
+          .order('id')
+          .range(from, to),
+      'job locations',
+    ),
     supabase
       .from('mileage_settings')
       .select('rate_per_mile')
@@ -78,9 +121,6 @@ export async function getJobMapData(): Promise<JobMapData> {
       .maybeSingle(),
   ]);
 
-  if (jobsResult.error) throw new Error(`Failed to load jobs: ${jobsResult.error.message}`);
-  if (estimatesResult.error) throw new Error(`Failed to load job locations: ${estimatesResult.error.message}`);
-
   const originRow = originResult.data;
   const originKey = mapAddressKey(originRow?.origin_address);
   const locations = new Map<string, AddressLocation>();
@@ -88,12 +128,12 @@ export async function getJobMapData(): Promise<JobMapData> {
   const stale = new Set<string>();
   const now = Date.now();
 
-  for (const row of estimatesResult.data ?? []) {
+  for (const row of estimates) {
     // Rows measured from an older trip origin still hold the right coordinates,
     // but their drive times are from somewhere else, so they are refreshed.
     const fromCurrentOrigin = !originKey || row.origin_address === originKey;
     const isStale = !fromCurrentOrigin || now - new Date(row.refreshed_at).getTime() > CACHE_TTL_MS;
-    const key = row.destination_address as string;
+    const key = row.destination_address;
 
     if (row.destination_latitude == null || row.destination_longitude == null) {
       if (row.status === 'not_found' && !isStale) notFound.add(key);
@@ -114,7 +154,7 @@ export async function getJobMapData(): Promise<JobMapData> {
   }
 
   return {
-    jobs: (jobsResult.data ?? []) as Job[],
+    jobs,
     locations,
     notFound,
     stale,

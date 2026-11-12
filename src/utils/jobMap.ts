@@ -151,6 +151,36 @@ export function buildJobSites(jobs: Job[], locations: Map<string, AddressLocatio
   return { sites, missingAddress, unlocated, totalJobs: done.length };
 }
 
+export interface AddressLookup {
+  key: string;
+  /** Any one job at the address; the lookup resolves the address from it. */
+  jobId: string;
+}
+
+/**
+ * Addresses that still need asking about: completed jobs' addresses with no
+ * coordinates on file, then located ones whose cached answer has aged out.
+ * Addresses already known to be unfindable, and ones already tried on this
+ * visit, are left out so nothing is asked twice.
+ */
+export function lookupQueue(
+  jobs: Job[],
+  locations: Map<string, AddressLocation>,
+  notFound: Set<string>,
+  stale: Set<string>,
+  attempted: Set<string>,
+  limit: number,
+): AddressLookup[] {
+  if (limit <= 0) return [];
+  const { sites, unlocated } = buildJobSites(jobs, locations);
+  return [
+    ...unlocated.filter((entry) => !notFound.has(entry.key)).map((entry) => ({ key: entry.key, jobId: entry.jobs[0].id })),
+    ...sites.filter((site) => stale.has(site.key)).map((site) => ({ key: site.key, jobId: site.jobs[0].id })),
+  ]
+    .filter((entry) => !attempted.has(entry.key))
+    .slice(0, limit);
+}
+
 export interface JobMapSummary {
   addresses: number;
   jobs: number;

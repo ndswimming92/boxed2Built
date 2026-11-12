@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, MapPin } from 'lucide-react';
 import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
@@ -10,6 +10,7 @@ import {
   buildInsights,
   buildJobSites,
   driveBreakdown,
+  lookupQueue,
   summarizeSites,
   type GroupStat,
 } from '../../utils/jobMap';
@@ -22,7 +23,7 @@ const REFRESH_MS = 60_000;
 /** Matches the Analytics page: used only when there is no recent paid work to average. */
 const FALLBACK_TARGET_RATE = 50;
 
-/** Enough for a first visit; anything beyond it is picked up on the next one. */
+/** Address lookups allowed per visit, first load and refreshes together. The rest wait for the next visit. */
 const MAX_LOOKUPS_PER_VISIT = 40;
 
 const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -110,31 +111,47 @@ export default function JobMapPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- maskFinancialValue is a new function each render
   const money = useCallback((amount: number) => maskFinancialValue(dollars.format(amount)), [privacyModeEnabled]);
 
+  // Address keys already sent for lookup on this visit. A lookup that fails, or
+  // an address Mapbox cannot place, must not be retried on every refresh.
+  const attempted = useRef(new Set<string>());
+
   useEffect(() => {
     let cancelled = false;
+    // One run at a time: a refresh that lands mid-lookup waits for the next tick.
+    let running = false;
 
-    (async () => {
+    /**
+     * Reads jobs and their coordinates, then looks up any address that has none
+     * on file or whose cached answer has aged out. The first run and every
+     * refresh go through here, so a job added or re-addressed while the page is
+     * open reaches the map without a reload. Each lookup costs a Mapbox call the
+     * first time and is free after that.
+     */
+    const sync = async (initial: boolean) => {
+      if (running) return;
+      running = true;
       try {
         const loaded = await getJobMapData();
         if (cancelled) return;
         setData(loaded);
         setUpdatedAt(Date.now());
-
-        // Addresses with no coordinates on file, or whose cached answer has
-        // aged out, are looked up one at a time. Each costs a Mapbox call the
-        // first time and is free after that.
         if (!loaded.hasOriginAddress) return;
-        const { sites, unlocated } = buildJobSites(loaded.jobs, loaded.locations);
-        const queue = [
-          ...unlocated.filter((entry) => !loaded.notFound.has(entry.key)).map((entry) => entry.jobs[0].id),
-          ...sites.filter((site) => loaded.stale.has(site.key)).map((site) => site.jobs[0].id),
-        ].slice(0, MAX_LOOKUPS_PER_VISIT);
+
+        const queue = lookupQueue(
+          loaded.jobs,
+          loaded.locations,
+          loaded.notFound,
+          loaded.stale,
+          attempted.current,
+          MAX_LOOKUPS_PER_VISIT - attempted.current.size,
+        );
         if (queue.length === 0) return;
 
         setProgress({ done: 0, total: queue.length });
         try {
           for (let index = 0; index < queue.length; index += 1) {
-            const status = await locateJobAddress(queue[index]);
+            attempted.current.add(queue[index].key);
+            const status = await locateJobAddress(queue[index].jobId);
             if (cancelled) return;
             if (status === 'origin_not_found' || status === 'no_address') {
               throw new Error('Your trip starting address could not be found. Check it under Mileage Settings.');
@@ -150,42 +167,28 @@ export default function JobMapPage() {
         setData(refreshed);
         setUpdatedAt(Date.now());
       } catch (loadError) {
-        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Failed to load the job map');
+        // A failed refresh keeps what is on screen; the next one tries again.
+        if (!cancelled && initial) setError(loadError instanceof Error ? loadError.message : 'Failed to load the job map');
       } finally {
+        running = false;
         if (!cancelled) setProgress(null);
       }
-    })();
-
-    return () => {
-      cancelled = true;
     };
-  }, []);
 
-  // Keeps the map and the recommendations current while the page stays open.
-  // A failed refresh keeps what is on screen; the next one tries again.
-  const loaded = data !== null;
-  const busy = progress !== null;
-  useEffect(() => {
-    if (!loaded || busy) return;
-    let cancelled = false;
+    void sync(true);
+
     const refresh = () => {
-      if (document.visibilityState !== 'visible') return;
-      getJobMapData()
-        .then((fresh) => {
-          if (cancelled) return;
-          setData(fresh);
-          setUpdatedAt(Date.now());
-        })
-        .catch(() => {});
+      if (document.visibilityState === 'visible') void sync(false);
     };
     const timer = setInterval(refresh, REFRESH_MS);
     document.addEventListener('visibilitychange', refresh);
+
     return () => {
       cancelled = true;
       clearInterval(timer);
       document.removeEventListener('visibilitychange', refresh);
     };
-  }, [loaded, busy]);
+  }, []);
 
   // Same target as Pricing Intelligence on the Analytics page: the last three
   // months' profit per hour, unless a figure has been typed in.
