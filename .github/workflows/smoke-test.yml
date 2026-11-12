@@ -86,6 +86,8 @@ jobs:
           COVERED="$COVERED"'|src/pages/ReferralRedirectPage\.tsx$'
           COVERED="$COVERED"'|src/services/(inquiryService|referralQRService|couponService)\.ts$'
           COVERED="$COVERED"'|src/utils/(inquiryWorkflow|utmAttribution|coupon)\.ts$'
+          COVERED="$COVERED"'|src/pages/admin/PortalAdoptionPage\.tsx$'
+          COVERED="$COVERED"'|src/services/portalAdoptionReportService\.ts$'
           COVERED="$COVERED"'|tests/'
           COVERED="$COVERED"'|playwright\.config\.ts$'
           COVERED="$COVERED"'|\.github/workflows/smoke-test\.yml$'
@@ -160,6 +162,8 @@ jobs:
             files: tests/job-card-surfaces.spec.ts
           - name: Contact form, news, grants, competitor watch and portal sign-in
             files: tests/contact-form.spec.ts tests/news.spec.ts tests/grants.spec.ts tests/competitors.spec.ts tests/portal-login.spec.ts tests/portal-callback.spec.ts
+          - name: Portal adoption account deletion
+            files: tests/portal-adoption.spec.ts
     steps:
       - uses: actions/checkout@v7
 
