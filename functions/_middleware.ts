@@ -19,6 +19,11 @@ interface PagesContext {
 // Same policy as the Content-Signal line in public/robots.txt.
 const CONTENT_SIGNAL = 'search=yes, ai-input=yes, ai-train=no';
 
+// Agent discovery on the homepage (RFC 8288). Same value as the "/" rule in
+// public/_headers, which covers the HTML answer; the markdown answer is built
+// from /index.md and would otherwise lose it.
+const HOME_LINK = '</llms.txt>; rel="describedby"; type="text/plain", </index.md>; rel="alternate"; type="text/markdown"';
+
 function withVaryAccept(response: Response): Response {
   const copy = new Response(response.body, response);
   const vary = copy.headers.get('Vary');
@@ -43,6 +48,7 @@ async function markdownResponse({ request, env }: PagesContext): Promise<Respons
   // Direct .md URLs are noindex so they never compete with the HTML page in
   // search. Here the markdown is answering for the canonical URL itself.
   response.headers.delete('X-Robots-Tag');
+  if (markdownPath === '/index.md') response.headers.set('Link', HOME_LINK);
   if (text !== null) response.headers.set('X-Markdown-Tokens', String(estimateTokens(text.length)));
   return response;
 }
