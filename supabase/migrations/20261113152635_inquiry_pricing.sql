@@ -1,6 +1,9 @@
 /*
   # Inquiry pricing: a private price recommendation on each inquiry
 
+  Applied to production on 2026-11-13 under this same version stamp through the
+  Supabase connection. It is not idempotent, so do not re-run it by hand.
+
   1. New table
     - `inquiry_pricing` — one row per inquiry, holding what only the owner
       should see while pricing it: the work address typed in by hand (the quote
