@@ -12,6 +12,7 @@ import {
   calculatePaymentTermsDueDate,
   invoiceTypeHasDueDate,
   getInvoiceSettings,
+  BOX_REMOVAL_LINE_ITEM,
 } from '../../services/invoiceService';
 import { downloadInvoicePDF } from '../../utils/invoicePDFGenerator';
 import { invoiceLabels } from '../../utils/invoiceLabels';
@@ -158,7 +159,7 @@ export default function InvoiceFormModal({
   // Box removal and cleanup goes on every new invoice. An existing invoice
   // replaces these with its saved lines when it loads.
   const [lineItems, setLineItems] = useState<LineItemForm[]>([
-    { item_type: 'labor', description: 'Box Removal & Cleanup', quantity: 1, unit_price: 30, is_taxable: false },
+    { ...BOX_REMOVAL_LINE_ITEM },
     { item_type: 'labor', description: '', quantity: 1, unit_price: 0, is_taxable: false },
   ]);
   // The coupon the customer was quoted with, if this invoice is being raised

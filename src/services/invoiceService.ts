@@ -704,6 +704,20 @@ export async function getInvoiceStats(businessId: string): Promise<InvoiceStats>
   };
 }
 
+/**
+ * Box removal and cleanup is part of every job, so it goes on every new
+ * invoice: the form starts with this line, and so does anything built without
+ * the form (below, and the inquiry trigger in the database, which carries its
+ * own copy of these values).
+ */
+export const BOX_REMOVAL_LINE_ITEM = {
+  item_type: 'labor',
+  description: 'Box Removal & Cleanup',
+  quantity: 1,
+  unit_price: 30,
+  is_taxable: false,
+} as const;
+
 export async function createInvoiceFromInquiry(
   inquiry: FormInquiry,
   invoiceType: 'estimate' | 'deposit' | 'progress' | 'final' | 'general' = 'general'
@@ -740,6 +754,8 @@ export async function createInvoiceFromInquiry(
       display_order: 0,
     });
   }
+
+  await addLineItem({ invoice_id: invoice.id, ...BOX_REMOVAL_LINE_ITEM, display_order: 1 });
 
   return invoice;
 }
@@ -782,13 +798,15 @@ export async function createInvoiceFromJob(
     });
   }
 
+  await addLineItem({ invoice_id: invoice.id, ...BOX_REMOVAL_LINE_ITEM, display_order: 1 });
+
   return invoice;
 }
 
 /**
  * Builds the quote record for a job that was priced on the job itself and has
- * no quote yet: the quoted price becomes a labor line, and any materials cost
- * a second one. After this the quote is an ordinary invoice row, so it is
+ * no quote yet: the quoted price becomes a labor line, box removal and cleanup
+ * follows it, and any materials cost goes last. After this the quote is an ordinary invoice row, so it is
  * reviewed, edited and emailed exactly like every other one.
  */
 export async function createQuoteFromJob(jobId: string): Promise<Invoice> {
@@ -813,7 +831,7 @@ export async function createQuoteFromJob(jobId: string): Promise<Invoice> {
       quantity: 1,
       unit_price: materials,
       is_taxable: false,
-      display_order: 1,
+      display_order: 2,
     });
   }
 
