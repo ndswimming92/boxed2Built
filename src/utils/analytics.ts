@@ -2,6 +2,8 @@ declare global {
   interface Window {
     gtag: (...args: any[]) => void;
     dataLayer: any[];
+    /** Set by the inline bootstrap in index.html; loads gtag.js once. */
+    __loadGoogleAnalytics?: () => void;
   }
 }
 

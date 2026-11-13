@@ -8,6 +8,18 @@ export interface BusinessDataContextValue {
   error: Error | null;
 }
 
+function runWhenPageIsIdle(task: () => void) {
+  const schedule = () => {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(task, { timeout: 4000 });
+    } else {
+      window.setTimeout(task, 1500);
+    }
+  };
+  if (document.readyState === 'complete') schedule();
+  else window.addEventListener('load', schedule, { once: true });
+}
+
 const BusinessDataContext = createContext<BusinessDataContextValue | undefined>(undefined);
 
 /**
@@ -60,28 +72,40 @@ export function BusinessDataProvider({ initialData, children }: BusinessDataProv
 
     let active = true;
 
-    fetchBusinessData(Boolean(initialData))
-      .then((fresh) => {
-        if (!active || !fresh) return;
-        // A transition, not a plain update: the page below is lazy, so on a
-        // fresh load it may still be waiting to hydrate when this lands. A
-        // plain update to the context would hit that unhydrated boundary and
-        // raise React error #421, throwing away the prerendered page.
-        startTransition(() => {
-          stableSetData(fresh);
-          setError(null);
+    const revalidate = () => {
+      if (!active) return;
+      fetchBusinessData(Boolean(initialData))
+        .then((fresh) => {
+          if (!active || !fresh) return;
+          // A transition, not a plain update: the page below is lazy, so on a
+          // fresh load it may still be waiting to hydrate when this lands. A
+          // plain update to the context would hit that unhydrated boundary and
+          // raise React error #421, throwing away the prerendered page.
+          startTransition(() => {
+            stableSetData(fresh);
+            setError(null);
+          });
+        })
+        .catch((err) => {
+          if (!active) return;
+          console.error('Error loading business data:', err);
+          if (!initialData) startTransition(() => setError(err as Error));
+        })
+        .finally(() => {
+          // Also a transition: loading flips to false even when the fetch fails
+          // or settles before the lazy page has hydrated.
+          if (active) startTransition(() => setLoading(false));
         });
-      })
-      .catch((err) => {
-        if (!active) return;
-        console.error('Error loading business data:', err);
-        if (!initialData) startTransition(() => setError(err as Error));
-      })
-      .finally(() => {
-        // Also a transition: loading flips to false even when the fetch fails
-        // or settles before the lazy page has hydrated.
-        if (active) startTransition(() => setLoading(false));
-      });
+    };
+
+    // A page pre-rendered with real data is already showing it, so the refresh
+    // waits until the page has loaded and the browser is idle rather than
+    // competing with hydration and images. Without usable data it runs now.
+    if (initialData && initialData.info.id !== 'fallback') {
+      runWhenPageIsIdle(revalidate);
+    } else {
+      revalidate();
+    }
 
     return () => {
       active = false;

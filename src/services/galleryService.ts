@@ -141,7 +141,8 @@ export class GalleryService {
         .from(this.BUCKET_NAME)
         .upload(filePath, optimizedImage.file, {
           contentType: optimizedImage.file.type,
-          cacheControl: '3600',
+          // File names are unique per upload, so the file at a URL never changes.
+          cacheControl: '31536000',
           upsert: false,
         });
 

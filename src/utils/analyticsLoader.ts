@@ -55,6 +55,14 @@ const injectGoogleAnalyticsScript = (): Promise<void> => {
     script.addEventListener('error', () => resolve(), { once: true });
 
     if (!existingScript) {
+      // index.html schedules the library for the first interaction (or shortly
+      // after load) so it stays out of the first paint. Leave the timing to it;
+      // events queue in dataLayer until the library arrives.
+      if (typeof window.__loadGoogleAnalytics === 'function') {
+        resolve();
+        return;
+      }
+
       script.async = true;
       script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
       script.dataset.analytics = 'ga4';
