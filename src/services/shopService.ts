@@ -266,7 +266,8 @@ export async function uploadProductImage(file: File, businessId: string): Promis
     .from(BUCKET_NAME)
     .upload(filePath, optimized.file, {
       contentType: optimized.file.type,
-      cacheControl: '3600',
+      // File names are unique per upload, so the file at a URL never changes.
+      cacheControl: '31536000',
       upsert: false,
     });
 

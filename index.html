@@ -95,7 +95,7 @@
     })();
   </script>
 
-  <!-- Google Analytics: bootstrap immediately so Realtime receives the first visit hit. -->
+  <!-- Google Analytics: queue the config and first page view immediately; the library loads just below. -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -115,11 +115,36 @@
       debug_mode: false
     });
   </script>
-  <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=G-ZY3PG1S68G"
-    data-analytics="ga4"
-  ></script>
+  <!--
+    The gtag.js library itself (185 KB) is fetched on the visitor's first
+    interaction, or 3 seconds after the page has loaded, whichever is first, so
+    it does not compete with the page's own files for the first paint. The
+    bootstrap above has already queued the config and page view in dataLayer;
+    they are sent as soon as the library arrives.
+  -->
+  <script>
+    (function () {
+      var started = false;
+      var events = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+      function load() {
+        if (started) return;
+        started = true;
+        events.forEach(function (name) { window.removeEventListener(name, load); });
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZY3PG1S68G';
+        script.setAttribute('data-analytics', 'ga4');
+        document.head.appendChild(script);
+      }
+      window.__loadGoogleAnalytics = load;
+      events.forEach(function (name) {
+        window.addEventListener(name, load, { passive: true });
+      });
+      function afterLoad() { setTimeout(load, 3000); }
+      if (document.readyState === 'complete') afterLoad();
+      else window.addEventListener('load', afterLoad, { once: true });
+    })();
+  </script>
 
   <!--
     Page-level title, description and canonical are owned entirely by each

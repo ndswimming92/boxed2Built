@@ -98,7 +98,7 @@ export default function BatchImageUpload({ onImagesOptimized, onCancel }: BatchI
         {
           maxWidth: 1920,
           maxHeight: 1080,
-          quality: 0.85,
+          quality: 0.75,
           convertToWebP: true,
         },
         (current, total) => {
