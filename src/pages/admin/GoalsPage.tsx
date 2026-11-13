@@ -96,15 +96,33 @@ export default function GoalsPage() {
 
   const replaceGoal = (saved: Goal) => setGoals((list) => list.map((g) => (g.id === saved.id ? saved : g)));
 
+  // Saves to one goal run one after another. Leaving a field and clicking
+  // "Mark complete" in the same motion starts two writes; unordered, the field
+  // save could land last and quietly put a finished goal back to in progress.
+  const queues = useRef(new Map<string, Promise<unknown>>());
+  const waiting = useRef(new Map<string, number>());
+  const enqueue = <T,>(id: string, task: () => Promise<T>): Promise<T> => {
+    waiting.current.set(id, (waiting.current.get(id) ?? 0) + 1);
+    const run = (queues.current.get(id) ?? Promise.resolve()).catch(() => undefined).then(task);
+    queues.current.set(id, run);
+    return run.finally(() => waiting.current.set(id, (waiting.current.get(id) ?? 1) - 1));
+  };
+  const isSettled = (id: string) => (waiting.current.get(id) ?? 0) === 0;
+
   /** Saves a change straight away; the list updates first and rolls back if the save fails. */
   const patchGoal = async (goal: Goal, changes: Partial<Goal>) => {
     setGoals((list) => list.map((g) => (g.id === goal.id ? { ...g, ...changes } : g)));
     setSaveState('saving');
     try {
-      replaceGoal(await updateGoal(goal.id, changes));
-      setSaveState('saved');
+      const saved = await enqueue(goal.id, () => updateGoal(goal.id, changes));
+      // A reply to an earlier save does not know about edits made since.
+      if (isSettled(goal.id)) {
+        replaceGoal(saved);
+        setSaveState('saved');
+      }
     } catch {
-      replaceGoal(goal);
+      const previous = Object.fromEntries(Object.keys(changes).map((key) => [key, goal[key as keyof Goal]]));
+      setGoals((list) => list.map((g) => (g.id === goal.id ? { ...g, ...previous } : g)));
       setSaveState('idle');
       showToast({ tone: 'error', text: 'That change could not be saved. Please try again.' });
     }
@@ -136,7 +154,7 @@ export default function GoalsPage() {
 
   const handleReopen = async (goal: Goal, quiet = false) => {
     try {
-      replaceGoal(await reopenGoal(goal));
+      replaceGoal(await enqueue(goal.id, () => reopenGoal(goal)));
       if (!quiet) showToast({ tone: 'success', text: `"${goal.title}" is back on your active list.` });
     } catch {
       showToast({ tone: 'error', text: 'The goal could not be reopened. Please try again.' });
@@ -145,7 +163,7 @@ export default function GoalsPage() {
 
   const handleComplete = async (goal: Goal) => {
     try {
-      const saved = await completeGoal(goal.id, isCheckboxGoal(goal) ? Math.max(goal.target_value, 1) : undefined);
+      const saved = await enqueue(goal.id, () => completeGoal(goal.id, isCheckboxGoal(goal) ? goal.target_value : undefined));
       replaceGoal(saved);
       if (expandedId === goal.id) setExpandedId(null);
       showToast({

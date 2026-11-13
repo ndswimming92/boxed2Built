@@ -60,6 +60,7 @@ test('completed, cancelled and archived goals are all finished', () => {
 test('a target of one is a yes/no goal, except for dollars and percent', () => {
   assert.equal(isCheckboxGoal(goal({ unit_label: 'Bought' })), true);
   assert.equal(isCheckboxGoal(goal({ target_value: 12 })), false);
+  assert.equal(isCheckboxGoal(goal({ target_value: 0.5, unit_type: 'hours' })), false);
   assert.equal(isCheckboxGoal(goal({ unit_type: 'revenue' })), false);
 });
 

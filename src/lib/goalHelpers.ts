@@ -65,7 +65,7 @@ export function isDone(goal: Pick<Goal, 'status' | 'is_archived'>): boolean {
  * checkbox rather than a progress bar.
  */
 export function isCheckboxGoal(goal: Pick<Goal, 'target_value' | 'unit_type'>): boolean {
-  return goal.target_value <= 1 && goal.unit_type !== 'revenue' && goal.unit_type !== 'percentage';
+  return goal.target_value === 1 && goal.unit_type !== 'revenue' && goal.unit_type !== 'percentage';
 }
 
 export function urgencyOf(goal: Pick<Goal, 'due_date'>, today: Date = new Date()): UrgencyKey {

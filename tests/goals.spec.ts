@@ -208,6 +208,24 @@ test('progress toward a number is updated in the same place', async ({ page }) =
   await expect.poll(() => mounted.patches.at(-1)).toMatchObject({ id: 'g-revenue', current_value: 600, target_value: 750 });
 });
 
+test('a progress edit and Mark complete in one motion still ends completed', async ({ page }) => {
+  const goals = seed();
+  goals.find((g) => g.id === 'g-revenue')!.status = 'not_started';
+  goals.find((g) => g.id === 'g-revenue')!.current_value = 0;
+  const mounted = await mountGoals(page, goals);
+
+  await openGoal(page, 'Earn $750 from referrals');
+  await page.getByLabel('So far').fill('750');
+  // Clicking away from the field saves it (moving the goal to in progress) and completes it at once.
+  await page.getByRole('button', { name: /mark complete$/i }).last().click();
+
+  await expect(page.getByRole('tab', { name: /Completed/ })).toContainText('2');
+  await expect.poll(() => mounted.patches.length).toBe(2);
+  expect(mounted.patches[0]).toMatchObject({ id: 'g-revenue', current_value: 750, status: 'in_progress' });
+  expect(mounted.patches[1]).toMatchObject({ id: 'g-revenue', status: 'completed' });
+  expect(mounted.goals.find((g) => g.id === 'g-revenue')).toMatchObject({ status: 'completed', current_value: 750 });
+});
+
 test('a new goal needs only a title and opens ready for details', async ({ page }) => {
   const mounted = await mountGoals(page);
 
