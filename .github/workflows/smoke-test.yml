@@ -151,7 +151,7 @@ jobs:
           - name: Admin layout on a phone
             files: tests/mobile-layout.spec.ts
           - name: Admin dashboard
-            files: tests/dashboard.spec.ts
+            files: tests/dashboard.spec.ts tests/goals.spec.ts
           - name: Inquiries, coupons and referral QR codes
             files: tests/inquiries-workflow.spec.ts tests/coupons.spec.ts tests/referral-qr.spec.ts
           - name: Job card - what it shows and its email panels
