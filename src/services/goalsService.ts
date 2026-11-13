@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { Goal } from '../lib/supabase';
 import { logAction } from './auditLogService';
+import { isCheckboxGoal, toISODate } from '../lib/goalHelpers';
 
 export interface GoalStats {
   totalGoals: number;
@@ -115,7 +116,7 @@ export async function createGoal(businessId: string, goalData: Partial<Goal>): P
 export async function updateGoal(id: string, goalData: Partial<Goal>): Promise<Goal> {
   const oldGoal = await getGoalById(id);
 
-  const updateData: any = {
+  const updateData: Partial<Goal> = {
     updated_at: new Date().toISOString(),
   };
 
@@ -197,45 +198,20 @@ export async function deleteGoal(id: string): Promise<void> {
   });
 }
 
-export async function archiveGoal(id: string): Promise<void> {
-  const oldGoal = await getGoalById(id);
-
-  const { error } = await supabase
-    .from('business_goals')
-    .update({ is_archived: true, updated_at: new Date().toISOString() })
-    .eq('id', id);
-
-  if (error) {
-    await logAction({
-      actionType: 'ARCHIVE',
-      tableName: 'business_goals',
-      recordId: id,
-      recordIdentifier: oldGoal?.title || 'Unknown Goal',
-      status: 'error',
-      errorMessage: error.message,
-    });
-    console.error('Error archiving goal:', error);
-    throw error;
-  }
-
-  await logAction({
-    actionType: 'ARCHIVE',
-    tableName: 'business_goals',
-    recordId: id,
-    recordIdentifier: oldGoal?.title || 'Unknown Goal',
-    status: 'success',
-  });
-}
-
-export async function completeGoal(id: string): Promise<Goal> {
+/**
+ * Marks a goal completed. Yes/no goals pass `currentValue` so their single
+ * step is recorded as done; number goals keep whatever progress they reached.
+ */
+export async function completeGoal(id: string, currentValue?: number): Promise<Goal> {
   const oldGoal = await getGoalById(id);
 
   const { data, error } = await supabase
     .from('business_goals')
     .update({
       status: 'completed',
-      completion_date: new Date().toISOString().split('T')[0],
+      completion_date: toISODate(new Date()),
       updated_at: new Date().toISOString(),
+      ...(currentValue !== undefined ? { current_value: currentValue } : {}),
     })
     .eq('id', id)
     .select()
@@ -267,6 +243,17 @@ export async function completeGoal(id: string): Promise<Goal> {
   });
 
   return data;
+}
+
+/** Moves a finished goal back onto the active list. */
+export async function reopenGoal(goal: Goal): Promise<Goal> {
+  const currentValue = isCheckboxGoal(goal) ? 0 : goal.current_value;
+  return updateGoal(goal.id, {
+    status: currentValue > 0 ? 'in_progress' : 'not_started',
+    current_value: currentValue,
+    completion_date: null,
+    is_archived: false,
+  });
 }
 
 export async function updateGoalProgress(id: string, currentValue: number): Promise<Goal> {
