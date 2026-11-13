@@ -12,14 +12,17 @@
 import '../../src/index.css';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
+import { PrivacyModeProvider } from '../../src/contexts/PrivacyModeContext';
 import InquiriesPage from '../../src/pages/admin/InquiriesPage';
 
 function Harness() {
   return (
     <MemoryRouter>
-      <div className="min-h-screen bg-slate-50 p-6">
-        <InquiriesPage />
-      </div>
+      <PrivacyModeProvider>
+        <div className="min-h-screen bg-slate-50 p-6">
+          <InquiriesPage />
+        </div>
+      </PrivacyModeProvider>
     </MemoryRouter>
   );
 }

@@ -8,6 +8,7 @@ import { describeDiscount, formatMoney } from '../../utils/coupon';
 import { getClientById, type Client } from '../../services/clientService';
 import InvoiceFormModal from './InvoiceFormModal';
 import ClientDetailModal from './ClientDetailModal';
+import InquiryPriceCard from './InquiryPriceCard';
 import { invoiceLabels } from '../../utils/invoiceLabels';
 
 function formatElapsedTime(seconds: number): string {
@@ -364,6 +365,9 @@ export default function InquiryDetailModal({
               </div>
             </div>
           </div>
+
+          {/* Keyed so a different inquiry starts from a clean card. */}
+          <InquiryPriceCard key={inquiry.id} inquiry={inquiry} />
 
           {(inquiry.preferred_date || inquiry.preferred_time_slot) && (
             <div className="bg-blue-50 p-4 rounded-lg">
