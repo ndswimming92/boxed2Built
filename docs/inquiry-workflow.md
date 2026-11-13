@@ -60,3 +60,28 @@ backfill. Archiving them instead would have overwritten the converted status and
 broken the conversion rate.
 
 `tests/inquiries-workflow.spec.ts` holds the rules against the shipped page.
+
+## What to charge
+
+Opening an inquiry shows a **What to charge** card. It is for you only: it is
+saved to `inquiry_pricing`, a table no quote, email or portal page reads.
+
+- **Formula price** — the form's hours at your target rate (your average profit
+  per hour over the last three months, the same target as the Job Map), plus the
+  round-trip drive at that rate and mileage. It appears as soon as the inquiry
+  opens and costs nothing.
+- **Where is the work?** — the quote form does not ask for an address, so travel
+  is left out until you type one here. A town alone is enough for a rough drive;
+  a street address gives the exact one. The Job Map's advice for that town, or
+  for that drive-time band, shows underneath.
+- **The gap** — what the form showed the customer, with any coupon added back,
+  against the recommended price.
+- **Ask Claude** — runs only when you click it. Claude is given the formula
+  price, the customer's notes, your finished jobs (quoted, charged, hours taken)
+  and recent lost quotes, and returns a price, a range, its reasons and anything
+  worth asking the customer first. The customer's name, email and phone are not
+  sent. The answer is saved, so reopening the inquiry does not ask again.
+
+The Claude call runs in the `inquiry-price-advice` edge function. It uses the
+`Claude_Inquiry_Pricing` secret when one is set, and otherwise the key the
+coupon and gallery writers already use.

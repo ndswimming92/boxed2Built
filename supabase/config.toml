@@ -88,3 +88,6 @@ verify_jwt = false
 
 [functions.send-partner-outreach-email]
 verify_jwt = false
+
+[functions.inquiry-price-advice]
+verify_jwt = false
