@@ -2,12 +2,29 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import reviewAggregateRating from './plugins/reviewAggregateRating';
+import { createLazyPreloadFilter } from './plugins/lazyPreloadFilter';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), reviewAggregateRating()],
   build: {
     target: 'es2022',
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              // Icons used by more than one chunk were each emitted as their own
+              // ~300-byte file (36 separate requests on the homepage). One shared
+              // file is ~8 KB compressed and a single request.
+              name: 'icons',
+              test: /node_modules[\\/]lucide-react[\\/]dist[\\/]esm[\\/]icons[\\/]/,
+              minShareCount: 2,
+            },
+          ],
+        },
+      },
+    },
   },
   esbuild: {
     target: 'es2022',
@@ -23,6 +40,7 @@ export default defineConfig({
     dirStyle: 'flat',
     script: 'defer',
     mock: true,
+    onPageRendered: createLazyPreloadFilter(),
     includedRoutes(paths) {
       // vite-react-ssg hands nested child routes over without a leading slash
       // ("admin/dashboard", not "/admin/dashboard"), so normalise before

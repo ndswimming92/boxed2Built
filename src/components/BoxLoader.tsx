@@ -68,7 +68,7 @@ const BoxLoader: React.FC<BoxLoaderProps> = ({
                 <div className="bl-tape" />
               </div>
               <div className="bl-logo-wrap">
-                <img src="/boxed2built_logo.png" className="bl-logo" alt="Boxed2Built" />
+                <img src="/boxed2built_logo.svg" className="bl-logo" width={48} height={48} alt="Boxed2Built" />
               </div>
             </div>
           </div>
