@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { AlertCircle, ChevronDown, ChevronRight, Download, Search } from 'lucide-react';
+import { formatPhoneInput, phoneDigitsOnly } from '../../utils/phoneInput';
 
 type ConsentRow = {
   id: string;
@@ -32,6 +33,13 @@ const FETCH_LIMIT = 2000;
 
 const formatWhen = (iso: string) =>
   new Date(iso).toLocaleString('en-US', { timeZone: 'America/Chicago', dateStyle: 'medium', timeStyle: 'short' });
+
+// Numbers were stored as typed ("(615) 403-4538", "+16154034538"), so show them
+// all one way. Anything that is not a 10-digit US number is shown as stored.
+const displayPhone = (row: ConsentRow) => {
+  const digits = phoneDigitsOnly(row.phone_digits || row.phone || '');
+  return digits.length === 10 ? formatPhoneInput(digits) : row.phone;
+};
 
 const kindLabel = (row: ConsentRow) => {
   if (row.event_type === 'opt_out') return 'Opted out';
@@ -239,20 +247,22 @@ export default function SmsConsentLog() {
                     {open ? <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />}
                     <span className="w-36 shrink-0 text-xs text-slate-500">{formatWhen(row.created_at)}</span>
                     <span className="flex-1 min-w-0 truncate text-sm font-medium text-slate-900">{row.name || '(no name)'}</span>
-                    <span className="hidden sm:block w-36 shrink-0 text-sm text-slate-600">{row.phone}</span>
-                    <span
-                      className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        row.event_type === 'opt_out' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
-                      }`}
-                    >
-                      {kindLabel(row)}
+                    <span className="hidden sm:block w-32 shrink-0 text-sm text-slate-600 tabular-nums">{displayPhone(row)}</span>
+                    <span className="sm:w-28 shrink-0 flex justify-end">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                          row.event_type === 'opt_out' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {kindLabel(row)}
+                      </span>
                     </span>
                   </button>
                   {open && (
                     <div className="px-4 pb-4 pl-11 space-y-3 text-sm">
                       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                         {[
-                          ['Phone', row.phone],
+                          ['Phone', displayPhone(row)],
                           ['Email', row.email],
                           ['Confirmation code', row.confirmation_code],
                           ['Consent given', row.consent_given_at ? formatWhen(row.consent_given_at) : null],
