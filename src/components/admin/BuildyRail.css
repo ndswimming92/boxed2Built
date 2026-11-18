@@ -293,6 +293,507 @@
   color: #475569;
 }
 
+/* ── eyes that follow you ───────────────────────────────────────────────── */
+
+/* The rail sets --by-look-x/y from the pointer; the eyes shift a pixel toward it. */
+.by-eyes {
+  position: absolute;
+  inset: 0;
+  transform: translate(var(--by-look-x, 0px), var(--by-look-y, 0px));
+  transition: transform 120ms ease-out;
+}
+
+/* Summer: sunglasses instead of eyes. */
+.by-shades {
+  position: absolute;
+  left: 16.5px;
+  bottom: 33.5px;
+  width: 10.5px;
+  height: 3px;
+  border-radius: 1px 1px 3px 3px;
+  background: #0f172a;
+}
+
+/* Hover over him and he stops to look at you. */
+.by-walker:hover,
+.by-walker:hover .by-body,
+.by-walker:hover .by-leg {
+  animation-play-state: paused;
+}
+
+/* ── the poke target ───────────────────────────────────────────────────── */
+
+.by-poke {
+  position: absolute;
+  left: 10px;
+  bottom: 0;
+  z-index: 2;
+  width: 22px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.by-poke:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+}
+
+/* ── standing still: reacting, dragging, napping ───────────────────────── */
+
+/* The walk itself is stopped from the component (it pins `left`); the step stops here. */
+.by-rail--holding .by-body,
+.by-rail--holding .by-leg,
+.by-rail--nap .by-body,
+.by-rail--nap .by-leg {
+  animation: none;
+}
+
+.by-rail--dragging .by-walker,
+.by-rail--dragging .by-body,
+.by-rail--dragging .by-leg {
+  animation-play-state: paused;
+}
+
+/* An empty week: he parks mid-rail and dozes off. */
+.by-rail--nap .by-walker {
+  animation: none;
+  left: 40%;
+}
+
+.by-rail--asleep .by-body {
+  transform: rotate(-4deg);
+  transform-origin: 20px 60px;
+}
+
+.by-rail--asleep .by-eye {
+  animation: none;
+  transform: scaleY(0.2);
+}
+
+.by-zzz {
+  position: absolute;
+  left: 28px;
+  bottom: 42px;
+  width: 20px;
+  height: 16px;
+}
+
+.by-zzz span {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font: 800 8px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #475569;
+  opacity: 0.9;
+  animation: byZ 2.4s ease-out infinite both;
+}
+
+.by-zzz span:nth-child(2) {
+  left: 6px;
+  bottom: 5px;
+  font-size: 10px;
+  animation-delay: 0.8s;
+}
+
+.by-zzz span:nth-child(3) {
+  left: 12px;
+  bottom: 10px;
+  font-size: 12px;
+  animation-delay: 1.6s;
+}
+
+/* ── a busy day ────────────────────────────────────────────────────────── */
+
+.by-rail--busy .by-body {
+  animation-duration: 0.36s;
+}
+
+.by-rail--busy .by-leg {
+  animation-duration: 0.72s;
+}
+
+.by-sweat {
+  position: absolute;
+  left: 11px;
+  bottom: 36px;
+  width: 2px;
+  height: 3px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #38bdf8;
+  opacity: 0.8;
+  animation: bySweat 1.1s ease-in infinite both;
+}
+
+.by-sweat--two {
+  left: 9px;
+  bottom: 32px;
+  animation-delay: 0.55s;
+}
+
+/* ── the time of day ───────────────────────────────────────────────────── */
+
+/* Morning coffee, riding on top of the stack (or in hand on an empty board). */
+.by-coffee {
+  position: relative;
+  width: 6px;
+  height: 7px;
+  margin-left: 8px;
+  border-radius: 0 0 2px 2px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #94a3b8, inset 0 2px 0 0 #7c4a1e;
+}
+
+.by-coffee-steam {
+  position: absolute;
+  left: 2px;
+  top: -5px;
+  width: 2px;
+  height: 4px;
+  border-left: 1px solid #94a3b8;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: bySteam 1.6s ease-in-out infinite both;
+}
+
+/* A lunch box around midday. */
+.by-lunch {
+  position: relative;
+  width: 10px;
+  height: 6px;
+  margin-left: 5px;
+  margin-top: 3px;
+  border-radius: 2px;
+  background: #dc2626;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+.by-lunch::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: -3px;
+  width: 4px;
+  height: 3px;
+  box-sizing: border-box;
+  border: 1px solid #7f1d1d;
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+}
+
+.by-hand-prop {
+  position: absolute;
+  left: 36px;
+  bottom: 20px;
+}
+
+.by-hand-prop > * {
+  margin: 0;
+}
+
+/* After dark: a headlamp on the cap, lighting the way ahead. */
+.by-lamp {
+  position: absolute;
+  left: 26px;
+  bottom: 39px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fde047;
+  box-shadow: 0 0 3px #facc15;
+}
+
+.by-beam {
+  position: absolute;
+  z-index: 1;
+  left: 29px;
+  bottom: 33px;
+  width: 34px;
+  height: 12px;
+  background: linear-gradient(90deg, rgba(253, 224, 71, 0.55), rgba(253, 224, 71, 0));
+  clip-path: polygon(0 40%, 100% 0, 100% 100%, 0 60%);
+}
+
+/* ── the season ────────────────────────────────────────────────────────── */
+
+/* December: a Santa hat, white band and pompom. */
+.by-rail--santa .by-cap {
+  height: 8px;
+  border-radius: 8px 6px 2px 2px;
+  background: #dc2626;
+}
+
+.by-rail--santa .by-brim {
+  left: 13px;
+  bottom: 37px;
+  width: 16px;
+  height: 3px;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 0.5px #cbd5e1;
+}
+
+.by-pompom {
+  position: absolute;
+  left: 10px;
+  bottom: 42px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 0.5px #cbd5e1;
+}
+
+/* October: the top box is a pumpkin. */
+.by-box--pumpkin {
+  border-radius: 4px;
+  background: #f97316;
+  box-shadow:
+    inset 0 0 0 1px rgba(124, 45, 18, 0.55),
+    inset 6px 0 0 -5px rgba(124, 45, 18, 0.35),
+    inset -6px 0 0 -5px rgba(124, 45, 18, 0.35);
+}
+
+.by-pumpkin-stem {
+  position: absolute;
+  left: 9px;
+  top: -3px;
+  width: 3px;
+  height: 3px;
+  border-radius: 1px;
+  background: #15803d;
+}
+
+/* ── dragging a box off the stack ──────────────────────────────────────── */
+
+.by-box--grab {
+  cursor: grab;
+  touch-action: none;
+}
+
+.by-box--lifted {
+  visibility: hidden;
+}
+
+/* Lives on the rail (not the walker) so it can follow the pointer anywhere. */
+.by-drag-box {
+  position: fixed;
+  z-index: 60;
+  width: 21px;
+  height: 9px;
+  margin: -5px 0 0 -10px;
+  border-radius: 2px;
+  background: #c79e6b;
+  box-shadow: inset 0 0 0 1px rgba(96, 69, 38, 0.55), 0 4px 8px rgba(15, 23, 42, 0.25);
+  transform: rotate(-6deg) scale(1.4);
+  pointer-events: none;
+}
+
+/* ── reactions ─────────────────────────────────────────────────────────── */
+
+/* Poked with boxes, or a new lead: a hop. */
+.by-rail--react-jump .by-body,
+.by-rail--react-lead .by-body {
+  animation: byHop 0.5s ease-out 2;
+}
+
+/* Poked with empty hands: a wave. */
+.by-rail--react-wave .by-arm {
+  animation: byWave 0.45s ease-in-out 4 alternate;
+}
+
+/* Paid: a coin flips up and lands in his hand. */
+.by-coin {
+  position: absolute;
+  left: 37px;
+  bottom: 22px;
+  z-index: 1;
+  width: 6px;
+  height: 6px;
+  box-sizing: border-box;
+  border: 1px solid #a16207;
+  border-radius: 50%;
+  background: #facc15;
+  animation: byCoin 1.1s ease-out both;
+}
+
+/* Done: a box on the floor in front of him opens up into a chair. */
+.by-unpack {
+  position: absolute;
+  left: 56px;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.by-unpack-box {
+  position: absolute;
+  left: 1px;
+  bottom: 0;
+  width: 13px;
+  height: 10px;
+  border-radius: 1px;
+  background: #c79e6b;
+  box-shadow: inset 0 0 0 1px rgba(96, 69, 38, 0.55);
+  opacity: 0;
+  transform-origin: bottom center;
+  animation: byUnpackBox 2.4s ease-in-out both;
+}
+
+.by-flap {
+  position: absolute;
+  top: 0;
+  width: 6.5px;
+  height: 2px;
+  background: #a87f4e;
+}
+
+.by-flap--left {
+  left: 0;
+  transform-origin: left center;
+  animation: byFlapLeft 2.4s ease-in-out both;
+}
+
+.by-flap--right {
+  right: 0;
+  transform-origin: right center;
+  animation: byFlapRight 2.4s ease-in-out both;
+}
+
+.by-chair {
+  position: absolute;
+  left: 2px;
+  bottom: 0;
+  width: 12px;
+  height: 15px;
+  transform-origin: bottom center;
+  animation: byChair 2.4s ease-out both;
+}
+
+.by-chair-back,
+.by-chair-seat,
+.by-chair-leg {
+  position: absolute;
+  border-radius: 1px;
+  background: #b07a45;
+}
+
+.by-chair-back {
+  left: 0;
+  bottom: 3px;
+  width: 2.5px;
+  height: 12px;
+  background: #8a5a2b;
+}
+
+.by-chair-seat {
+  left: 0;
+  bottom: 6px;
+  width: 11px;
+  height: 2.5px;
+}
+
+.by-chair-leg {
+  bottom: 0;
+  width: 2px;
+  height: 6px;
+}
+
+.by-chair-leg--back {
+  left: 0.5px;
+  background: #8a5a2b;
+}
+
+.by-chair-leg--front {
+  left: 9px;
+}
+
+/* ── the speech bubble ─────────────────────────────────────────────────── */
+
+/* Opens to his left (behind him) where it can, so it does not cover the stack he carries. */
+.by-bubble {
+  position: absolute;
+  right: 42px;
+  top: -4px;
+  z-index: 3;
+  height: 16px;
+  padding: 0 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  font: 700 10.5px/14px system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  max-width: var(--by-bubble-max, 240px);
+  text-decoration: none;
+  animation: byBubble 0.18s ease-out both;
+}
+
+.by-bubble-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.by-bubble::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: -4px;
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: inherit;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+/* Near the left edge there is no room behind him, so it opens ahead instead. */
+.by-bubble--right {
+  right: auto;
+  left: 14px;
+}
+
+.by-bubble--right::after {
+  right: auto;
+  left: 3px;
+}
+
+.by-bubble--lead {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.by-bubble--paid {
+  border-color: #fde047;
+  background: #fefce8;
+  color: #713f12;
+}
+
+.by-bubble--done {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.by-bubble--link:hover {
+  text-decoration: underline;
+}
+
+.by-bubble--link:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+}
+
 /* ── keyframes ─────────────────────────────────────────────────────────── */
 
 @keyframes byWalk {
@@ -330,24 +831,90 @@
   50% { transform: rotate(5deg); }
 }
 
+@keyframes byZ {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translate(8px, -12px); opacity: 0; }
+}
+
+@keyframes bySweat {
+  0% { transform: translate(0, 0); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translate(-2px, 6px); opacity: 0; }
+}
+
+@keyframes bySteam {
+  0%, 100% { transform: translate(0, 0) scaleX(1); opacity: 0.2; }
+  50% { transform: translate(1px, -2px) scaleX(-1); opacity: 0.8; }
+}
+
+@keyframes byHop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+
+@keyframes byWave {
+  from { transform: rotate(-55deg); }
+  to { transform: rotate(-85deg); }
+}
+
+@keyframes byCoin {
+  0% { transform: translateY(0) scaleX(1); opacity: 0; }
+  10% { opacity: 1; }
+  25% { transform: translateY(-11px) scaleX(0.2); }
+  40% { transform: translateY(-16px) scaleX(1); }
+  55% { transform: translateY(-16px) scaleX(0.2); }
+  75% { transform: translateY(-8px) scaleX(1); }
+  90% { transform: translateY(0) scaleX(0.6); }
+  100% { transform: translateY(0) scaleX(1); opacity: 1; }
+}
+
+@keyframes byUnpackBox {
+  0% { transform: scale(0.6); opacity: 0; }
+  10%, 55% { transform: scale(1); opacity: 1; }
+  70%, 100% { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes byFlapLeft {
+  0%, 22% { transform: rotate(0); }
+  42%, 100% { transform: rotate(-125deg); }
+}
+
+@keyframes byFlapRight {
+  0%, 22% { transform: rotate(0); }
+  42%, 100% { transform: rotate(125deg); }
+}
+
+@keyframes byChair {
+  0%, 58% { transform: scale(0.4); opacity: 0; }
+  80% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes byBubble {
+  from { transform: translateY(3px) scale(0.9); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 /* ── stillness ─────────────────────────────────────────────────────────── */
 
 /* Nothing should animate in a background tab. */
-.by-rail--paused .by-walker,
-.by-rail--paused .by-body,
-.by-rail--paused .by-leg,
-.by-rail--paused .by-stack,
-.by-rail--paused .by-eye {
-  animation-play-state: paused;
+.by-rail--paused *,
+.by-rail--paused *::before,
+.by-rail--paused *::after {
+  animation-play-state: paused !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .by-walker,
-  .by-body,
-  .by-leg,
-  .by-stack,
-  .by-eye {
-    animation: none;
+  /*
+   * Every animation off. Each piece's resting style is its final state, so a
+   * reduced-motion user still sees the chair, the coin in hand, the bubble.
+   */
+  .by-rail *,
+  .by-rail *::before,
+  .by-rail *::after {
+    animation: none !important;
+    transition: none !important;
   }
 
   /* Still there, just standing still. */

@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { countUpcomingJobs, JOB_BOARD_CHANGED_EVENT } from '../services/jobBoardService';
+import { fetchJobBoardSummary, JOB_BOARD_CHANGED_EVENT } from '../services/jobBoardService';
+import { EMPTY_BOARD, type JobBoardSummary } from '../utils/buildy';
 
 /** A slow backstop; realtime and the change event do the real work. */
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
@@ -8,19 +9,21 @@ const POLL_INTERVAL_MS = 5 * 60 * 1000;
 const COALESCE_MS = 400;
 
 /**
- * How many jobs are on the board right now. Drives the admin rail, so it has to
- * be cheap: one head count, refreshed when a job row changes, when something
- * fires the change event, when the tab comes back, and every few minutes.
+ * What is on the job board right now: the upcoming total, today's and this
+ * week's counts, and the next job. Drives the admin rail, so it has to be
+ * cheap: one small query, refreshed when a job row changes, when something
+ * fires the change event, when the tab comes back, and every few minutes (which
+ * also rolls "today" over at midnight).
  */
-export function useUpcomingJobCount(businessId: string | null): number {
+export function useJobBoardSummary(businessId: string | null): JobBoardSummary {
   // Unique per hook instance, same reason as useRealtimeJobs: supabase.channel()
   // returns an already-joined channel for a repeated topic and .on() throws on it.
   const instanceId = useId();
-  // Keyed by business so a switch reads 0 until the new count lands, rather than
-  // briefly showing the old one — and so the effect never has to reset it.
-  const [result, setResult] = useState<{ businessId: string | null; count: number }>({
+  // Keyed by business so a switch reads empty until the new summary lands, rather
+  // than briefly showing the old one — and so the effect never has to reset it.
+  const [result, setResult] = useState<{ businessId: string | null; board: JobBoardSummary }>({
     businessId: null,
-    count: 0,
+    board: EMPTY_BOARD,
   });
 
   useEffect(() => {
@@ -31,8 +34,8 @@ export function useUpcomingJobCount(businessId: string | null): number {
 
     const refresh = async () => {
       try {
-        const next = await countUpcomingJobs(businessId);
-        if (!cancelled) setResult({ businessId, count: next });
+        const board = await fetchJobBoardSummary(businessId);
+        if (!cancelled) setResult({ businessId, board });
       } catch {
         // A mascot is not worth an error banner. Leave the last good number up.
       }
@@ -72,5 +75,5 @@ export function useUpcomingJobCount(businessId: string | null): number {
     };
   }, [businessId, instanceId]);
 
-  return result.businessId === businessId ? result.count : 0;
+  return result.businessId === businessId ? result.board : EMPTY_BOARD;
 }

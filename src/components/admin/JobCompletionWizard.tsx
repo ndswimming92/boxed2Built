@@ -6,6 +6,7 @@ import SatisfactionRating from './SatisfactionRating';
 import { PhotoFile, downloadPhoto, sharePhoto, openPhotoInNewTab, isIOS, isMobileDevice, canShare } from '../../utils/photoDownload';
 import { hasSeparateWorkAddress, resolveWorkAddress } from '../../utils/jobAddress';
 import { toLocalDateString } from '../../utils/jobCalculations';
+import { notifyJobBoardChanged, notifyJobCompleted } from '../../services/jobBoardService';
 
 type WizardStep = 'details' | 'photos' | 'signoff' | 'finish';
 
@@ -297,6 +298,10 @@ export default function JobCompletionWizard({ job, onClose, onSuccess }: JobComp
       }
 
       await Promise.all(followUps);
+
+      // Off the board, and Buildy gets to unpack it.
+      notifyJobBoardChanged();
+      notifyJobCompleted(job.id);
 
       onSuccess();
     } catch (err: any) {

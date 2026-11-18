@@ -15,7 +15,7 @@ import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
 import NotificationBell from './NotificationBell';
 import BuildyRail from './BuildyRail';
-import { useUpcomingJobCount } from '../../hooks/useUpcomingJobCount';
+import { useJobBoardSummary } from '../../hooks/useJobBoardSummary';
 import { PrivacyModeProvider, usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface NavigationItem {
@@ -267,7 +267,7 @@ function AdminLayoutContent() {
   const unrepliedCommentCount = useSocialCommentsBadge();
   const needsReplyMessageCount = useSocialMessagesBadge();
   const newsDraftCount = useNewsDraftsBadge();
-  const upcomingJobCount = useUpcomingJobCount(businessId);
+  const jobBoard = useJobBoardSummary(businessId);
   // The mascot rail goes wherever the money goes: hidden during a client walkthrough.
   const { privacyModeEnabled } = usePrivacyMode();
 
@@ -815,7 +815,7 @@ function AdminLayoutContent() {
         {/* Buildy: sticks to the bottom of the window, settles into the page at the end */}
         {!privacyModeEnabled && (
           <div className="sticky bottom-0 z-20">
-            <BuildyRail jobCount={upcomingJobCount} />
+            <BuildyRail businessId={businessId} board={jobBoard} />
           </div>
         )}
       </div>
