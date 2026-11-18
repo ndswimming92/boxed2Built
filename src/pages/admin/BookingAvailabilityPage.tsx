@@ -15,6 +15,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { supabase, BookingDateOverride, BookingSettings } from '../../lib/supabase';
+import { usePrivacyMode } from '../../contexts/PrivacyModeContext';
 import {
   AvailabilityWindowInput,
   WEEKDAY_LABELS,
@@ -46,6 +47,9 @@ const emptyWeek = (): DayWindows[] =>
 const toInputTime = (value: string): string => value.slice(0, 5);
 
 export default function BookingAvailabilityPage() {
+  // The Buildy rail (80px, z-20) is pinned to the bottom of the admin layout
+  // whenever privacy mode is off, so lift the sticky save action above it.
+  const { privacyModeEnabled } = usePrivacyMode();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<Feedback | null>(null);
@@ -924,7 +928,9 @@ export default function BookingAvailabilityPage() {
         </div>
       </div>
 
-      <div className="mt-6 sm:mt-8 flex justify-end sticky bottom-4">
+      <div
+        className={`mt-6 sm:mt-8 flex justify-end sticky z-30 ${privacyModeEnabled ? 'bottom-4' : 'bottom-24'}`}
+      >
         <button
           onClick={handleSave}
           disabled={saving}
