@@ -301,6 +301,8 @@ test('a partner code is created from the card and added above the closing', asyn
   const message = await lead.getByLabel('Message').inputValue();
   expect(message).toContain('[button: Book with code GRANDWELCOME](https://boxed2built.com/contact?coupon=GRANDWELCOME)');
   expect(message.trim().endsWith('Thanks for your time,')).toBe(true);
+  await expect(lead.getByRole('status').filter({ hasText: 'Code added to email' })).toBeVisible();
+  await expect(lead.getByRole('button', { name: 'Add code to email' })).toHaveCount(0);
 });
 
 test('sent emails show delivery, opens, clicks and bounces', async ({ page }) => {

@@ -200,12 +200,15 @@ function PartnerCodeSection({
   onCreated,
   onInsert,
   canInsert,
+  inserted,
 }: {
   lead: PartnerLead;
   code: PartnerCode | null;
   onCreated: (code: PartnerCode) => void;
   onInsert: (snippet: string) => void;
   canInsert: boolean;
+  /** The code's booking link is already in the message. */
+  inserted: boolean;
 }) {
   const [draft, setDraft] = useState(() => suggestPartnerCode(lead.name));
   const [amount, setAmount] = useState('25');
@@ -245,12 +248,23 @@ function PartnerCodeSection({
           >
             <Copy className="w-4 h-4" aria-hidden="true" /> {copied ? 'Link copied' : 'Copy booking link'}
           </button>
-          {canInsert && (
-            <button type="button" className={secondaryButton} onClick={() => onInsert(partnerCodeSnippet(code.code, discount))}>
-              Add code to email
-            </button>
-          )}
+          {canInsert &&
+            (inserted ? (
+              <span
+                role="status"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800"
+              >
+                <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Code added to email
+              </span>
+            ) : (
+              <button type="button" className={secondaryButton} onClick={() => onInsert(partnerCodeSnippet(code.code, discount))}>
+                Add code to email
+              </button>
+            ))}
         </div>
+        {canInsert && inserted && (
+          <p className="text-xs text-emerald-800">Added just above your sign-off. Check the live preview below.</p>
+        )}
         <p className="text-xs text-slate-500 break-all">{link}</p>
       </div>
     );
@@ -729,6 +743,7 @@ function LeadCard({
                 lead={lead}
                 code={code}
                 canInsert={emailable}
+                inserted={!!code && body.includes(partnerCodeLink(code.code))}
                 onCreated={(created) => onCodeCreated(lead, created)}
                 onInsert={(snippet) => {
                   setExpanded(true);
