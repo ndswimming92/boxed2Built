@@ -112,6 +112,26 @@
   background: #172c6b;
 }
 
+/*
+ * The Boxed2Built logo as a chest patch. The full badge is unreadable at this
+ * size, so it keeps what survives being 9px wide: the gold ring and the gold 2.
+ * Set a little right of centre to match the three-quarter face.
+ */
+.by-badge {
+  position: absolute;
+  left: 17px;
+  bottom: 18px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #e8ac3c;
+  border-radius: 50%;
+  box-sizing: border-box;
+  font: 900 7px/7px system-ui, -apple-system, 'Segoe UI', sans-serif;
+  text-align: center;
+  color: #e8ac3c;
+  user-select: none;
+}
+
 .by-head {
   position: absolute;
   left: 14px;

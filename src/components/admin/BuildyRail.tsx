@@ -53,6 +53,7 @@ export default function BuildyRail({ jobCount }: BuildyRailProps) {
           <div className="by-leg by-leg--front" />
           <div className="by-torso" />
           <div className="by-belt" />
+          <div className="by-badge">2</div>
           <div className="by-head" />
           <div className="by-cap" />
           <div className="by-brim" />
