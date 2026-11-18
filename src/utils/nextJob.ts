@@ -1,8 +1,16 @@
-import type { Job } from '../lib/supabase';
+import type { Job, JobStatus } from '../lib/supabase';
 
-const UPCOMING_STATUSES = new Set(['accepted', 'scheduled', 'in_progress']);
+/**
+ * Still ahead of us: quoted work hasn't been won yet, and completed, lost or
+ * cancelled work is behind us. One definition, shared by the next-job banner
+ * and the upcoming-job count the admin rail runs on.
+ */
+export const UPCOMING_JOB_STATUSES: readonly JobStatus[] = ['accepted', 'scheduled', 'in_progress'];
 
-function toDayKey(date: Date): string {
+const UPCOMING_STATUSES = new Set<string>(UPCOMING_JOB_STATUSES);
+
+/** `date_scheduled` is a plain `date` column, so compare it in the viewer's own day. */
+export function toDayKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;

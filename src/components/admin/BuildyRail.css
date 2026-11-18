@@ -1,0 +1,300 @@
+/*
+ * BuildyRail — the admin mascot walking the bottom of the dashboard.
+ *
+ * Everything is plain divs and transforms: no images, no sprite sheet, no
+ * animation library. The cardboard matches BoxLoader so the two read as the
+ * same world. All sizes are fixed px because the figure is 60px tall — scaling
+ * a transform at that size softens every edge.
+ */
+
+/* ── the strip ─────────────────────────────────────────────────────────── */
+
+.by-rail {
+  position: relative;
+  height: 80px;
+  overflow: hidden;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.by-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.by-label {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #047857;
+  text-decoration: none;
+}
+
+.by-label:hover {
+  color: #065f46;
+  text-decoration: underline;
+}
+
+/* ── the walk ──────────────────────────────────────────────────────────── */
+
+.by-walker {
+  position: absolute;
+  bottom: 14px;
+  left: -70px;
+  width: 70px;
+  height: 60px;
+  animation: byWalk 20s linear infinite;
+}
+
+.by-shadow {
+  position: absolute;
+  left: 10px;
+  bottom: -4px;
+  width: 34px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(14, 39, 72, 0.13);
+}
+
+.by-body {
+  position: absolute;
+  inset: 0;
+  animation: byBob 0.52s ease-in-out infinite;
+}
+
+/* ── the figure ────────────────────────────────────────────────────────── */
+
+.by-leg {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  height: 14px;
+  border-radius: 2px;
+  transform-origin: top center;
+}
+
+.by-leg--back {
+  left: 14px;
+  background: #172c6b;
+  animation: byLegBack 1.04s ease-in-out infinite;
+}
+
+.by-leg--front {
+  left: 20px;
+  background: #2a4da5;
+  animation: byLegFront 1.04s ease-in-out infinite;
+}
+
+.by-torso {
+  position: absolute;
+  left: 13px;
+  bottom: 13px;
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  background: #1e3a8a;
+}
+
+.by-belt {
+  position: absolute;
+  left: 13px;
+  bottom: 13px;
+  width: 17px;
+  height: 3px;
+  border-radius: 2px;
+  background: #172c6b;
+}
+
+.by-head {
+  position: absolute;
+  left: 14px;
+  bottom: 29px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e0a97d;
+}
+
+.by-cap {
+  position: absolute;
+  left: 14px;
+  bottom: 36px;
+  width: 14px;
+  height: 7px;
+  border-radius: 7px 7px 2px 2px;
+  background: #d9a441;
+}
+
+.by-brim {
+  position: absolute;
+  left: 25px;
+  bottom: 34px;
+  width: 8px;
+  height: 3px;
+  border-radius: 2px;
+  background: #a9761c;
+}
+
+.by-eye {
+  position: absolute;
+  left: 24px;
+  bottom: 33px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+
+.by-arm {
+  position: absolute;
+  left: 27px;
+  bottom: 19px;
+  width: 13px;
+  height: 4px;
+  border-radius: 2px;
+  background: #2a4da5;
+  transform: rotate(18deg);
+  transform-origin: left center;
+}
+
+/* An empty board: he twirls an allen key instead of carrying anything. */
+.by-key-long {
+  position: absolute;
+  left: 39px;
+  bottom: 8px;
+  width: 3px;
+  height: 11px;
+  border-radius: 1px;
+  background: #64748b;
+  transform: rotate(12deg);
+}
+
+.by-key-short {
+  position: absolute;
+  left: 39px;
+  bottom: 8px;
+  width: 8px;
+  height: 3px;
+  border-radius: 1px;
+  background: #64748b;
+  transform: rotate(12deg);
+}
+
+/* ── the stack ─────────────────────────────────────────────────────────── */
+
+.by-stack {
+  position: absolute;
+  left: 31px;
+  bottom: 18px;
+  width: 21px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 1px;
+  transform-origin: bottom center;
+  animation: byWobble 1.04s ease-in-out infinite;
+}
+
+.by-stack--heavy {
+  animation-duration: 0.9s;
+  animation-name: byWobbleHeavy;
+}
+
+.by-box {
+  position: relative;
+  height: 9px;
+  border-radius: 2px;
+  background: #c79e6b;
+  box-shadow: inset 0 0 0 1px rgba(96, 69, 38, 0.55);
+}
+
+.by-box-seam {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #a87f4e;
+}
+
+.by-box-tape {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 15px;
+  height: 2px;
+  background: #ebe0c6;
+}
+
+/* More on the board than he can carry without a ladder. */
+.by-overflow {
+  position: absolute;
+  left: 54px;
+  bottom: 30px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: #475569;
+}
+
+/* ── keyframes ─────────────────────────────────────────────────────────── */
+
+@keyframes byWalk {
+  from { left: -70px; }
+  to { left: 100%; }
+}
+
+@keyframes byBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+@keyframes byLegFront {
+  0%, 100% { transform: rotate(24deg); }
+  50% { transform: rotate(-24deg); }
+}
+
+@keyframes byLegBack {
+  0%, 100% { transform: rotate(-24deg); }
+  50% { transform: rotate(24deg); }
+}
+
+@keyframes byWobble {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes byWobbleHeavy {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* ── stillness ─────────────────────────────────────────────────────────── */
+
+/* Nothing should animate in a background tab. */
+.by-rail--paused .by-walker,
+.by-rail--paused .by-body,
+.by-rail--paused .by-leg,
+.by-rail--paused .by-stack {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .by-walker,
+  .by-body,
+  .by-leg,
+  .by-stack {
+    animation: none;
+  }
+
+  /* Still there, just standing still. */
+  .by-walker {
+    left: 40%;
+  }
+}
