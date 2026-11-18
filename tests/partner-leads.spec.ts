@@ -365,3 +365,48 @@ test('activity past the first 1,000 events still reaches the card', async ({ pag
   await page.getByRole('tab', { name: /Contacted/ }).click();
   await expect(card(page, 'Example Movers')).toContainText('Email bounced');
 });
+
+test('a collapsed New card adds a $25 code, previews on hover and sends from the review step', async ({ page }) => {
+  const calls = await stub(page, [{ ...MOVER, name: 'Tetris Moving', draft_body: 'Hi Dana,\n\nA note.\n\nThanks for your time,' }]);
+  await open(page);
+  const lead = card(page, 'Tetris Moving');
+  await expect(lead.getByRole('button', { name: 'Tetris Moving' })).toHaveAttribute('aria-expanded', 'false');
+
+  await lead.getByRole('button', { name: 'Add $25 code' }).click();
+  await expect(lead.getByRole('status')).toContainText('Code TETRISMOVING added');
+  const rpc = calls.find((call) => call.method === 'RPC' && call.body?.p_code);
+  expect(rpc?.body).toMatchObject({ p_lead_id: 'lead-1', p_code: 'TETRISMOVING', p_discount_type: 'fixed', p_discount_value: 25 });
+  // Still collapsed: the quick buttons do not open the card.
+  await expect(lead.getByRole('button', { name: 'Tetris Moving' })).toHaveAttribute('aria-expanded', 'false');
+
+  await lead.getByRole('button', { name: 'Preview email' }).hover();
+  const preview = lead.getByRole('region', { name: 'Email preview' });
+  await expect(preview).toContainText('To: office@example-movers.test');
+  const srcdoc = await preview.getByTitle('Email preview').getAttribute('srcdoc');
+  expect(srcdoc).toContain('Book with code TETRISMOVING');
+  await page.mouse.move(0, 0);
+  await expect(preview).toHaveCount(0);
+
+  await lead.getByRole('button', { name: /Review & send/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Review before sending' });
+  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('button', { name: 'Send to office@example-movers.test' }).click();
+  const sends = calls.filter((call) => call.body?.mode === 'send');
+  await expect.poll(() => sends.length).toBe(1);
+  expect(String(sends[0].body?.body)).toContain('TETRISMOVING');
+  await expect(page.getByRole('status').filter({ hasText: 'Email sent to Tetris Moving' })).toBeVisible();
+});
+
+test('quick buttons show only on collapsed New cards that can be emailed', async ({ page }) => {
+  await stub(page, [MOVER, APARTMENTS, { ...MOVER, id: 'lead-4', name: 'Contacted Movers', status: 'contacted' }]);
+  await open(page);
+  // No email address: nothing to send.
+  await expect(card(page, 'Example Apartments').getByRole('button', { name: /Review & send/ })).toHaveCount(0);
+  const mover = card(page, 'Example Movers');
+  await expect(mover.getByRole('button', { name: 'Preview email' })).toBeVisible();
+  await mover.getByRole('button', { name: 'Example Movers' }).click();
+  await expect(mover.getByRole('button', { name: 'Preview email' })).toHaveCount(0);
+
+  await page.getByRole('tab', { name: /Contacted/ }).click();
+  await expect(card(page, 'Contacted Movers').getByRole('button', { name: 'Preview email' })).toHaveCount(0);
+});

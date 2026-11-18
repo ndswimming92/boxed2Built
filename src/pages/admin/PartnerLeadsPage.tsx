@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ExternalLink,
+  Eye,
   Globe,
   Handshake,
   Mail,
@@ -519,6 +520,175 @@ function ReviewDialog({
   );
 }
 
+/**
+ * The email as the server renders it, shown on hover (or tap, on a phone)
+ * from a collapsed card. Fetched once per version of the draft.
+ */
+function QuickPreview({ leadId, subject, body }: { leadId: string; subject: string; body: string }) {
+  const [hovering, setHovering] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [loaded, setLoaded] = useState<{ key: string; preview: OutreachPreview | null; error: string | null } | null>(
+    null,
+  );
+  const open = hovering || pinned;
+  const key = `${subject}\u0000${body}`;
+
+  useEffect(() => {
+    if (!open || loaded?.key === key) return;
+    let cancelled = false;
+    previewOutreach(leadId, subject, body)
+      .then((preview) => !cancelled && setLoaded({ key, preview, error: null }))
+      .catch(
+        (cause) =>
+          !cancelled &&
+          setLoaded({ key, preview: null, error: cause instanceof Error ? cause.message : 'Could not build the preview' }),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [open, key, loaded?.key, leadId, subject, body]);
+
+  useEffect(() => {
+    if (!pinned) return;
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setPinned(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [pinned]);
+
+  const current = loaded?.key === key ? loaded : null;
+
+  return (
+    <div className="sm:relative" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
+      <button type="button" className={secondaryButton} aria-expanded={open} onClick={() => setPinned((value) => !value)}>
+        <Eye className="w-4 h-4" aria-hidden="true" /> Preview email
+      </button>
+      {open && (
+        <div
+          role="region"
+          aria-label="Email preview"
+          className="mt-2 sm:mt-0 sm:absolute sm:left-0 sm:top-full sm:pt-2 z-30 w-full sm:w-[36rem] max-w-[calc(100vw-2rem)]"
+        >
+          <div className="rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+            <div className="flex items-start justify-between gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50 text-xs">
+              <p className="min-w-0 text-slate-600 wrap-break-word">
+                {current?.preview?.to && (
+                  <>
+                    <span className="font-semibold text-slate-800">To:</span> {current.preview.to}
+                    <br />
+                  </>
+                )}
+                <span className="font-semibold text-slate-800">Subject:</span> {subject}
+              </p>
+              {pinned && (
+                <button
+                  type="button"
+                  onClick={() => setPinned(false)}
+                  className="p-0.5 rounded hover:bg-slate-200"
+                  aria-label="Close preview"
+                >
+                  <X className="w-4 h-4 text-slate-500" />
+                </button>
+              )}
+            </div>
+            {current?.preview ? (
+              <iframe
+                title="Email preview"
+                sandbox=""
+                srcDoc={current.preview.html}
+                className="block w-full h-96 bg-white"
+              />
+            ) : current?.error ? (
+              <p role="alert" className="px-4 py-6 text-sm text-red-800">
+                {current.error}
+              </p>
+            ) : (
+              <p className="px-4 py-6 text-sm text-slate-600">Building the preview…</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Buttons on a collapsed New card: add the partner code (making a $25 one if
+ * there is none), look at the email, and open the review step to send it.
+ */
+function QuickActions({
+  lead,
+  code,
+  subject,
+  body,
+  disabled,
+  onCodeCreated,
+  onInsert,
+  onReview,
+}: {
+  lead: PartnerLead;
+  code: PartnerCode | null;
+  subject: string;
+  body: string;
+  disabled: boolean;
+  onCodeCreated: (code: PartnerCode) => void;
+  onInsert: (snippet: string) => void;
+  onReview: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inserted = !!code && body.includes(partnerCodeLink(code.code));
+  const suggested = suggestPartnerCode(lead.name);
+
+  const addCode = async () => {
+    setError(null);
+    if (code) {
+      onInsert(partnerCodeSnippet(code.code, describePartnerDiscount(code.discount_type, code.discount_value)));
+      return;
+    }
+    setBusy(true);
+    try {
+      const created = await createPartnerCode(lead.id, suggested, 'fixed', 25);
+      onCodeCreated(created);
+      onInsert(partnerCodeSnippet(created.code, describePartnerDiscount(created.discount_type, created.discount_value)));
+    } catch (cause) {
+      setError(
+        `${cause instanceof Error ? cause.message : 'Could not create the code'}. Open the card to pick a different code.`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="px-5 sm:px-6 pb-4 sm:pb-5 -mt-1 space-y-2">
+      <div className="flex flex-wrap items-start gap-2">
+        {inserted ? (
+          <span
+            role="status"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800"
+          >
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Code {code?.code} added
+          </span>
+        ) : (
+          <button type="button" className={secondaryButton} disabled={busy || disabled} onClick={addCode}>
+            <Tag className="w-4 h-4" aria-hidden="true" />
+            {busy ? 'Creating code…' : code ? `Add code ${code.code}` : 'Add $25 code'}
+          </button>
+        )}
+        <QuickPreview leadId={lead.id} subject={subject} body={body} />
+        <button type="button" className={primaryButton} disabled={disabled} onClick={onReview}>
+          <Send className="w-4 h-4" aria-hidden="true" /> Review &amp; send
+        </button>
+      </div>
+      {error && (
+        <p role="alert" className="text-xs text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function LeadCard({
   lead,
   emails,
@@ -586,7 +756,7 @@ function LeadCard({
   };
 
   return (
-    <article className="bg-white rounded-xl border border-slate-200 overflow-hidden" aria-labelledby={`lead-${lead.id}`}>
+    <article className="bg-white rounded-xl border border-slate-200" aria-labelledby={`lead-${lead.id}`}>
       <div onClick={() => setExpanded((open) => !open)} className="cursor-pointer px-5 sm:px-6 py-4 sm:py-5">
         <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
           <span className="px-2 py-1 bg-blue-100 text-blue-700 font-semibold rounded">
@@ -646,6 +816,22 @@ function LeadCard({
           {lead.summary}
         </p>
       </div>
+
+      {!expanded && lead.status === 'new' && emailable && isPlainEmail(lead.email) && subject.trim() && body.trim() && (
+        <QuickActions
+          lead={lead}
+          code={code}
+          subject={subject}
+          body={body}
+          disabled={saving}
+          onCodeCreated={(created) => onCodeCreated(lead, created)}
+          onInsert={(snippet) => setBody((current) => insertBeforeClosing(current, snippet))}
+          onReview={() => {
+            setSentNotice(false);
+            setReviewing(true);
+          }}
+        />
+      )}
 
       {expanded && (
         <div className="border-t border-slate-200">
