@@ -14,6 +14,8 @@ import { useNewsDraftsBadge } from '../../hooks/useNewsDraftsBadge';
 import { requestNotificationPermission } from '../../utils/notificationService';
 import CommandPalette from './CommandPalette';
 import NotificationBell from './NotificationBell';
+import BuildyRail from './BuildyRail';
+import { useUpcomingJobCount } from '../../hooks/useUpcomingJobCount';
 import { PrivacyModeProvider, usePrivacyMode } from '../../contexts/PrivacyModeContext';
 
 interface NavigationItem {
@@ -265,6 +267,9 @@ function AdminLayoutContent() {
   const unrepliedCommentCount = useSocialCommentsBadge();
   const needsReplyMessageCount = useSocialMessagesBadge();
   const newsDraftCount = useNewsDraftsBadge();
+  const upcomingJobCount = useUpcomingJobCount(businessId);
+  // The mascot rail goes wherever the money goes: hidden during a client walkthrough.
+  const { privacyModeEnabled } = usePrivacyMode();
 
   const [favorites, setFavorites] = useState<string[]>(() => readStoredJson<string[]>('admin-nav-favorites', []));
   const [usage, setUsage] = useState<Record<string, UsageEntry>>(() =>
@@ -746,7 +751,8 @@ function AdminLayoutContent() {
       </aside>
 
       {/* Main content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      {/* A full-height column so the mascot rail lands at the bottom on short pages too */}
+      <div className={`flex min-h-screen flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
           <div className="flex items-center justify-between px-4 lg:px-8 py-4">
@@ -801,10 +807,17 @@ function AdminLayoutContent() {
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="p-4 lg:p-8">
+        {/* Page content — the bottom padding keeps the mascot rail off the last row */}
+        <main className={`flex-1 p-4 lg:p-8 ${privacyModeEnabled ? '' : 'pb-24 lg:pb-24'}`}>
           <Outlet />
         </main>
+
+        {/* Buildy: sticks to the bottom of the window, settles into the page at the end */}
+        {!privacyModeEnabled && (
+          <div className="sticky bottom-0 z-20">
+            <BuildyRail jobCount={upcomingJobCount} />
+          </div>
+        )}
       </div>
     </div>
   );
