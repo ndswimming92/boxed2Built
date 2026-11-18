@@ -41,6 +41,34 @@ export function findNextJob(jobs: Job[], now: Date = new Date()): Job | null {
   return upcoming[0] ?? null;
 }
 
+/** Seven days from `today`, both as YYYY-MM-DD keys: today through today + 6. */
+function weekEndKey(now: Date): string {
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 6);
+  return toDayKey(end);
+}
+
+/**
+ * Counts for the admin rail from rows that are already known to be upcoming
+ * (active, unfinished, an upcoming status, scheduled today or later). Rows are
+ * expected soonest first; the first one is the next job.
+ */
+export function summarizeJobBoard(
+  rows: { id: string; date_scheduled: string | null }[],
+  now: Date = new Date(),
+): { upcoming: number; today: number; week: number; nextJobId: string | null } {
+  const today = toDayKey(now);
+  const weekEnd = weekEndKey(now);
+  let todayCount = 0;
+  let weekCount = 0;
+  for (const row of rows) {
+    const day = row.date_scheduled?.slice(0, 10);
+    if (!day) continue;
+    if (day === today) todayCount += 1;
+    if (day >= today && day <= weekEnd) weekCount += 1;
+  }
+  return { upcoming: rows.length, today: todayCount, week: weekCount, nextJobId: rows[0]?.id ?? null };
+}
+
 /** '14:30:00' -> '2:30 PM' */
 export function formatTimeOfDay(time: string | null): string | null {
   if (!time) return null;
