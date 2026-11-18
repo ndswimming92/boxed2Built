@@ -410,3 +410,46 @@ test('quick buttons show only on collapsed New cards that can be emailed', async
   await page.getByRole('tab', { name: /Contacted/ }).click();
   await expect(card(page, 'Contacted Movers').getByRole('button', { name: 'Preview email' })).toHaveCount(0);
 });
+
+test('Review & send waits while the quick code is being created', async ({ page }) => {
+  await stub(page, [MOVER]);
+  let release: () => void = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/\/rest\/v1\/rpc\/create_partner_lead_code/, async (route) => {
+    await held;
+    await route.fallback();
+  });
+  await open(page);
+  const lead = card(page, 'Example Movers');
+
+  await lead.getByRole('button', { name: 'Add $25 code' }).click();
+  await expect(lead.getByRole('button', { name: 'Creating code…' })).toBeDisabled();
+  await expect(lead.getByRole('button', { name: /Review & send/ })).toBeDisabled();
+
+  release();
+  await expect(lead.getByRole('status')).toContainText('Code EXAMPLEMOVERS added');
+  await expect(lead.getByRole('button', { name: /Review & send/ })).toBeEnabled();
+});
+
+test('the hover preview stays inside the window when the card is near the bottom', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await stub(page, [MOVER]);
+  await open(page);
+  const button = card(page, 'Example Movers').getByRole('button', { name: 'Preview email' });
+  // Put the button near the bottom edge of the window.
+  await button.evaluate((element) => {
+    document.body.style.paddingTop = '2000px';
+    document.body.style.paddingBottom = '2000px';
+    window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 640);
+  });
+  await button.hover();
+  const preview = page.getByRole('region', { name: 'Email preview' });
+  await expect(preview).toContainText('To: office@example-movers.test');
+  const box = (await preview.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(720);
+  // Moving from the button onto the panel keeps it open.
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(300);
+  await expect(preview).toBeVisible();
+});
