@@ -99,7 +99,9 @@
   width: 17px;
   height: 17px;
   border-radius: 5px;
-  background: #1e3a8a;
+  background: #ffffff;
+  /* The rail is near-white too, so the shirt needs an edge to hold its shape. */
+  box-shadow: inset 0 0 0 1px #cbd5e1;
 }
 
 .by-belt {
@@ -113,9 +115,10 @@
 }
 
 /*
- * The Boxed2Built logo as a chest patch. The full badge is unreadable at this
- * size, so it keeps what survives being 9px wide: the gold ring and the gold 2.
- * Set a little right of centre to match the three-quarter face.
+ * The Boxed2Built logo as a chest patch, in the dark version of the badge so
+ * it holds up on the white shirt: black ring, gold 2 outlined in black. The
+ * full badge is unreadable at this size, so it keeps what survives being 9px
+ * wide. Set a little right of centre to match the three-quarter face.
  */
 .by-badge {
   position: absolute;
@@ -123,12 +126,14 @@
   bottom: 18px;
   width: 9px;
   height: 9px;
-  border: 1px solid #e8ac3c;
+  border: 1px solid #111827;
   border-radius: 50%;
   box-sizing: border-box;
   font: 900 7px/7px system-ui, -apple-system, 'Segoe UI', sans-serif;
   text-align: center;
   color: #e8ac3c;
+  -webkit-text-stroke: 0.5px #111827;
+  paint-order: stroke fill;
   user-select: none;
 }
 
@@ -203,7 +208,8 @@
   width: 13px;
   height: 4px;
   border-radius: 2px;
-  background: #2a4da5;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #cbd5e1;
   transform: rotate(18deg);
   transform-origin: left center;
 }
