@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ElementType, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ElementType, type ReactNode } from 'react';
 import {
   AlertCircle,
   Copy,
@@ -367,6 +367,17 @@ function ReviewDialog({
   // One id for this review step, shared by its send, its test and any retry.
   const [attemptId] = useState(() => crypto.randomUUID());
 
+  // If the message changes while this is open, what was checked is no longer
+  // what would be sent: drop the old preview and the tick, the render-time way.
+  const [shown, setShown] = useState({ subject, body });
+  if (shown.subject !== subject || shown.body !== body) {
+    setShown({ subject, body });
+    setPreview(null);
+    setError(null);
+    setChecked(false);
+    setSendAgain(false);
+  }
+
   useEffect(() => {
     let cancelled = false;
     previewOutreach(lead.id, subject, body)
@@ -520,6 +531,29 @@ function ReviewDialog({
   );
 }
 
+interface PreviewPlace {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Where the floating email preview goes: under the button when it fits,
+ * otherwise moved up so the whole panel stays inside the window. Null on a
+ * phone-width screen, where it opens in place instead.
+ */
+function placePreview(button: DOMRect, viewportWidth: number, viewportHeight: number): PreviewPlace | null {
+  if (viewportWidth < 640) return null;
+  const margin = 16;
+  const width = Math.min(576, viewportWidth - margin * 2);
+  const height = Math.min(640, viewportHeight - margin * 2);
+  const left = Math.max(margin, Math.min(button.left, viewportWidth - width - margin));
+  const below = button.bottom + 8;
+  const top = below + height <= viewportHeight - margin ? below : Math.max(margin, viewportHeight - margin - height);
+  return { top, left, width, height };
+}
+
 /**
  * The email as the server renders it, shown on hover (or tap, on a phone)
  * from a collapsed card. Fetched once per version of the draft.
@@ -527,11 +561,19 @@ function ReviewDialog({
 function QuickPreview({ leadId, subject, body }: { leadId: string; subject: string; body: string }) {
   const [hovering, setHovering] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [place, setPlace] = useState<PreviewPlace | null>(null);
   const [loaded, setLoaded] = useState<{ key: string; preview: OutreachPreview | null; error: string | null } | null>(
     null,
   );
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const leaveTimer = useRef<number | null>(null);
   const open = hovering || pinned;
   const key = `${subject}\u0000${body}`;
+
+  const measure = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    setPlace(rect ? placePreview(rect, window.innerWidth, window.innerHeight) : null);
+  };
 
   useEffect(() => {
     if (!open || loaded?.key === key) return;
@@ -548,6 +590,21 @@ function QuickPreview({ leadId, subject, body }: { leadId: string; subject: stri
     };
   }, [open, key, loaded?.key, leadId, subject, body]);
 
+  // Keep the panel on screen while the page scrolls or resizes under it.
+  useEffect(() => {
+    if (!open) return;
+    const onMove = () => {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      setPlace(rect ? placePreview(rect, window.innerWidth, window.innerHeight) : null);
+    };
+    window.addEventListener('scroll', onMove, true);
+    window.addEventListener('resize', onMove);
+    return () => {
+      window.removeEventListener('scroll', onMove, true);
+      window.removeEventListener('resize', onMove);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!pinned) return;
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setPinned(false);
@@ -555,21 +612,48 @@ function QuickPreview({ leadId, subject, body }: { leadId: string; subject: stri
     return () => window.removeEventListener('keydown', onKey);
   }, [pinned]);
 
+  useEffect(() => () => {
+    if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
+  }, []);
+
   const current = loaded?.key === key ? loaded : null;
+  // On a phone the panel opens in place under the buttons; wider screens float it, kept inside the window.
+  const floating = place !== null;
 
   return (
-    <div className="sm:relative" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
-      <button type="button" className={secondaryButton} aria-expanded={open} onClick={() => setPinned((value) => !value)}>
+    <div
+      onMouseEnter={() => {
+        if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
+        leaveTimer.current = null;
+        if (!open) measure();
+        setHovering(true);
+      }}
+      onMouseLeave={() => {
+        // A short grace period, so moving from the button onto the panel keeps it open.
+        leaveTimer.current = window.setTimeout(() => setHovering(false), 150);
+      }}
+    >
+      <button
+        ref={buttonRef}
+        type="button"
+        className={secondaryButton}
+        aria-expanded={open}
+        onClick={() => {
+          if (!open) measure();
+          setPinned((value) => !value);
+        }}
+      >
         <Eye className="w-4 h-4" aria-hidden="true" /> Preview email
       </button>
       {open && (
         <div
           role="region"
           aria-label="Email preview"
-          className="mt-2 sm:mt-0 sm:absolute sm:left-0 sm:top-full sm:pt-2 z-30 w-full sm:w-[36rem] max-w-[calc(100vw-2rem)]"
+          className={floating ? 'fixed z-40' : 'mt-2 w-full'}
+          style={floating ? { top: place.top, left: place.left, width: place.width, height: place.height } : undefined}
         >
-          <div className="rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-            <div className="flex items-start justify-between gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50 text-xs">
+          <div className="flex h-full flex-col rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+            <div className="flex shrink-0 items-start justify-between gap-3 px-4 py-2.5 border-b border-slate-200 bg-slate-50 text-xs">
               <p className="min-w-0 text-slate-600 wrap-break-word">
                 {current?.preview?.to && (
                   <>
@@ -595,7 +679,7 @@ function QuickPreview({ leadId, subject, body }: { leadId: string; subject: stri
                 title="Email preview"
                 sandbox=""
                 srcDoc={current.preview.html}
-                className="block w-full h-96 bg-white"
+                className={`block w-full bg-white ${floating ? 'min-h-0 flex-1' : 'h-96'}`}
               />
             ) : current?.error ? (
               <p role="alert" className="px-4 py-6 text-sm text-red-800">
@@ -676,7 +760,7 @@ function QuickActions({
           </button>
         )}
         <QuickPreview leadId={lead.id} subject={subject} body={body} />
-        <button type="button" className={primaryButton} disabled={disabled} onClick={onReview}>
+        <button type="button" className={primaryButton} disabled={disabled || busy} onClick={onReview}>
           <Send className="w-4 h-4" aria-hidden="true" /> Review &amp; send
         </button>
       </div>
