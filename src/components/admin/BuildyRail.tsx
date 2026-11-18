@@ -56,7 +56,9 @@ export default function BuildyRail({ jobCount }: BuildyRailProps) {
           <div className="by-head" />
           <div className="by-cap" />
           <div className="by-brim" />
-          <div className="by-eye" />
+          <div className="by-eye by-eye--far" />
+          <div className="by-eye by-eye--near" />
+          <div className="by-mouth" />
           <div className="by-arm" />
 
           {count === 0 && (
