@@ -122,12 +122,13 @@
   background: #e0a97d;
 }
 
+/* Sits high on the head so there is room for a face under the brim. */
 .by-cap {
   position: absolute;
   left: 14px;
-  bottom: 36px;
+  bottom: 38px;
   width: 14px;
-  height: 7px;
+  height: 6px;
   border-radius: 7px 7px 2px 2px;
   background: #d9a441;
 }
@@ -135,21 +136,44 @@
 .by-brim {
   position: absolute;
   left: 25px;
-  bottom: 34px;
+  bottom: 37px;
   width: 8px;
   height: 3px;
   border-radius: 2px;
   background: #a9761c;
 }
 
+/* Three-quarter view: he faces the way he walks, so both eyes sit right of centre. */
 .by-eye {
   position: absolute;
-  left: 24px;
-  bottom: 33px;
-  width: 2px;
-  height: 2px;
+  bottom: 34px;
+  width: 2.5px;
+  height: 2.5px;
   border-radius: 50%;
   background: #0f172a;
+  transform-origin: center;
+  animation: byBlink 4.2s ease-in-out infinite;
+}
+
+.by-eye--far {
+  left: 18px;
+}
+
+.by-eye--near {
+  left: 23px;
+}
+
+/* A small smile: the bottom of a ring, nothing more. */
+.by-mouth {
+  position: absolute;
+  left: 19px;
+  bottom: 30.5px;
+  width: 6px;
+  height: 2.5px;
+  border: 1.25px solid #7c3f1d;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-sizing: border-box;
 }
 
 .by-arm {
@@ -265,6 +289,11 @@
   50% { transform: rotate(24deg); }
 }
 
+@keyframes byBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.15); }
+}
+
 @keyframes byWobble {
   0%, 100% { transform: rotate(-2.5deg); }
   50% { transform: rotate(2.5deg); }
@@ -281,7 +310,8 @@
 .by-rail--paused .by-walker,
 .by-rail--paused .by-body,
 .by-rail--paused .by-leg,
-.by-rail--paused .by-stack {
+.by-rail--paused .by-stack,
+.by-rail--paused .by-eye {
   animation-play-state: paused;
 }
 
@@ -289,7 +319,8 @@
   .by-walker,
   .by-body,
   .by-leg,
-  .by-stack {
+  .by-stack,
+  .by-eye {
     animation: none;
   }
 
