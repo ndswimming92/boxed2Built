@@ -1,0 +1,1 @@
+{ "name": "work-meter", "version": "0.1.0", "description": "Live pane: what Claude is doing, a progress bar, tokens used and estimated cost", "types": "./types/index.d.ts" }
